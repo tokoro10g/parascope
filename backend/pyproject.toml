@@ -1,0 +1,31 @@
+[project]
+name = "parascope-backend"
+version = "0.1.0"
+description = "Backend for Parascope engineering calculation tool"
+readme = "README.md"
+requires-python = ">=3.12"
+dependencies = [
+    "fastapi",
+    "uvicorn",
+    "networkx",
+    "numpy",
+    "scipy",
+    "pint",
+    "psycopg2-binary", # For PostgreSQL
+    "sqlalchemy",
+]
+
+[tool.uv]
+dev-dependencies = [
+    "ruff",
+    "pytest",
+]
+
+[tool.ruff]
+line-length = 88
+target-version = "py312"
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "B"]
+ignore = []
+

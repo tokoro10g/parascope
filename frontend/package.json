@@ -1,0 +1,45 @@
+{
+  "name": "parascope",
+  "private": true,
+  "version": "0.0.0",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc -b && vite build",
+    "lint": "biome check .",
+    "format": "biome check --write .",
+    "preview": "vite preview"
+  },
+  "dependencies": {
+    "@types/d3-shape": "^3.1.7",
+    "@types/styled-components": "^5.1.36",
+    "@types/three": "^0.156.0",
+    "d3-shape": "^3.2.0",
+    "elkjs": "^0.8.2",
+    "react": "^19.2.3",
+    "react-dom": "^19.2.3",
+    "rete": "^2.0.6",
+    "rete-area-3d-plugin": "^2.0.5",
+    "rete-area-plugin": "^2.1.5",
+    "rete-auto-arrange-plugin": "^2.0.2",
+    "rete-connection-path-plugin": "^2.0.4",
+    "rete-connection-plugin": "^2.0.5",
+    "rete-context-menu-plugin": "^2.0.6",
+    "rete-engine": "^2.1.1",
+    "rete-minimap-plugin": "^2.0.3",
+    "rete-react-plugin": "^2.1.0",
+    "rete-render-utils": "^2.0.3",
+    "rete-scopes-plugin": "^2.1.1",
+    "styled-components": "^5.3.11",
+    "three": "^0.156.1",
+    "web-worker": "^1.5.0"
+  },
+  "devDependencies": {
+    "@biomejs/biome": "^2.3.10",
+    "@types/react": "^19.2.7",
+    "@types/react-dom": "^19.2.3",
+    "@vitejs/plugin-react": "^5.0.3",
+    "typescript": "~5.8.3",
+    "vite": "^7.1.7"
+  }
+}
