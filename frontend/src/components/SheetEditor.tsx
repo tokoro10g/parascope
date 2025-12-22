@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect, useMemo, useRef } from 'react';
 import { useParams, useNavigate, Link, useLocation, useSearchParams } from 'react-router-dom';
 import { useRete } from 'rete-react-plugin';
 import { ClassicPreset as Classic } from 'rete';
@@ -12,7 +12,7 @@ export const SheetEditor: React.FC = () => {
   const { sheetId } = useParams<{ sheetId: string }>();
   const navigate = useNavigate();
   const location = useLocation();
-  const [searchParams] = useSearchParams();
+  const [searchParams, setSearchParams] = useSearchParams();
   const [ref, editor] = useRete(createEditor);
   const [currentSheet, setCurrentSheet] = useState<Sheet | null>(null);
   const [sheets, setSheets] = useState<SheetSummary[]>([]); // Keep for dropdown if needed
@@ -21,6 +21,8 @@ export const SheetEditor: React.FC = () => {
   const [evaluatorInputs, setEvaluatorInputs] = useState<Record<string, string>>({});
   const [editingNode, setEditingNode] = useState<ParascopeNode | null>(null);
   const [errorNodeId, setErrorNodeId] = useState<string | null>(null);
+  
+  const ignoreNextSearchParamsChange = useRef(false);
 
   // Load sheet list for the dropdown (optional, but good for UX)
   useEffect(() => {
@@ -36,6 +38,11 @@ export const SheetEditor: React.FC = () => {
 
   // Sync URL Query Params to Evaluator Inputs
   useEffect(() => {
+      if (ignoreNextSearchParamsChange.current) {
+          ignoreNextSearchParamsChange.current = false;
+          return;
+      }
+
       const overrides: Record<string, string> = {};
       searchParams.forEach((value, key) => {
           overrides[key] = value;
@@ -267,6 +274,17 @@ export const SheetEditor: React.FC = () => {
 
   const handleEvaluatorInputChange = (id: string, value: string) => {
       setEvaluatorInputs(prev => ({ ...prev, [id]: value }));
+      
+      ignoreNextSearchParamsChange.current = true;
+      setSearchParams(prev => {
+          const newParams = new URLSearchParams(prev);
+          if (value) {
+              newParams.set(id, value);
+          } else {
+              newParams.delete(id);
+          }
+          return newParams;
+      }, { replace: true });
   };
 
   const handleNodeUpdate = async (nodeId: string, updates: NodeUpdates) => {
