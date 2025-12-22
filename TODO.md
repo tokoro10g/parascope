@@ -84,10 +84,10 @@ Generated from `SPECIFICATIONS.tsv`.
 ## 4. Integration & Logic (Initial Release)
 - [ ] **Real-time Recalculation**: Trigger backend calc on input change (UI-01.0).
 - [ ] **Sheet Nesting**:
-    - [ ] Implement linking mechanism for nested sheets (BB-S-02.0, BB-S-03.0).
-    - [ ] Implement logic to expose Input/Output Nodes as sockets (BB-S-04.0).
+    - [x] Implement linking mechanism for nested sheets (BB-S-02.0, BB-S-03.0).
+    - [x] Implement logic to expose Input/Output Nodes as sockets (BB-S-04.0).
     - [ ] Validate that all nested sheet inputs are connected (No defaults) (BB-S-05.0).
-    - [ ] Implement Sheet Picker Modal for importing (UI-16.0).
+    - [x] Implement Sheet Picker Modal for importing (UI-16.0).
 - [ ] **Graph Integrity**:
     - [ ] Auto-remove connections on node deletion (EH-04.0).
     - [ ] Validate function dependencies before saving (EH-05.0).

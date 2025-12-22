@@ -30,8 +30,8 @@ async def calculate_sheet(sheet_id: UUID, inputs: Dict[str, Any] = None, db: Asy
         raise HTTPException(status_code=404, detail="Sheet not found")
 
     try:
-        processor = GraphProcessor(sheet)
-        results = processor.execute(input_overrides=inputs)
+        processor = GraphProcessor(sheet, db)
+        results = await processor.execute(input_overrides=inputs)
         
         # Convert UUID keys to strings for JSON response
         json_results = {str(k): v for k, v in results.items()}

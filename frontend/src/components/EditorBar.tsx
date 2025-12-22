@@ -5,7 +5,7 @@ interface EditorBarProps {
   isDirty?: boolean;
   onRenameSheet: (name: string) => void;
   onSaveSheet: () => void;
-  onAddNode: (type: 'parameter' | 'function' | 'input' | 'output') => void;
+  onAddNode: (type: 'parameter' | 'function' | 'input' | 'output' | 'sheet') => void;
 }
 
 export const EditorBar: React.FC<EditorBarProps> = ({
@@ -60,6 +60,7 @@ export const EditorBar: React.FC<EditorBarProps> = ({
         <button type="button" onClick={() => onAddNode('function')}>+ Func</button>
         <button type="button" onClick={() => onAddNode('input')}>+ Input</button>
         <button type="button" onClick={() => onAddNode('output')}>+ Output</button>
+        <button type="button" onClick={() => onAddNode('sheet')}>+ Import Sheet</button>
       </div>
     </div>
   );

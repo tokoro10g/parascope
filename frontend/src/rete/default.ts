@@ -9,6 +9,10 @@ import {
   ConnectionPathPlugin,
 } from 'rete-connection-path-plugin';
 import {
+  ContextMenuPlugin,
+  type ContextMenuExtra,
+} from 'rete-context-menu-plugin';
+import {
   type ReactArea2D,
   ReactPlugin,
   Presets as ReactPresets,
@@ -80,7 +84,7 @@ type Schemes = GetSchemes<
   Connection<ParascopeNode, ParascopeNode>
 >;
 
-type AreaExtra = Area2D<Schemes> | ReactArea2D<Schemes>;
+type AreaExtra = Area2D<Schemes> | ReactArea2D<Schemes> | ContextMenuExtra;
 
 
 export async function createEditor(container: HTMLElement) {
@@ -88,11 +92,56 @@ export async function createEditor(container: HTMLElement) {
   const area = new AreaPlugin<Schemes, AreaExtra>(container);
   const connection = new ConnectionPlugin<Schemes, AreaExtra>();
   const reactRender = new ReactPlugin<Schemes, AreaExtra>({ createRoot });
+  const contextMenu = new ContextMenuPlugin<Schemes>({
+    items: (context) => {
+        if (context === 'root') {
+            return { searchBar: false, list: [] };
+        }
+        
+        // Check for connection (has source/target)
+        if ('source' in context && 'target' in context) {
+             return {
+                searchBar: false,
+                list: [
+                    {
+                        label: 'Delete',
+                        key: 'delete',
+                        handler: async () => {
+                            await editor.removeConnection(context.id);
+                        }
+                    }
+                ]
+            };
+        }
+
+        // Node
+        return {
+            searchBar: false,
+            list: [
+                {
+                    label: 'Edit',
+                    key: 'edit',
+                    handler: () => {
+                        if (onNodeEdit) onNodeEdit(context.id);
+                    }
+                },
+                {
+                    label: 'Delete',
+                    key: 'delete',
+                    handler: async () => {
+                        await editor.removeNode(context.id);
+                    }
+                }
+            ]
+        };
+    }
+  });
 
   // We need to expose a way to set the callback later, or pass it in.
   // Since useRete calls this, we can attach it to the returned object.
   let onNodeDoubleClick: ((nodeId: string) => void) | undefined;
   let onGraphChange: (() => void) | undefined;
+  let onNodeEdit: ((nodeId: string) => void) | undefined;
 
   AreaExtensions.selectableNodes(area, AreaExtensions.selector(), {
     accumulating: AreaExtensions.accumulateOnCtrl(),
@@ -110,6 +159,7 @@ export async function createEditor(container: HTMLElement) {
       },
     },
   }));
+  reactRender.addPreset(ReactPresets.contextMenu.setup());
 
   // Listen for changes
   editor.addPipe(context => {
@@ -134,6 +184,7 @@ export async function createEditor(container: HTMLElement) {
   editor.use(area);
   area.use(connection);
   area.use(reactRender);
+  area.use(contextMenu);
 
   AreaExtensions.zoomAt(area, editor.getNodes());
   
@@ -162,6 +213,9 @@ export async function createEditor(container: HTMLElement) {
     destroy: () => area.destroy(),
     setNodeDoubleClickListener: (cb: (nodeId: string) => void) => {
         onNodeDoubleClick = cb;
+    },
+    setNodeEditListener: (cb: (nodeId: string) => void) => {
+        onNodeEdit = cb;
     },
     setGraphChangeListener: (cb: () => void) => {
         onGraphChange = cb;

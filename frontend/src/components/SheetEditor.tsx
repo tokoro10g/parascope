@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useMemo, useRef } from 'react';
-import { useParams, Link, useLocation, useSearchParams, useNavigate } from 'react-router-dom';
+import { useParams, useLocation, useSearchParams, useNavigate } from 'react-router-dom';
 import { useRete } from 'rete-react-plugin';
 import { ClassicPreset as Classic } from 'rete';
 import { api, type Sheet } from '../api';
@@ -7,6 +7,7 @@ import { createEditor, ParascopeNode, socket } from '../rete';
 import { EditorBar } from './EditorBar';
 import { EvaluatorBar, type EvaluatorInput, type EvaluatorOutput } from './EvaluatorBar';
 import { NodeInspector, type NodeUpdates } from './NodeInspector';
+import { SheetPickerModal } from './SheetPickerModal';
 
 export const SheetEditor: React.FC = () => {
   const { sheetId } = useParams<{ sheetId: string }>();
@@ -21,6 +22,7 @@ export const SheetEditor: React.FC = () => {
   const [editingNode, setEditingNode] = useState<ParascopeNode | null>(null);
   const [errorNodeId, setErrorNodeId] = useState<string | null>(null);
   const [isDirty, setIsDirty] = useState(false);
+  const [isSheetPickerOpen, setIsSheetPickerOpen] = useState(false);
   
   const ignoreNextSearchParamsChange = useRef(false);
 
@@ -100,12 +102,14 @@ export const SheetEditor: React.FC = () => {
 
   useEffect(() => {
       if (editor) {
-          editor.setNodeDoubleClickListener((nodeId) => {
+          const handleEdit = (nodeId: string) => {
               const node = editor.editor.getNode(nodeId);
               if (node) {
                   setEditingNode(node);
               }
-          });
+          };
+          editor.setNodeDoubleClickListener(handleEdit);
+          editor.setNodeEditListener(handleEdit);
           editor.setGraphChangeListener(() => {
               setIsDirty(true);
           });
@@ -183,8 +187,13 @@ export const SheetEditor: React.FC = () => {
       }
   };
 
-  const handleAddNode = async (type: 'parameter' | 'function' | 'input' | 'output') => {
+  const handleAddNode = async (type: 'parameter' | 'function' | 'input' | 'output' | 'sheet') => {
       if (!editor || !currentSheet) return;
+
+      if (type === 'sheet') {
+          setIsSheetPickerOpen(true);
+          return;
+      }
 
       const id = crypto.randomUUID();
       let label: string = type;
@@ -237,6 +246,55 @@ export const SheetEditor: React.FC = () => {
           ...prev,
           nodes: [...prev.nodes, newNodeData]
       }) : null);
+  };
+
+  const handleImportSheet = async (sheet: Sheet) => {
+      setIsSheetPickerOpen(false);
+      if (!editor || !currentSheet) return;
+
+      try {
+          // Fetch full sheet details to get inputs/outputs
+          const fullSheet = await api.getSheet(sheet.id);
+          
+          const inputs = fullSheet.nodes
+            .filter(n => n.type === 'input')
+            .map(n => ({ key: n.label, socket_type: 'any' }));
+            
+          const outputs = fullSheet.nodes
+            .filter(n => n.type === 'output')
+            .map(n => ({ key: n.label, socket_type: 'any' }));
+
+          const id = crypto.randomUUID();
+          const type = 'sheet';
+          const label = sheet.name;
+          const data = { sheetId: sheet.id };
+
+          const node = new ParascopeNode(type, label, inputs, outputs, data);
+          node.id = id;
+          node.dbId = id;
+
+          await editor.editor.addNode(node);
+          await editor.area.translate(node.id, { x: 100, y: 100 });
+
+          const newNodeData = {
+              id,
+              type,
+              label,
+              position_x: 100,
+              position_y: 100,
+              inputs,
+              outputs,
+              data
+          };
+
+          setCurrentSheet(prev => prev ? ({
+              ...prev,
+              nodes: [...prev.nodes, newNodeData]
+          }) : null);
+      } catch (e) {
+          console.error(e);
+          alert(`Error importing sheet: ${e}`);
+      }
   };
 
   // Derive Evaluator Props
@@ -390,6 +448,11 @@ export const SheetEditor: React.FC = () => {
         isOpen={!!editingNode}
         onClose={() => setEditingNode(null)}
         onSave={handleNodeUpdate}
+      />
+      <SheetPickerModal 
+        isOpen={isSheetPickerOpen}
+        onClose={() => setIsSheetPickerOpen(false)}
+        onSelect={handleImportSheet}
       />
     </div>
   );

@@ -32,6 +32,8 @@ def _worker(code: str, inputs: Dict[str, Any], outputs: List[str], queue: multip
         local_vars = inputs.copy()
         global_vars = {
             "__builtins__": __builtins__,
+            "math": __import__("math"),
+            "np": __import__("numpy"),
             # We can add numpy/scipy/pint here if we want them available by default
             # or let the user import them (if installed in the env)
         }

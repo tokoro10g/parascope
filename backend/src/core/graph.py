@@ -1,7 +1,10 @@
-from typing import Any, Dict
+from typing import Any, Dict, Optional
 from uuid import UUID
 
 import networkx as nx
+from sqlalchemy import select
+from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy.orm import selectinload
 
 from ..models.sheet import Node, Sheet
 from .execution import execute_python_code
@@ -9,8 +12,9 @@ from .exceptions import NodeExecutionError
 
 
 class GraphProcessor:
-    def __init__(self, sheet: Sheet):
+    def __init__(self, sheet: Sheet, db: Optional[AsyncSession] = None):
         self.sheet = sheet
+        self.db = db
         self.graph = nx.MultiDiGraph()
         self.results: Dict[UUID, Any] = {}
         self.node_map: Dict[UUID, Node] = {node.id: node for node in sheet.nodes}
@@ -46,7 +50,7 @@ class GraphProcessor:
             pass
         return val
 
-    def execute(self, input_overrides: Dict[str, Any] = None) -> Dict[UUID, Any]:
+    async def execute(self, input_overrides: Dict[str, Any] = None) -> Dict[UUID, Any]:
         self.validate()
         
         # Topological sort
@@ -54,11 +58,11 @@ class GraphProcessor:
         
         for node_id in execution_order:
             node = self.node_map[node_id]
-            self._execute_node(node, input_overrides)
+            await self._execute_node(node, input_overrides)
             
         return self.results
 
-    def _execute_node(self, node: Node, input_overrides: Dict[str, Any] = None):
+    async def _execute_node(self, node: Node, input_overrides: Dict[str, Any] = None):
         node_type = node.type
         
         if node_type == "parameter":
@@ -114,6 +118,55 @@ class GraphProcessor:
                 self.results[node.id] = exec_result.result
             else:
                 raise NodeExecutionError(str(node.id), node.label, exec_result.error)
+
+        elif node_type == "sheet":
+            if not self.db:
+                raise NodeExecutionError(str(node.id), node.label, "Database session required for nested sheets")
+            
+            nested_sheet_id = node.data.get("sheetId")
+            if not nested_sheet_id:
+                raise NodeExecutionError(str(node.id), node.label, "No sheet selected")
+
+            # Fetch nested sheet
+            try:
+                stmt = select(Sheet).where(Sheet.id == UUID(nested_sheet_id)).options(
+                    selectinload(Sheet.nodes),
+                    selectinload(Sheet.connections)
+                )
+                result = await self.db.execute(stmt)
+                nested_sheet = result.scalar_one_or_none()
+            except Exception as e:
+                raise NodeExecutionError(str(node.id), node.label, f"Invalid sheet ID: {e}")
+            
+            if not nested_sheet:
+                raise NodeExecutionError(str(node.id), node.label, f"Nested sheet {nested_sheet_id} not found")
+
+            # Prepare inputs
+            nested_inputs = {}
+            in_edges = self.graph.in_edges(node.id, data=True)
+            for u, _v, data in in_edges:
+                # target_port on parent node corresponds to Input Node Label in child sheet
+                input_label = data['target_port']
+                if u in self.results and data['source_port'] in self.results[u]:
+                    nested_inputs[input_label] = self.results[u][data['source_port']]
+                else:
+                     # Should not happen if topological sort is correct
+                     pass
+
+            # Execute nested sheet
+            # TODO: Add cycle detection / depth limit
+            nested_processor = GraphProcessor(nested_sheet, self.db)
+            nested_results = await nested_processor.execute(input_overrides=nested_inputs)
+            
+            # Map outputs
+            node_outputs = {}
+            for n in nested_sheet.nodes:
+                if n.type == "output":
+                    # The value of the output node
+                    if n.id in nested_results:
+                        node_outputs[n.label] = nested_results[n.id]
+            
+            self.results[node.id] = node_outputs
 
         elif node_type == "output":
             # Pass through the value from the source
