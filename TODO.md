@@ -65,7 +65,7 @@ Generated from `SPECIFICATIONS.tsv`.
     - [ ] Inputs: Name, Python Code, Description (BB-F-03.0 - BB-F-05.0).
     - [ ] Validation: Python function name constraints (BB-F-03.0).
     - [ ] Markdown rendering for description (BB-F-04.0).
-    - [ ] Constraint: 1 Output, 1+ Inputs (BB-F-01.0, BB-F-02.0).
+    - [ ] Constraint: 1+ Outputs, 1+ Inputs (BB-F-01.0, BB-F-02.0).
 - [ ] **Feedback**:
     - [ ] Display calculation errors/stack traces on output nodes (EH-02.0).
     - [ ] Visual validation for unit/type errors (EH-03.0).
