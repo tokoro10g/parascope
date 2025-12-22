@@ -23,8 +23,8 @@ class GraphProcessor:
         # Add edges
         for conn in self.sheet.connections:
             self.graph.add_edge(conn.source_id, conn.target_id, 
-                                source_handle=conn.source_handle, 
-                                target_handle=conn.target_handle)
+                                source_port=conn.source_port, 
+                                target_port=conn.target_port)
 
     def validate(self):
         if not nx.is_directed_acyclic_graph(self.graph):
@@ -66,9 +66,11 @@ class GraphProcessor:
             in_edges = self.graph.in_edges(node.id, data=True)
             
             for u, _v, data in in_edges:
-                # data contains 'target_handle' which maps to the function argument name
-                arg_name = data['target_handle']
+                # data contains 'target_port' which maps to the function argument name
+                arg_name = data['target_port']
                 inputs[arg_name] = self.results[u]
+
+            outputs = [o['key'] for o in self.node_map[node.id].outputs]
             
             # Execute code
             code = node.data.get("code", "")
@@ -76,7 +78,7 @@ class GraphProcessor:
                 self.results[node.id] = None
                 return
 
-            exec_result = execute_python_code(code, inputs)
+            exec_result = execute_python_code(code, inputs, outputs)
             
             if exec_result.success:
                 self.results[node.id] = exec_result.result

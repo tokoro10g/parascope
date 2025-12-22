@@ -29,8 +29,10 @@ class NodeRead(NodeBase):
 class ConnectionBase(BaseModel):
     source_id: UUID
     target_id: UUID
-    source_handle: str
-    target_handle: str
+    source_port: str
+    target_port: str
+    source_handle: Optional[str] = None
+    target_handle: Optional[str] = None
 
 class ConnectionCreate(ConnectionBase):
     id: Optional[UUID] = None
@@ -52,6 +54,10 @@ class SheetRead(SheetBase):
     id: UUID
     nodes: List[NodeRead]
     connections: List[ConnectionRead]
+    model_config = ConfigDict(from_attributes=True)
+
+class SheetSummary(SheetBase):
+    id: UUID
     model_config = ConfigDict(from_attributes=True)
 
 class SheetUpdate(BaseModel):

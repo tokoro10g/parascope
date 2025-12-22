@@ -7,9 +7,16 @@ from sqlalchemy.orm import selectinload
 
 from ..core.database import get_db
 from ..models.sheet import Connection, Node, Sheet
-from ..schemas.sheet import SheetCreate, SheetRead, SheetUpdate
+from ..schemas.sheet import SheetCreate, SheetRead, SheetSummary, SheetUpdate
 
 router = APIRouter(prefix="/sheets", tags=["sheets"])
+
+@router.get("/", response_model=list[SheetSummary])
+async def list_sheets(skip: int = 0, limit: int = 100, db: AsyncSession = Depends(get_db)):
+    query = select(Sheet).offset(skip).limit(limit)
+    result = await db.execute(query)
+    sheets = result.scalars().all()
+    return sheets
 
 @router.post("/", response_model=SheetRead)
 async def create_sheet(sheet_in: SheetCreate, db: AsyncSession = Depends(get_db)):
@@ -42,6 +49,8 @@ async def create_sheet(sheet_in: SheetCreate, db: AsyncSession = Depends(get_db)
             sheet_id=db_sheet.id,
             source_id=conn_in.source_id,
             target_id=conn_in.target_id,
+            source_port=conn_in.source_port,
+            target_port=conn_in.target_port,
             source_handle=conn_in.source_handle,
             target_handle=conn_in.target_handle
         )
@@ -122,6 +131,8 @@ async def update_sheet(sheet_id: UUID, sheet_in: SheetUpdate, db: AsyncSession =
             sheet_id=db_sheet.id,
             source_id=conn_in.source_id,
             target_id=conn_in.target_id,
+            source_port=conn_in.source_port,
+            target_port=conn_in.target_port,
             source_handle=conn_in.source_handle,
             target_handle=conn_in.target_handle
         )
