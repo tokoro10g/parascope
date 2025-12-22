@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useMemo, useRef } from 'react';
-import { useParams, Link, useLocation, useSearchParams } from 'react-router-dom';
+import { useParams, Link, useLocation, useSearchParams, useNavigate } from 'react-router-dom';
 import { useRete } from 'rete-react-plugin';
 import { ClassicPreset as Classic } from 'rete';
 import { api, type Sheet } from '../api';
@@ -11,6 +11,7 @@ import { NodeInspector, type NodeUpdates } from './NodeInspector';
 export const SheetEditor: React.FC = () => {
   const { sheetId } = useParams<{ sheetId: string }>();
   const location = useLocation();
+  const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
   const [ref, editor] = useRete(createEditor);
   const [currentSheet, setCurrentSheet] = useState<Sheet | null>(null);
@@ -19,8 +20,32 @@ export const SheetEditor: React.FC = () => {
   const [evaluatorInputs, setEvaluatorInputs] = useState<Record<string, string>>({});
   const [editingNode, setEditingNode] = useState<ParascopeNode | null>(null);
   const [errorNodeId, setErrorNodeId] = useState<string | null>(null);
+  const [isDirty, setIsDirty] = useState(false);
   
   const ignoreNextSearchParamsChange = useRef(false);
+
+  // Warn on exit if dirty
+  useEffect(() => {
+      const handleBeforeUnload = (e: BeforeUnloadEvent) => {
+          if (isDirty) {
+              e.preventDefault();
+              e.returnValue = '';
+          }
+      };
+      window.addEventListener('beforeunload', handleBeforeUnload);
+      return () => window.removeEventListener('beforeunload', handleBeforeUnload);
+  }, [isDirty]);
+
+  const handleBackClick = (e: React.MouseEvent) => {
+    e.preventDefault();
+    if (isDirty) {
+      if (window.confirm('You have unsaved changes. Are you sure you want to leave?')) {
+        navigate('/');
+      }
+    } else {
+      navigate('/');
+    }
+  };
 
   // Load the specific sheet when sheetId changes
   useEffect(() => {
@@ -81,6 +106,9 @@ export const SheetEditor: React.FC = () => {
                   setEditingNode(node);
               }
           });
+          editor.setGraphChangeListener(() => {
+              setIsDirty(true);
+          });
       }
   }, [editor]);
 
@@ -94,6 +122,7 @@ export const SheetEditor: React.FC = () => {
       
       const focusNodeId = location.hash ? location.hash.substring(1) : undefined;
       await editor.loadSheet(sheet, focusNodeId);
+      setIsDirty(false);
     } catch (e) {
       console.error(e);
       alert(`Error loading sheet: ${e}`);
@@ -130,6 +159,7 @@ export const SheetEditor: React.FC = () => {
         });
         
         setCurrentSheet(updatedSheet);
+        setIsDirty(false);
     } catch (e) {
         console.error(e);
         alert(`Error saving sheet: ${e}`);
@@ -141,6 +171,12 @@ export const SheetEditor: React.FC = () => {
       try {
           const updatedSheet = await api.updateSheet(currentSheet.id, { name });
           setCurrentSheet(updatedSheet);
+          // Renaming saves immediately, so we can clear dirty if it was only dirty due to name?
+          // But usually renaming is separate. If we treat renaming as a save, we might want to keep dirty if graph changed.
+          // However, the API call updates the sheet. If we don't send nodes, they aren't touched.
+          // So renaming doesn't save the graph.
+          // If the graph was dirty, it remains dirty.
+          // If the graph was clean, renaming keeps it clean (since it's saved).
       } catch (e) {
           console.error(e);
           alert(`Error renaming sheet: ${e}`);
@@ -330,10 +366,11 @@ export const SheetEditor: React.FC = () => {
   return (
     <div className="sheet-editor">
       <div className="nav-bar">
-          <Link to="/">← Back to Dashboard</Link>
+          <a href="/" onClick={handleBackClick}>← Back to Dashboard</a>
       </div>
       <EditorBar 
         sheetName={currentSheet?.name}
+        isDirty={isDirty}
         onRenameSheet={handleRenameSheet}
         onSaveSheet={handleSaveSheet}
         onAddNode={handleAddNode}

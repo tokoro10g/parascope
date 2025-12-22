@@ -92,6 +92,7 @@ export async function createEditor(container: HTMLElement) {
   // We need to expose a way to set the callback later, or pass it in.
   // Since useRete calls this, we can attach it to the returned object.
   let onNodeDoubleClick: ((nodeId: string) => void) | undefined;
+  let onGraphChange: (() => void) | undefined;
 
   AreaExtensions.selectableNodes(area, AreaExtensions.selector(), {
     accumulating: AreaExtensions.accumulateOnCtrl(),
@@ -109,6 +110,26 @@ export async function createEditor(container: HTMLElement) {
       },
     },
   }));
+
+  // Listen for changes
+  editor.addPipe(context => {
+      if (
+          context.type === 'connectioncreated' ||
+          context.type === 'connectionremoved' ||
+          context.type === 'nodecreated' ||
+          context.type === 'noderemoved'
+      ) {
+          if (onGraphChange) onGraphChange();
+      }
+      return context;
+  });
+
+  area.addPipe(context => {
+      if (context.type === 'nodetranslated') {
+          if (onGraphChange) onGraphChange();
+      }
+      return context;
+  });
 
   editor.use(area);
   area.use(connection);
@@ -141,6 +162,9 @@ export async function createEditor(container: HTMLElement) {
     destroy: () => area.destroy(),
     setNodeDoubleClickListener: (cb: (nodeId: string) => void) => {
         onNodeDoubleClick = cb;
+    },
+    setGraphChangeListener: (cb: () => void) => {
+        onGraphChange = cb;
     },
 
     // Helper to load a sheet from the API

@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 
 interface EditorBarProps {
   sheetName?: string;
+  isDirty?: boolean;
   onRenameSheet: (name: string) => void;
   onSaveSheet: () => void;
   onAddNode: (type: 'parameter' | 'function' | 'input' | 'output') => void;
@@ -9,6 +10,7 @@ interface EditorBarProps {
 
 export const EditorBar: React.FC<EditorBarProps> = ({
   sheetName,
+  isDirty,
   onRenameSheet,
   onSaveSheet,
   onAddNode,
@@ -43,9 +45,11 @@ export const EditorBar: React.FC<EditorBarProps> = ({
           className="sheet-name-input"
           placeholder="Sheet Name"
         />
+        {isDirty && <span className="unsaved-indicator" title="Unsaved changes" style={{ color: 'orange', marginRight: '8px', fontWeight: 'bold' }}>●</span>}
         <button 
             type="button"
-            onClick={onSaveSheet} 
+            onClick={onSaveSheet}
+            disabled={!isDirty}
         >
             Save
         </button>

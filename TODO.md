@@ -29,6 +29,7 @@ Generated from `SPECIFICATIONS.tsv`.
     - [x] Implement `stdout` capture for user functions (UI-18.0).
 - [ ] **Error Handling**:
     - [x] Catch user code exceptions and return stack traces (EH-01.0).
+    - [x] Fail calculation if Input Node values are missing (EH-12.0).
     - [ ] Handle persistence failures with retry logic (EH-06.0).
 
 ## 3. Frontend UI/UX (Initial Release)
@@ -77,7 +78,7 @@ Generated from `SPECIFICATIONS.tsv`.
     - [ ] Implement "Copy Link" action on Dashboard (UI-13.0).
     - [x] Implement Sheet Name editor (UI-14.0).
     - [ ] Implement Console/Log viewer for selected node (UI-18.0).
-    - [ ] Implement "Unsaved Changes" indicator (UI-20.0).
+    - [x] Implement "Unsaved Changes" indicator (UI-20.0).
     - [ ] Implement distinct visual style for Nested Sheet nodes (UI-21.0).
 
 ## 4. Integration & Logic (Initial Release)
