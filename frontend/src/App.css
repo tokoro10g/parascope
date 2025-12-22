@@ -50,6 +50,74 @@
   color: #333;
 }
 
+/* Dashboard Styles */
+.dashboard {
+  padding: 20px;
+  max-width: 800px;
+  margin: 0 auto;
+}
+
+.dashboard h1 {
+  margin-bottom: 20px;
+}
+
+.dashboard .actions {
+  margin-bottom: 20px;
+}
+
+.sheet-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.sheet-item {
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  padding: 10px;
+  background: white;
+}
+
+.sheet-item a {
+  text-decoration: none;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.sheet-item:hover {
+  background: #f9f9f9;
+}
+
+.sheet-id {
+  color: #888;
+  font-size: 0.8em;
+}
+
+/* Sheet Editor Styles */
+.sheet-editor {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  width: 100%;
+}
+
+.nav-bar {
+  padding: 5px 10px;
+  background: #333;
+  color: white;
+}
+
+.nav-bar a {
+  color: white;
+  text-decoration: none;
+  font-size: 0.9em;
+}
+
+.nav-bar a:hover {
+  text-decoration: underline;
+}
+
 .paren, .comma, .arrow {
   color: #666;
   font-weight: bold;
