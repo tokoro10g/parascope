@@ -3,12 +3,12 @@
 Generated from `SPECIFICATIONS.tsv`.
 
 ## 1. Infrastructure & Tooling (Core Tooling)
-- [ ] **Repository**: Set up Monorepo structure (T-DEV-04.0).
-- [ ] **Containerization**: Configure Docker Compose for Backend and Frontend (T-DEV-03.0).
-- [ ] **Backend Setup**: Initialize Python project with `uv` (T-BE-01.0, T-DEV-02.0).
-- [ ] **Frontend Setup**: Initialize Vite + React project with `pnpm` (T-FE-01.0, T-DEV-02.0).
-- [ ] **Database**: Provision PostgreSQL instance (T-BE-02.0).
-- [ ] **Quality Control**: Configure `ruff` (Python) and `biome` (JS/TS) (T-DEV-01.0).
+- [x] **Repository**: Set up Monorepo structure (T-DEV-04.0).
+- [x] **Containerization**: Configure Docker Compose for Backend and Frontend (T-DEV-03.0).
+- [x] **Backend Setup**: Initialize Python project with `uv` (T-BE-01.0, T-DEV-02.0).
+- [x] **Frontend Setup**: Initialize Vite + React project with `pnpm` (T-FE-01.0, T-DEV-02.0).
+- [x] **Database**: Provision PostgreSQL instance (T-BE-02.0).
+- [x] **Quality Control**: Configure `ruff` (Python) and `biome` (JS/TS) (T-DEV-01.0).
 
 ## 2. Backend Core (Initial Release)
 - [ ] **Data Models**: Design schemas for Sheets, Functions, Parameters, Input/Output Nodes, and Values (DH-01.0, DH-02.0).
@@ -32,10 +32,10 @@ Generated from `SPECIFICATIONS.tsv`.
     - [ ] Handle persistence failures with retry logic (EH-06.0).
 
 ## 3. Frontend UI/UX (Initial Release)
-- [ ] **Graph Editor**: Implement `rete.js` canvas (BB-S-01.0).
-    - [ ] Implement Context Menu for adding nodes (UI-06.0).
+- [x] **Graph Editor**: Implement `rete.js` canvas (BB-S-01.0).
+    - [x] Implement Context Menu for adding nodes (UI-06.0).
     - [ ] Implement "Edit Sheet" context menu action with state-preserving navigation (UI-08.0).
-    - [ ] Implement Undo/Redo history (UI-15.0).
+    - [x] Implement Undo/Redo history (UI-15.0).
     - [ ] Implement Connection constraints (Max 1 input, Multiple outputs) (BB-C-01.0).
     - [ ] Implement Editor Toolbar (UI-17.0).
     - [ ] Implement Keyboard Shortcuts (Delete, Ctrl+S) (UI-19.0).
