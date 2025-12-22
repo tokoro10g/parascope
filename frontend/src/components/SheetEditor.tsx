@@ -260,6 +260,10 @@ export const SheetEditor: React.FC = () => {
   const handleEvaluatorInputChange = (id: string, value: string) => {
       setEvaluatorInputs(prev => ({ ...prev, [id]: value }));
       
+      if (errorNodeId === id) {
+          setErrorNodeId(null);
+      }
+
       ignoreNextSearchParamsChange.current = true;
       setSearchParams(prev => {
           const newParams = new URLSearchParams(prev);

@@ -80,7 +80,13 @@ class GraphProcessor:
                     val = input_overrides[node.label]
             
             if val is None:
-                val = node.data.get("value", 0)
+                # val = node.data.get("value", 0) # Old behavior: default to 0
+                # New behavior: Fail if no value provided
+                raise NodeExecutionError(
+                    str(node.id),
+                    node.label,
+                    "Input requires a value"
+                )
 
             self.results[node.id] = {'value': self._parse_value(val)}
 
