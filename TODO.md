@@ -28,7 +28,7 @@ Generated from `SPECIFICATIONS.tsv`.
     - [x] Implement execution timeout logic (e.g., 5s limit) (EH-11.0).
     - [x] Implement `stdout` capture for user functions (UI-18.0).
 - [ ] **Error Handling**:
-    - [ ] Catch user code exceptions and return stack traces (EH-01.0).
+    - [x] Catch user code exceptions and return stack traces (EH-01.0).
     - [ ] Handle persistence failures with retry logic (EH-06.0).
 
 ## 3. Frontend UI/UX (Initial Release)
@@ -48,11 +48,11 @@ Generated from `SPECIFICATIONS.tsv`.
     - [ ] Implement "Name" prompt on first visit (AUTH-02.0).
     - [ ] Save identity in Cookies (AUTH-03.0).
     - [ ] Add "Change user" menu (AUTH-04.0).
-- [ ] **Input Node**:
-    - [ ] Distinct visual style from Parameters (BB-I-01.0).
+- [x] **Input Node**:
+    - [x] Distinct visual style from Parameters (BB-I-01.0).
     - [ ] Inputs: Name, Unit (BB-I-01.0).
-- [ ] **Output Node**:
-    - [ ] Distinct visual style (BB-O-01.0).
+- [x] **Output Node**:
+    - [x] Distinct visual style (BB-O-01.0).
     - [ ] Inputs: Name, Description (BB-O-01.0).
 - [ ] **Option Node**:
     - [ ] Inputs: Name, Options List, Selected Value (BB-OPT-01.0).
@@ -67,7 +67,7 @@ Generated from `SPECIFICATIONS.tsv`.
     - [ ] Markdown rendering for description (BB-F-04.0).
     - [ ] Constraint: 1+ Outputs, 1+ Inputs (BB-F-01.0, BB-F-02.0).
 - [ ] **Feedback**:
-    - [ ] Display calculation errors/stack traces on output nodes (EH-02.0).
+    - [x] Display calculation errors/stack traces on output nodes (EH-02.0).
     - [ ] Visual validation for unit/type errors (EH-03.0).
     - [ ] Duplicate name error messages (EH-10.0).
     - [ ] Success toasts (e.g., "Saved") (UI-05.0).
