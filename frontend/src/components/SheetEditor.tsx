@@ -345,6 +345,7 @@ export const SheetEditor: React.FC = () => {
         onInputChange={handleEvaluatorInputChange}
         onCalculate={handleCalculate}
         isCalculating={isCalculating}
+        errorNodeId={errorNodeId}
       />
       <div ref={ref} className="rete" />
       <NodeInspector 

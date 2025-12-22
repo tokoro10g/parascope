@@ -19,6 +19,7 @@ interface EvaluatorBarProps {
   onInputChange: (id: string, value: string) => void;
   onCalculate: () => void;
   isCalculating: boolean;
+  errorNodeId?: string | null;
 }
 
 export const EvaluatorBar: React.FC<EvaluatorBarProps> = ({
@@ -28,6 +29,7 @@ export const EvaluatorBar: React.FC<EvaluatorBarProps> = ({
   onInputChange,
   onCalculate,
   isCalculating,
+  errorNodeId,
 }) => {
   return (
     <div className="toolbar evaluator-bar">
@@ -43,6 +45,7 @@ export const EvaluatorBar: React.FC<EvaluatorBarProps> = ({
               value={input.value}
               onChange={(e) => onInputChange(input.id, e.target.value)}
               placeholder="val"
+              className={input.id === errorNodeId ? 'input-error' : ''}
               style={{ width: '60px', marginLeft: '4px' }}
             />
             {i < inputs.length - 1 && <span className="comma">, </span>}

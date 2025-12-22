@@ -260,3 +260,9 @@
   color: white;
   border: none;
 }
+
+.input-error {
+  border: 2px solid #f44336 !important;
+  background-color: #ffebee;
+  outline: none;
+}
