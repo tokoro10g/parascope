@@ -1,25 +1,117 @@
 #root {
-  max-width: 1280px;
-  margin: 0 auto;
-  padding: 2rem;
-  text-align: center;
+  width: 100%;
+  height: 100vh;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
 }
 
-.logo {
-  height: 6em;
-  padding: 1.5em;
-  will-change: filter;
-  transition: filter 300ms;
+.App {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  width: 100%;
 }
 
-.logo:hover {
-  filter: drop-shadow(0 0 2em #646cffaa);
+.toolbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px;
+  background-color: #f0f0f0;
+  border-bottom: 1px solid #ccc;
 }
 
-.logo.react:hover {
-  filter: drop-shadow(0 0 2em #61dafbaa);
+.editor-bar {
+  background-color: #e0e0e0;
 }
 
-.logo.rete-logo:hover {
-  filter: drop-shadow(0 0 2em #fbd800);
+.evaluator-bar {
+  background-color: #f8f9fa;
+  border-bottom: 1px solid #ccc;
+  padding: 8px 16px;
+  font-family: monospace;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.signature {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 4px;
+  font-size: 14px;
+}
+
+.sheet-name {
+  font-weight: bold;
+  color: #333;
+}
+
+.paren, .comma, .arrow {
+  color: #666;
+  font-weight: bold;
+}
+
+.input-param, .output-param {
+  display: inline-flex;
+  align-items: center;
+  background: #fff;
+  padding: 2px 6px;
+  border-radius: 4px;
+  border: 1px solid #ddd;
+}
+
+.input-param label, .output-param .label {
+  margin-right: 4px;
+  color: #555;
+}
+
+.output-param .value {
+  font-weight: bold;
+  color: #007bff;
+}
+
+.input-param input {
+  border: 1px solid #ccc;
+  border-radius: 2px;
+  padding: 2px 4px;
+  font-family: inherit;
+  font-size: inherit;
+  width: 80px;
+}
+
+.toolbar-group {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+}
+
+.sheet-select {
+  padding: 5px;
+  min-width: 200px;
+}
+
+.calculate-btn {
+  background-color: #4caf50;
+  color: white;
+  border: none;
+  padding: 8px 16px;
+  cursor: pointer;
+  font-weight: bold;
+  border-radius: 4px;
+}
+
+.calculate-btn:disabled {
+  background-color: #a5d6a7;
+  cursor: not-allowed;
+}
+
+.rete {
+  flex-grow: 1;
+  width: 100%;
+  height: 100%;
+  position: relative;
 }

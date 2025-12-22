@@ -52,13 +52,36 @@ class GraphProcessor:
             
         elif node_type == "input":
             # Check overrides or default
-            # For now, just use a default or 0
-            # In a real scenario, we'd look up the input name in input_overrides
-            # Assuming node.label is the input name
-            if input_overrides and node.label in input_overrides:
-                self.results[node.id] = input_overrides[node.label]
-            else:
-                self.results[node.id] = node.data.get("value", 0)
+            val = None
+            
+            if input_overrides:
+                # Check by ID first (Frontend sends IDs)
+                if str(node.id) in input_overrides:
+                    val = input_overrides[str(node.id)]
+                # Check by Label (URL params might use labels)
+                elif node.label in input_overrides:
+                    val = input_overrides[node.label]
+            
+            if val is None:
+                val = node.data.get("value", 0)
+
+            # Attempt type conversion (Frontend sends strings)
+            try:
+                if isinstance(val, str):
+                    # Simple heuristic for number conversion
+                    # In a real app, we might use the socket type or metadata to determine type
+                    if val.lower() == 'true':
+                        val = True
+                    elif val.lower() == 'false':
+                        val = False
+                    elif '.' in val:
+                        val = float(val)
+                    else:
+                        val = int(val)
+            except ValueError:
+                pass # Keep as string if not a number
+
+            self.results[node.id] = val
 
         elif node_type == "function":
             # Gather inputs

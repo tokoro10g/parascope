@@ -61,9 +61,11 @@ export const api = {
     return res.json();
   },
 
-  async calculate(sheetId: string): Promise<Record<string, any>> {
+  async calculate(sheetId: string, inputs?: Record<string, any>): Promise<Record<string, any>> {
     const res = await fetch(`${API_BASE}/calculate/${sheetId}`, {
       method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(inputs || {}),
     });
     return res.json();
   },

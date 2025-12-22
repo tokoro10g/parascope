@@ -14,7 +14,7 @@ Generated from `SPECIFICATIONS.tsv`.
 - [x] **Data Models**: Design schemas for Sheets, Functions, Parameters, Input/Output Nodes, and Values (DH-01.0, DH-02.0).
     - [x] Use UUIDs for all entity primary keys (DH-04.0).
 - [x] **API**: Create endpoints for saving/loading graphs and values (DH-01.0, DH-02.0).
-    - [ ] Create endpoint for listing sheets by owner (DH-05.0).
+    - [x] Create endpoint for listing sheets by owner (DH-05.0).
     - [ ] Create endpoint for cloning sheets (DH-06.0).
     - [ ] Implement custom JSON encoder for `pint` quantities (Scalar only) (DH-07.0).
     - [ ] Ensure URL-injected values are treated as transient (not saved) (DH-08.0).
@@ -37,7 +37,7 @@ Generated from `SPECIFICATIONS.tsv`.
     - [ ] Implement "Edit Sheet" context menu action with state-preserving navigation (UI-08.0).
     - [x] Implement Undo/Redo history (UI-15.0).
     - [ ] Implement Connection constraints (Max 1 input, Multiple outputs) (BB-C-01.0).
-    - [ ] Implement Editor Toolbar (UI-17.0).
+    - [x] Implement Editor Toolbar (UI-17.0).
     - [ ] Implement Keyboard Shortcuts (Delete, Ctrl+S) (UI-19.0).
 - [ ] **Routing**:
     - [ ] Implement route `/sheet/:sheetId` to load specific graphs (UI-03.0).
@@ -71,7 +71,7 @@ Generated from `SPECIFICATIONS.tsv`.
     - [ ] Visual validation for unit/type errors (EH-03.0).
     - [ ] Duplicate name error messages (EH-10.0).
     - [ ] Success toasts (e.g., "Saved") (UI-05.0).
-    - [ ] Implement Evaluator Bar (Function Signature) (UI-09.0).
+    - [x] Implement Evaluator Bar (Function Signature) (UI-09.0).
     - [ ] Implement Sheet Deletion with confirmation (UI-11.0).
     - [ ] Implement Sheet Duplication action (UI-12.0).
     - [ ] Implement "Copy Link" action on Dashboard (UI-13.0).

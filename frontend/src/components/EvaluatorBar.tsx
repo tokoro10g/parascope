@@ -1,0 +1,68 @@
+import React from 'react';
+
+export interface EvaluatorInput {
+  id: string;
+  label: string;
+  value: string | number;
+}
+
+export interface EvaluatorOutput {
+  id: string;
+  label: string;
+  value?: any;
+}
+
+interface EvaluatorBarProps {
+  sheetName?: string;
+  inputs: EvaluatorInput[];
+  outputs: EvaluatorOutput[];
+  onInputChange: (id: string, value: string) => void;
+  onCalculate: () => void;
+  isCalculating: boolean;
+}
+
+export const EvaluatorBar: React.FC<EvaluatorBarProps> = ({
+  sheetName,
+  inputs,
+  outputs,
+  onInputChange,
+  onCalculate,
+  isCalculating,
+}) => {
+  return (
+    <div className="toolbar evaluator-bar">
+      <div className="signature">
+        <span className="sheet-name">{sheetName || 'Sheet'}</span>
+        <span className="paren">(</span>
+        {inputs.map((input, i) => (
+          <span key={input.id} className="input-param">
+            <label htmlFor={input.id}>{input.label}=</label>
+            <input
+              id={input.id}
+              type="text"
+              value={input.value}
+              onChange={(e) => onInputChange(input.id, e.target.value)}
+              placeholder="val"
+              style={{ width: '60px', marginLeft: '4px' }}
+            />
+            {i < inputs.length - 1 && <span className="comma">, </span>}
+          </span>
+        ))}
+        <span className="paren">)</span>
+        <span className="arrow"> =&gt; </span>
+        <span className="paren">[</span>
+        {outputs.map((output, i) => (
+            <span key={output.id} className="output-param">
+                <span className="label">{output.label}:</span>
+                <span className="value">{output.value !== undefined ? JSON.stringify(output.value) : '?'}</span>
+                {i < outputs.length - 1 && <span className="comma">, </span>}
+            </span>
+        ))}
+        <span className="paren">]</span>
+      </div>
+      <button type="button" onClick={onCalculate} disabled={isCalculating} className="calculate-btn" style={{ marginLeft: 'auto' }}>
+        {isCalculating ? '...' : 'Run'}
+      </button>
+    </div>
+  );
+};

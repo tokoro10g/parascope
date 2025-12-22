@@ -21,14 +21,19 @@ export class ParascopeNode extends Classic.Node {
   width = 180;
   height = 150;
   public dbId?: string; // ID from the database
+  public type: string;
+  public initialData: Record<string, any>;
 
   constructor(
+    type: string,
     label: string,
     inputs: { key: string; socket_type: string }[],
     outputs: { key: string; socket_type: string }[],
     data: Record<string, any> = {},
   ) {
     super(label);
+    this.type = type;
+    this.initialData = data;
 
     inputs.forEach((inp) => {
       this.addInput(inp.key, new Classic.Input(socket, inp.key));
@@ -39,12 +44,13 @@ export class ParascopeNode extends Classic.Node {
     });
 
     // Add a control to display value if present
-    if (data.value !== undefined) {
+    // Input nodes should NOT have a value control (values come from Evaluator/URL)
+    if (data.value !== undefined && type !== 'input') {
       this.addControl(
         'value',
         new Classic.InputControl('text', {
           initial: String(data.value),
-          readonly: true,
+          readonly: false,
         }),
       );
     }
@@ -112,10 +118,10 @@ export async function createEditor(container: HTMLElement) {
         const inputs = Array.isArray(n.inputs) ? n.inputs : [];
         const outputs = Array.isArray(n.outputs) ? n.outputs : [];
 
-        const node = new ParascopeNode(n.type, inputs, outputs, n.data || {});
+        const node = new ParascopeNode(n.type, n.label || n.type, inputs, outputs, n.data || {});
         node.id = n.id; // Use the DB ID as the Rete ID
         node.dbId = n.id;
-        node.label = n.label || n.type;
+        // node.label is already set by super(label)
 
         await editor.addNode(node);
 
@@ -152,25 +158,39 @@ export async function createEditor(container: HTMLElement) {
 
     // Helper to get current graph state
     getGraphData: () => {
-      const nodes = editor.getNodes().map((n) => ({
-        id: n.id,
-        type: n.label, // Using label as type for now
-        label: n.label,
-        position_x: area.nodeViews.get(n.id)?.position.x || 0,
-        position_y: area.nodeViews.get(n.id)?.position.y || 0,
-        inputs: Object.keys(n.inputs).map((k) => ({
-          key: k,
-          socket_type: 'any',
-        })),
-        outputs: Object.keys(n.outputs).map((k) => ({
-          key: k,
-          socket_type: 'any',
-        })),
-        data: {}, // TODO: Capture control values if editable
-      }));
+      const isUuid = (id: string) => /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(id);
+
+      const nodes = editor.getNodes().map((n) => {
+        const data: Record<string, any> = {};
+        
+        // Capture control values
+        for (const [key, control] of Object.entries(n.controls)) {
+            if (control instanceof Classic.InputControl) {
+                data[key] = control.value;
+            }
+        }
+
+        // Preserve original data if not overwritten by controls
+        return {
+            id: isUuid(n.id) ? n.id : undefined,
+            type: n.type,
+            label: n.label,
+            position_x: area.nodeViews.get(n.id)?.position.x || 0,
+            position_y: area.nodeViews.get(n.id)?.position.y || 0,
+            inputs: Object.keys(n.inputs).map((k) => ({
+            key: k,
+            socket_type: 'any',
+            })),
+            outputs: Object.keys(n.outputs).map((k) => ({
+            key: k,
+            socket_type: 'any',
+            })),
+            data: { ...n.initialData, ...data }, 
+        };
+      });
 
       const connections = editor.getConnections().map((c) => ({
-        id: c.id,
+        id: isUuid(c.id) ? c.id : undefined,
         source_id: c.source,
         target_id: c.target,
         source_port: c.sourceOutput,
