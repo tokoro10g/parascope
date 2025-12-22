@@ -11,16 +11,16 @@ This document outlines typical user journeys to validate system requirements and
     *   **Input**: User enters "Alice".
     *   **System**: Sets cookie. Modal closes.
 3.  **Creation**: User sees a blank grid (The Sheet).
-    *   **Action**: Right-clicks -> "Add Parameter".
+    *   **Action**: Clicks "Add Parameter" on the **Toolbar**.
     *   **Input**: Name: `mass`, Value: `10`, Unit: `kg`.
-    *   **Action**: Right-clicks -> "Add Parameter".
+    *   **Action**: Clicks "Add Parameter" on the **Toolbar**.
     *   **Input**: Name: `accel`, Value: `9.8`, Unit: `m/s^2`.
-    *   **Action**: Right-clicks -> "Add Function".
+    *   **Action**: Clicks "Add Function" on the **Toolbar**.
     *   **Input**: Name: `calc_force`, Code: `return mass * accel`.
 4.  **Wiring**:
     *   **Action**: Drags wire from `mass` output to `calc_force` input.
     *   **Action**: Drags wire from `accel` output to `calc_force` input.
-    *   **Action**: Right-clicks -> "Add Output Node".
+    *   **Action**: Clicks "Add Output Node" on the **Toolbar**.
     *   **Input**: Name: `force`.
     *   **Action**: Drags wire from `calc_force` output to `force` input.
 5.  **Result**:
@@ -29,7 +29,7 @@ This document outlines typical user journeys to validate system requirements and
     *   **Feedback**: The `force` Output Node displays `98.0 kg * m / s^2`.
     *   **Evaluator Bar**: Top bar displays `Sheet1() = [ 98.0 kg * m / s^2 ]`.
 6.  **Persistence**:
-    *   **Action**: User clicks "Save".
+    *   **Action**: User presses `Ctrl+S` (or clicks "Save").
     *   **System**: Generates Sheet UUID `a1b2...`. Updates URL to `/sheet/a1b2...`.
     *   **System**: Shows "Saved" toast.
 
@@ -62,6 +62,11 @@ This document outlines typical user journeys to validate system requirements and
     *   **Action**: Alice adds a new parameter `velocity`.
     *   **Action**: Updates code: `return 0.5 * mass * (velocity ** 2)`.
     *   **System**: Node turns green/neutral. Result calculates correctly.
+4.  **Accidental Deletion & Recovery**:
+    *   **Action**: Alice accidentally presses `Delete` while `velocity` is selected.
+    *   **System**: Node and connections disappear.
+    *   **Action**: Alice presses `Ctrl+Z` (Undo).
+    *   **System**: Node and connections reappear.
 
 ## Scenario 4: Unit Mismatch
 **Goal**: Ensure physical consistency.
@@ -79,8 +84,8 @@ This document outlines typical user journeys to validate system requirements and
     *   **Content**: **Input Nodes** `radius` and `height` connected to a function, which connects to an **Output Node** `volume`.
     *   **State**: Saved with UUID `cyl-vol-123`.
 2.  **Import**: Alice opens a new sheet "Fuel Tank Assembly".
-    *   **Action**: Right-clicks -> "Import Sheet".
-    *   **Input**: Selects "Cylinder Volume" from a list of her saved sheets.
+    *   **Action**: Clicks "Import Sheet" on the **Toolbar**.
+    *   **Input**: Selects "Cylinder Volume" from the **Sheet Picker Modal** (list of her saved sheets).
 3.  **Node Creation**:
     *   **System**: Renders a single node labeled "Cylinder Volume".
     *   **Ports**: The node displays input sockets for `radius` and `height` and an output socket for `volume`.
@@ -122,3 +127,57 @@ This document outlines typical user journeys to validate system requirements and
     *   **Feedback**: Alice sees the calculation details *using the exact values from the parent sheet*.
 4.  **Fix**: She notices a constant inside "Cylinder Volume" is wrong. She fixes it and saves.
 5.  **Return**: She returns to "Fuel Tank Assembly", which updates to reflect the fix.
+
+## Scenario 8: Dashboard & Organization
+**Goal**: Manage saved work, rename sheets, and organize projects.
+
+1.  **Access**: Alice clicks the "Dashboard" link in the header.
+    *   **System**: Navigates to `/dashboard`.
+    *   **UI**: Lists sheets owned by "Alice".
+2.  **Renaming**:
+    *   **Action**: Alice sees "Untitled Sheet" (from Scenario 1).
+    *   **Action**: Clicks the name and renames it to "Newton's Second Law".
+    *   **System**: Saves the new metadata.
+3.  **Duplication**:
+    *   **Action**: Alice wants to try a relativistic version without breaking the original.
+    *   **Action**: Clicks "Duplicate" on "Newton's Second Law".
+    *   **System**: Creates a copy named "Newton's Second Law (Copy)".
+    *   **UI**: Redirects Alice to the new sheet.
+4.  **Sharing**:
+    *   **Action**: Alice returns to Dashboard. Clicks "Copy Link" on "Newton's Second Law".
+    *   **System**: Copies URL to clipboard. Shows "Link Copied" toast.
+5.  **Cleanup**:
+    *   **Action**: Alice clicks "Delete" on an empty "Untitled Sheet".
+    *   **System**: Prompts for confirmation. Alice confirms.
+    *   **System**: Removes sheet from list.
+
+## Scenario 9: Material Selection (Option Node)
+**Goal**: Use categorical logic to switch between material properties.
+
+1.  **Setup**: Alice is calculating the weight of a beam.
+2.  **Option Definition**:
+    *   **Action**: Clicks "Add Option Node" on Toolbar.
+    *   **Input**: Name: `material`, Options: `["Steel", "Aluminum", "Wood"]`.
+    *   **Action**: Selects "Steel" from the dropdown.
+3.  **Logic**:
+    *   **Action**: Adds Function `get_density`.
+    *   **Code**: `if material == "Steel": return 7850 * u.kg / u.m**3` (etc).
+4.  **Execution**:
+    *   **Action**: Connects `material` to `get_density`.
+    *   **Feedback**: Output shows `7850 kg/m^3`.
+    *   **Action**: Alice changes dropdown to "Aluminum".
+    *   **Feedback**: Output immediately updates to `2700 kg/m^3`.
+
+## Scenario 10: Advanced Debugging (Logs & Timeouts)
+**Goal**: Debug complex logic using print statements and handle infinite loops.
+
+1.  **Debugging**: Alice is writing a complex iterative solver.
+    *   **Code**: `print(f"Iteration {i}: {total}")` inside a loop.
+2.  **Feedback**:
+    *   **Action**: Alice selects the Function node.
+    *   **UI**: The **Console/Log View** panel shows the print output.
+3.  **Safety**: Alice accidentally creates an infinite loop.
+    *   **Code**: `while True: pass`
+    *   **System**: Background worker detects execution time > 5 seconds.
+    *   **System**: Terminates process.
+    *   **UI**: Node turns red. Error: `TimeoutError: Function execution exceeded 5s limit`.
