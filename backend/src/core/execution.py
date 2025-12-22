@@ -57,12 +57,13 @@ def _worker(code: str, inputs: Dict[str, Any], outputs: List[str], queue: multip
 
     except Exception:
         error = traceback.format_exc()
+        print("Error during code execution:", error, flush=True)
     finally:
         # Restore stdout
         sys.stdout = old_stdout
         
     # Put result in queue
-    if result:
+    if result is not None:
         if len(outputs) == 1:
             result = {outputs[0]: result}
         else:

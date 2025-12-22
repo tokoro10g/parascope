@@ -1,0 +1,38 @@
+/* Override default node styles if necessary */
+
+/* Parameter Node - Green */
+.node-parameter .title {
+    background: #4caf50;
+    color: white;
+}
+
+/* Function Node - Blue */
+.node-function .title {
+    background: #2196f3;
+    color: white;
+}
+
+/* Input Node - Orange */
+.node-input .title {
+    background: #ff9800;
+    color: white;
+}
+
+/* Output Node - Purple */
+.node-output .title {
+    background: #9c27b0;
+    color: white;
+}
+
+/* Error State */
+.node-error {
+    box-shadow: 0 0 10px 4px #f44336;
+    border: 2px solid #f44336;
+}
+
+/* Auto-size nodes */
+.node-parameter, .node-function, .node-input, .node-output {
+    width: auto;
+    height: auto;
+    min-width: 180px;
+}

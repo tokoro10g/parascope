@@ -5,12 +5,13 @@ import networkx as nx
 
 from ..models.sheet import Node, Sheet
 from .execution import execute_python_code
+from .exceptions import NodeExecutionError
 
 
 class GraphProcessor:
     def __init__(self, sheet: Sheet):
         self.sheet = sheet
-        self.graph = nx.DiGraph()
+        self.graph = nx.MultiDiGraph()
         self.results: Dict[UUID, Any] = {}
         self.node_map: Dict[UUID, Node] = {node.id: node for node in sheet.nodes}
         self._build_graph()
@@ -30,6 +31,21 @@ class GraphProcessor:
         if not nx.is_directed_acyclic_graph(self.graph):
             raise ValueError("Graph contains cycles")
 
+    def _parse_value(self, val: Any) -> Any:
+        try:
+            if isinstance(val, str):
+                if val.lower() == 'true':
+                    return True
+                elif val.lower() == 'false':
+                    return False
+                elif '.' in val:
+                    return float(val)
+                else:
+                    return int(val)
+        except ValueError:
+            pass
+        return val
+
     def execute(self, input_overrides: Dict[str, Any] = None) -> Dict[UUID, Any]:
         self.validate()
         
@@ -48,7 +64,8 @@ class GraphProcessor:
         if node_type == "parameter":
             # Return the value defined in data
             # TODO: Handle units (Pint)
-            self.results[node.id] = node.data.get("value", 0)
+            val = node.data.get("value", 0)
+            self.results[node.id] = {'value': self._parse_value(val)}
             
         elif node_type == "input":
             # Check overrides or default
@@ -65,23 +82,7 @@ class GraphProcessor:
             if val is None:
                 val = node.data.get("value", 0)
 
-            # Attempt type conversion (Frontend sends strings)
-            try:
-                if isinstance(val, str):
-                    # Simple heuristic for number conversion
-                    # In a real app, we might use the socket type or metadata to determine type
-                    if val.lower() == 'true':
-                        val = True
-                    elif val.lower() == 'false':
-                        val = False
-                    elif '.' in val:
-                        val = float(val)
-                    else:
-                        val = int(val)
-            except ValueError:
-                pass # Keep as string if not a number
-
-            self.results[node.id] = val
+            self.results[node.id] = {'value': self._parse_value(val)}
 
         elif node_type == "function":
             # Gather inputs
@@ -91,7 +92,7 @@ class GraphProcessor:
             for u, _v, data in in_edges:
                 # data contains 'target_port' which maps to the function argument name
                 arg_name = data['target_port']
-                inputs[arg_name] = self.results[u]
+                inputs[arg_name] = self.results[u][data['source_port']]
 
             outputs = [o['key'] for o in self.node_map[node.id].outputs]
             
@@ -106,17 +107,15 @@ class GraphProcessor:
             if exec_result.success:
                 self.results[node.id] = exec_result.result
             else:
-                # Propagate error? For now, store None or error dict
-                # In a real app, we might want to store the error state on the node
-                self.results[node.id] = None
-                print(f"Error executing node {node.label}: {exec_result.error}")
+                raise NodeExecutionError(str(node.id), node.label, exec_result.error)
 
         elif node_type == "output":
             # Pass through the value from the source
-            in_edges = list(self.graph.in_edges(node.id))
+            in_edges = list(self.graph.in_edges(node.id, data=True))
             if in_edges:
                 source_id = in_edges[0][0]
-                self.results[node.id] = self.results.get(source_id)
+                source_port = in_edges[0][2]['source_port']
+                self.results[node.id] = self.results[source_id][source_port]
             else:
                 self.results[node.id] = None
         

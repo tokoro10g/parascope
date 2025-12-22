@@ -1,9 +1,11 @@
 import { useState, useEffect, useCallback, useMemo } from 'react';
 import { useRete } from 'rete-react-plugin';
+import { ClassicPreset as Classic } from 'rete';
 import { api, type Sheet, type SheetSummary } from './api';
-import { createEditor, ParascopeNode } from './rete';
+import { createEditor, ParascopeNode, socket } from './rete';
 import { EditorBar } from './components/EditorBar';
 import { EvaluatorBar, type EvaluatorInput, type EvaluatorOutput } from './components/EvaluatorBar';
+import { NodeInspector, type NodeUpdates } from './components/NodeInspector';
 import './App.css';
 import './common.css';
 import './rete.css';
@@ -15,6 +17,38 @@ function App() {
   const [isCalculating, setIsCalculating] = useState(false);
   const [lastResult, setLastResult] = useState<Record<string, any> | null>(null);
   const [evaluatorInputs, setEvaluatorInputs] = useState<Record<string, string>>({});
+  const [editingNode, setEditingNode] = useState<ParascopeNode | null>(null);
+
+  const [errorNodeId, setErrorNodeId] = useState<string | null>(null);
+
+  useEffect(() => {
+      if (editor && errorNodeId) {
+          const view = editor.area.nodeViews.get(errorNodeId);
+          if (view) {
+              view.element.classList.add('node-error');
+          }
+      }
+      // Cleanup
+      return () => {
+          if (editor && errorNodeId) {
+              const view = editor.area.nodeViews.get(errorNodeId);
+              if (view) {
+                  view.element.classList.remove('node-error');
+              }
+          }
+      }
+  }, [editor, errorNodeId]);
+
+  useEffect(() => {
+      if (editor) {
+          editor.setNodeDoubleClickListener((nodeId) => {
+              const node = editor.editor.getNode(nodeId);
+              if (node) {
+                  setEditingNode(node);
+              }
+          });
+      }
+  }, [editor]);
 
   const loadSheetList = useCallback(async () => {
     try {
@@ -156,6 +190,39 @@ function App() {
       }) : null);
   };
 
+  // Derive Evaluator Props
+  const evaluatorProps = useMemo(() => {
+      if (!currentSheet) return { inputs: [], outputs: [] };
+
+      const inputs: EvaluatorInput[] = currentSheet.nodes
+        .filter(n => n.type === 'input' && n.id)
+        .map(n => ({
+            id: n.id!,
+            label: n.label,
+            value: evaluatorInputs[n.id!] !== undefined ? evaluatorInputs[n.id!] : ''
+        }));
+
+      const outputs: EvaluatorOutput[] = currentSheet.nodes
+        .filter(n => n.type === 'output' && n.id)
+        .map(n => ({
+            id: n.id!,
+            label: n.label,
+            value: lastResult ? lastResult[n.id!] : undefined
+        }));
+
+      return { inputs, outputs };
+  }, [currentSheet, evaluatorInputs, lastResult]);
+
+  useEffect(() => {
+      if (editor) {
+          const inputValues: Record<string, any> = {};
+          evaluatorProps.inputs.forEach(i => {
+              inputValues[i.id] = i.value;
+          });
+          editor.updateNodeValues(inputValues, lastResult || {});
+      }
+  }, [editor, evaluatorProps, lastResult]);
+
   const handleCalculate = async () => {
     if (!currentSheet) return;
     setIsCalculating(true);
@@ -170,39 +237,84 @@ function App() {
       const result = await api.calculate(currentSheet.id, evaluatorInputs);
       console.log('Calculation result:', result);
       setLastResult(result);
-    } catch (e) {
+      setErrorNodeId(null);
+    } catch (e: any) {
       console.error(e);
-      alert(`Error calculating: ${e}`);
+      if (e.nodeId) {
+          setErrorNodeId(e.nodeId);
+      }
+      alert(`Error calculating: ${e.message}`);
     } finally {
         setIsCalculating(false);
     }
   };
 
-  // Derive Evaluator Props
-  const evaluatorProps = useMemo(() => {
-      if (!currentSheet) return { inputs: [], outputs: [] };
-
-      const inputs: EvaluatorInput[] = currentSheet.nodes
-        .filter(n => n.type === 'input')
-        .map(n => ({
-            id: n.id,
-            label: n.label,
-            value: evaluatorInputs[n.id] !== undefined ? evaluatorInputs[n.id] : (n.data.value || '')
-        }));
-
-      const outputs: EvaluatorOutput[] = currentSheet.nodes
-        .filter(n => n.type === 'output')
-        .map(n => ({
-            id: n.id,
-            label: n.label,
-            value: lastResult ? lastResult[n.id] : undefined
-        }));
-
-      return { inputs, outputs };
-  }, [currentSheet, evaluatorInputs, lastResult]);
-
   const handleEvaluatorInputChange = (id: string, value: string) => {
       setEvaluatorInputs(prev => ({ ...prev, [id]: value }));
+  };
+
+  const handleNodeUpdate = async (nodeId: string, updates: NodeUpdates) => {
+      if (!editor) return;
+      
+      const node = editor.editor.getNode(nodeId);
+      if (!node) return;
+
+      // Update Label
+      if (updates.label) {
+          node.label = updates.label;
+      }
+
+      // Update Data
+      if (updates.initialData) {
+          node.initialData = { ...node.initialData, ...updates.initialData };
+          // If value changed, update control
+          if (updates.initialData.value !== undefined && node.controls.value) {
+              (node.controls.value as any).setValue(String(updates.initialData.value));
+          }
+      }
+
+      // Update Inputs
+      if (updates.inputs) {
+          // Remove existing inputs that are not in new list
+          const newKeys = new Set(updates.inputs.map(i => i.key));
+          Object.keys(node.inputs).forEach(key => {
+              if (!newKeys.has(key)) {
+                  node.removeInput(key);
+              }
+          });
+          // Add new inputs
+          updates.inputs.forEach(i => {
+              if (!node.inputs[i.key]) {
+                  node.addInput(i.key, new Classic.Input(socket, i.key));
+              }
+          });
+      }
+
+      // Update Outputs
+      if (updates.outputs) {
+          // Remove existing outputs that are not in new list
+          const newKeys = new Set(updates.outputs.map(o => o.key));
+          Object.keys(node.outputs).forEach(key => {
+              if (!newKeys.has(key)) {
+                  node.removeOutput(key);
+              }
+          });
+          // Add new outputs
+          updates.outputs.forEach(o => {
+              if (!node.outputs[o.key]) {
+                  node.addOutput(o.key, new Classic.Output(socket, o.key));
+              }
+          });
+      }
+
+      await editor.area.update('node', nodeId);
+
+      // Update React State
+      // We need to refresh the currentSheet state to reflect changes in EvaluatorBar
+      // The easiest way is to re-read the graph data
+      const graphData = editor.getGraphData();
+      
+      setCurrentSheet(prev => prev ? { ...prev, nodes: graphData.nodes } : null);
   };
 
   return (
@@ -224,6 +336,12 @@ function App() {
         isCalculating={isCalculating}
       />
       <div ref={ref} className="rete" />
+      <NodeInspector 
+        node={editingNode}
+        isOpen={!!editingNode}
+        onClose={() => setEditingNode(null)}
+        onSave={handleNodeUpdate}
+      />
     </div>
   );
 }

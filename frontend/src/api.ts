@@ -14,7 +14,7 @@ export interface SheetSummary {
 }
 
 export interface NodeData {
-  id: string;
+  id?: string;
   type: string;
   label: string;
   position_x: number;
@@ -25,7 +25,7 @@ export interface NodeData {
 }
 
 export interface ConnectionData {
-  id: string;
+  id?: string;
   source_id: string;
   source_port: string;
   target_id: string;
@@ -67,6 +67,15 @@ export const api = {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(inputs || {}),
     });
+    if (!res.ok) {
+        const err = await res.json();
+        if (typeof err.detail === 'object' && err.detail.node_id) {
+            const error = new Error(err.detail.message);
+            (error as any).nodeId = err.detail.node_id;
+            throw error;
+        }
+        throw new Error(err.detail || 'Calculation failed');
+    }
     return res.json();
   },
 };

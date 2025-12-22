@@ -1,3 +1,4 @@
+import traceback
 from typing import Any, Dict
 from uuid import UUID
 
@@ -8,6 +9,7 @@ from sqlalchemy.orm import selectinload
 
 from ..core.database import get_db
 from ..core.graph import GraphProcessor
+from ..core.exceptions import NodeExecutionError
 from ..models.sheet import Sheet
 
 router = APIRouter(prefix="/calculate", tags=["calculate"])
@@ -35,7 +37,16 @@ async def calculate_sheet(sheet_id: UUID, inputs: Dict[str, Any] = None, db: Asy
         json_results = {str(k): v for k, v in results.items()}
         return json_results
         
+    except NodeExecutionError as e:
+        print("Node execution error:", e, flush=True)
+        raise HTTPException(status_code=400, detail={
+            "message": str(e),
+            "node_id": e.node_id,
+            "error": e.error_message
+        }) from e
     except ValueError as e:
+        print("Value error:", e, flush=True)
         raise HTTPException(status_code=400, detail=str(e)) from e
     except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Calculation failed: {str(e)}") from e
+        print("Unexpected error:", e, flush=True)
+        raise HTTPException(status_code=500, detail=f"Calculation failed: {str(e) + traceback.format_exc()}") from e

@@ -6,7 +6,7 @@ import {
   Presets as ConnectionPresets,
 } from 'rete-connection-plugin';
 import {
-  ConnectionPathPlugin /* , Transformers */,
+  ConnectionPathPlugin,
 } from 'rete-connection-path-plugin';
 import {
   type ReactArea2D,
@@ -15,7 +15,11 @@ import {
 } from 'rete-react-plugin';
 import type { Sheet } from '../api';
 
+import { CustomNode } from './CustomNode';
+
 // --- Types ---
+
+export const socket = new Classic.Socket('socket');
 
 export class ParascopeNode extends Classic.Node {
   width = 180;
@@ -43,9 +47,16 @@ export class ParascopeNode extends Classic.Node {
       this.addOutput(out.key, new Classic.Output(socket, out.key));
     });
 
-    // Add a control to display value if present
-    // Input nodes should NOT have a value control (values come from Evaluator/URL)
-    if (data.value !== undefined && type !== 'input') {
+    // Add a control to display value
+    if (type === 'input' || type === 'output') {
+        this.addControl(
+            'value',
+            new Classic.InputControl('text', {
+                initial: '',
+                readonly: true,
+            })
+        );
+    } else if (data.value !== undefined) {
       this.addControl(
         'value',
         new Classic.InputControl('text', {
@@ -71,7 +82,6 @@ type Schemes = GetSchemes<
 
 type AreaExtra = Area2D<Schemes> | ReactArea2D<Schemes>;
 
-const socket = new Classic.Socket('socket');
 
 export async function createEditor(container: HTMLElement) {
   const editor = new NodeEditor<Schemes>();
@@ -79,24 +89,48 @@ export async function createEditor(container: HTMLElement) {
   const connection = new ConnectionPlugin<Schemes, AreaExtra>();
   const reactRender = new ReactPlugin<Schemes, AreaExtra>({ createRoot });
 
+  // We need to expose a way to set the callback later, or pass it in.
+  // Since useRete calls this, we can attach it to the returned object.
+  let onNodeDoubleClick: ((nodeId: string) => void) | undefined;
+
   AreaExtensions.selectableNodes(area, AreaExtensions.selector(), {
     accumulating: AreaExtensions.accumulateOnCtrl(),
   });
   const pathPlugin = new ConnectionPathPlugin<Schemes, Area2D<Schemes>>({
-    // transformer: () => Transformers.classic({ vertical: false }),
     arrow: () => true,
   });
   reactRender.use(pathPlugin);
 
   connection.addPreset(ConnectionPresets.classic.setup());
-  reactRender.addPreset(ReactPresets.classic.setup());
+  reactRender.addPreset(ReactPresets.classic.setup({
+    customize: {
+      node: () => {
+          return CustomNode;
+      },
+    },
+  }));
 
   editor.use(area);
   area.use(connection);
   area.use(reactRender);
 
   AreaExtensions.zoomAt(area, editor.getNodes());
+  
+  let lastNodePicked: string | null = null;
+  let lastNodePickedTime = 0;
+
   area.addPipe(context => {
+    if (context.type === 'nodepicked') {
+        const nodeId = context.data.id;
+        const now = Date.now();
+        if (lastNodePicked === nodeId && now - lastNodePickedTime < 300) {
+            if (onNodeDoubleClick) {
+                onNodeDoubleClick(nodeId);
+            }
+        }
+        lastNodePicked = nodeId;
+        lastNodePickedTime = now;
+    }
     if (context.type ===  'zoom' && context.data.source === 'dblclick') return
     return context
   })
@@ -105,6 +139,9 @@ export async function createEditor(container: HTMLElement) {
     editor,
     area,
     destroy: () => area.destroy(),
+    setNodeDoubleClickListener: (cb: (nodeId: string) => void) => {
+        onNodeDoubleClick = cb;
+    },
 
     // Helper to load a sheet from the API
     loadSheet: async (sheet: Sheet) => {
@@ -114,6 +151,7 @@ export async function createEditor(container: HTMLElement) {
 
       // Create Nodes
       for (const n of sheet.nodes) {
+        if (!n.id) continue;
         // Parse inputs/outputs if they are JSON strings, or use them directly if objects
         const inputs = Array.isArray(n.inputs) ? n.inputs : [];
         const outputs = Array.isArray(n.outputs) ? n.outputs : [];
@@ -133,6 +171,7 @@ export async function createEditor(container: HTMLElement) {
 
       // Create Connections
       for (const c of sheet.connections) {
+        if (!c.id) continue;
         const source = nodeMap.get(c.source_id);
         const target = nodeMap.get(c.target_id);
 
@@ -153,7 +192,13 @@ export async function createEditor(container: HTMLElement) {
         }
       }
 
-      setTimeout(() => AreaExtensions.zoomAt(area, editor.getNodes()), 100);
+      setTimeout(async () => {
+        // Force update nodes to recalculate socket positions after auto-sizing
+        for (const node of editor.getNodes()) {
+            await area.update('node', node.id);
+        }
+        AreaExtensions.zoomAt(area, editor.getNodes());
+      }, 200);
     },
 
     // Helper to get current graph state
@@ -166,7 +211,10 @@ export async function createEditor(container: HTMLElement) {
         // Capture control values
         for (const [key, control] of Object.entries(n.controls)) {
             if (control instanceof Classic.InputControl) {
-                data[key] = control.value;
+                // Don't save values for input/output nodes as they are transient
+                if (n.type !== 'input' && n.type !== 'output') {
+                    data[key] = control.value;
+                }
             }
         }
 
@@ -199,5 +247,22 @@ export async function createEditor(container: HTMLElement) {
 
       return { nodes, connections };
     },
+
+    updateNodeValues: (inputs: Record<string, any>, outputs: Record<string, any>) => {
+        editor.getNodes().forEach(node => {
+            const control = node.controls.value as Classic.InputControl<'text'>;
+            if (!control) return;
+
+            if (node.type === 'input') {
+                const val = inputs[node.id] !== undefined ? inputs[node.id] : '';
+                control.setValue(String(val));
+                area.update('node', node.id);
+            } else if (node.type === 'output') {
+                const val = outputs[node.id] !== undefined ? outputs[node.id] : '';
+                control.setValue(String(val));
+                area.update('node', node.id);
+            }
+        });
+    }
   };
 }
