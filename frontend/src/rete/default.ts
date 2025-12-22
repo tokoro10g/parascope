@@ -6,6 +6,9 @@ import {
   AutoArrangePlugin,
 } from 'rete-auto-arrange-plugin';
 import {
+  ConnectionPathPlugin /* , Transformers */,
+} from 'rete-connection-path-plugin';
+import {
   ConnectionPlugin,
   Presets as ConnectionPresets,
 } from 'rete-connection-plugin';
@@ -21,8 +24,6 @@ import {
   ReactPlugin,
   Presets as ReactPresets,
 } from 'rete-react-plugin';
-import { ConnectionPathPlugin /* , Transformers */ } from "rete-connection-path-plugin";
-import { renderToPipeableStream } from 'react-dom/server';
 
 type Node = NumberNode | AddNode;
 type Conn =
@@ -101,7 +102,7 @@ export async function createEditor(container: HTMLElement) {
 
   const pathPlugin = new ConnectionPathPlugin<Schemes, Area2D<Schemes>>({
     // transformer: () => Transformers.classic({ vertical: false }),
-    arrow: () => true
+    arrow: () => true,
   });
   reactRender.use(pathPlugin);
 
@@ -146,10 +147,10 @@ export async function createEditor(container: HTMLElement) {
   arrange.addPreset(ArrangePresets.classic.setup());
 
   area.use(arrange);
-  area.addPipe(context => {
-    if (context.type ===  'zoom' && context.data.source === 'dblclick') return
-    return context
-  })
+  area.addPipe((context) => {
+    if (context.type === 'zoom' && context.data.source === 'dblclick') return;
+    return context;
+  });
 
   await arrange.layout();
 
