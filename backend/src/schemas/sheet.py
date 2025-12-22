@@ -62,5 +62,5 @@ class SheetSummary(SheetBase):
 
 class SheetUpdate(BaseModel):
     name: Optional[str] = None
-    nodes: List[NodeCreate]
-    connections: List[ConnectionCreate]
+    nodes: Optional[List[NodeCreate]] = None
+    connections: Optional[List[ConnectionCreate]] = None

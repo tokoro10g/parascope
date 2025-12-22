@@ -93,52 +93,58 @@ async def update_sheet(sheet_id: UUID, sheet_in: SheetUpdate, db: AsyncSession =
     # Full replacement strategy for simplicity (delete all, re-add all)
     # In a real app, we might want to diff, but for a graph editor, full save is common.
     
-    # Delete existing connections and nodes
-    # Note: cascade delete should handle this if we delete the sheet, but we are keeping the sheet.
-    # We need to manually clear the collections or delete via query.
-    
-    # Clear existing
-    db_sheet.connections = []
-    db_sheet.nodes = []
-    
-    # We need to flush to ensure deletions happen before re-insertions if IDs are reused?
-    # Actually, if we reuse IDs, we should probably update instead of delete/insert.
-    # But for MVP, let's try clearing the list. SQLAlchemy should handle the deletes.
-    
-    # Re-create Nodes
-    for node_in in sheet_in.nodes:
-        db_node = Node(
-            sheet_id=db_sheet.id,
-            type=node_in.type,
-            label=node_in.label,
-            inputs=[p.model_dump() for p in node_in.inputs],
-            outputs=[p.model_dump() for p in node_in.outputs],
-            position_x=node_in.position_x,
-            position_y=node_in.position_y,
-            data=node_in.data
-        )
-        if node_in.id:
-            db_node.id = node_in.id
-        db_sheet.nodes.append(db_node)
-        db.add(db_node) # Explicit add
-
-    # Flush nodes to ensure they exist before connections reference them
-    await db.flush()
+    if sheet_in.nodes is not None:
+        # Clear existing
+        # Note: cascade delete should handle this if we delete the sheet, but we are keeping the sheet.
+        # We need to manually clear the collections or delete via query.
         
-    # Re-create Connections
-    for conn_in in sheet_in.connections:
-        db_conn = Connection(
-            sheet_id=db_sheet.id,
-            source_id=conn_in.source_id,
-            target_id=conn_in.target_id,
-            source_port=conn_in.source_port,
-            target_port=conn_in.target_port,
-            source_handle=conn_in.source_handle,
-            target_handle=conn_in.target_handle
-        )
-        if conn_in.id:
-            db_conn.id = conn_in.id
-        db_sheet.connections.append(db_conn)
+        # Clear existing
+        db_sheet.connections = [] # Clear connections first to avoid FK issues if we clear nodes
+        db_sheet.nodes = []
+        
+        # We need to flush to ensure deletions happen before re-insertions if IDs are reused?
+        # Actually, if we reuse IDs, we should probably update instead of delete/insert.
+        # But for MVP, let's try clearing the list. SQLAlchemy should handle the deletes.
+        
+        # Re-create Nodes
+        for node_in in sheet_in.nodes:
+            db_node = Node(
+                sheet_id=db_sheet.id,
+                type=node_in.type,
+                label=node_in.label,
+                inputs=[p.model_dump() for p in node_in.inputs],
+                outputs=[p.model_dump() for p in node_in.outputs],
+                position_x=node_in.position_x,
+                position_y=node_in.position_y,
+                data=node_in.data
+            )
+            if node_in.id:
+                db_node.id = node_in.id
+            db_sheet.nodes.append(db_node)
+            db.add(db_node) # Explicit add
+
+        # Flush nodes to ensure they exist before connections reference them
+        await db.flush()
+            
+    if sheet_in.connections is not None:
+        # If we didn't clear connections above (because nodes were None), clear them now
+        if sheet_in.nodes is None:
+             db_sheet.connections = []
+
+        # Re-create Connections
+        for conn_in in sheet_in.connections:
+            db_conn = Connection(
+                sheet_id=db_sheet.id,
+                source_id=conn_in.source_id,
+                target_id=conn_in.target_id,
+                source_port=conn_in.source_port,
+                target_port=conn_in.target_port,
+                source_handle=conn_in.source_handle,
+                target_handle=conn_in.target_handle
+            )
+            if conn_in.id:
+                db_conn.id = conn_in.id
+            db_sheet.connections.append(db_conn)
 
     await db.commit()
     await db.refresh(db_sheet, attribute_names=["nodes", "connections"])
