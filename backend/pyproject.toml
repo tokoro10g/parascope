@@ -13,19 +13,24 @@ dependencies = [
     "pint",
     "psycopg2-binary", # For PostgreSQL
     "sqlalchemy",
+    "asyncpg>=0.31.0",
+    "alembic>=1.17.2",
+    "pydantic-settings>=2.12.0",
 ]
 
 [tool.uv]
 dev-dependencies = [
     "ruff",
     "pytest",
+    "httpx>=0.28.1",
+    "pytest-asyncio>=1.3.0",
 ]
 
 [tool.ruff]
-line-length = 88
+line-length = 120
 target-version = "py312"
 
 [tool.ruff.lint]
 select = ["E", "F", "I", "B"]
-ignore = []
+ignore = ["B008"]
 
