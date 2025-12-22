@@ -1,63 +1,61 @@
-import React from 'react';
-import type { SheetSummary } from '../api';
+import React, { useState, useEffect } from 'react';
 
 interface EditorBarProps {
-  sheets: SheetSummary[];
-  currentSheetId?: string;
-  onLoadSheet: (id: string) => void;
+  sheetName?: string;
+  onRenameSheet: (name: string) => void;
   onSaveSheet: () => void;
-  onCreateSheet: () => void;
   onAddNode: (type: 'parameter' | 'function' | 'input' | 'output') => void;
 }
 
 export const EditorBar: React.FC<EditorBarProps> = ({
-  sheets,
-  currentSheetId,
-  onLoadSheet,
+  sheetName,
+  onRenameSheet,
   onSaveSheet,
-  onCreateSheet,
   onAddNode,
 }) => {
+  const [name, setName] = useState(sheetName || '');
+
+  useEffect(() => {
+    setName(sheetName || '');
+  }, [sheetName]);
+
+  const handleBlur = () => {
+    if (name !== sheetName) {
+      onRenameSheet(name);
+    }
+  };
+
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === 'Enter') {
+      e.currentTarget.blur();
+    }
+  };
+
   return (
     <div className="toolbar editor-bar">
       <div className="toolbar-group">
-        <select
-          value={currentSheetId || ''}
-          onChange={(e) => {
-            if (e.target.value) onLoadSheet(e.target.value);
-          }}
-          className="sheet-select"
-        >
-          <option value="" disabled>
-            Select a sheet...
-          </option>
-          {sheets.map((s) => (
-            <option key={s.id} value={s.id}>
-              {s.name} {s.owner_name ? `(${s.owner_name})` : ''}
-            </option>
-          ))}
-        </select>
+        <input
+          type="text"
+          value={name}
+          onChange={(e) => setName(e.target.value)}
+          onBlur={handleBlur}
+          onKeyDown={handleKeyDown}
+          className="sheet-name-input"
+          placeholder="Sheet Name"
+        />
         <button 
             type="button"
-            onClick={() => currentSheetId && onLoadSheet(currentSheetId)} 
-            disabled={!currentSheetId}
+            onClick={onSaveSheet} 
         >
-            Reload
+            Save
         </button>
       </div>
       
       <div className="toolbar-group">
-        <button type="button" onClick={() => onAddNode('parameter')} disabled={!currentSheetId}>+ Param</button>
-        <button type="button" onClick={() => onAddNode('function')} disabled={!currentSheetId}>+ Func</button>
-        <button type="button" onClick={() => onAddNode('input')} disabled={!currentSheetId}>+ Input</button>
-        <button type="button" onClick={() => onAddNode('output')} disabled={!currentSheetId}>+ Output</button>
-      </div>
-
-      <div className="toolbar-group">
-        <button type="button" onClick={onSaveSheet} disabled={!currentSheetId}>
-          Save
-        </button>
-        <button type="button" onClick={onCreateSheet}>New Sheet</button>
+        <button type="button" onClick={() => onAddNode('parameter')}>+ Param</button>
+        <button type="button" onClick={() => onAddNode('function')}>+ Func</button>
+        <button type="button" onClick={() => onAddNode('input')}>+ Input</button>
+        <button type="button" onClick={() => onAddNode('output')}>+ Output</button>
       </div>
     </div>
   );

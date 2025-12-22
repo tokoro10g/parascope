@@ -75,7 +75,7 @@ Generated from `SPECIFICATIONS.tsv`.
     - [ ] Implement Sheet Deletion with confirmation (UI-11.0).
     - [ ] Implement Sheet Duplication action (UI-12.0).
     - [ ] Implement "Copy Link" action on Dashboard (UI-13.0).
-    - [ ] Implement Sheet Name/Description editor (UI-14.0).
+    - [x] Implement Sheet Name editor (UI-14.0).
     - [ ] Implement Console/Log viewer for selected node (UI-18.0).
     - [ ] Implement "Unsaved Changes" indicator (UI-20.0).
     - [ ] Implement distinct visual style for Nested Sheet nodes (UI-21.0).

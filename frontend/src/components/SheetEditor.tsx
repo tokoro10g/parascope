@@ -1,8 +1,8 @@
 import React, { useState, useEffect, useMemo, useRef } from 'react';
-import { useParams, useNavigate, Link, useLocation, useSearchParams } from 'react-router-dom';
+import { useParams, Link, useLocation, useSearchParams } from 'react-router-dom';
 import { useRete } from 'rete-react-plugin';
 import { ClassicPreset as Classic } from 'rete';
-import { api, type Sheet, type SheetSummary } from '../api';
+import { api, type Sheet } from '../api';
 import { createEditor, ParascopeNode, socket } from '../rete';
 import { EditorBar } from './EditorBar';
 import { EvaluatorBar, type EvaluatorInput, type EvaluatorOutput } from './EvaluatorBar';
@@ -10,12 +10,10 @@ import { NodeInspector, type NodeUpdates } from './NodeInspector';
 
 export const SheetEditor: React.FC = () => {
   const { sheetId } = useParams<{ sheetId: string }>();
-  const navigate = useNavigate();
   const location = useLocation();
   const [searchParams, setSearchParams] = useSearchParams();
   const [ref, editor] = useRete(createEditor);
   const [currentSheet, setCurrentSheet] = useState<Sheet | null>(null);
-  const [sheets, setSheets] = useState<SheetSummary[]>([]); // Keep for dropdown if needed
   const [isCalculating, setIsCalculating] = useState(false);
   const [lastResult, setLastResult] = useState<Record<string, any> | null>(null);
   const [evaluatorInputs, setEvaluatorInputs] = useState<Record<string, string>>({});
@@ -23,11 +21,6 @@ export const SheetEditor: React.FC = () => {
   const [errorNodeId, setErrorNodeId] = useState<string | null>(null);
   
   const ignoreNextSearchParamsChange = useRef(false);
-
-  // Load sheet list for the dropdown (optional, but good for UX)
-  useEffect(() => {
-    api.listSheets().then(setSheets).catch(console.error);
-  }, []);
 
   // Load the specific sheet when sheetId changes
   useEffect(() => {
@@ -143,22 +136,14 @@ export const SheetEditor: React.FC = () => {
     }
   };
 
-  const handleCreateSheet = async () => {
-      // Redirect to dashboard or create and navigate
+  const handleRenameSheet = async (name: string) => {
+      if (!currentSheet) return;
       try {
-        const sheet = await api.createSheet(`Untitled Sheet ${Date.now()}`);
-        navigate(`/sheet/${sheet.id}`);
+          const updatedSheet = await api.updateSheet(currentSheet.id, { name });
+          setCurrentSheet(updatedSheet);
       } catch (e) {
-        console.error(e);
-        alert(`Error creating sheet: ${e}`);
-      }
-  };
-
-  const handleSwitchSheet = (id: string) => {
-      if (id === sheetId) {
-          handleLoadSheet(id);
-      } else {
-          navigate(`/sheet/${id}`);
+          console.error(e);
+          alert(`Error renaming sheet: ${e}`);
       }
   };
 
@@ -344,11 +329,9 @@ export const SheetEditor: React.FC = () => {
           <Link to="/">← Back to Dashboard</Link>
       </div>
       <EditorBar 
-        sheets={sheets}
-        currentSheetId={currentSheet?.id}
-        onLoadSheet={handleSwitchSheet}
+        sheetName={currentSheet?.name}
+        onRenameSheet={handleRenameSheet}
         onSaveSheet={handleSaveSheet}
-        onCreateSheet={handleCreateSheet}
         onAddNode={handleAddNode}
       />
       <EvaluatorBar 
