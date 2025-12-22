@@ -144,7 +144,7 @@ export async function createEditor(container: HTMLElement) {
     },
 
     // Helper to load a sheet from the API
-    loadSheet: async (sheet: Sheet) => {
+    loadSheet: async (sheet: Sheet, focusNodeId?: string) => {
       await editor.clear();
 
       const nodeMap = new Map<string, ParascopeNode>();
@@ -197,7 +197,17 @@ export async function createEditor(container: HTMLElement) {
         for (const node of editor.getNodes()) {
             await area.update('node', node.id);
         }
-        AreaExtensions.zoomAt(area, editor.getNodes());
+        
+        if (focusNodeId) {
+            const node = editor.getNode(focusNodeId);
+            if (node) {
+                AreaExtensions.zoomAt(area, [node]);
+            } else {
+                AreaExtensions.zoomAt(area, editor.getNodes());
+            }
+        } else {
+            AreaExtensions.zoomAt(area, editor.getNodes());
+        }
       }, 200);
     },
 
@@ -263,6 +273,13 @@ export async function createEditor(container: HTMLElement) {
                 area.update('node', node.id);
             }
         });
+    },
+
+    zoomToNode: (nodeId: string) => {
+        const node = editor.getNode(nodeId);
+        if (node) {
+            AreaExtensions.zoomAt(area, [node]);
+        }
     }
   };
 }

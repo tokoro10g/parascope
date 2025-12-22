@@ -1,5 +1,5 @@
-import React, { useState, useEffect, useMemo, useCallback } from 'react';
-import { useParams, useNavigate, Link } from 'react-router-dom';
+import React, { useState, useEffect, useMemo } from 'react';
+import { useParams, useNavigate, Link, useLocation, useSearchParams } from 'react-router-dom';
 import { useRete } from 'rete-react-plugin';
 import { ClassicPreset as Classic } from 'rete';
 import { api, type Sheet, type SheetSummary } from '../api';
@@ -11,6 +11,8 @@ import { NodeInspector, type NodeUpdates } from './NodeInspector';
 export const SheetEditor: React.FC = () => {
   const { sheetId } = useParams<{ sheetId: string }>();
   const navigate = useNavigate();
+  const location = useLocation();
+  const [searchParams] = useSearchParams();
   const [ref, editor] = useRete(createEditor);
   const [currentSheet, setCurrentSheet] = useState<Sheet | null>(null);
   const [sheets, setSheets] = useState<SheetSummary[]>([]); // Keep for dropdown if needed
@@ -31,6 +33,27 @@ export const SheetEditor: React.FC = () => {
       handleLoadSheet(sheetId);
     }
   }, [sheetId, editor]); // Depend on editor to ensure it's ready
+
+  // Sync URL Query Params to Evaluator Inputs
+  useEffect(() => {
+      const overrides: Record<string, string> = {};
+      searchParams.forEach((value, key) => {
+          overrides[key] = value;
+      });
+      setEvaluatorInputs(overrides);
+  }, [searchParams]);
+
+  // Handle Hash Changes for Focus
+  useEffect(() => {
+      if (editor && location.hash) {
+          const nodeId = location.hash.substring(1);
+          // Only zoom if the node exists and we are not currently loading (handled by loadSheet)
+          // But loadSheet is async.
+          // Simple check: if node exists in editor.
+          // Note: loadSheet handles the initial hash focus. This is for subsequent changes.
+          editor.zoomToNode(nodeId);
+      }
+  }, [editor, location.hash]);
 
   useEffect(() => {
       if (editor && errorNodeId) {
@@ -67,8 +90,10 @@ export const SheetEditor: React.FC = () => {
       const sheet = await api.getSheet(id);
       setCurrentSheet(sheet);
       setLastResult(null);
-      setEvaluatorInputs({});
-      await editor.loadSheet(sheet);
+      // Note: evaluatorInputs are handled by the useEffect on searchParams
+      
+      const focusNodeId = location.hash ? location.hash.substring(1) : undefined;
+      await editor.loadSheet(sheet, focusNodeId);
     } catch (e) {
       console.error(e);
       alert(`Error loading sheet: ${e}`);

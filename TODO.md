@@ -39,11 +39,11 @@ Generated from `SPECIFICATIONS.tsv`.
     - [ ] Implement Connection constraints (Max 1 input, Multiple outputs) (BB-C-01.0).
     - [x] Implement Editor Toolbar (UI-17.0).
     - [ ] Implement Keyboard Shortcuts (Delete, Ctrl+S) (UI-19.0).
-- [ ] **Routing**:
-    - [ ] Implement route `/sheet/:sheetId` to load specific graphs (UI-03.0).
-    - [ ] Handle URL hash fragments to focus specific nodes (UI-04.0).
-    - [ ] Implement route `/dashboard` for sheet list (UI-10.0).
-    - [ ] Implement URL query parameter parsing for value overrides (UI-07.0).
+- [x] **Routing**:
+    - [x] Implement route `/sheet/:sheetId` to load specific graphs (UI-03.0).
+    - [x] Handle URL hash fragments to focus specific nodes (UI-04.0).
+    - [x] Implement route `/dashboard` for sheet list (UI-10.0).
+    - [x] Implement URL query parameter parsing for value overrides (UI-07.0).
 - [ ] **Authentication**:
     - [ ] Implement "Name" prompt on first visit (AUTH-02.0).
     - [ ] Save identity in Cookies (AUTH-03.0).
