@@ -10,7 +10,7 @@ interface SheetTableProps {
 export const SheetTable: React.FC<SheetTableProps> = ({ nodes, onUpdateValue, onSelectNode }) => {
   // Filter for Parameters and Outputs
   const tableNodes = nodes.filter(
-    (node) => node.label === 'Parameter' || node.label === 'Output'
+    (node) => node.type === 'parameter' || node.type === 'output'
   );
 
   return (
@@ -27,7 +27,7 @@ export const SheetTable: React.FC<SheetTableProps> = ({ nodes, onUpdateValue, on
         </thead>
         <tbody>
           {tableNodes.map((node) => {
-            const isParameter = node.label === 'Parameter';
+            const isParameter = node.type === 'parameter';
             const nameControl = node.controls['name'] as any;
             const valueControl = node.controls['value'] as any;
             const unitControl = node.controls['unit'] as any;
@@ -44,7 +44,7 @@ export const SheetTable: React.FC<SheetTableProps> = ({ nodes, onUpdateValue, on
             return (
               <tr key={node.id} onClick={() => onSelectNode(node.id)} style={{ cursor: 'pointer' }}>
                 <td>{name}</td>
-                <td>{node.label}</td>
+                <td>{node.type}</td>
                 <td>
                   {isParameter ? (
                     <input
