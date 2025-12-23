@@ -18,6 +18,7 @@
     "elkjs": "^0.8.2",
     "react": "^19.2.3",
     "react-dom": "^19.2.3",
+    "react-resizable-panels": "^4.0.15",
     "react-router-dom": "^7.11.0",
     "rete": "^2.0.6",
     "rete-area-3d-plugin": "^2.0.5",

@@ -5,10 +5,12 @@ import { ClassicPreset as Classic } from 'rete';
 import { v4 as uuidv4 } from 'uuid';
 import { api, type Sheet } from '../api';
 import { createEditor, ParascopeNode, socket } from '../rete';
+import { Panel, Group, Separator } from 'react-resizable-panels';
 import { EditorBar } from './EditorBar';
 import { EvaluatorBar, type EvaluatorInput, type EvaluatorOutput } from './EvaluatorBar';
 import { NodeInspector, type NodeUpdates } from './NodeInspector';
 import { SheetPickerModal } from './SheetPickerModal';
+import { SheetTable } from './SheetTable';
 
 export const SheetEditor: React.FC = () => {
   const { sheetId } = useParams<{ sheetId: string }>();
@@ -17,6 +19,7 @@ export const SheetEditor: React.FC = () => {
   const [searchParams, setSearchParams] = useSearchParams();
   const [ref, editor] = useRete(createEditor);
   const [currentSheet, setCurrentSheet] = useState<Sheet | null>(null);
+  const [nodes, setNodes] = useState<ParascopeNode[]>([]);
   const [isCalculating, setIsCalculating] = useState(false);
   const [lastResult, setLastResult] = useState<Record<string, any> | null>(null);
   const [evaluatorInputs, setEvaluatorInputs] = useState<Record<string, string>>({});
@@ -113,6 +116,7 @@ export const SheetEditor: React.FC = () => {
           editor.setNodeEditListener(handleEdit);
           editor.setGraphChangeListener(() => {
               setIsDirty(true);
+              setNodes([...editor.editor.getNodes()]);
           });
       }
   }, [editor]);
@@ -127,6 +131,7 @@ export const SheetEditor: React.FC = () => {
       
       const focusNodeId = location.hash ? location.hash.substring(1) : undefined;
       await editor.loadSheet(sheet, focusNodeId);
+      setNodes([...editor.editor.getNodes()]);
       setIsDirty(false);
     } catch (e) {
       console.error(e);
@@ -340,6 +345,10 @@ export const SheetEditor: React.FC = () => {
       const result = await api.calculate(currentSheet.id, evaluatorInputs);
       console.log('Calculation result:', result);
       setLastResult(result);
+      if (editor) {
+          editor.updateNodeValues(evaluatorInputs, result);
+          setNodes([...editor.editor.getNodes()]);
+      }
       setErrorNodeId(null);
     } catch (e: any) {
       console.error(e);
@@ -420,6 +429,26 @@ export const SheetEditor: React.FC = () => {
 
       const graphData = editor.getGraphData();
       setCurrentSheet(prev => prev ? { ...prev, nodes: graphData.nodes } : null);
+      setNodes([...editor.editor.getNodes()]);
+  };
+
+  const handleUpdateNodeValue = (nodeId: string, value: number) => {
+      if (!editor) return;
+      const node = editor.editor.getNode(nodeId);
+      if (node) {
+          const control = node.controls['value'] as any;
+          if (control) {
+              control.setValue(String(value));
+              editor.area.update('node', nodeId);
+              setIsDirty(true);
+              setNodes([...editor.editor.getNodes()]);
+          }
+      }
+  };
+
+  const handleSelectNode = (nodeId: string) => {
+      if (!editor) return;
+      editor.zoomToNode(nodeId);
   };
 
   return (
@@ -443,7 +472,23 @@ export const SheetEditor: React.FC = () => {
         isCalculating={isCalculating}
         errorNodeId={errorNodeId}
       />
-      <div ref={ref} className="rete" />
+      <div className="editor-content" style={{ display: 'flex', flex: 1, minHeight: 0, overflow: 'hidden' }}>
+        <Group orientation="horizontal" style={{ width: '100%', height: '100%' }}>
+          <Panel defaultSize={80} minSize={30}>
+            <div className="rete-container" style={{ width: '100%', height: '100%', position: 'relative' }}>
+                <div ref={ref} className="rete" />
+            </div>
+          </Panel>
+          <Separator style={{ width: '4px', background: '#ccc', cursor: 'col-resize' }} />
+          <Panel defaultSize={20} minSize={10}>
+            <SheetTable 
+                nodes={nodes}
+                onUpdateValue={handleUpdateNodeValue}
+                onSelectNode={handleSelectNode}
+            />
+          </Panel>
+        </Group>
+      </div>
       <NodeInspector 
         node={editingNode}
         isOpen={!!editingNode}

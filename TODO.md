@@ -80,6 +80,11 @@ Generated from `SPECIFICATIONS.tsv`.
     - [ ] Implement Console/Log viewer for selected node (UI-18.0).
     - [x] Implement "Unsaved Changes" indicator (UI-20.0).
     - [ ] Implement distinct visual style for Nested Sheet nodes (UI-21.0).
+    - [ ] **Table View**:
+        - [ ] Implement Table View Sidebar component (UI-22.0).
+        - [ ] Filter nodes to show only Parameters and Outputs.
+        - [ ] Implement editable cells for Parameter values.
+        - [ ] Sync updates between Table and Graph.
 
 ## 4. Integration & Logic (Initial Release)
 - [ ] **Real-time Recalculation**: Trigger backend calc on input change (UI-01.0).

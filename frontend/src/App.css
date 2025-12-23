@@ -210,7 +210,56 @@
   flex-grow: 1;
   width: 100%;
   height: 100%;
-  position: relative;
+  position: absolute; /* Changed from relative to absolute to fill container */
+  top: 0;
+  left: 0;
+}
+
+.sheet-table {
+  width: 100%;
+  height: 100%;
+  background: #f8f9fa;
+  border-left: 1px solid #ccc;
+  padding: 10px;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  box-sizing: border-box;
+}
+
+.sheet-table h3 {
+  margin-top: 0;
+  margin-bottom: 10px;
+  font-size: 1.1em;
+  color: #333;
+}
+
+.sheet-table table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.9em;
+}
+
+.sheet-table th, .sheet-table td {
+  text-align: left;
+  padding: 6px;
+  border-bottom: 1px solid #ddd;
+}
+
+.sheet-table th {
+  background-color: #e9ecef;
+  font-weight: 600;
+}
+
+.sheet-table tr:hover {
+  background-color: #f1f1f1;
+}
+
+.sheet-table input {
+  padding: 2px 4px;
+  border: 1px solid #ccc;
+  border-radius: 3px;
+  box-sizing: border-box;
 }
 
 /* Modal Styles */
