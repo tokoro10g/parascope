@@ -9,3 +9,10 @@
   text-align: left;
   border: 3px solid #9571ff;
 }
+
+@media (prefers-color-scheme: dark) {
+  .rete {
+    background: #1e1e1e;
+    border-color: #646cff;
+  }
+}

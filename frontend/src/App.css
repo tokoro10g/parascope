@@ -297,3 +297,75 @@
   background-color: #ffebee;
   outline: none;
 }
+
+@media (prefers-color-scheme: dark) {
+  .toolbar, .editor-bar, .evaluator-bar {
+    background-color: #333;
+    border-bottom-color: #444;
+  }
+
+  .sheet-name-input {
+    color: #eee;
+  }
+  
+  .sheet-name-input:hover {
+    background-color: rgba(255, 255, 255, 0.1);
+  }
+  
+  .sheet-name-input:focus {
+    background-color: #444;
+    color: #fff;
+  }
+
+  .sheet-name {
+    color: #eee;
+  }
+
+  .sheet-item {
+    background: #333;
+    border-color: #444;
+  }
+
+  .sheet-item:hover {
+    background: #444;
+  }
+
+  .sheet-id {
+    color: #aaa;
+  }
+
+  .input-param, .output-param {
+    background: #444;
+    border-color: #555;
+  }
+
+  .input-param label, .output-param .label {
+    color: #ccc;
+  }
+  
+  .input-param input {
+    background: #222;
+    border-color: #555;
+    color: #eee;
+  }
+
+  .modal-content {
+    background: #333;
+    color: #eee;
+  }
+
+  .form-group input, .form-group textarea {
+    background: #222;
+    border-color: #555;
+    color: #eee;
+  }
+  
+  .io-column li {
+    border-bottom-color: #444;
+  }
+  
+  .input-error {
+    background-color: #5c1e1e;
+    border-color: #f44336 !important;
+  }
+}
