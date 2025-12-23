@@ -45,6 +45,14 @@ export const EditorBar: React.FC<EditorBarProps> = ({
           className="sheet-name-input"
           placeholder="Sheet Name"
         />
+        <button type="button" onClick={() => onAddNode('parameter')}>+ Param</button>
+        <button type="button" onClick={() => onAddNode('function')}>+ Func</button>
+        <button type="button" onClick={() => onAddNode('input')}>+ Input</button>
+        <button type="button" onClick={() => onAddNode('output')}>+ Output</button>
+        <button type="button" onClick={() => onAddNode('sheet')}>+ Import Sheet</button>
+      </div>
+      
+      <div className="toolbar-group">
         {isDirty && <span className="unsaved-indicator" title="Unsaved changes" style={{ color: 'orange', marginRight: '8px', fontWeight: 'bold' }}>●</span>}
         <button 
             type="button"
@@ -53,14 +61,6 @@ export const EditorBar: React.FC<EditorBarProps> = ({
         >
             Save
         </button>
-      </div>
-      
-      <div className="toolbar-group">
-        <button type="button" onClick={() => onAddNode('parameter')}>+ Param</button>
-        <button type="button" onClick={() => onAddNode('function')}>+ Func</button>
-        <button type="button" onClick={() => onAddNode('input')}>+ Input</button>
-        <button type="button" onClick={() => onAddNode('output')}>+ Output</button>
-        <button type="button" onClick={() => onAddNode('sheet')}>+ Import Sheet</button>
       </div>
     </div>
   );
