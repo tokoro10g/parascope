@@ -13,9 +13,35 @@ export const SheetTable: React.FC<SheetTableProps> = ({ nodes, onUpdateValue, on
     (node) => node.type === 'parameter' || node.type === 'output'
   );
 
+  const handleCopyTable = () => {
+    const headers = ['Name', 'Type', 'Value', 'Unit'];
+    const rows = tableNodes.map((node) => {
+      const nameControl = node.controls['name'] as any;
+      const valueControl = node.controls['value'] as any;
+      const unitControl = node.controls['unit'] as any;
+
+      const name = nameControl?.value || node.label;
+      const value = valueControl?.value || '';
+      const unit = unitControl?.value || '-';
+
+      return [name, node.type, value, unit].join('\t');
+    });
+
+    const tsv = [headers.join('\t'), ...rows].join('\n');
+    navigator.clipboard.writeText(tsv).then(() => {
+        // Could add a toast here, but for now just log or rely on user action
+        console.log('Table copied to clipboard');
+    }).catch(err => {
+        console.error('Failed to copy: ', err);
+    });
+  };
+
   return (
     <div className="sheet-table">
-      <h3>Parameters & Outputs</h3>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '10px' }}>
+        <h3 style={{ margin: 0 }}>Parameters & Outputs</h3>
+        <button type="button" onClick={handleCopyTable} style={{ padding: '4px 8px', fontSize: '0.8em' }}>Copy Table</button>
+      </div>
       <table>
         <thead>
           <tr>
