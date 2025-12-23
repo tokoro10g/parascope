@@ -474,13 +474,13 @@ export const SheetEditor: React.FC = () => {
       />
       <div className="editor-content" style={{ display: 'flex', flex: 1, minHeight: 0, overflow: 'hidden' }}>
         <Group orientation="horizontal" style={{ width: '100%', height: '100%' }}>
-          <Panel defaultSize={80} minSize={30}>
+          <Panel defaultSize={70} minSize={30}>
             <div className="rete-container" style={{ width: '100%', height: '100%', position: 'relative' }}>
                 <div ref={ref} className="rete" />
             </div>
           </Panel>
           <Separator style={{ width: '4px', background: '#ccc', cursor: 'col-resize' }} />
-          <Panel defaultSize={20} minSize={10}>
+          <Panel defaultSize={30} minSize={10}>
             <SheetTable 
                 nodes={nodes}
                 onUpdateValue={handleUpdateNodeValue}
