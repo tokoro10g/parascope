@@ -196,9 +196,6 @@
 .calculate-btn {
   background-color: #4caf50;
   color: white;
-  cursor: pointer;
-  font-size: 1rem;
-  font-weight: bold;
 }
 
 .calculate-btn:disabled {
