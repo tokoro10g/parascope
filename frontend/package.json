@@ -33,6 +33,7 @@
     "rete-scopes-plugin": "^2.1.1",
     "styled-components": "^5.3.11",
     "three": "^0.156.1",
+    "uuid": "^13.0.0",
     "web-worker": "^1.5.0"
   },
   "devDependencies": {

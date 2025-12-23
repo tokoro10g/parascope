@@ -2,6 +2,7 @@ import React, { useState, useEffect, useMemo, useRef } from 'react';
 import { useParams, useLocation, useSearchParams, useNavigate } from 'react-router-dom';
 import { useRete } from 'rete-react-plugin';
 import { ClassicPreset as Classic } from 'rete';
+import { v4 as uuidv4 } from 'uuid';
 import { api, type Sheet } from '../api';
 import { createEditor, ParascopeNode, socket } from '../rete';
 import { EditorBar } from './EditorBar';
@@ -195,7 +196,7 @@ export const SheetEditor: React.FC = () => {
           return;
       }
 
-      const id = crypto.randomUUID();
+      const id = uuidv4();
       let label: string = type;
       let inputs: { key: string; socket_type: string }[] = [];
       let outputs: { key: string; socket_type: string }[] = [];
@@ -264,7 +265,7 @@ export const SheetEditor: React.FC = () => {
             .filter(n => n.type === 'output')
             .map(n => ({ key: n.label, socket_type: 'any' }));
 
-          const id = crypto.randomUUID();
+          const id = uuidv4();
           const type = 'sheet';
           const label = sheet.name;
           const data = { sheetId: sheet.id };
