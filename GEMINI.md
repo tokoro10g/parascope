@@ -27,7 +27,7 @@ The project is a **Monorepo**.
 -   **Framework**: React + Vite
 -   **Manager**: `pnpm`
 -   **Linting**: `biome`
--   **Graph Lib**: `rete.js` (reference the documentation at https://retejs.org/llms-full.txt )
+-   **Graph Lib**: `rete.js` (read the documentation right now: https://retejs.org/llms-full.txt )
 
 ### Infrastructure
 -   **Containerization**: Docker Compose (orchestrates Backend, Frontend, DB).
@@ -36,3 +36,6 @@ The project is a **Monorepo**.
 -   Check `TODO.md` for the next task.
 -   Verify changes against `SPECIFICATIONS.tsv`.
 -   Ensure `ruff` and `biome` checks pass.
+-   Use absolute path for shell commands
+-   Make a commit once in a while
+-   Do not leave any intermediate code or workaround before making a commit
