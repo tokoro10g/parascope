@@ -80,8 +80,8 @@ Generated from `SPECIFICATIONS.tsv`.
     - [ ] Duplicate name error messages (EH-10.0).
     - [ ] Success toasts (e.g., "Saved") (UI-05.0).
     - [x] Implement Evaluator Bar (Function Signature) (UI-09.0).
-    - [ ] Implement Sheet Deletion with confirmation (UI-11.0).
-    - [ ] Implement Sheet Duplication action (UI-12.0).
+    - [x] Implement Sheet Deletion with confirmation (UI-11.0).
+    - [x] Implement Sheet Duplication action (UI-12.0).
     - [ ] Implement "Copy Link" action on Dashboard (UI-13.0).
     - [x] Implement Sheet Name editor (UI-14.0).
     - [ ] Implement Console/Log viewer for selected node (UI-18.0).
