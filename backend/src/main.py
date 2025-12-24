@@ -4,7 +4,8 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
 from .api import calculate, sheets
-from .core.database import Base, engine
+from .core.database import Base, engine, AsyncSessionLocal
+from .core.seed import seed_database
 
 
 @asynccontextmanager
@@ -12,6 +13,11 @@ async def lifespan(app: FastAPI):
     # Create tables on startup
     async with engine.begin() as conn:
         await conn.run_sync(Base.metadata.create_all)
+    
+    # Seed database
+    async with AsyncSessionLocal() as session:
+        await seed_database(session)
+        
     yield
 
 import os
