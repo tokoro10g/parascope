@@ -285,23 +285,26 @@ export async function createEditor(container: HTMLElement) {
         }
       }
 
-      setTimeout(async () => {
-        // Force update nodes to recalculate socket positions after auto-sizing
-        for (const node of editor.getNodes()) {
-            await area.update('node', node.id);
-        }
-        
-        if (focusNodeId) {
-            const node = editor.getNode(focusNodeId);
-            if (node) {
-                AreaExtensions.zoomAt(area, [node]);
-            } else {
-                AreaExtensions.zoomAt(area, editor.getNodes());
+      return new Promise<void>((resolve) => {
+        setTimeout(async () => {
+            // Force update nodes to recalculate socket positions after auto-sizing
+            for (const node of editor.getNodes()) {
+                await area.update('node', node.id);
             }
-        } else {
-            AreaExtensions.zoomAt(area, editor.getNodes());
-        }
-      }, 200);
+            
+            if (focusNodeId) {
+                const node = editor.getNode(focusNodeId);
+                if (node) {
+                    await AreaExtensions.zoomAt(area, [node]);
+                } else {
+                    await AreaExtensions.zoomAt(area, editor.getNodes());
+                }
+            } else {
+                await AreaExtensions.zoomAt(area, editor.getNodes());
+            }
+            resolve();
+        }, 200);
+      });
     },
 
     // Helper to get current graph state

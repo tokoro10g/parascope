@@ -15,9 +15,9 @@ export function CustomNode(props: any) {
   const typeClass = `node-${type}`;
   const ref = useRef<HTMLDivElement>(null);
 
+  // Apply styles on every render to ensure they persist over Rete's updates
   useEffect(() => {
       if (ref.current) {
-          // The first child is the actual Node element rendered by Presets.classic.Node
           const nodeEl = ref.current.firstElementChild as HTMLElement;
           if (nodeEl) {
               nodeEl.classList.add(typeClass);
@@ -33,7 +33,31 @@ export function CustomNode(props: any) {
               nodeEl.style.setProperty('height', 'auto', 'important');
           }
       }
-  }); // Run on every render to ensure styles persist after updates (e.g. selection/drag)
+  });
+
+  // Setup ResizeObserver to update node dimensions in Rete's data model
+  useEffect(() => {
+      if (ref.current) {
+          const nodeEl = ref.current.firstElementChild as HTMLElement;
+          if (nodeEl) {
+              const updateDimensions = () => {
+                  if (nodeEl.offsetWidth > 0 && nodeEl.offsetHeight > 0) {
+                      data.width = nodeEl.offsetWidth;
+                      data.height = nodeEl.offsetHeight;
+                  }
+              };
+
+              // Initial update
+              updateDimensions();
+
+              // Observe changes
+              const observer = new ResizeObserver(updateDimensions);
+              observer.observe(nodeEl);
+
+              return () => observer.disconnect();
+          }
+      }
+  }, [data]); // Only re-run if the node instance changes
   
   return (
     <div ref={ref} style={{ display: 'contents' }}>
