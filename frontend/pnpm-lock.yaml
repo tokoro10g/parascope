@@ -62,6 +62,9 @@ importers:
       rete-engine:
         specifier: ^2.1.1
         version: 2.1.1(rete@2.0.6)
+      rete-history-plugin:
+        specifier: ^2.1.1
+        version: 2.1.1(rete-area-plugin@2.1.5(rete@2.0.6))(rete@2.0.6)
       rete-minimap-plugin:
         specifier: ^2.0.3
         version: 2.0.3(rete-area-plugin@2.1.5(rete@2.0.6))(rete@2.0.6)
@@ -848,6 +851,12 @@ packages:
     peerDependencies:
       rete: ^2.0.1
 
+  rete-history-plugin@2.1.1:
+    resolution: {integrity: sha512-Kb2FF51qwl9axSVzusZDJ7ojksg0qPBY3CIhAusHxTLYzO5Di1Nu3cAzHUOHik6kcb3eZI+GYdfqaj/E8xggxQ==}
+    peerDependencies:
+      rete: ^2.0.1
+      rete-area-plugin: ^2.0.0
+
   rete-minimap-plugin@2.0.3:
     resolution: {integrity: sha512-4rLvN6ykTY4Q1k6GO6W80mUbs5BXmGNtSXDumCF+eKkCK2nX8CNZGppcOqjTiWxHmsQfbZaKFwvnWDNwou4HHA==}
     peerDependencies:
@@ -1612,6 +1621,12 @@ snapshots:
     dependencies:
       '@babel/runtime': 7.28.4
       rete: 2.0.6
+
+  rete-history-plugin@2.1.1(rete-area-plugin@2.1.5(rete@2.0.6))(rete@2.0.6):
+    dependencies:
+      '@babel/runtime': 7.28.4
+      rete: 2.0.6
+      rete-area-plugin: 2.1.5(rete@2.0.6)
 
   rete-minimap-plugin@2.0.3(rete-area-plugin@2.1.5(rete@2.0.6))(rete@2.0.6):
     dependencies:

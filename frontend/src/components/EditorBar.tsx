@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Save, Sliders, Sigma, LogIn, LogOut, FilePlus } from 'lucide-react';
+import { Save, Sliders, Sigma, LogIn, LogOut, FilePlus, Undo, Redo } from 'lucide-react';
 
 interface EditorBarProps {
   sheetName?: string;
@@ -7,6 +7,8 @@ interface EditorBarProps {
   onRenameSheet: (name: string) => void;
   onSaveSheet: () => void;
   onAddNode: (type: 'parameter' | 'function' | 'input' | 'output' | 'sheet') => void;
+  onUndo: () => void;
+  onRedo: () => void;
 }
 
 export const EditorBar: React.FC<EditorBarProps> = ({
@@ -15,6 +17,8 @@ export const EditorBar: React.FC<EditorBarProps> = ({
   onRenameSheet,
   onSaveSheet,
   onAddNode,
+  onUndo,
+  onRedo,
 }) => {
   const [name, setName] = useState(sheetName || '');
 
@@ -62,6 +66,15 @@ export const EditorBar: React.FC<EditorBarProps> = ({
         </button>
         <button type="button" onClick={() => onAddNode('sheet')} title="Import Sheet">
             <FilePlus size={18} />
+        </button>
+      </div>
+
+      <div className="toolbar-group history-group">
+        <button type="button" onClick={onUndo} title="Undo">
+            <Undo size={18} />
+        </button>
+        <button type="button" onClick={onRedo} title="Redo">
+            <Redo size={18} />
         </button>
       </div>
       

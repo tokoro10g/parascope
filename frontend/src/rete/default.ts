@@ -17,6 +17,7 @@ import {
   ReactPlugin,
   Presets as ReactPresets,
 } from 'rete-react-plugin';
+import { HistoryPlugin, Presets as HistoryPresets } from 'rete-history-plugin';
 import type { Sheet } from '../api';
 
 import { CustomNode } from './CustomNode';
@@ -94,6 +95,9 @@ export async function createEditor(container: HTMLElement) {
   const area = new AreaPlugin<Schemes, AreaExtra>(container);
   const connection = new ConnectionPlugin<Schemes, AreaExtra>();
   const reactRender = new ReactPlugin<Schemes, AreaExtra>({ createRoot });
+  const history = new HistoryPlugin<Schemes>();
+  history.addPreset(HistoryPresets.classic.setup());
+
   const contextMenu = new ContextMenuPlugin<Schemes>({
     items: (context) => {
         if (context === 'root') {
@@ -192,6 +196,7 @@ export async function createEditor(container: HTMLElement) {
   editor.use(area);
   area.use(connection);
   area.use(reactRender);
+  area.use(history);
   area.use(contextMenu);
 
   AreaExtensions.zoomAt(area, editor.getNodes());
@@ -228,6 +233,8 @@ export async function createEditor(container: HTMLElement) {
     setGraphChangeListener: (cb: () => void) => {
         onGraphChange = cb;
     },
+    undo: () => history.undo(),
+    redo: () => history.redo(),
 
     // Helper to load a sheet from the API
     loadSheet: async (sheet: Sheet, focusNodeId?: string) => {
