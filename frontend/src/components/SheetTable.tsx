@@ -1,5 +1,6 @@
 import React from 'react';
 import { ParascopeNode } from '../rete';
+import { Copy } from 'lucide-react';
 
 interface SheetTableProps {
   nodes: ParascopeNode[];
@@ -26,19 +27,50 @@ export const SheetTable: React.FC<SheetTableProps> = ({ nodes, onUpdateValue, on
     });
 
     const tsv = [headers.join('\t'), ...rows].join('\n');
-    navigator.clipboard.writeText(tsv).then(() => {
-        // Could add a toast here, but for now just log or rely on user action
-        console.log('Table copied to clipboard');
-    }).catch(err => {
-        console.error('Failed to copy: ', err);
-    });
+    
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(tsv).then(() => {
+            console.log('Table copied to clipboard');
+        }).catch(err => {
+            console.error('Failed to copy: ', err);
+            fallbackCopy(tsv);
+        });
+    } else {
+        fallbackCopy(tsv);
+    }
+  };
+
+  const fallbackCopy = (text: string) => {
+      const textArea = document.createElement("textarea");
+      textArea.value = text;
+      
+      // Avoid scrolling to bottom
+      textArea.style.top = "0";
+      textArea.style.left = "0";
+      textArea.style.position = "fixed";
+
+      document.body.appendChild(textArea);
+      textArea.focus();
+      textArea.select();
+
+      try {
+        document.execCommand('copy');
+        console.log('Fallback: Copying text command was successful');
+      } catch (err) {
+        console.error('Fallback: Oops, unable to copy', err);
+      }
+
+      document.body.removeChild(textArea);
   };
 
   return (
     <div className="sheet-table">
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '10px' }}>
         <h3 style={{ margin: 0 }}>Parameters & Outputs</h3>
-        <button type="button" onClick={handleCopyTable} style={{ padding: '4px 8px', fontSize: '0.8em' }}>Copy Table</button>
+        <button type="button" onClick={handleCopyTable} style={{ padding: '4px 8px', fontSize: '0.8em', display: 'flex', alignItems: 'center', gap: '4px' }}>
+            <Copy size={14} />
+            Copy Table
+        </button>
       </div>
       <table>
         <thead>
