@@ -4,10 +4,11 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from ..models.sheet import Sheet, Node, Connection
 
 async def seed_database(session: AsyncSession):
-    print("Clearing existing data...")
-    # Clear existing data to ensure we start fresh with the new examples
-    await session.execute(text("TRUNCATE TABLE sheets CASCADE"))
-    await session.commit()
+    # Check if database is empty
+    result = await session.execute(select(Sheet).limit(1))
+    if result.scalar_one_or_none() is not None:
+        print("Database already initialized. Skipping seed.")
+        return
 
     print("Seeding database with sophisticated engineering examples...")
 
