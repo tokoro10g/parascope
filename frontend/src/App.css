@@ -142,6 +142,7 @@
     width: 100%;
     min-width: 100px;
     background-color: white;
+    margin-right: 0;
 }
 
 /* Bottom Status Bar Evaluator */

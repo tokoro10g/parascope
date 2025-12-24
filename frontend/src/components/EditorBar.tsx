@@ -66,7 +66,18 @@ export const EditorBar: React.FC<EditorBarProps> = ({
       </div>
       
       <div className="toolbar-group save-group">
-        {isDirty && <span className="unsaved-indicator" title="Unsaved changes" style={{ color: 'orange', marginRight: '8px', fontWeight: 'bold' }}>●</span>}
+        <span 
+            className="unsaved-indicator" 
+            title="Unsaved changes" 
+            style={{ 
+                color: 'orange', 
+                marginRight: '4px', 
+                fontWeight: 'bold',
+                visibility: isDirty ? 'visible' : 'hidden'
+            }}
+        >
+            ●
+        </span>
         <button 
             type="button"
             onClick={onSaveSheet}
