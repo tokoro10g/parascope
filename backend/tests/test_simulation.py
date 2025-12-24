@@ -77,19 +77,25 @@ async def test_physics_calculation_scenario():
                 "source_id": mass_id,
                 "target_id": func_id,
                 "source_handle": "value",
-                "target_handle": "m"  # Maps to 'm' in code
+                "target_handle": "m",
+                "source_port": "value",
+                "target_port": "m"
             },
             {
                 "source_id": accel_id,
                 "target_id": func_id,
                 "source_handle": "value",
-                "target_handle": "a"  # Maps to 'a' in code
+                "target_handle": "a",
+                "source_port": "value",
+                "target_port": "a"
             },
             {
                 "source_id": func_id,
                 "target_id": output_id,
-                "source_handle": "result", # Assuming function returns single value or we map it
-                "target_handle": "in"
+                "source_handle": "result",
+                "target_handle": "in",
+                "source_port": "result",
+                "target_port": "in"
             }
         ]
 
@@ -108,13 +114,21 @@ async def test_physics_calculation_scenario():
 
         # 6. Verify Results
         # Mass
-        assert results[mass_id] == 10
+        assert results[mass_id]["value"]["val"] == 10
+        assert results[mass_id]["value"]["unit"] == "kilogram"
         # Accel
-        assert results[accel_id] == 9.8
+        assert results[accel_id]["value"]["val"] == 9.8
+        assert results[accel_id]["value"]["unit"] == "meter / second ** 2"
         # Function (10 * 9.8 = 98.0)
-        assert results[func_id] == 98.0
+        assert results[func_id]["result"]["val"] == 98.0
+        # Unit string might vary slightly depending on pint version/config, but let's check basic structure
+        assert "kilogram" in results[func_id]["result"]["unit"]
+        assert "meter" in results[func_id]["result"]["unit"]
+        assert "second" in results[func_id]["result"]["unit"]
+        
         # Output
-        assert results[output_id] == 98.0
+        assert results[output_id]["val"] == 98.0
+        assert "kilogram" in results[output_id]["unit"]
 
         print("\nCalculation Successful!")
         print(f"Mass: {results[mass_id]}")

@@ -54,13 +54,23 @@ export const EvaluatorBar: React.FC<EvaluatorBarProps> = ({
         <span className="paren">)</span>
         <span className="arrow"> =&gt; </span>
         <span className="paren">[</span>
-        {outputs.map((output, i) => (
+        {outputs.map((output, i) => {
+            let displayValue = '?';
+            if (output.value !== undefined) {
+                if (output.value && typeof output.value === 'object' && 'val' in output.value && 'unit' in output.value) {
+                    displayValue = `${output.value.val} ${output.value.unit}`;
+                } else {
+                    displayValue = JSON.stringify(output.value);
+                }
+            }
+            return (
             <span key={output.id} className="output-param">
                 <span className="label">{output.label}:</span>
-                <span className="value">{output.value !== undefined ? JSON.stringify(output.value) : '?'}</span>
+                <span className="value">{displayValue}</span>
                 {i < outputs.length - 1 && <span className="comma">, </span>}
             </span>
-        ))}
+            );
+        })}
         <span className="paren">]</span>
       </div>
       <button type="button" onClick={onCalculate} disabled={isCalculating} className="calculate-btn" style={{ marginLeft: 'auto' }}>

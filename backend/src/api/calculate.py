@@ -10,9 +10,21 @@ from sqlalchemy.orm import selectinload
 from ..core.database import get_db
 from ..core.graph import GraphProcessor
 from ..core.exceptions import NodeExecutionError
+from ..core.units import ureg
 from ..models.sheet import Sheet
 
 router = APIRouter(prefix="/calculate", tags=["calculate"])
+
+def serialize_result(val: Any) -> Any:
+    # Check for pint Quantity using duck typing to handle multiprocessing/pickling issues
+    # where the class might not match the local ureg.Quantity
+    if hasattr(val, 'magnitude') and hasattr(val, 'units') and val.__class__.__name__ == 'Quantity':
+        return {"val": val.magnitude, "unit": str(val.units)}
+    if isinstance(val, dict):
+        return {k: serialize_result(v) for k, v in val.items()}
+    if isinstance(val, list):
+        return [serialize_result(v) for v in val]
+    return val
 
 @router.post("/{sheet_id}")
 async def calculate_sheet(sheet_id: UUID, inputs: Dict[str, Any] = None, db: AsyncSession = Depends(get_db)):
@@ -33,8 +45,8 @@ async def calculate_sheet(sheet_id: UUID, inputs: Dict[str, Any] = None, db: Asy
         processor = GraphProcessor(sheet, db)
         results = await processor.execute(input_overrides=inputs)
         
-        # Convert UUID keys to strings for JSON response
-        json_results = {str(k): v for k, v in results.items()}
+        # Convert UUID keys to strings for JSON response and serialize units
+        json_results = {str(k): serialize_result(v) for k, v in results.items()}
         return json_results
         
     except NodeExecutionError as e:
