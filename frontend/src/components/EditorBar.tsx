@@ -36,7 +36,7 @@ export const EditorBar: React.FC<EditorBarProps> = ({
 
   return (
     <div className="toolbar editor-bar">
-      <div className="toolbar-group">
+      <div className="toolbar-group sheet-name-group">
         <input
           type="text"
           value={name}
@@ -46,6 +46,8 @@ export const EditorBar: React.FC<EditorBarProps> = ({
           className="sheet-name-input"
           placeholder="Sheet Name"
         />
+      </div>
+      <div className="toolbar-group node-actions-group">
         <button type="button" onClick={() => onAddNode('parameter')} title="Add Parameter">
             <Sliders size={18} />
         </button>
@@ -63,7 +65,7 @@ export const EditorBar: React.FC<EditorBarProps> = ({
         </button>
       </div>
       
-      <div className="toolbar-group">
+      <div className="toolbar-group save-group">
         {isDirty && <span className="unsaved-indicator" title="Unsaved changes" style={{ color: 'orange', marginRight: '8px', fontWeight: 'bold' }}>●</span>}
         <button 
             type="button"

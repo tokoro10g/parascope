@@ -3,6 +3,7 @@ const API_BASE = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000';
 export interface Sheet {
   id: string;
   name: string;
+  folder_id?: string | null;
   nodes: NodeData[];
   connections: ConnectionData[];
 }
@@ -11,7 +12,7 @@ export interface SheetSummary {
   id: string;
   name: string;
   owner_name?: string;
-  folder_id?: string;
+  folder_id?: string | null;
 }
 
 export interface Folder {

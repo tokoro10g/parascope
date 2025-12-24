@@ -200,7 +200,8 @@ async def duplicate_sheet(sheet_id: UUID, db: AsyncSession = Depends(get_db)):
     # Create new sheet
     new_sheet = Sheet(
         name=f"{source_sheet.name} (Copy)",
-        owner_name=source_sheet.owner_name
+        owner_name=source_sheet.owner_name,
+        folder_id=source_sheet.folder_id
     )
     db.add(new_sheet)
     await db.flush()

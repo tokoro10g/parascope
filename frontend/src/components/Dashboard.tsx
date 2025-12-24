@@ -1,12 +1,15 @@
 import React, { useEffect, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { Copy, Trash2, Folder as FolderIcon, FolderPlus, ArrowLeft } from 'lucide-react';
+import { Copy, Trash2, Folder as FolderIcon, FolderPlus, ArrowLeft, FolderInput, FileText } from 'lucide-react';
 import { api, type SheetSummary, type Folder } from '../api';
+import { FolderPickerModal } from './FolderPickerModal';
 
 export const Dashboard: React.FC = () => {
   const [sheets, setSheets] = useState<SheetSummary[]>([]);
   const [folders, setFolders] = useState<Folder[]>([]);
   const [currentFolderId, setCurrentFolderId] = useState<string | undefined>(undefined);
+  const [moveModalOpen, setMoveModalOpen] = useState(false);
+  const [sheetToMove, setSheetToMove] = useState<string | null>(null);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -74,6 +77,44 @@ export const Dashboard: React.FC = () => {
     }
   };
 
+  const handleMoveClick = (e: React.MouseEvent, id: string) => {
+      e.preventDefault();
+      e.stopPropagation();
+      setSheetToMove(id);
+      setMoveModalOpen(true);
+  };
+
+  const handleMoveSelect = async (folderId: string | undefined | null) => {
+      if (sheetToMove) {
+          try {
+              await api.updateSheet(sheetToMove, { folder_id: folderId || null });
+              loadData();
+          } catch (e) {
+              console.error(e);
+              alert("Failed to move sheet");
+          }
+      }
+      setMoveModalOpen(false);
+      setSheetToMove(null);
+  };
+
+  const getBreadcrumbs = () => {
+      const crumbs = [];
+      let currentId = currentFolderId;
+      while (currentId) {
+          const folder = folders.find(f => f.id === currentId);
+          if (folder) {
+              crumbs.unshift(folder);
+              currentId = folder.parent_id;
+          } else {
+              break;
+          }
+      }
+      return crumbs;
+  };
+
+  const breadcrumbs = getBreadcrumbs();
+
   const currentSheets = sheets.filter(s => s.folder_id === currentFolderId || (!s.folder_id && !currentFolderId));
   const currentFolders = folders.filter(f => f.parent_id === currentFolderId || (!f.parent_id && !currentFolderId));
 
@@ -90,9 +131,33 @@ export const Dashboard: React.FC = () => {
         <button onClick={handleCreateFolder}><FolderPlus size={16} style={{marginRight: 5}}/> New Folder</button>
       </div>
       
+      <div className="breadcrumbs" style={{marginBottom: 20, display: 'flex', alignItems: 'center', gap: 8, fontSize: '1.1em'}}>
+          <span 
+            onClick={() => setCurrentFolderId(undefined)} 
+            style={{cursor: 'pointer', color: currentFolderId ? '#007bff' : 'inherit', fontWeight: !currentFolderId ? 'bold' : 'normal'}}
+          >
+            Home
+          </span>
+          {breadcrumbs.map((folder, index) => (
+              <React.Fragment key={folder.id}>
+                  <span style={{color: '#999'}}>/</span>
+                  <span 
+                    onClick={() => setCurrentFolderId(folder.id)} 
+                    style={{
+                        cursor: 'pointer', 
+                        color: index === breadcrumbs.length - 1 ? 'inherit' : '#007bff',
+                        fontWeight: index === breadcrumbs.length - 1 ? 'bold' : 'normal'
+                    }}
+                  >
+                    {folder.name}
+                  </span>
+              </React.Fragment>
+          ))}
+      </div>
+
       <div className="sheet-list">
         {currentFolderId && (
-            <div className="sheet-item folder-item" onClick={handleUp} style={{cursor: 'pointer', backgroundColor: '#f0f0f0'}}>
+            <div className="sheet-item folder-item" onClick={handleUp}>
                 <div className="sheet-info">
                     <ArrowLeft size={20} />
                     <span className="sheet-name" style={{marginLeft: 10}}>.. (Up)</span>
@@ -101,9 +166,9 @@ export const Dashboard: React.FC = () => {
         )}
         
         {currentFolders.map(folder => (
-            <div key={folder.id} className="sheet-item folder-item" onClick={() => setCurrentFolderId(folder.id)} style={{cursor: 'pointer', backgroundColor: '#f8f9fa'}}>
-                <div className="sheet-info">
-                    <FolderIcon size={20} fill="#FFD700" stroke="#DAA520" />
+            <div key={folder.id} className="sheet-item folder-item" onClick={() => setCurrentFolderId(folder.id)}>
+                <div className="sheet-info" style={{justifyContent: 'flex-start'}}>
+                    <FolderIcon size={20} />
                     <span className="sheet-name" style={{marginLeft: 10}}>{folder.name}</span>
                 </div>
             </div>
@@ -113,11 +178,17 @@ export const Dashboard: React.FC = () => {
           <div key={sheet.id} className="sheet-item">
             <Link to={`/sheet/${sheet.id}`} className="sheet-link">
               <div className="sheet-info">
-                <span className="sheet-name">{sheet.name}</span>
+                <div style={{display: 'flex', alignItems: 'center'}}>
+                    <FileText size={20} />
+                    <span className="sheet-name" style={{marginLeft: 10}}>{sheet.name}</span>
+                </div>
                 <span className="sheet-id">{sheet.id}</span>
               </div>
             </Link>
             <div className="sheet-actions">
+                <button onClick={(e) => handleMoveClick(e, sheet.id)} title="Move to Folder">
+                    <FolderInput size={16} />
+                </button>
                 <button onClick={(e) => handleDuplicate(e, sheet.id)} title="Duplicate">
                     <Copy size={16} />
                 </button>
@@ -132,6 +203,12 @@ export const Dashboard: React.FC = () => {
             <p style={{padding: 20, color: '#666'}}>This folder is empty.</p>
         )}
       </div>
+      
+      <FolderPickerModal 
+        isOpen={moveModalOpen} 
+        onClose={() => setMoveModalOpen(false)} 
+        onSelect={handleMoveSelect} 
+      />
     </div>
   );
 };
