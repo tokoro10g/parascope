@@ -36,7 +36,7 @@ async def test_physics_calculation_scenario():
                 "label": "Mass",
                 "position_x": 0,
                 "position_y": 0,
-                "data": {"value": 10, "unit": "kg"},
+                "data": {"value": 10},
                 "outputs": [{"key": "value", "socket_type": "number"}]
             },
             {
@@ -45,7 +45,7 @@ async def test_physics_calculation_scenario():
                 "label": "Acceleration",
                 "position_x": 0,
                 "position_y": 100,
-                "data": {"value": 9.8, "unit": "m/s^2"},
+                "data": {"value": 9.8},
                 "outputs": [{"key": "value", "socket_type": "number"}]
             },
             {
@@ -114,23 +114,14 @@ async def test_physics_calculation_scenario():
 
         # 6. Verify Results
         # Mass
-        assert results[mass_id]["value"]["val"] == 10
-        assert results[mass_id]["value"]["unit"] == "kg"
+        assert results[mass_id]["value"] == 10
         # Accel
-        assert results[accel_id]["value"]["val"] == 9.8
-        assert results[accel_id]["value"]["unit"] == "m / s ** 2"
+        assert results[accel_id]["value"] == 9.8
         # Function (10 * 9.8 = 98.0)
-        assert results[func_id]["result"]["val"] == 98.0
-        # Unit string might vary slightly depending on pint version/config, but let's check basic structure
-        assert "kg" in results[func_id]["result"]["unit"]
-        assert "m" in results[func_id]["result"]["unit"]
-        assert "s" in results[func_id]["result"]["unit"]
+        assert results[func_id]["result"] == 98.0
         
         # Output
-        assert results[output_id]["val"] == 98.0
-        assert "kg" in results[output_id]["unit"]
-        assert "m" in results[output_id]["unit"]
-        assert "s" in results[output_id]["unit"]
+        assert results[output_id] == 98.0
 
         print("\nCalculation Successful!")
         print(f"Mass: {results[mass_id]}")

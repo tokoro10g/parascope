@@ -9,7 +9,6 @@ from sqlalchemy.orm import selectinload
 from ..models.sheet import Node, Sheet
 from .execution import execute_python_code
 from .exceptions import NodeExecutionError
-from .units import ureg
 
 
 class GraphProcessor:
@@ -69,14 +68,6 @@ class GraphProcessor:
         if node_type == "parameter":
             # Return the value defined in data
             val = self._parse_value(node.data.get("value", 0))
-            unit = node.data.get("unit")
-            
-            if unit and unit != "-" and unit.strip():
-                try:
-                    val = val * ureg(unit)
-                except Exception as e:
-                    raise NodeExecutionError(str(node.id), node.label, f"Invalid unit '{unit}': {e}")
-
             self.results[node.id] = {'value': val}
             
         elif node_type == "input":
@@ -101,13 +92,6 @@ class GraphProcessor:
                 )
             
             val = self._parse_value(val)
-            unit = node.data.get("unit")
-            if unit and unit != "-" and unit.strip():
-                try:
-                    val = val * ureg(unit)
-                except Exception as e:
-                    raise NodeExecutionError(str(node.id), node.label, f"Invalid unit '{unit}': {e}")
-
             self.results[node.id] = {'value': val}
 
         elif node_type == "function":

@@ -353,8 +353,7 @@ export const SheetEditor: React.FC = () => {
         .map(n => ({
             id: n.id!,
             label: n.label,
-            value: evaluatorInputs[n.id!] !== undefined ? evaluatorInputs[n.id!] : '',
-            unit: n.data?.unit
+            value: evaluatorInputs[n.id!] !== undefined ? evaluatorInputs[n.id!] : ''
         }));
 
       const outputs: EvaluatorOutput[] = currentSheet.nodes
@@ -436,9 +435,6 @@ export const SheetEditor: React.FC = () => {
           node.initialData = { ...node.initialData, ...updates.initialData };
           if (updates.initialData.value !== undefined && node.controls.value) {
               (node.controls.value as any).setValue(String(updates.initialData.value));
-          }
-          if (updates.initialData.unit !== undefined && node.controls.unit) {
-              (node.controls.unit as any).setValue(updates.initialData.unit);
           }
       }
 

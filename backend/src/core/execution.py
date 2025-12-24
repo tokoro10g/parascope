@@ -5,7 +5,6 @@ import traceback
 from typing import Any, Dict, List, Optional
 
 from pydantic import BaseModel
-from .units import ureg
 
 
 class ExecutionResult(BaseModel):
@@ -35,8 +34,6 @@ def _worker(code: str, inputs: Dict[str, Any], outputs: List[str], queue: multip
             "__builtins__": __builtins__,
             "math": __import__("math"),
             "np": __import__("numpy"),
-            "u": ureg, # Short alias for units
-            "ureg": ureg,
         }
 
         # Execute the code

@@ -111,16 +111,6 @@ export const NodeInspector: React.FC<NodeInspectorProps> = ({
               />
             </div>
             )}
-            <div className="form-group">
-              <label htmlFor="node-unit">Unit:</label>
-              <input 
-                id="node-unit"
-                type="text"
-                value={data.unit || ''} 
-                onChange={e => setData({ ...data, unit: e.target.value })} 
-                placeholder="e.g. kg, m/s^2"
-              />
-            </div>
           </>
         )}
 

@@ -10,7 +10,6 @@ dependencies = [
     "networkx",
     "numpy",
     "scipy",
-    "pint",
     "psycopg2-binary", # For PostgreSQL
     "sqlalchemy",
     "asyncpg>=0.31.0",

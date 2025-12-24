@@ -13,11 +13,11 @@ This document outlines typical user journeys to validate system requirements and
 3.  **Creation**: User sees a blank grid (The Sheet).
     *   **Action**: Clicks "Add Parameter" on the **Toolbar**.
     *   **System**: Automatically opens the **Node Inspector** dialog.
-    *   **Input**: Name: `mass`, Value: `10`, Unit: `kg`.
+    *   **Input**: Name: `mass`, Value: `10`.
     *   **Action**: Clicks "Save" in the dialog.
     *   **Action**: Clicks "Add Parameter" on the **Toolbar**.
     *   **System**: Automatically opens the **Node Inspector** dialog.
-    *   **Input**: Name: `accel`, Value: `9.8`, Unit: `m/s^2`.
+    *   **Input**: Name: `accel`, Value: `9.8`.
     *   **Action**: Clicks "Save" in the dialog.
     *   **Action**: Clicks "Add Function" on the **Toolbar**.
     *   **System**: Automatically opens the **Node Inspector** dialog.
@@ -31,9 +31,9 @@ This document outlines typical user journeys to validate system requirements and
     *   **Action**: Drags wire from `calc_force` output to `force` input.
 5.  **Result**:
     *   **System**: Automatically creates an output node for `calc_force`.
-    *   **Feedback**: Output node displays `98.0 kg * m / s^2`.
-    *   **Feedback**: The `force` Output Node displays `98.0 kg * m / s^2`.
-    *   **Evaluator Bar**: Top bar displays `Sheet1() = [ 98.0 kg * m / s^2 ]`.
+    *   **Feedback**: Output node displays `98.0`.
+    *   **Feedback**: The `force` Output Node displays `98.0`.
+    *   **Evaluator Bar**: Top bar displays `Sheet1() = [ 98.0 ]`.
 6.  **Persistence**:
     *   **Action**: User presses `Ctrl+S` (or clicks "Save").
     *   **System**: Generates Sheet UUID `a1b2...`. Updates URL to `/sheet/a1b2...`.
@@ -74,16 +74,7 @@ This document outlines typical user journeys to validate system requirements and
     *   **Action**: Alice presses `Ctrl+Z` (Undo).
     *   **System**: Node and connections reappear.
 
-## Scenario 4: Unit Mismatch
-**Goal**: Ensure physical consistency.
-
-1.  **Setup**: Function expects length in meters.
-2.  **Mistake**: User connects a parameter with unit `kg`.
-3.  **Feedback**:
-    *   **System**: `pint` raises dimensionality error during calc.
-    *   **UI**: Output node shows `DimensionalityError: Cannot convert from 'mass' to 'length'`.
-
-## Scenario 5: Nesting Sheets (Sub-graphs)
+## Scenario 4: Nesting Sheets (Sub-graphs)
 **Goal**: Reuse a specific calculation component within a larger system.
 
 1.  **Prerequisite**: Alice has created and saved a sheet named "Cylinder Volume".
@@ -104,7 +95,7 @@ This document outlines typical user journeys to validate system requirements and
     *   **Feedback**: The output socket shows the calculated volume.
     *   **Linking**: If Alice updates "Cylinder Volume" later, "Fuel Tank Assembly" will reflect the changes.
 
-## Scenario 6: URL Parameter Override (Preview Mode)
+## Scenario 5: URL Parameter Override (Preview Mode)
 **Goal**: Share a specific calculation case without modifying the saved sheet.
 
 1.  **Context**: Alice has the "Cylinder Volume" sheet (UUID `cyl-vol-123`).
@@ -120,7 +111,7 @@ This document outlines typical user journeys to validate system requirements and
     *   **Evaluator Bar**: Displays `Cylinder Volume([ 5 ], [ 10 ]) = [ 785.39... ]`.
     *   **UI**: The graph reflects these values. The sheet is NOT saved with these values (they are transient).
 
-## Scenario 7: Drill-down Editing (Debugging Nested Sheets)
+## Scenario 6: Drill-down Editing (Debugging Nested Sheets)
 **Goal**: Investigate why a nested sheet is producing an unexpected result in the context of the parent sheet.
 
 1.  **Context**: Alice is in "Fuel Tank Assembly". The "Cylinder Volume" node is outputting `500`, which seems wrong.
@@ -134,7 +125,7 @@ This document outlines typical user journeys to validate system requirements and
 4.  **Fix**: She notices a constant inside "Cylinder Volume" is wrong. She fixes it and saves.
 5.  **Return**: She returns to "Fuel Tank Assembly", which updates to reflect the fix.
 
-## Scenario 8: Dashboard & Organization
+## Scenario 7: Dashboard & Organization
 **Goal**: Manage saved work, rename sheets, and organize projects.
 
 1.  **Access**: Alice clicks the "Dashboard" link in the header.
@@ -157,7 +148,7 @@ This document outlines typical user journeys to validate system requirements and
     *   **System**: Prompts for confirmation. Alice confirms.
     *   **System**: Removes sheet from list.
 
-## Scenario 9: Material Selection (Option Node)
+## Scenario 8: Material Selection (Option Node)
 **Goal**: Use categorical logic to switch between material properties.
 
 1.  **Setup**: Alice is calculating the weight of a beam.
@@ -167,14 +158,14 @@ This document outlines typical user journeys to validate system requirements and
     *   **Action**: Selects "Steel" from the dropdown.
 3.  **Logic**:
     *   **Action**: Adds Function `get_density`.
-    *   **Code**: `if material == "Steel": return 7850 * u.kg / u.m**3` (etc).
+    *   **Code**: `if material == "Steel": return 7850` (etc).
 4.  **Execution**:
     *   **Action**: Connects `material` to `get_density`.
-    *   **Feedback**: Output shows `7850 kg/m^3`.
+    *   **Feedback**: Output shows `7850`.
     *   **Action**: Alice changes dropdown to "Aluminum".
-    *   **Feedback**: Output immediately updates to `2700 kg/m^3`.
+    *   **Feedback**: Output immediately updates to `2700`.
 
-## Scenario 10: Advanced Debugging (Logs & Timeouts)
+## Scenario 9: Advanced Debugging (Logs & Timeouts)
 **Goal**: Debug complex logic using print statements and handle infinite loops.
 
 1.  **Debugging**: Alice is writing a complex iterative solver.
@@ -188,7 +179,7 @@ This document outlines typical user journeys to validate system requirements and
     *   **System**: Terminates process.
     *   **UI**: Node turns red. Error: `TimeoutError: Function execution exceeded 5s limit`.
 
-## Scenario 11: Table View & Data Export
+## Scenario 10: Table View & Data Export
 **Goal**: View all parameters in a list and export them to a spreadsheet.
 
 1.  **Context**: Alice has a complex sheet with 20 parameters scattered across the canvas.
@@ -199,6 +190,6 @@ This document outlines typical user journeys to validate system requirements and
     *   **System**: The graph updates immediately, and `force` recalculates to `147.0`.
 3.  **Export**:
     *   **Action**: Alice clicks the "Copy Table" button in the sidebar.
-    *   **System**: Copies the table data (Name, Type, Value, Unit) to the clipboard in TSV format.
+    *   **System**: Copies the table data (Name, Type, Value) to the clipboard in TSV format.
     *   **Action**: Alice pastes into Excel.
     *   **Result**: The data appears correctly formatted in columns.

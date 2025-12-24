@@ -4,7 +4,6 @@ export interface EvaluatorInput {
   id: string;
   label: string;
   value: string | number;
-  unit?: string;
 }
 
 export interface EvaluatorOutput {
@@ -39,7 +38,7 @@ export const EvaluatorBar: React.FC<EvaluatorBarProps> = ({
         <span className="paren">(</span>
         {inputs.map((input, i) => (
           <span key={input.id} className="input-param">
-            <label htmlFor={input.id}>{input.label}{input.unit ? ` (${input.unit})` : ''}=</label>
+            <label htmlFor={input.id}>{input.label}=</label>
             <input
               id={input.id}
               type="text"
@@ -58,11 +57,7 @@ export const EvaluatorBar: React.FC<EvaluatorBarProps> = ({
         {outputs.map((output, i) => {
             let displayValue = '?';
             if (output.value !== undefined) {
-                if (output.value && typeof output.value === 'object' && 'val' in output.value && 'unit' in output.value) {
-                    displayValue = `${output.value.val} ${output.value.unit}`;
-                } else {
-                    displayValue = JSON.stringify(output.value);
-                }
+                displayValue = JSON.stringify(output.value);
             }
             return (
             <span key={output.id} className="output-param">

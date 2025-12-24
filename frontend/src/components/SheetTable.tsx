@@ -14,17 +14,15 @@ export const SheetTable: React.FC<SheetTableProps> = ({ nodes, onUpdateValue, on
   );
 
   const handleCopyTable = () => {
-    const headers = ['Name', 'Type', 'Value', 'Unit'];
+    const headers = ['Name', 'Type', 'Value'];
     const rows = tableNodes.map((node) => {
       const nameControl = node.controls['name'] as any;
       const valueControl = node.controls['value'] as any;
-      const unitControl = node.controls['unit'] as any;
 
       const name = nameControl?.value || node.label;
       const value = valueControl?.value || '';
-      const unit = unitControl?.value || '-';
 
-      return [name, node.type, value, unit].join('\t');
+      return [name, node.type, value].join('\t');
     });
 
     const tsv = [headers.join('\t'), ...rows].join('\n');
@@ -48,7 +46,6 @@ export const SheetTable: React.FC<SheetTableProps> = ({ nodes, onUpdateValue, on
             <th>Name</th>
             <th>Type</th>
             <th>Value</th>
-            <th>Unit</th>
           </tr>
         </thead>
         <tbody>
@@ -56,11 +53,9 @@ export const SheetTable: React.FC<SheetTableProps> = ({ nodes, onUpdateValue, on
             const isParameter = node.type === 'parameter';
             const nameControl = node.controls['name'] as any;
             const valueControl = node.controls['value'] as any;
-            const unitControl = node.controls['unit'] as any;
             
             const name = nameControl?.value || node.label;
             const value = valueControl?.value;
-            const unit = unitControl?.value || '-';
 
             return (
               <tr key={node.id} onClick={() => onSelectNode(node.id)} style={{ cursor: 'pointer' }}>
@@ -78,7 +73,6 @@ export const SheetTable: React.FC<SheetTableProps> = ({ nodes, onUpdateValue, on
                     <span>{value}</span>
                   )}
                 </td>
-                <td>{unit}</td>
               </tr>
             );
           })}
