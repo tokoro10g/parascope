@@ -1,7 +1,7 @@
 import uuid
 from sqlalchemy import select, text
 from sqlalchemy.ext.asyncio import AsyncSession
-from ..models.sheet import Sheet, Node, Connection
+from ..models.sheet import Sheet, Node, Connection, Folder
 
 async def seed_database(session: AsyncSession):
     # Check if database is empty
@@ -12,11 +12,17 @@ async def seed_database(session: AsyncSession):
 
     print("Seeding database with sophisticated engineering examples...")
 
+    # Create Examples Folder
+    folder_id = uuid.uuid4()
+    folder = Folder(id=folder_id, name="Examples")
+    session.add(folder)
+    await session.flush()
+
     # ==========================================
     # Sheet 1: Tsiolkovsky Rocket Equation (Base)
     # ==========================================
     sheet1_id = uuid.uuid4()
-    sheet1 = Sheet(id=sheet1_id, name="Tsiolkovsky Rocket Equation", owner_name="System")
+    sheet1 = Sheet(id=sheet1_id, name="Tsiolkovsky Rocket Equation", owner_name="System", folder_id=folder_id)
     
     # Nodes
     node_isp = Node(id=uuid.uuid4(), sheet_id=sheet1_id, type="input", label="Isp [s]", inputs=[], outputs=[{"key": "value", "socket_type": "any"}], position_x=100, position_y=100, data={})
@@ -49,7 +55,7 @@ async def seed_database(session: AsyncSession):
     # Sheet 2: Dynamic Pressure (Base)
     # ==========================================
     sheet2_id = uuid.uuid4()
-    sheet2 = Sheet(id=sheet2_id, name="Dynamic Pressure (q)", owner_name="System")
+    sheet2 = Sheet(id=sheet2_id, name="Dynamic Pressure (q)", owner_name="System", folder_id=folder_id)
 
     node_rho = Node(id=uuid.uuid4(), sheet_id=sheet2_id, type="input", label="Density (rho) [kg/m3]", inputs=[], outputs=[{"key": "value", "socket_type": "any"}], position_x=100, position_y=100, data={})
     node_vel = Node(id=uuid.uuid4(), sheet_id=sheet2_id, type="input", label="Velocity (v) [m/s]", inputs=[], outputs=[{"key": "value", "socket_type": "any"}], position_x=100, position_y=250, data={})
@@ -78,7 +84,7 @@ async def seed_database(session: AsyncSession):
     # Sheet 3: Aerodynamic Drag (Nested)
     # ==========================================
     sheet3_id = uuid.uuid4()
-    sheet3 = Sheet(id=sheet3_id, name="Aerodynamic Drag Force", owner_name="System")
+    sheet3 = Sheet(id=sheet3_id, name="Aerodynamic Drag Force", owner_name="System", folder_id=folder_id)
 
     # Inputs
     node_cd = Node(id=uuid.uuid4(), sheet_id=sheet3_id, type="input", label="Drag Coeff (Cd)", inputs=[], outputs=[{"key": "value", "socket_type": "any"}], position_x=100, position_y=50, data={})
@@ -130,7 +136,7 @@ async def seed_database(session: AsyncSession):
     # Sheet 4: SSTO Feasibility (Complex)
     # ==========================================
     sheet4_id = uuid.uuid4()
-    sheet4 = Sheet(id=sheet4_id, name="SSTO Feasibility Check", owner_name="System")
+    sheet4 = Sheet(id=sheet4_id, name="SSTO Feasibility Check", owner_name="System", folder_id=folder_id)
 
     # Parameters
     node_pay = Node(id=uuid.uuid4(), sheet_id=sheet4_id, type="parameter", label="Payload Mass [kg]", inputs=[], outputs=[{"key": "value", "socket_type": "any"}], position_x=100, position_y=100, data={"value": 2000})

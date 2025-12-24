@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { api, type Sheet } from '../api';
+import { api, type Sheet, type Folder } from '../api';
 
 interface SheetPickerModalProps {
     isOpen: boolean;
@@ -9,29 +9,43 @@ interface SheetPickerModalProps {
 
 export const SheetPickerModal: React.FC<SheetPickerModalProps> = ({ isOpen, onClose, onSelect }) => {
     const [sheets, setSheets] = useState<Sheet[]>([]);
+    const [folders, setFolders] = useState<Folder[]>([]);
+    const [currentFolderId, setCurrentFolderId] = useState<string | undefined>(undefined);
     const [loading, setLoading] = useState(false);
 
     useEffect(() => {
         if (isOpen) {
-            loadSheets();
+            loadData();
         }
     }, [isOpen]);
 
-    const loadSheets = async () => {
+    const loadData = async () => {
         setLoading(true);
         try {
-            const data = await api.listSheets();
-            // @ts-ignore - listSheets returns SheetSummary[], but we cast to Sheet[] for now or update state type
-            setSheets(data as any);
+            const [sheetsData, foldersData] = await Promise.all([
+                api.listSheets(),
+                api.listFolders()
+            ]);
+            // @ts-ignore
+            setSheets(sheetsData);
+            setFolders(foldersData);
         } catch (e) {
             console.error(e);
-            alert("Failed to load sheets");
+            alert("Failed to load data");
         } finally {
             setLoading(false);
         }
     };
 
     if (!isOpen) return null;
+
+    const currentSheets = sheets.filter(s => s.folder_id === currentFolderId || (!s.folder_id && !currentFolderId));
+    const currentFolders = folders.filter(f => f.parent_id === currentFolderId || (!f.parent_id && !currentFolderId));
+
+    const handleUp = () => {
+        const current = folders.find(f => f.id === currentFolderId);
+        setCurrentFolderId(current?.parent_id);
+    };
 
     return (
         <div className="modal-overlay">
@@ -41,12 +55,25 @@ export const SheetPickerModal: React.FC<SheetPickerModalProps> = ({ isOpen, onCl
                     <p>Loading...</p>
                 ) : (
                     <div className="sheet-list">
-                        {sheets.map(sheet => (
+                        {currentFolderId && (
+                            <div className="sheet-item folder-item" onClick={handleUp}>
+                                <strong>📁 ..</strong>
+                            </div>
+                        )}
+                        {currentFolders.map(folder => (
+                            <div key={folder.id} className="sheet-item folder-item" onClick={() => setCurrentFolderId(folder.id)}>
+                                <strong>📁 {folder.name}</strong>
+                            </div>
+                        ))}
+                        {currentSheets.map(sheet => (
                             <div key={sheet.id} className="sheet-item" onClick={() => onSelect(sheet)}>
-                                <strong>{sheet.name}</strong>
+                                <strong>📄 {sheet.name}</strong>
                                 <span className="sheet-id">{sheet.id}</span>
                             </div>
                         ))}
+                        {currentSheets.length === 0 && currentFolders.length === 0 && (
+                            <p>No items in this folder.</p>
+                        )}
                     </div>
                 )}
                 <button onClick={onClose} style={{ marginTop: '20px' }}>Cancel</button>

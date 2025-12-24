@@ -8,13 +8,27 @@ from sqlalchemy.orm import Mapped, mapped_column, relationship
 from ..core.database import Base
 
 
+class Folder(Base):
+    __tablename__ = "folders"
+
+    id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    name: Mapped[str] = mapped_column(String, index=True)
+    parent_id: Mapped[Optional[uuid.UUID]] = mapped_column(ForeignKey("folders.id"), nullable=True)
+
+    parent: Mapped[Optional["Folder"]] = relationship("Folder", remote_side=[id], back_populates="children")
+    children: Mapped[List["Folder"]] = relationship("Folder", back_populates="parent", cascade="all, delete-orphan")
+    sheets: Mapped[List["Sheet"]] = relationship(back_populates="folder", cascade="all, delete-orphan")
+
+
 class Sheet(Base):
     __tablename__ = "sheets"
 
     id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
     name: Mapped[str] = mapped_column(String, index=True)
     owner_name: Mapped[Optional[str]] = mapped_column(String, nullable=True)
+    folder_id: Mapped[Optional[uuid.UUID]] = mapped_column(ForeignKey("folders.id"), nullable=True)
     
+    folder: Mapped[Optional["Folder"]] = relationship(back_populates="sheets")
     nodes: Mapped[List["Node"]] = relationship(back_populates="sheet", cascade="all, delete-orphan")
     connections: Mapped[List["Connection"]] = relationship(back_populates="sheet", cascade="all, delete-orphan")
 

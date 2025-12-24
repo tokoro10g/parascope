@@ -42,9 +42,21 @@ class ConnectionRead(ConnectionBase):
     sheet_id: UUID
     model_config = ConfigDict(from_attributes=True)
 
+class FolderBase(BaseModel):
+    name: str
+    parent_id: Optional[UUID] = None
+
+class FolderCreate(FolderBase):
+    pass
+
+class FolderRead(FolderBase):
+    id: UUID
+    model_config = ConfigDict(from_attributes=True)
+
 class SheetBase(BaseModel):
     name: str
     owner_name: Optional[str] = None
+    folder_id: Optional[UUID] = None
 
 class SheetCreate(SheetBase):
     nodes: List[NodeCreate] = []
@@ -58,9 +70,11 @@ class SheetRead(SheetBase):
 
 class SheetSummary(SheetBase):
     id: UUID
+    folder_id: Optional[UUID] = None
     model_config = ConfigDict(from_attributes=True)
 
 class SheetUpdate(BaseModel):
     name: Optional[str] = None
+    folder_id: Optional[UUID] = None
     nodes: Optional[List[NodeCreate]] = None
     connections: Optional[List[ConnectionCreate]] = None

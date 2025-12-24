@@ -193,3 +193,36 @@ This document outlines typical user journeys to validate system requirements and
     *   **System**: Copies the table data (Name, Type, Value) to the clipboard in TSV format.
     *   **Action**: Alice pastes into Excel.
     *   **Result**: The data appears correctly formatted in columns.
+## Scenario 11: Organizing Engineering Models (Folders)
+**Goal**: Organize a growing collection of rocket science models.
+
+1.  **Dashboard**: User visits the dashboard (`/`).
+2.  **Creation**: User clicks "New Folder".
+    *   **Input**: Name: "Rocket Science".
+    *   **System**: Creates folder and displays it in the list.
+3.  **Navigation**: User clicks the "Rocket Science" folder.
+    *   **System**: Navigates into the folder (empty list).
+    *   **UI**: Shows "Up" button.
+4.  **Sheet Creation**: User clicks "Create New Sheet".
+    *   **System**: Creates a new sheet *inside* the current folder.
+    *   **Action**: User renames sheet to "Specific Impulse Calc".
+5.  **Verification**: User clicks "Up".
+    *   **System**: Returns to root.
+    *   **UI**: Shows "Rocket Science" folder.
+    *   **UI**: Does *not* show "Specific Impulse Calc" (it's inside the folder).
+
+## Scenario 12: Using Pre-Seeded Engineering Examples
+**Goal**: Explore the built-in Tsiolkovsky Rocket Equation example.
+
+1.  **Discovery**: User navigates to the "Examples" folder (created by system).
+2.  **Selection**: User opens "Tsiolkovsky Rocket Equation".
+3.  **Exploration**:
+    *   **Observation**: Sees inputs for `Isp`, `m0`, `mf`.
+    *   **Observation**: Sees function node with Python code: `DeltaV = Isp * g0 * math.log(m0 / mf)`.
+4.  **Simulation**:
+    *   **Action**: Changes `Isp` from 300 to 450.
+    *   **Feedback**: `DeltaV` output updates instantly.
+5.  **Nesting**: User creates a new sheet "Mission Planning".
+    *   **Action**: Adds a "Sheet" node.
+    *   **Selection**: Browses to "Examples" -> "Tsiolkovsky Rocket Equation".
+    *   **System**: Imports the rocket equation as a single node with defined inputs/outputs.

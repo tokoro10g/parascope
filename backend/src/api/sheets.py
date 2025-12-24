@@ -6,10 +6,43 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
 
 from ..core.database import get_db
-from ..models.sheet import Connection, Node, Sheet
-from ..schemas.sheet import SheetCreate, SheetRead, SheetSummary, SheetUpdate
+from ..models.sheet import Connection, Folder, Node, Sheet
+from ..schemas.sheet import (
+    FolderCreate,
+    FolderRead,
+    SheetCreate,
+    SheetRead,
+    SheetSummary,
+    SheetUpdate,
+)
 
 router = APIRouter(prefix="/sheets", tags=["sheets"])
+
+@router.post("/folders", response_model=FolderRead)
+async def create_folder(folder_in: FolderCreate, db: AsyncSession = Depends(get_db)):
+    db_folder = Folder(name=folder_in.name, parent_id=folder_in.parent_id)
+    db.add(db_folder)
+    await db.commit()
+    await db.refresh(db_folder)
+    return db_folder
+
+@router.get("/folders", response_model=list[FolderRead])
+async def list_folders(db: AsyncSession = Depends(get_db)):
+    query = select(Folder)
+    result = await db.execute(query)
+    return result.scalars().all()
+
+@router.delete("/folders/{folder_id}")
+async def delete_folder(folder_id: UUID, db: AsyncSession = Depends(get_db)):
+    query = select(Folder).where(Folder.id == folder_id)
+    result = await db.execute(query)
+    folder = result.scalar_one_or_none()
+    if not folder:
+        raise HTTPException(status_code=404, detail="Folder not found")
+    
+    await db.delete(folder)
+    await db.commit()
+    return {"ok": True}
 
 @router.get("/", response_model=list[SheetSummary])
 async def list_sheets(skip: int = 0, limit: int = 100, db: AsyncSession = Depends(get_db)):
@@ -21,7 +54,7 @@ async def list_sheets(skip: int = 0, limit: int = 100, db: AsyncSession = Depend
 @router.post("/", response_model=SheetRead)
 async def create_sheet(sheet_in: SheetCreate, db: AsyncSession = Depends(get_db)):
     # Create Sheet
-    db_sheet = Sheet(name=sheet_in.name, owner_name=sheet_in.owner_name)
+    db_sheet = Sheet(name=sheet_in.name, owner_name=sheet_in.owner_name, folder_id=sheet_in.folder_id)
     db.add(db_sheet)
     await db.flush() # Get ID
 
@@ -89,8 +122,11 @@ async def update_sheet(sheet_id: UUID, sheet_in: SheetUpdate, db: AsyncSession =
         raise HTTPException(status_code=404, detail="Sheet not found")
 
     # Update basic info
-    if sheet_in.name:
-        db_sheet.name = sheet_in.name
+    update_data = sheet_in.model_dump(exclude_unset=True)
+    if "name" in update_data:
+        db_sheet.name = update_data["name"]
+    if "folder_id" in update_data:
+        db_sheet.folder_id = update_data["folder_id"]
 
     # Full replacement strategy for simplicity (delete all, re-add all)
     # In a real app, we might want to diff, but for a graph editor, full save is common.

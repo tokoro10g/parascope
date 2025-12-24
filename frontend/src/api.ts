@@ -11,6 +11,13 @@ export interface SheetSummary {
   id: string;
   name: string;
   owner_name?: string;
+  folder_id?: string;
+}
+
+export interface Folder {
+  id: string;
+  name: string;
+  parent_id?: string;
 }
 
 export interface NodeData {
@@ -38,11 +45,25 @@ export const api = {
     return res.json();
   },
 
-  async createSheet(name: string = 'Untitled'): Promise<Sheet> {
+  async listFolders(): Promise<Folder[]> {
+    const res = await fetch(`${API_BASE}/sheets/folders`);
+    return res.json();
+  },
+
+  async createFolder(name: string, parent_id?: string): Promise<Folder> {
+    const res = await fetch(`${API_BASE}/sheets/folders`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ name, parent_id }),
+    });
+    return res.json();
+  },
+
+  async createSheet(name: string = 'Untitled', folder_id?: string): Promise<Sheet> {
     const res = await fetch(`${API_BASE}/sheets/`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ name }),
+      body: JSON.stringify({ name, folder_id }),
     });
     return res.json();
   },
