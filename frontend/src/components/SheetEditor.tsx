@@ -237,6 +237,8 @@ export const SheetEditor: React.FC = () => {
       await editor.editor.addNode(node);
       await editor.area.translate(node.id, { x: 100, y: 100 });
 
+      setEditingNode(node);
+
       const newNodeData = {
           id,
           type,
@@ -281,6 +283,8 @@ export const SheetEditor: React.FC = () => {
 
           await editor.editor.addNode(node);
           await editor.area.translate(node.id, { x: 100, y: 100 });
+
+          setEditingNode(node);
 
           const newNodeData = {
               id,
@@ -426,6 +430,8 @@ export const SheetEditor: React.FC = () => {
       }
 
       await editor.area.update('node', nodeId);
+
+      setIsDirty(true);
 
       const graphData = editor.getGraphData();
       setCurrentSheet(prev => prev ? { ...prev, nodes: graphData.nodes } : null);
