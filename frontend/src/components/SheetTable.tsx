@@ -57,11 +57,6 @@ export const SheetTable: React.FC<SheetTableProps> = ({ nodes, onUpdateValue, on
             const nameControl = node.controls['name'] as any;
             const valueControl = node.controls['value'] as any;
             const unitControl = node.controls['unit'] as any;
-            // For Output nodes, we might need to look at the input socket or some other state
-            // But currently, Output nodes don't store the calculated value in a control.
-            // The calculated value comes from the evaluator result.
-            // However, the requirement says "Table view of parameters and outputs".
-            // For now, let's display what we have.
             
             const name = nameControl?.value || node.label;
             const value = valueControl?.value;

@@ -71,6 +71,16 @@ export class ParascopeNode extends Classic.Node {
         }),
       );
     }
+
+    if (type === 'parameter' || type === 'input' || type === 'output') {
+      this.addControl(
+          'unit',
+          new Classic.InputControl('text', {
+              initial: data.unit || '',
+              readonly: true,
+          })
+      );
+    }
   }
 }
 
@@ -347,16 +357,29 @@ export async function createEditor(container: HTMLElement) {
 
     updateNodeValues: (inputs: Record<string, any>, outputs: Record<string, any>) => {
         editor.getNodes().forEach(node => {
-            const control = node.controls.value as Classic.InputControl<'text'>;
-            if (!control) return;
+            const valueControl = node.controls.value as Classic.InputControl<'text'>;
+            const unitControl = node.controls.unit as Classic.InputControl<'text'>;
+            if (!valueControl) return;
 
             if (node.type === 'input') {
-                const val = inputs[node.id] !== undefined ? inputs[node.id] : '';
-                control.setValue(String(val));
+                const val = inputs[node.id];
+                // For input nodes, we just display the value. The unit is static from definition.
+                // If the input value is a unit object, we extract the value.
+                if (val && typeof val === 'object' && 'val' in val) {
+                     valueControl.setValue(String(val.val));
+                } else {
+                     valueControl.setValue(String(val !== undefined ? val : ''));
+                }
                 area.update('node', node.id);
             } else if (node.type === 'output') {
-                const val = outputs[node.id] !== undefined ? outputs[node.id] : '';
-                control.setValue(String(val));
+                const val = outputs[node.id];
+                if (val && typeof val === 'object' && 'val' in val && 'unit' in val) {
+                    valueControl.setValue(String(val.val));
+                    if (unitControl) unitControl.setValue(String(val.unit));
+                } else {
+                    valueControl.setValue(String(val !== undefined ? val : ''));
+                    if (unitControl) unitControl.setValue('');
+                }
                 area.update('node', node.id);
             }
         });

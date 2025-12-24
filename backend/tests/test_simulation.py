@@ -115,20 +115,22 @@ async def test_physics_calculation_scenario():
         # 6. Verify Results
         # Mass
         assert results[mass_id]["value"]["val"] == 10
-        assert results[mass_id]["value"]["unit"] == "kilogram"
+        assert results[mass_id]["value"]["unit"] == "kg"
         # Accel
         assert results[accel_id]["value"]["val"] == 9.8
-        assert results[accel_id]["value"]["unit"] == "meter / second ** 2"
+        assert results[accel_id]["value"]["unit"] == "m / s ** 2"
         # Function (10 * 9.8 = 98.0)
         assert results[func_id]["result"]["val"] == 98.0
         # Unit string might vary slightly depending on pint version/config, but let's check basic structure
-        assert "kilogram" in results[func_id]["result"]["unit"]
-        assert "meter" in results[func_id]["result"]["unit"]
-        assert "second" in results[func_id]["result"]["unit"]
+        assert "kg" in results[func_id]["result"]["unit"]
+        assert "m" in results[func_id]["result"]["unit"]
+        assert "s" in results[func_id]["result"]["unit"]
         
         # Output
         assert results[output_id]["val"] == 98.0
-        assert "kilogram" in results[output_id]["unit"]
+        assert "kg" in results[output_id]["unit"]
+        assert "m" in results[output_id]["unit"]
+        assert "s" in results[output_id]["unit"]
 
         print("\nCalculation Successful!")
         print(f"Mass: {results[mass_id]}")

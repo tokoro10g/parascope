@@ -19,7 +19,7 @@ def serialize_result(val: Any) -> Any:
     # Check for pint Quantity using duck typing to handle multiprocessing/pickling issues
     # where the class might not match the local ureg.Quantity
     if hasattr(val, 'magnitude') and hasattr(val, 'units') and val.__class__.__name__ == 'Quantity':
-        return {"val": val.magnitude, "unit": str(val.units)}
+        return {"val": val.magnitude, "unit": f"{val.units:~P}"}
     if isinstance(val, dict):
         return {k: serialize_result(v) for k, v in val.items()}
     if isinstance(val, list):

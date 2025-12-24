@@ -98,16 +98,30 @@ export const NodeInspector: React.FC<NodeInspectorProps> = ({
           />
         </div>
 
-        {node.type === 'parameter' && (
-          <div className="form-group">
-            <label htmlFor="node-value">Value:</label>
-            <input 
-              id="node-value"
-              type="number"
-              value={data.value || 0} 
-              onChange={e => setData({ ...data, value: parseFloat(e.target.value) })} 
-            />
-          </div>
+        {(node.type === 'parameter' || node.type === 'input') && (
+          <>
+            {node.type === 'parameter' && (
+            <div className="form-group">
+              <label htmlFor="node-value">Value:</label>
+              <input 
+                id="node-value"
+                type="number"
+                value={data.value || 0} 
+                onChange={e => setData({ ...data, value: parseFloat(e.target.value) })} 
+              />
+            </div>
+            )}
+            <div className="form-group">
+              <label htmlFor="node-unit">Unit:</label>
+              <input 
+                id="node-unit"
+                type="text"
+                value={data.unit || ''} 
+                onChange={e => setData({ ...data, unit: e.target.value })} 
+                placeholder="e.g. kg, m/s^2"
+              />
+            </div>
+          </>
         )}
 
         {node.type === 'function' && (

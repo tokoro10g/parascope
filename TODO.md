@@ -65,7 +65,8 @@ Generated from `SPECIFICATIONS.tsv`.
     - [ ] Inputs: Name, Options List, Selected Value (BB-OPT-01.0).
     - [ ] UI: Dropdown menu for selection (BB-OPT-01.0).
 - [ ] **Parameter Node**:
-    - [ ] Inputs: Name, Value, Unit, Range, Description (BB-P-01.0 - BB-P-05.0).
+    - [x] Inputs: Name, Value, Unit (BB-P-01.0, BB-P-04.0).
+    - [ ] Inputs: Range, Description (BB-P-02.0, BB-P-03.0, BB-P-05.0).
     - [ ] Validation: Python variable name constraints (BB-P-02.0).
     - [ ] Markdown rendering for description (BB-P-03.0).
 - [ ] **Function Node**:
