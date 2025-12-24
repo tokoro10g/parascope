@@ -510,20 +510,7 @@ export const SheetEditor: React.FC = () => {
           <Panel defaultSize={70} minSize={30}>
             <div className="rete-container" style={{ width: '100%', height: '100%', position: 'relative' }}>
                 {isLoading && (
-                    <div style={{
-                        position: 'absolute',
-                        top: 0,
-                        left: 0,
-                        right: 0,
-                        bottom: 0,
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                        backgroundColor: '#f5f5f5',
-                        zIndex: 20,
-                        color: '#666',
-                        fontSize: '1.2em'
-                    }}>
+                    <div className="loading-overlay">
                         Loading...
                     </div>
                 )}

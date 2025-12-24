@@ -145,6 +145,21 @@
     margin-right: 0;
 }
 
+.loading-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: #f5f5f5;
+  z-index: 20;
+  color: #666;
+  font-size: 1.2em;
+}
+
 /* Bottom Status Bar Evaluator */
 .rete-container .evaluator-bar {
   position: absolute;
@@ -618,6 +633,11 @@
   .rete-container .evaluator-bar {
     background-color: #222;
     border-top-color: #444;
+    color: #eee;
+  }
+
+  .loading-overlay {
+    background-color: #222;
     color: #eee;
   }
 }
