@@ -141,6 +141,12 @@ export async function createEditor(container: HTMLElement) {
                     label: 'Delete',
                     key: 'delete',
                     handler: async () => {
+                        const connections = editor.getConnections().filter(c => {
+                            return c.source === context.id || c.target === context.id;
+                        });
+                        for (const c of connections) {
+                            await editor.removeConnection(c.id);
+                        }
                         await editor.removeNode(context.id);
                     }
                 }
