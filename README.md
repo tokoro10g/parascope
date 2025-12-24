@@ -47,7 +47,7 @@ The easiest way to run Parascope is using Docker Compose.
     ```
 
 4.  **Access the application**:
-    *   **Frontend**: Open [http://localhost:5173](http://localhost:5173) in your browser.
+    *   **Frontend**: Open [http://localhost:3000](http://localhost:3000) in your browser.
     *   **Backend API Docs**: Open [http://localhost:8000/docs](http://localhost:8000/docs).
 
 ## 📂 Project Structure
