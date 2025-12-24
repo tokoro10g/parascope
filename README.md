@@ -1,73 +1,88 @@
-# React + TypeScript + Vite
+# Parascope
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+**Parascope** is a sophisticated node-based engineering calculation platform. It allows users to define complex engineering models using a visual graph interface, where nodes represent parameters, mathematical functions, or entire nested calculation sheets.
 
-Currently, two official plugins are available:
+## 🚀 Features
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) (or [oxc](https://oxc.rs) when used in [rolldown-vite](https://vite.dev/guide/rolldown)) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+*   **Visual Graph Editor**: Intuitive node-based interface built with [Rete.js](https://retejs.org/).
+*   **Python-Powered Calculations**: Backend execution engine runs Python code for function nodes, supporting libraries like `math`.
+*   **Nested Sheets**: Create reusable calculation modules (sheets) and import them into other sheets as single nodes.
+*   **Real-time Evaluation**: Instant feedback on calculation results as you modify the graph.
+*   **Engineering Examples**: Comes pre-seeded with examples like the Tsiolkovsky Rocket Equation, Aerodynamic Drag, and SSTO Feasibility checks.
+*   **Modern Stack**: Built with React, FastAPI, and PostgreSQL.
 
-## React Compiler
+## 🛠️ Tech Stack
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+### Frontend
+*   **Framework**: React 18 + TypeScript + Vite
+*   **Graph Library**: Rete.js (Classic Preset)
+*   **Styling**: CSS Modules, Lucide React (Icons)
+*   **Package Manager**: pnpm
 
-## Expanding the ESLint configuration
+### Backend
+*   **Framework**: FastAPI (Python 3.12)
+*   **Database**: PostgreSQL 16
+*   **ORM**: SQLAlchemy (Async)
+*   **Runtime**: Docker / Docker Compose
 
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
+## 🏁 Quick Start
 
-```js
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
+The easiest way to run Parascope is using Docker Compose.
 
-      // Remove tseslint.configs.recommended and replace with this
-      tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      tseslint.configs.stylisticTypeChecked,
+1.  **Clone the repository**:
+    ```bash
+    git clone https://github.com/yourusername/parascope.git
+    cd parascope
+    ```
 
-      // Other configs...
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+2.  **Configure the environment**:
+    Create a `.env` file from the example.
+    ```bash
+    cp .env.example .env
+    ```
+
+3.  **Start the application**:
+    ```bash
+    docker-compose up --build
+    ```
+
+4.  **Access the application**:
+    *   **Frontend**: Open [http://localhost:5173](http://localhost:5173) in your browser.
+    *   **Backend API Docs**: Open [http://localhost:8000/docs](http://localhost:8000/docs).
+
+## 📂 Project Structure
+
+```
+parascope/
+├── backend/            # FastAPI application
+│   ├── src/
+│   │   ├── api/        # API Routes
+│   │   ├── core/       # Execution engine & config
+│   │   ├── models/     # Database models
+│   │   └── schemas/    # Pydantic schemas
+│   └── tests/          # Pytest suite
+├── frontend/           # React application
+│   ├── src/
+│   │   ├── components/ # React UI components
+│   │   └── rete/       # Rete.js customization
+└── docker-compose.yml  # Orchestration
 ```
 
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
+## ⚙️ Configuration
 
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
+The application is configured via environment variables defined in a `.env` file. You can copy `.env.example` to `.env` to get started.
 
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs['recommended-typescript'],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
-```
+Key variables:
+*   `SERVER_HOSTNAME`: Hostname for the server (default: `localhost`).
+*   `FRONTEND_PORT`: Port for the frontend application (default: `3000`).
+*   `BACKEND_PORT`: Port for the backend API (default: `8000`).
+
+## 🧪 Database Seeding
+
+On the first run, the database is automatically seeded with example engineering sheets:
+1.  **Tsiolkovsky Rocket Equation**: Basic delta-v calculation.
+2.  **Dynamic Pressure**: Aerodynamic pressure calculation.
+3.  **Aerodynamic Drag**: Nested sheet importing Dynamic Pressure.
+4.  **SSTO Feasibility Check**: Complex system importing the Rocket Equation.
+
+To reset the database to these defaults, you can clear the `sheets` table or restart the backend with a fresh volume.
