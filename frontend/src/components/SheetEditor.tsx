@@ -230,7 +230,14 @@ export const SheetEditor: React.FC = () => {
               break;
       }
 
-      const node = new ParascopeNode(type, label, inputs, outputs, data);
+      const node = new ParascopeNode(
+          type, 
+          label, 
+          inputs, 
+          outputs, 
+          data,
+          () => setIsDirty(true)
+      );
       node.id = id;
       node.dbId = id;
 
@@ -277,7 +284,14 @@ export const SheetEditor: React.FC = () => {
           const label = sheet.name;
           const data = { sheetId: sheet.id };
 
-          const node = new ParascopeNode(type, label, inputs, outputs, data);
+          const node = new ParascopeNode(
+              type, 
+              label, 
+              inputs, 
+              outputs, 
+              data,
+              () => setIsDirty(true)
+          );
           node.id = id;
           node.dbId = id;
 

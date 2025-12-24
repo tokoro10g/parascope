@@ -38,6 +38,7 @@ export class ParascopeNode extends Classic.Node {
     inputs: { key: string; socket_type: string }[],
     outputs: { key: string; socket_type: string }[],
     data: Record<string, any> = {},
+    onChange?: (value: any) => void,
   ) {
     super(label);
     this.type = type;
@@ -66,6 +67,7 @@ export class ParascopeNode extends Classic.Node {
         new Classic.InputControl('text', {
           initial: String(data.value),
           readonly: false,
+          change: onChange,
         }),
       );
     }
@@ -234,7 +236,14 @@ export async function createEditor(container: HTMLElement) {
         const inputs = Array.isArray(n.inputs) ? n.inputs : [];
         const outputs = Array.isArray(n.outputs) ? n.outputs : [];
 
-        const node = new ParascopeNode(n.type, n.label || n.type, inputs, outputs, n.data || {});
+        const node = new ParascopeNode(
+            n.type, 
+            n.label || n.type, 
+            inputs, 
+            outputs, 
+            n.data || {},
+            () => { if (onGraphChange) onGraphChange(); }
+        );
         node.id = n.id; // Use the DB ID as the Rete ID
         node.dbId = n.id;
         // node.label is already set by super(label)
