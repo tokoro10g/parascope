@@ -43,6 +43,17 @@
   background-color: var(--panel-bg-secondary);
 }
 
+@keyframes blink-highlight {
+  0% { background-color: rgba(0, 255, 0, 0.5); }
+  100% { background-color: transparent; }
+}
+
+.value-blink {
+  animation: blink-highlight 1s ease-out;
+  border-radius: 4px;
+  padding: 0 4px;
+}
+
 .sheet-name-input {
   font-size: 1.25rem;
   font-weight: 700;

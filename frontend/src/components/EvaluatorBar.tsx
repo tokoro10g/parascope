@@ -63,7 +63,7 @@ export const EvaluatorBar: React.FC<EvaluatorBarProps> = ({
             return (
             <span key={output.id} className="output-param">
                 <span className="label">{output.label}:</span>
-                <span className="value">{displayValue}</span>
+                <span key={output.value} className="value value-blink">{displayValue}</span>
                 {i < outputs.length - 1 && <span className="comma">, </span>}
             </span>
             );
