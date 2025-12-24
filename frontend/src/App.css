@@ -107,13 +107,48 @@
   border-radius: 4px;
   padding: 10px;
   background: white;
-}
-
-.sheet-item a {
-  text-decoration: none;
   display: flex;
   justify-content: space-between;
   align-items: center;
+}
+
+.sheet-item .sheet-link {
+  text-decoration: none;
+  flex-grow: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+.sheet-item .sheet-info {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    width: 100%;
+}
+
+.sheet-item .sheet-actions {
+    display: flex;
+    gap: 8px;
+    margin-left: 16px;
+}
+
+.sheet-item .sheet-actions button {
+    padding: 6px;
+    font-size: 0.8em;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    line-height: 1;
+}
+
+.sheet-item .sheet-actions button.danger {
+    background-color: #ff4d4f;
+    color: white;
+    border: none;
+}
+
+.sheet-item .sheet-actions button.danger:hover {
+    background-color: #ff7875;
 }
 
 .sheet-item:hover {

@@ -16,6 +16,7 @@
     "@types/three": "^0.156.0",
     "d3-shape": "^3.2.0",
     "elkjs": "^0.8.2",
+    "lucide-react": "^0.562.0",
     "react": "^19.2.3",
     "react-dom": "^19.2.3",
     "react-resizable-panels": "^4.0.15",

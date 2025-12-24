@@ -15,7 +15,7 @@ Generated from `SPECIFICATIONS.tsv`.
     - [x] Use UUIDs for all entity primary keys (DH-04.0).
 - [x] **API**: Create endpoints for saving/loading graphs and values (DH-01.0, DH-02.0).
     - [x] Create endpoint for listing sheets by owner (DH-05.0).
-    - [ ] Create endpoint for cloning sheets (DH-06.0).
+    - [x] Create endpoint for cloning sheets (DH-06.0).
     - [ ] Ensure URL-injected values are treated as transient (not saved) (DH-08.0).
 - [x] **Graph Engine**: Implement DAG logic with `networkx` (CF-01.0).
     - [x] Ensure circular dependencies are rejected (CF-01.0).
@@ -48,6 +48,8 @@ Generated from `SPECIFICATIONS.tsv`.
     - [x] Implement route `/sheet/:sheetId` to load specific graphs (UI-03.0).
     - [x] Handle URL hash fragments to focus specific nodes (UI-04.0).
     - [x] Implement route `/dashboard` for sheet list (UI-10.0).
+    - [x] Implement Delete Sheet action (UI-11.0).
+    - [x] Implement Duplicate Sheet action (UI-12.0).
     - [x] Implement URL query parameter parsing for value overrides (UI-07.0).
 - [ ] **Authentication**:
     - [ ] Implement "Name" prompt on first visit (AUTH-02.0).

@@ -1,4 +1,4 @@
-from uuid import UUID
+from uuid import UUID, uuid4
 
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy import select
@@ -43,6 +43,8 @@ async def create_sheet(sheet_in: SheetCreate, db: AsyncSession = Depends(get_db)
             db_node.id = node_in.id
         db.add(db_node)
     
+    await db.flush()
+
     # Create Connections
     for conn_in in sheet_in.connections:
         db_conn = Connection(
@@ -142,10 +144,92 @@ async def update_sheet(sheet_id: UUID, sheet_in: SheetUpdate, db: AsyncSession =
                 source_handle=conn_in.source_handle,
                 target_handle=conn_in.target_handle
             )
-            if conn_in.id:
-                db_conn.id = conn_in.id
-            db_sheet.connections.append(db_conn)
-
+            db.add(db_conn)
     await db.commit()
     await db.refresh(db_sheet, attribute_names=["nodes", "connections"])
     return db_sheet
+
+@router.post("/{sheet_id}/duplicate", response_model=SheetRead)
+async def duplicate_sheet(sheet_id: UUID, db: AsyncSession = Depends(get_db)):
+    # Fetch source sheet
+    query = select(Sheet).where(Sheet.id == sheet_id).options(
+        selectinload(Sheet.nodes),
+        selectinload(Sheet.connections)
+    )
+    result = await db.execute(query)
+    source_sheet = result.scalar_one_or_none()
+    if not source_sheet:
+        raise HTTPException(status_code=404, detail="Sheet not found")
+
+    # Create new sheet
+    new_sheet = Sheet(
+        name=f"{source_sheet.name} (Copy)",
+        owner_name=source_sheet.owner_name
+    )
+    db.add(new_sheet)
+    await db.flush()
+
+    # Map old node IDs to new node IDs
+    node_id_map = {}
+
+    # Duplicate Nodes
+    for node in source_sheet.nodes:
+        new_node_id = uuid4()
+        node_id_map[node.id] = new_node_id
+        
+        new_node = Node(
+            id=new_node_id,
+            sheet_id=new_sheet.id,
+            type=node.type,
+            label=node.label,
+            inputs=node.inputs,
+            outputs=node.outputs,
+            position_x=node.position_x,
+            position_y=node.position_y,
+            data=node.data
+        )
+        db.add(new_node)
+    
+    await db.flush()
+
+    # Duplicate Connections
+    for conn in source_sheet.connections:
+        # Ensure both source and target nodes exist in the map
+        if conn.source_id in node_id_map and conn.target_id in node_id_map:
+            new_conn = Connection(
+                sheet_id=new_sheet.id,
+                source_id=node_id_map[conn.source_id],
+                target_id=node_id_map[conn.target_id],
+                source_port=conn.source_port,
+                target_port=conn.target_port,
+                source_handle=conn.source_handle,
+                target_handle=conn.target_handle
+            )
+            db.add(new_conn)
+
+    await db.commit()
+    await db.refresh(new_sheet, attribute_names=["nodes", "connections"])
+    return new_sheet
+
+@router.delete("/{sheet_id}", status_code=204)
+async def delete_sheet(sheet_id: UUID, db: AsyncSession = Depends(get_db)):
+    # Check if sheet is used in other sheets
+    query_deps = select(Sheet).join(Node).where(
+        Node.type == 'sheet',
+        Node.data['sheetId'].astext == str(sheet_id)
+    )
+    result_deps = await db.execute(query_deps)
+    parent_sheet = result_deps.scalars().first()
+    
+    if parent_sheet:
+        raise HTTPException(status_code=400, detail=f"Cannot delete sheet. It is used in '{parent_sheet.name}'")
+
+    query = select(Sheet).where(Sheet.id == sheet_id)
+    result = await db.execute(query)
+    sheet = result.scalar_one_or_none()
+    if not sheet:
+        raise HTTPException(status_code=404, detail="Sheet not found")
+    
+    await db.delete(sheet)
+    await db.commit()
+    return None

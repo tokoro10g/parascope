@@ -61,6 +61,27 @@ export const api = {
     return res.json();
   },
 
+  async duplicateSheet(id: string): Promise<Sheet> {
+    const res = await fetch(`${API_BASE}/sheets/${id}/duplicate`, {
+      method: 'POST',
+    });
+    if (!res.ok) {
+      const err = await res.json();
+      throw new Error(err.detail || 'Failed to duplicate sheet');
+    }
+    return res.json();
+  },
+
+  async deleteSheet(id: string): Promise<void> {
+    const res = await fetch(`${API_BASE}/sheets/${id}`, {
+      method: 'DELETE',
+    });
+    if (!res.ok) {
+      const err = await res.json();
+      throw new Error(err.detail || 'Failed to delete sheet');
+    }
+  },
+
   async calculate(sheetId: string, inputs?: Record<string, any>): Promise<Record<string, any>> {
     const res = await fetch(`${API_BASE}/calculate/${sheetId}`, {
       method: 'POST',

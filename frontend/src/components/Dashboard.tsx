@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
+import { Copy, Trash2 } from 'lucide-react';
 import { api, type SheetSummary } from '../api';
 
 export const Dashboard: React.FC = () => {
@@ -29,6 +30,32 @@ export const Dashboard: React.FC = () => {
     }
   };
 
+  const handleDuplicate = async (e: React.MouseEvent, id: string) => {
+    e.preventDefault();
+    e.stopPropagation();
+    try {
+      await api.duplicateSheet(id);
+      loadSheets();
+    } catch (e: any) {
+      console.error(e);
+      alert(`Error duplicating sheet: ${e.message || e}`);
+    }
+  };
+
+  const handleDelete = async (e: React.MouseEvent, id: string) => {
+    e.preventDefault();
+    e.stopPropagation();
+    if (!confirm('Are you sure you want to delete this sheet?')) return;
+    
+    try {
+      await api.deleteSheet(id);
+      loadSheets();
+    } catch (e: any) {
+      console.error(e);
+      alert(`Error deleting sheet: ${e.message || e}`);
+    }
+  };
+
   return (
     <div className="dashboard">
       <h1>Parascope Dashboard</h1>
@@ -38,10 +65,20 @@ export const Dashboard: React.FC = () => {
       <div className="sheet-list">
         {sheets.map((sheet) => (
           <div key={sheet.id} className="sheet-item">
-            <Link to={`/sheet/${sheet.id}`}>
-              <span className="sheet-name">{sheet.name}</span>
-              <span className="sheet-id">{sheet.id}</span>
+            <Link to={`/sheet/${sheet.id}`} className="sheet-link">
+              <div className="sheet-info">
+                <span className="sheet-name">{sheet.name}</span>
+                <span className="sheet-id">{sheet.id}</span>
+              </div>
             </Link>
+            <div className="sheet-actions">
+                <button onClick={(e) => handleDuplicate(e, sheet.id)} title="Duplicate">
+                    <Copy size={16} />
+                </button>
+                <button onClick={(e) => handleDelete(e, sheet.id)} title="Delete" className="danger">
+                    <Trash2 size={16} />
+                </button>
+            </div>
           </div>
         ))}
       </div>
