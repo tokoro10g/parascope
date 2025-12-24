@@ -45,7 +45,7 @@ Generated from `SPECIFICATIONS.tsv`.
     - [ ] Implement Connection constraints (Max 1 input, Multiple outputs) (BB-C-01.0).
     - [x] Implement Editor Toolbar (UI-17.0).
     - [ ] Implement Keyboard Shortcuts (Delete, Ctrl+S) (UI-19.0).
-    - [ ] Auto-open Node Inspector on creation (UI-24.0).
+    - [x] Auto-open Node Inspector on creation (UI-24.0).
 - [x] **Routing**:
     - [x] Implement route `/sheet/:sheetId` to load specific graphs (UI-03.0).
     - [x] Handle URL hash fragments to focus specific nodes (UI-04.0).
@@ -85,13 +85,13 @@ Generated from `SPECIFICATIONS.tsv`.
     - [x] Implement Sheet Name editor (UI-14.0).
     - [ ] Implement Console/Log viewer for selected node (UI-18.0).
     - [x] Implement "Unsaved Changes" indicator (UI-20.0).
-    - [ ] Trigger unsaved state on Parameter value/Function code changes (UI-25.0).
-    - [ ] Implement distinct visual style for Nested Sheet nodes (UI-21.0).
-    - [ ] **Table View**:
-        - [ ] Implement Table View Sidebar component (UI-22.0).
-        - [ ] Filter nodes to show only Parameters and Outputs.
-        - [ ] Implement editable cells for Parameter values.
-        - [ ] Sync updates between Table and Graph.
+    - [x] Trigger unsaved state on Parameter value/Function code changes (UI-25.0).
+    - [x] Implement distinct visual style for Nested Sheet nodes (UI-21.0).
+    - [x] **Table View**:
+        - [x] Implement Table View Sidebar component (UI-22.0).
+        - [x] Filter nodes to show only Parameters and Outputs.
+        - [x] Implement editable cells for Parameter values.
+        - [x] Sync updates between Table and Graph.
 
 ## 4. Integration & Logic (Initial Release)
 - [ ] **Real-time Recalculation**: Trigger backend calc on input change (UI-01.0).

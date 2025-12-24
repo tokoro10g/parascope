@@ -12,11 +12,17 @@ This document outlines typical user journeys to validate system requirements and
     *   **System**: Sets cookie. Modal closes.
 3.  **Creation**: User sees a blank grid (The Sheet).
     *   **Action**: Clicks "Add Parameter" on the **Toolbar**.
+    *   **System**: Automatically opens the **Node Inspector** dialog.
     *   **Input**: Name: `mass`, Value: `10`, Unit: `kg`.
+    *   **Action**: Clicks "Save" in the dialog.
     *   **Action**: Clicks "Add Parameter" on the **Toolbar**.
+    *   **System**: Automatically opens the **Node Inspector** dialog.
     *   **Input**: Name: `accel`, Value: `9.8`, Unit: `m/s^2`.
+    *   **Action**: Clicks "Save" in the dialog.
     *   **Action**: Clicks "Add Function" on the **Toolbar**.
+    *   **System**: Automatically opens the **Node Inspector** dialog.
     *   **Input**: Name: `calc_force`, Code: `return mass * accel`.
+    *   **Action**: Clicks "Save" in the dialog.
 4.  **Wiring**:
     *   **Action**: Drags wire from `mass` output to `calc_force` input.
     *   **Action**: Drags wire from `accel` output to `calc_force` input.
@@ -181,3 +187,18 @@ This document outlines typical user journeys to validate system requirements and
     *   **System**: Background worker detects execution time > 5 seconds.
     *   **System**: Terminates process.
     *   **UI**: Node turns red. Error: `TimeoutError: Function execution exceeded 5s limit`.
+
+## Scenario 11: Table View & Data Export
+**Goal**: View all parameters in a list and export them to a spreadsheet.
+
+1.  **Context**: Alice has a complex sheet with 20 parameters scattered across the canvas.
+2.  **Table View**:
+    *   **Action**: Alice looks at the right sidebar (Table View).
+    *   **UI**: She sees a compact table listing all Parameters and Outputs.
+    *   **Action**: She edits the value of `mass` directly in the table from `10` to `15`.
+    *   **System**: The graph updates immediately, and `force` recalculates to `147.0`.
+3.  **Export**:
+    *   **Action**: Alice clicks the "Copy Table" button in the sidebar.
+    *   **System**: Copies the table data (Name, Type, Value, Unit) to the clipboard in TSV format.
+    *   **Action**: Alice pastes into Excel.
+    *   **Result**: The data appears correctly formatted in columns.
