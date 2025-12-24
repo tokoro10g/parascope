@@ -412,4 +412,43 @@
     background-color: #5c1e1e;
     border-color: #f44336 !important;
   }
+
+  /* Table View Dark Mode */
+  .sheet-table {
+    background: #222;
+    border-left-color: #444;
+  }
+
+  .sheet-table h3 {
+    color: #eee;
+  }
+
+  .sheet-table th, .sheet-table td {
+    border-bottom-color: #444;
+    color: #eee;
+  }
+
+  .sheet-table th {
+    background-color: #333;
+  }
+
+  .sheet-table tr:hover {
+    background-color: #333;
+  }
+
+  .sheet-table input {
+    background: #333;
+    border-color: #555;
+    color: #eee;
+  }
+
+  .sheet-table button {
+    background: #333;
+    border-color: #555;
+    color: #eee;
+  }
+
+  .sheet-table button:hover {
+    background: #444;
+  }
 }

@@ -27,6 +27,11 @@ Generated from `SPECIFICATIONS.tsv`.
     - [x] Implement variable binding logic (map Parameters/Options to code variables) (BB-F-06.0).
     - [x] Implement execution timeout logic (e.g., 5s limit) (EH-11.0).
     - [x] Implement `stdout` capture for user functions (UI-18.0).
+    - [ ] **Optimization (Graph Compilation)**:
+        - [ ] Implement Topological Sort for execution order (EE-02.0).
+        - [ ] Implement Python Code Generator to transpile DAG to single script (EE-02.0).
+        - [ ] Refactor `calculate` endpoint to execute generated script (EE-02.0).
+        - [ ] Map execution errors back to original nodes (EH-01.0).
 - [ ] **Error Handling**:
     - [x] Catch user code exceptions and return stack traces (EH-01.0).
     - [x] Fail calculation if Input Node values are missing (EH-12.0).
