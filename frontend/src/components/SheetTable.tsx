@@ -74,7 +74,6 @@ export const SheetTable: React.FC<SheetTableProps> = ({ nodes, onUpdateValue, on
                 <td>
                   {isParameter ? (
                     <input
-                      type="number"
                       value={value}
                       onChange={(e) => onUpdateValue(node.id, parseFloat(e.target.value))}
                       onClick={(e) => e.stopPropagation()} // Prevent row selection when editing
