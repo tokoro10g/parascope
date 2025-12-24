@@ -19,8 +19,8 @@
   justify-content: space-between;
   align-items: center;
   padding: 10px;
-  background-color: #f0f0f0;
-  border-bottom: 1px solid #ccc;
+  background-color: var(--panel-bg);
+  border-bottom: 1px solid var(--border-color);
 }
 
 .toolbar-group {
@@ -40,13 +40,13 @@
 }
 
 .editor-bar {
-  background-color: #e0e0e0;
+  background-color: var(--panel-bg-secondary);
 }
 
 .sheet-name-input {
   font-size: 1.25rem;
   font-weight: 700;
-  color: #2c3e50;
+  color: var(--text-color);
   background: transparent;
   border: 1px solid transparent;
   border-radius: 4px;
@@ -57,20 +57,21 @@
 }
 
 .sheet-name-input:hover {
-  border-color: #bbb;
-  background-color: rgba(255, 255, 255, 0.5);
+  border-color: var(--border-color);
+  background-color: var(--panel-bg-translucent);
 }
 
 .sheet-name-input:focus {
-  border-color: #646cff;
-  background-color: #fff;
+  border-color: var(--primary-color);
+  background-color: var(--input-bg);
+  color: var(--text-color);
   outline: none;
   box-shadow: 0 0 0 2px rgba(100, 108, 255, 0.2);
 }
 
 .evaluator-bar {
-  background-color: #f8f9fa;
-  border-bottom: 1px solid #ccc;
+  background-color: var(--panel-bg);
+  border-bottom: 1px solid var(--border-color);
   padding: 8px 10px;
   font-family: monospace;
   display: flex;
@@ -88,7 +89,7 @@
 
 .sheet-name {
   font-weight: bold;
-  color: #333;
+  color: var(--text-color);
 }
 
 /* Dashboard Styles */
@@ -109,13 +110,14 @@
   width: auto;
   max-width: calc(100% - 20px);
   z-index: 10;
-  background-color: rgba(255, 255, 255, 0.95);
-  border: 1px solid #ddd;
+  background-color: var(--panel-bg-translucent);
+  border: 1px solid var(--border-light);
   border-radius: 8px;
   box-shadow: 0 4px 6px rgba(0,0,0,0.1);
   padding: 8px;
   gap: 8px;
   flex-wrap: wrap;
+  color: var(--text-color);
 }
 
 .rete-container .editor-bar .toolbar-group {
@@ -141,8 +143,27 @@
 .rete-container .editor-bar .sheet-name-input {
     width: 100%;
     min-width: 100px;
-    background-color: white;
+    background-color: var(--input-bg);
+    color: var(--text-color);
     margin-right: 0;
+    border-color: transparent;
+}
+
+.rete-container .editor-bar .sheet-name-input:focus {
+    border-color: var(--primary-color);
+}
+
+.rete-container .editor-bar button {
+    background-color: var(--button-bg);
+    border: 1px solid var(--border-light);
+    color: var(--text-color);
+    border-radius: 4px;
+    cursor: pointer;
+}
+
+.rete-container .editor-bar button:hover {
+    background-color: var(--item-hover);
+    border-color: var(--primary-color);
 }
 
 .loading-overlay {
@@ -154,9 +175,9 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  background-color: #f5f5f5;
+  background-color: var(--bg-color);
   z-index: 20;
-  color: #666;
+  color: var(--text-secondary);
   font-size: 1.2em;
 }
 
@@ -167,15 +188,16 @@
   left: 0;
   width: 100%;
   z-index: 10;
-  background-color: #f8f9fa;
+  background-color: var(--panel-bg);
   border: none;
-  border-top: 1px solid #ccc;
+  border-top: 1px solid var(--border-color);
   border-radius: 0;
   box-shadow: 0 -2px 5px rgba(0,0,0,0.05);
   padding: 8px 16px;
   transform: none;
   max-width: none;
   box-sizing: border-box;
+  color: var(--text-color);
 }
 
 .dashboard h1 {
@@ -193,10 +215,10 @@
 }
 
 .sheet-item {
-  border: 1px solid #ddd;
+  border: 1px solid var(--border-light);
   border-radius: 4px;
   padding: 10px;
-  background: white;
+  background: var(--item-bg);
   display: flex;
   justify-content: space-between;
   align-items: center;
@@ -235,30 +257,30 @@
 }
 
 .sheet-item .sheet-actions button.danger {
-    background-color: #ff4d4f;
+    background-color: var(--danger-color);
     color: white;
     border: none;
 }
 
 .sheet-item .sheet-actions button.danger:hover {
-    background-color: #ff7875;
+    background-color: var(--danger-hover);
 }
 
 .sheet-item:hover {
-  background: #f9f9f9;
+  background: var(--item-hover);
 }
 
 .folder-item {
   cursor: pointer;
-  background-color: #f8f9fa;
+  background-color: var(--panel-bg);
 }
 
 .folder-item:hover {
-  background-color: #e9ecef;
+  background-color: var(--item-hover);
 }
 
 .sheet-id {
-  color: #999;
+  color: var(--text-muted);
   font-size: 0.7em;
   font-family: monospace;
 }
@@ -288,22 +310,22 @@
 }
 
 .paren, .comma, .arrow {
-  color: #666;
+  color: var(--text-secondary);
   font-weight: bold;
 }
 
 .input-param, .output-param {
   display: inline-flex;
   align-items: center;
-  background: #fff;
+  background: var(--item-bg);
   padding: 2px 6px;
   border-radius: 4px;
-  border: 1px solid #ddd;
+  border: 1px solid var(--border-light);
 }
 
 .input-param label, .output-param .label {
   margin-right: 4px;
-  color: #555;
+  color: var(--text-secondary);
 }
 
 .output-param .value {
@@ -312,12 +334,14 @@
 }
 
 .input-param input {
-  border: 1px solid #ccc;
+  border: 1px solid var(--border-color);
   border-radius: 2px;
   padding: 2px 4px;
   font-family: inherit;
   font-size: inherit;
   width: 80px;
+  background: var(--input-bg);
+  color: var(--text-color);
 }
 
 .toolbar-group {
@@ -353,8 +377,8 @@
 .sheet-table {
   width: 100%;
   height: 100%;
-  background: #f8f9fa;
-  border-left: 1px solid #ccc;
+  background: var(--bg-color);
+  border-left: 1px solid var(--border-color);
   padding: 10px;
   overflow-y: auto;
   display: flex;
@@ -366,7 +390,7 @@
   margin-top: 0;
   margin-bottom: 10px;
   font-size: 1.1em;
-  color: #333;
+  color: var(--text-color);
 }
 
 .sheet-table table {
@@ -378,23 +402,36 @@
 .sheet-table th, .sheet-table td {
   text-align: left;
   padding: 6px;
-  border-bottom: 1px solid #ddd;
+  border-bottom: 1px solid var(--border-light);
+  color: var(--text-color);
 }
 
 .sheet-table th {
-  background-color: #e9ecef;
+  background-color: var(--panel-bg-secondary);
   font-weight: 600;
 }
 
 .sheet-table tr:hover {
-  background-color: #f1f1f1;
+  background-color: var(--item-hover);
 }
 
 .sheet-table input {
   padding: 2px 4px;
-  border: 1px solid #ccc;
+  border: 1px solid var(--border-color);
   border-radius: 3px;
   box-sizing: border-box;
+  background: var(--input-bg);
+  color: var(--text-color);
+}
+
+.sheet-table button {
+  background: var(--button-bg);
+  border: 1px solid var(--border-color);
+  color: var(--text-color);
+}
+
+.sheet-table button:hover {
+  background: var(--item-hover);
 }
 
 /* Modal Styles */
@@ -412,7 +449,7 @@
 }
 
 .modal-content {
-  background: white;
+  background: var(--item-bg);
   padding: 20px;
   border-radius: 8px;
   width: 500px;
@@ -420,6 +457,7 @@
   max-height: 90vh;
   overflow-y: auto;
   box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  color: var(--text-color);
 }
 
 .form-group {
@@ -435,8 +473,10 @@
 .form-group input, .form-group textarea {
   width: 100%;
   padding: 8px;
-  border: 1px solid #ccc;
+  border: 1px solid var(--border-color);
   border-radius: 4px;
+  background: var(--input-bg);
+  color: var(--text-color);
 }
 
 .io-section {
@@ -458,7 +498,7 @@
   display: flex;
   justify-content: space-between;
   padding: 4px 0;
-  border-bottom: 1px solid #eee;
+  border-bottom: 1px solid var(--border-light);
 }
 
 .modal-actions {
@@ -475,169 +515,13 @@
 }
 
 .input-error {
-  border: 2px solid #f44336 !important;
+  border: 2px solid var(--danger-color) !important;
   background-color: #ffebee;
   outline: none;
 }
 
 @media (prefers-color-scheme: dark) {
-  .toolbar, .editor-bar, .evaluator-bar {
-    background-color: #333;
-    border-bottom-color: #444;
-  }
-
-  .sheet-name-input {
-    color: #eee;
-  }
-  
-  .sheet-name-input:hover {
-    background-color: rgba(255, 255, 255, 0.1);
-  }
-  
-  .sheet-name-input:focus {
-    background-color: #444;
-    color: #fff;
-  }
-
-  .sheet-name {
-    color: #eee;
-  }
-
-  .sheet-item {
-    background: #333;
-    border-color: #444;
-  }
-
-  .sheet-item:hover {
-    background: #444;
-  }
-
-  .folder-item {
-    background-color: #2a2a2a;
-    border-color: #444;
-  }
-
-  .folder-item:hover {
-    background-color: #3a3a3a;
-  }
-
-  .sheet-id {
-    color: #aaa;
-  }
-
-  .input-param, .output-param {
-    background: #444;
-    border-color: #555;
-  }
-
-  .input-param label, .output-param .label {
-    color: #ccc;
-  }
-  
-  .input-param input {
-    background: #222;
-    border-color: #555;
-    color: #eee;
-  }
-
-  .modal-content {
-    background: #333;
-    color: #eee;
-  }
-
-  .form-group input, .form-group textarea {
-    background: #222;
-    border-color: #555;
-    color: #eee;
-  }
-  
-  .io-column li {
-    border-bottom-color: #444;
-  }
-  
   .input-error {
     background-color: #5c1e1e;
-    border-color: #f44336 !important;
-  }
-
-  /* Table View Dark Mode */
-  .sheet-table {
-    background: #222;
-    border-left-color: #444;
-  }
-
-  .sheet-table h3 {
-    color: #eee;
-  }
-
-  .sheet-table th, .sheet-table td {
-    border-bottom-color: #444;
-    color: #eee;
-  }
-
-  .sheet-table th {
-    background-color: #333;
-  }
-
-  .sheet-table tr:hover {
-    background-color: #333;
-  }
-
-  .sheet-table input {
-    background: #333;
-    border-color: #555;
-    color: #eee;
-  }
-
-  .sheet-table button {
-    background: #333;
-    border-color: #555;
-    color: #eee;
-  }
-
-  .sheet-table button:hover {
-    background: #444;
-  }
-
-  /* Editor Bar Dark Mode */
-  .rete-container .editor-bar {
-    background-color: rgba(30, 30, 30, 0.95);
-    border-color: #444;
-    color: #eee;
-  }
-
-  .rete-container .editor-bar .sheet-name-input {
-    background-color: #222;
-    color: #eee;
-    border-color: #444;
-  }
-  
-  .rete-container .editor-bar .sheet-name-input:focus {
-    background-color: #333;
-    border-color: #646cff;
-  }
-
-  .rete-container .editor-bar button {
-    background-color: #333;
-    border: 1px solid #555;
-    color: #eee;
-    border-radius: 4px;
-    cursor: pointer;
-  }
-
-  .rete-container .editor-bar button:hover {
-    background-color: #444;
-  }
-
-  /* Evaluator Bar Dark Mode */
-  .rete-container .evaluator-bar {
-    background-color: #222;
-    border-top-color: #444;
-    color: #eee;
-  }
-
-  .loading-overlay {
-    background-color: #222;
-    color: #eee;
   }
 }

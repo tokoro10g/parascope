@@ -1,17 +1,27 @@
 .rete {
   position: relative;
   font-size: 1rem;
-  background: white;
+  background: var(--bg-color);
   text-align: left;
 }
 
-@media (prefers-color-scheme: dark) {
-  .rete {
-    background-color: #1e1e1e;
-    border-color: #646cff;
-    input {
-      background-color: #333;
-      border-color: #555;
-    }
-  }
+.rete input {
+  background-color: var(--input-bg);
+  border-color: var(--border-color);
+  color: var(--text-color);
 }
+
+.rete.headless {
+  overflow: hidden;
+  touch-action: none;
+  position: fixed;
+  left: 0;
+  top: 0;
+  width: 100%;
+  height: 100%;
+  border-radius: 0;
+  margin: 0;
+  border: none;
+}
+
+
