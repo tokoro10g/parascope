@@ -100,6 +100,7 @@ Generated from `SPECIFICATIONS.tsv`.
     - [x] Implement logic to expose Input/Output Nodes as sockets (BB-S-04.0).
     - [ ] Validate that all nested sheet inputs are connected (No defaults) (BB-S-05.0).
     - [x] Implement Sheet Picker Modal for importing (UI-16.0).
+    - [ ] Auto-calculate on load if inputs are satisfied (UI-27.0).
 - [ ] **Graph Integrity**:
     - [ ] Auto-remove connections on node deletion (EH-04.0).
     - [ ] Validate function dependencies before saving (EH-05.0).

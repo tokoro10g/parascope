@@ -133,6 +133,29 @@ export const SheetEditor: React.FC = () => {
       await editor.loadSheet(sheet, focusNodeId);
       setNodes([...editor.editor.getNodes()]);
       setIsDirty(false);
+
+      // Auto-calculate (UI-27.0)
+      const inputNodes = sheet.nodes.filter(n => n.type === 'input');
+      const inputsFromParams: Record<string, string> = {};
+      searchParams.forEach((value, key) => {
+          inputsFromParams[key] = value;
+      });
+
+      const allInputsProvided = inputNodes.every(n => n.id && inputsFromParams[n.id]);
+
+      if (inputNodes.length === 0 || allInputsProvided) {
+          setIsCalculating(true);
+          try {
+              const result = await api.calculate(sheet.id, inputsFromParams);
+              setLastResult(result);
+              editor.updateNodeValues(inputsFromParams, result);
+              setNodes([...editor.editor.getNodes()]);
+          } catch (e) {
+              console.error("Auto-calculation failed", e);
+          } finally {
+              setIsCalculating(false);
+          }
+      }
     } catch (e) {
       console.error(e);
       alert(`Error loading sheet: ${e}`);
