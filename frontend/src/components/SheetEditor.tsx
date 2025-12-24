@@ -123,6 +123,16 @@ export const SheetEditor: React.FC = () => {
       }
   }, [editor]);
 
+  const calcCenterPosition = () => {
+    if (!editor) return { x: 0, y: 0 };
+    const area = editor.area;
+    const bounds = area.container.getBoundingClientRect();
+    const zoom = area.area.transform.k;
+    const x = (bounds.width / 2 - area.area.transform.x) / zoom;
+    const y = (bounds.height / 2 - area.area.transform.y) / zoom;
+    return { x: x, y: y };
+  }
+
   const handleLoadSheet = async (id: string) => {
     if (!editor) return;
     setIsLoading(true);
@@ -269,7 +279,8 @@ export const SheetEditor: React.FC = () => {
       node.dbId = id;
 
       await editor.editor.addNode(node);
-      await editor.area.translate(node.id, { x: 100, y: 100 });
+      const centerPos = calcCenterPosition();
+      await editor.area.translate(node.id, centerPos);
 
       setEditingNode(node);
 
@@ -277,8 +288,8 @@ export const SheetEditor: React.FC = () => {
           id,
           type,
           label,
-          position_x: 100,
-          position_y: 100,
+          position_x: centerPos.x,
+          position_y: centerPos.y,
           inputs,
           outputs,
           data
@@ -323,16 +334,15 @@ export const SheetEditor: React.FC = () => {
           node.dbId = id;
 
           await editor.editor.addNode(node);
-          await editor.area.translate(node.id, { x: 100, y: 100 });
-
-          setEditingNode(node);
+          const centerPos = calcCenterPosition();
+          await editor.area.translate(node.id, centerPos);
 
           const newNodeData = {
               id,
               type,
               label,
-              position_x: 100,
-              position_y: 100,
+              position_x: centerPos.x,
+              position_y: centerPos.y,
               inputs,
               outputs,
               data
