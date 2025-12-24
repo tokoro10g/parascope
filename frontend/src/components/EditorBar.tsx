@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { Save, Sliders, Sigma, LogIn, LogOut, FilePlus } from 'lucide-react';
 
 interface EditorBarProps {
   sheetName?: string;
@@ -45,11 +46,21 @@ export const EditorBar: React.FC<EditorBarProps> = ({
           className="sheet-name-input"
           placeholder="Sheet Name"
         />
-        <button type="button" onClick={() => onAddNode('parameter')}>+ Param</button>
-        <button type="button" onClick={() => onAddNode('function')}>+ Func</button>
-        <button type="button" onClick={() => onAddNode('input')}>+ Input</button>
-        <button type="button" onClick={() => onAddNode('output')}>+ Output</button>
-        <button type="button" onClick={() => onAddNode('sheet')}>+ Import Sheet</button>
+        <button type="button" onClick={() => onAddNode('parameter')} title="Add Parameter">
+            <Sliders size={18} />
+        </button>
+        <button type="button" onClick={() => onAddNode('function')} title="Add Function">
+            <Sigma size={18} />
+        </button>
+        <button type="button" onClick={() => onAddNode('input')} title="Add Input Node">
+            <LogIn size={18} />
+        </button>
+        <button type="button" onClick={() => onAddNode('output')} title="Add Output Node">
+            <LogOut size={18} />
+        </button>
+        <button type="button" onClick={() => onAddNode('sheet')} title="Import Sheet">
+            <FilePlus size={18} />
+        </button>
       </div>
       
       <div className="toolbar-group">
@@ -58,8 +69,9 @@ export const EditorBar: React.FC<EditorBarProps> = ({
             type="button"
             onClick={onSaveSheet}
             disabled={!isDirty}
+            title="Save Sheet"
         >
-            Save
+            <Save size={18} />
         </button>
       </div>
     </div>

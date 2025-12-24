@@ -3,6 +3,7 @@ import { useParams, useLocation, useSearchParams, useNavigate } from 'react-rout
 import { useRete } from 'rete-react-plugin';
 import { ClassicPreset as Classic } from 'rete';
 import { v4 as uuidv4 } from 'uuid';
+import { ArrowLeft } from 'lucide-react';
 import { api, type Sheet } from '../api';
 import { createEditor, ParascopeNode, socket } from '../rete';
 import { Panel, Group, Separator } from 'react-resizable-panels';
@@ -497,29 +498,31 @@ export const SheetEditor: React.FC = () => {
   return (
     <div className="sheet-editor">
       <div className="nav-bar">
-          <a href="/" onClick={handleBackClick}>← Back to Dashboard</a>
+          <a href="/" onClick={handleBackClick} style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+            <ArrowLeft size={16} /> Back to Dashboard
+          </a>
       </div>
-      <EditorBar 
-        sheetName={currentSheet?.name}
-        isDirty={isDirty}
-        onRenameSheet={handleRenameSheet}
-        onSaveSheet={handleSaveSheet}
-        onAddNode={handleAddNode}
-      />
-      <EvaluatorBar 
-        sheetName={currentSheet?.name}
-        inputs={evaluatorProps.inputs}
-        outputs={evaluatorProps.outputs}
-        onInputChange={handleEvaluatorInputChange}
-        onCalculate={handleCalculate}
-        isCalculating={isCalculating}
-        errorNodeId={errorNodeId}
-      />
       <div className="editor-content" style={{ display: 'flex', flex: 1, minHeight: 0, overflow: 'hidden' }}>
         <Group orientation="horizontal" style={{ width: '100%', height: '100%' }}>
           <Panel defaultSize={70} minSize={30}>
             <div className="rete-container" style={{ width: '100%', height: '100%', position: 'relative' }}>
+                <EditorBar 
+                  sheetName={currentSheet?.name}
+                  isDirty={isDirty}
+                  onRenameSheet={handleRenameSheet}
+                  onSaveSheet={handleSaveSheet}
+                  onAddNode={handleAddNode}
+                />
                 <div ref={ref} className="rete" />
+                <EvaluatorBar 
+                  sheetName={currentSheet?.name}
+                  inputs={evaluatorProps.inputs}
+                  outputs={evaluatorProps.outputs}
+                  onInputChange={handleEvaluatorInputChange}
+                  onCalculate={handleCalculate}
+                  isCalculating={isCalculating}
+                  errorNodeId={errorNodeId}
+                />
             </div>
           </Panel>
           <Separator style={{ width: '4px', background: '#ccc', cursor: 'col-resize' }} />

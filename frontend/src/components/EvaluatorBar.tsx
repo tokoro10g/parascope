@@ -1,4 +1,5 @@
 import React from 'react';
+import { Play } from 'lucide-react';
 
 export interface EvaluatorInput {
   id: string;
@@ -69,8 +70,8 @@ export const EvaluatorBar: React.FC<EvaluatorBarProps> = ({
         })}
         <span className="paren">]</span>
       </div>
-      <button type="button" onClick={onCalculate} disabled={isCalculating} className="calculate-btn" style={{ marginLeft: 'auto' }}>
-        {isCalculating ? '...' : 'Run'}
+      <button type="button" onClick={onCalculate} disabled={isCalculating} className="calculate-btn" style={{ marginLeft: 'auto' }} title="Run Calculation">
+        {isCalculating ? '...' : <Play size={18} fill="currentColor" />}
       </button>
     </div>
   );

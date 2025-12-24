@@ -29,6 +29,16 @@
   gap: 8px;
 }
 
+.toolbar button {
+    padding: 6px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    line-height: 1;
+    min-width: 32px;
+    height: 32px;
+}
+
 .editor-bar {
   background-color: #e0e0e0;
 }
@@ -86,6 +96,45 @@
   padding: 20px;
   max-width: 800px;
   margin: 0 auto;
+}
+
+/* Floating Editor Bar */
+.rete-container .editor-bar {
+  position: absolute;
+  top: 10px;
+  left: 10px;
+  right: auto;
+  width: auto;
+  z-index: 10;
+  background-color: rgba(255, 255, 255, 0.95);
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+  padding: 8px;
+  gap: 16px;
+}
+
+.rete-container .editor-bar .sheet-name-input {
+    min-width: 200px;
+    background-color: white;
+}
+
+/* Bottom Status Bar Evaluator */
+.rete-container .evaluator-bar {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  z-index: 10;
+  background-color: #f8f9fa;
+  border: none;
+  border-top: 1px solid #ccc;
+  border-radius: 0;
+  box-shadow: 0 -2px 5px rgba(0,0,0,0.05);
+  padding: 8px 16px;
+  transform: none;
+  max-width: none;
+  box-sizing: border-box;
 }
 
 .dashboard h1 {
