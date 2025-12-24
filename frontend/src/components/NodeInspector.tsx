@@ -29,7 +29,24 @@ export const NodeInspector: React.FC<NodeInspectorProps> = ({
   useEffect(() => {
     if (node) {
       setLabel(node.label);
-      setData(node.initialData || {});
+      
+      const currentData = { ...(node.initialData || {}) };
+      // Sync value from control if it exists, as it might be newer than initialData
+      if (node.controls['value']) {
+          const control = node.controls['value'] as any;
+          // Check if control has a value property (it should for InputControl)
+          if (control && control.value !== undefined) {
+             // Try to parse as number if it looks like one, since we store value as number in data
+             const val = parseFloat(control.value);
+             if (!isNaN(val)) {
+                 currentData.value = val;
+             } else {
+                 currentData.value = control.value;
+             }
+          }
+      }
+
+      setData(currentData);
       // We need to extract inputs/outputs from the node structure
       // Rete nodes store inputs/outputs as objects, but we want arrays for editing
       setInputs(Object.keys(node.inputs).map(key => ({ key, socket_type: 'any' })));
