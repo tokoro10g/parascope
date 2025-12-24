@@ -42,7 +42,7 @@ Generated from `SPECIFICATIONS.tsv`.
     - [x] Implement Undo/Redo history (UI-15.0).
     - [ ] Implement Connection constraints (Max 1 input, Multiple outputs) (BB-C-01.0).
     - [x] Implement Editor Toolbar (UI-17.0).
-    - [ ] Implement Keyboard Shortcuts (Delete, Ctrl+S) (UI-19.0).
+    - [x] Implement Keyboard Shortcuts (Delete, Ctrl+S) (UI-19.0).
     - [x] Auto-open Node Inspector on creation (UI-24.0).
 - [x] **Routing**:
     - [x] Implement route `/sheet/:sheetId` to load specific graphs (UI-03.0).

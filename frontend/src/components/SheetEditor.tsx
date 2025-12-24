@@ -123,35 +123,6 @@ export const SheetEditor: React.FC = () => {
       }
   }, [editor]);
 
-  // Keyboard Shortcuts for Undo/Redo
-  useEffect(() => {
-      const handleKeyDown = (e: KeyboardEvent) => {
-          if (!editor) return;
-          
-          // Ignore if user is typing in an input field
-          if (e.target instanceof HTMLInputElement || e.target instanceof HTMLTextAreaElement) {
-              return;
-          }
-
-          if (e.ctrlKey || e.metaKey) {
-              if (e.key.toLowerCase() === 'z') {
-                  e.preventDefault();
-                  if (e.shiftKey) {
-                      editor.redo();
-                  } else {
-                      editor.undo();
-                  }
-              } else if (e.key.toLowerCase() === 'y') {
-                  e.preventDefault();
-                  editor.redo();
-              }
-          }
-      };
-
-      window.addEventListener('keydown', handleKeyDown);
-      return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [editor]);
-
   const calcCenterPosition = () => {
     if (!editor) return { x: 0, y: 0 };
     const area = editor.area;
@@ -241,6 +212,38 @@ export const SheetEditor: React.FC = () => {
         alert(`Error saving sheet: ${e}`);
     }
   };
+
+  // Keyboard Shortcuts for Undo/Redo
+  useEffect(() => {
+      const handleKeyDown = (e: KeyboardEvent) => {
+          if (!editor) return;
+          
+          // Ignore if user is typing in an input field
+          if (e.target instanceof HTMLInputElement || e.target instanceof HTMLTextAreaElement) {
+              return;
+          }
+
+          if (e.ctrlKey || e.metaKey) {
+              if (e.key.toLowerCase() === 'z') {
+                  e.preventDefault();
+                  if (e.shiftKey) {
+                      editor.redo();
+                  } else {
+                      editor.undo();
+                  }
+              } else if (e.key.toLowerCase() === 'y') {
+                  e.preventDefault();
+                  editor.redo();
+              } else if (e.key.toLowerCase() === 's') {
+                  e.preventDefault();
+                  handleSaveSheet();
+              }
+          }
+      };
+
+      window.addEventListener('keydown', handleKeyDown);
+      return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [editor, handleSaveSheet]);
 
   const handleRenameSheet = async (name: string) => {
       if (!currentSheet) return;
