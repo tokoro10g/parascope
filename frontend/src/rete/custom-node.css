@@ -24,6 +24,12 @@
     color: white;
 }
 
+/* Sheet Node - Cyan */
+.node-sheet .title {
+    background: #00bcd4;
+    color: white;
+}
+
 /* Error State */
 .node-error {
     box-shadow: 0 0 10px 4px #f44336;
@@ -31,7 +37,7 @@
 }
 
 /* Auto-size nodes */
-.node-parameter, .node-function, .node-input, .node-output {
+.node-parameter, .node-function, .node-input, .node-output, .node-sheet {
     width: auto;
     height: auto;
     min-width: 180px;

@@ -1,5 +1,7 @@
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
+import { createPortal } from 'react-dom';
 import { Presets } from 'rete-react-plugin';
+import { Sliders, Sigma, LogIn, LogOut, FilePlus } from 'lucide-react';
 import './custom-node.css';
 
 const styles: Record<string, { background: string; borderColor: string }> = {
@@ -7,6 +9,15 @@ const styles: Record<string, { background: string; borderColor: string }> = {
     function: { background: 'rgba(100, 181, 246, 0.8)', borderColor: '#2196f3' },
     input: { background: 'rgba(255, 183, 77, 0.8)', borderColor: '#ff9800' },
     output: { background: 'rgba(186, 104, 200, 0.8)', borderColor: '#9c27b0' },
+    sheet: { background: 'rgba(77, 208, 225, 0.8)', borderColor: '#00bcd4' },
+};
+
+const icons: Record<string, any> = {
+    parameter: Sliders,
+    function: Sigma,
+    input: LogIn,
+    output: LogOut,
+    sheet: FilePlus
 };
 
 export function CustomNode(props: any) {
@@ -14,6 +25,7 @@ export function CustomNode(props: any) {
   const type = data.type;
   const typeClass = `node-${type}`;
   const ref = useRef<HTMLDivElement>(null);
+  const [titleEl, setTitleEl] = useState<HTMLElement | null>(null);
 
   // Apply styles on every render to ensure they persist over Rete's updates
   useEffect(() => {
@@ -31,6 +43,17 @@ export function CustomNode(props: any) {
               // Force auto size
               nodeEl.style.setProperty('width', 'auto', 'important');
               nodeEl.style.setProperty('height', 'auto', 'important');
+
+              // Find title element
+              const title = nodeEl.querySelector('.title') as HTMLElement;
+              if (title) {
+                  setTitleEl(title);
+                  // Ensure title has flex layout
+                  title.style.display = 'flex';
+                  title.style.justifyContent = 'space-between';
+                  title.style.alignItems = 'center';
+                  title.style.gap = '8px';
+              }
           }
       }
   });
@@ -59,9 +82,15 @@ export function CustomNode(props: any) {
       }
   }, [data]); // Only re-run if the node instance changes
   
+  const Icon = icons[type];
+
   return (
     <div ref={ref} style={{ display: 'contents' }}>
         <Presets.classic.Node {...props} />
+        {titleEl && Icon && createPortal(
+            <Icon size={16} />,
+            titleEl
+        )}
     </div>
   );
 }
