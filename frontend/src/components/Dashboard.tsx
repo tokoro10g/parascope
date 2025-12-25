@@ -1,17 +1,22 @@
 import React, { useEffect, useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useNavigate, useParams } from 'react-router-dom';
 import { Copy, Trash2, Folder as FolderIcon, FolderPlus, ArrowLeft, FolderInput, FileText } from 'lucide-react';
 import { api, type SheetSummary, type Folder } from '../api';
 import { FolderPickerModal } from './FolderPickerModal';
 import { ParascopeLogo } from './ParascopeLogo';
 
 export const Dashboard: React.FC = () => {
+  const { folderId } = useParams<{ folderId: string }>();
   const [sheets, setSheets] = useState<SheetSummary[]>([]);
   const [folders, setFolders] = useState<Folder[]>([]);
-  const [currentFolderId, setCurrentFolderId] = useState<string | undefined>(undefined);
+  const [currentFolderId, setCurrentFolderId] = useState<string | undefined>(folderId);
   const [moveModalOpen, setMoveModalOpen] = useState(false);
   const [sheetToMove, setSheetToMove] = useState<string | null>(null);
   const navigate = useNavigate();
+
+  useEffect(() => {
+      setCurrentFolderId(folderId);
+  }, [folderId]);
 
   useEffect(() => {
     loadData();
@@ -135,7 +140,11 @@ export const Dashboard: React.FC = () => {
 
   const handleUp = () => {
       const current = folders.find(f => f.id === currentFolderId);
-      setCurrentFolderId(current?.parent_id);
+      if (current?.parent_id) {
+          navigate(`/folder/${current.parent_id}`);
+      } else {
+          navigate('/');
+      }
   };
 
   return (
@@ -151,7 +160,7 @@ export const Dashboard: React.FC = () => {
       
       <div className="breadcrumbs" style={{marginBottom: 20, display: 'flex', alignItems: 'center', gap: 8, fontSize: '1.1em'}}>
           <span 
-            onClick={() => setCurrentFolderId(undefined)} 
+            onClick={() => navigate('/')} 
             style={{cursor: 'pointer', color: currentFolderId ? '#007bff' : 'inherit', fontWeight: !currentFolderId ? 'bold' : 'normal'}}
           >
             Home
@@ -160,7 +169,7 @@ export const Dashboard: React.FC = () => {
               <React.Fragment key={folder.id}>
                   <span style={{color: '#999'}}>/</span>
                   <span 
-                    onClick={() => setCurrentFolderId(folder.id)} 
+                    onClick={() => navigate(`/folder/${folder.id}`)} 
                     style={{
                         cursor: 'pointer', 
                         color: index === breadcrumbs.length - 1 ? 'inherit' : '#007bff',
@@ -184,7 +193,7 @@ export const Dashboard: React.FC = () => {
         )}
         
         {currentFolders.map(folder => (
-            <div key={folder.id} className="sheet-item folder-item" onClick={() => setCurrentFolderId(folder.id)}>
+            <div key={folder.id} className="sheet-item folder-item" onClick={() => navigate(`/folder/${folder.id}`)}>
                 <div className="sheet-info" style={{justifyContent: 'flex-start'}}>
                     <FolderIcon size={20} />
                     <span className="sheet-name" style={{marginLeft: 10}}>{folder.name}</span>

@@ -47,12 +47,14 @@ export const SheetEditor: React.FC = () => {
 
   const handleBackClick = (e: React.MouseEvent) => {
     e.preventDefault();
+    const target = currentSheet?.folder_id ? `/folder/${currentSheet.folder_id}` : '/';
+    
     if (isDirty) {
       if (window.confirm('You have unsaved changes. Are you sure you want to leave?')) {
-        navigate('/');
+        navigate(target);
       }
     } else {
-      navigate('/');
+      navigate(target);
     }
   };
 

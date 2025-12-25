@@ -10,6 +10,7 @@ function App() {
       <div className="App">
         <Routes>
           <Route path="/" element={<Dashboard />} />
+          <Route path="/folder/:folderId" element={<Dashboard />} />
           <Route path="/sheet/:sheetId" element={<SheetEditor />} />
         </Routes>
       </div>
