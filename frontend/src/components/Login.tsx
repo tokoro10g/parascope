@@ -44,12 +44,6 @@ export const Login: React.FC = () => {
         </div>
         <h1 style={{ margin: '0 0 20px 0', fontSize: '24px' }}>Welcome to Parascope</h1>
         <p style={{ marginBottom: '30px', color: 'var(--text-secondary)' }}>Please enter your name to continue</p>
-        
-        {usernameDescription && (
-            <p style={{ marginBottom: '15px', color: 'var(--text-muted)', fontSize: '0.9em' }}>
-                {usernameDescription}
-            </p>
-        )}
 
         <form onSubmit={handleSubmit}>
           <input
@@ -60,6 +54,11 @@ export const Login: React.FC = () => {
             className="login-input"
             autoFocus
           />
+          {usernameDescription && (
+              <p style={{ color: 'var(--text-muted)', fontSize: '0.9em' }}>
+                  {usernameDescription}
+              </p>
+          )}
           <button
             type="submit"
             disabled={!isValid(name)}
