@@ -9,9 +9,9 @@ interface SheetTableProps {
 }
 
 export const SheetTable: React.FC<SheetTableProps> = ({ nodes, onUpdateValue, onSelectNode }) => {
-  // Filter for Parameters and Outputs
+  // Filter for Parameters, Inputs, and Outputs
   const tableNodes = nodes.filter(
-    (node) => node.type === 'parameter' || node.type === 'output'
+    (node) => node.type === 'parameter' || node.type === 'output' || node.type === 'input'
   );
 
   const handleCopyTable = () => {
@@ -66,7 +66,7 @@ export const SheetTable: React.FC<SheetTableProps> = ({ nodes, onUpdateValue, on
   return (
     <div className="sheet-table">
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '10px' }}>
-        <h3 style={{ margin: 0 }}>Parameters & Outputs</h3>
+        <h3 style={{ margin: 0 }}>Parameters & I/O</h3>
         <button type="button" onClick={handleCopyTable} style={{ padding: '4px 8px', fontSize: '0.8em', display: 'flex', alignItems: 'center', gap: '4px' }}>
             <Copy size={14} />
             Copy Table

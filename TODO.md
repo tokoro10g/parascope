@@ -90,7 +90,7 @@ Generated from `SPECIFICATIONS.tsv`.
     - [x] Implement distinct visual style for Nested Sheet nodes (UI-21.0).
     - [x] **Table View**:
         - [x] Implement Table View Sidebar component (UI-22.0).
-        - [x] Filter nodes to show only Parameters and Outputs.
+        - [x] Filter nodes to show Parameters, Inputs, and Outputs.
         - [x] Implement editable cells for Parameter values.
         - [x] Sync updates between Table and Graph.
 
