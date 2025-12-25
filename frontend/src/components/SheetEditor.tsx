@@ -146,6 +146,14 @@ export const SheetEditor: React.FC = () => {
       }
   }, [editor, handleEvaluatorInputChange]);
 
+  // Sync Evaluator Inputs back to Graph Nodes and Table View
+  useEffect(() => {
+      if (editor) {
+          editor.updateNodeValues(evaluatorInputs, lastResult || {});
+          setNodes([...editor.editor.getNodes()]);
+      }
+  }, [editor, evaluatorInputs, lastResult]);
+
   const calcCenterPosition = () => {
     if (!editor) return { x: 0, y: 0 };
     const area = editor.area;

@@ -387,12 +387,18 @@ export async function createEditor(container: HTMLElement) {
 
             if (node.type === 'input') {
                 const val = inputs[node.id];
-                valueControl.setValue(String(val !== undefined ? val : ''));
-                area.update('node', node.id);
+                const newVal = String(val !== undefined ? val : '');
+                if (valueControl.value !== newVal) {
+                    valueControl.setValue(newVal);
+                    area.update('node', node.id);
+                }
             } else if (node.type === 'output') {
                 const val = outputs[node.id];
-                valueControl.setValue(String(val !== undefined ? val : ''));
-                area.update('node', node.id);
+                const newVal = String(val !== undefined ? val : '');
+                if (valueControl.value !== newVal) {
+                    valueControl.setValue(newVal);
+                    area.update('node', node.id);
+                }
             }
         });
     },
