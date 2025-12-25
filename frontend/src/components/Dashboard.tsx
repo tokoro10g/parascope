@@ -158,8 +158,8 @@ export const Dashboard: React.FC = () => {
         </div>
         <div style={{display: 'flex', alignItems: 'center', gap: '10px'}}>
             <span>Hello, <b>{user}</b></span>
-            <button onClick={logout} title="Change User" style={{background: 'none', border: 'none', cursor: 'pointer', padding: 5, color: 'var(--text-color, #333)'}}>
-                <LogOut size={20} />
+            <button onClick={logout} title="Change User" className="link-button" style={{color: 'var(--text-color, #333)'}}>
+                <LogOut size={16} /> Change User
             </button>
         </div>
       </div>

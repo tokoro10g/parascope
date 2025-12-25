@@ -3,7 +3,7 @@ import { useParams, useLocation, useSearchParams, useNavigate } from 'react-rout
 import { useRete } from 'rete-react-plugin';
 import { ClassicPreset as Classic } from 'rete';
 import { v4 as uuidv4 } from 'uuid';
-import { ArrowLeft } from 'lucide-react';
+import { ArrowLeft, LogOut } from 'lucide-react';
 import { api, type Sheet } from '../api';
 import { createEditor, ParascopeNode, socket } from '../rete';
 import { Panel, Group, Separator } from 'react-resizable-panels';
@@ -13,11 +13,13 @@ import { NodeInspector, type NodeUpdates } from './NodeInspector';
 import { SheetPickerModal } from './SheetPickerModal';
 import { SheetTable } from './SheetTable';
 import { ParascopeLogo } from './ParascopeLogo';
+import { useAuth } from '../contexts/AuthContext';
 
 export const SheetEditor: React.FC = () => {
   const { sheetId } = useParams<{ sheetId: string }>();
   const location = useLocation();
   const navigate = useNavigate();
+  const { user, logout } = useAuth();
   const [searchParams, setSearchParams] = useSearchParams();
   const [ref, editor] = useRete(createEditor);
   const [currentSheet, setCurrentSheet] = useState<Sheet | null>(null);
@@ -569,6 +571,12 @@ export const SheetEditor: React.FC = () => {
           <a href="/" onClick={handleBackClick} style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
             <ArrowLeft size={16} /> Back to Dashboard
           </a>
+          <div style={{ marginLeft: 'auto', display: 'flex', alignItems: 'center', gap: '8px', paddingRight: '10px' }}>
+              <span style={{ fontSize: '0.9em', color: 'white' }}>{user}</span>
+              <button type="button" onClick={logout} title="Change User" className="nav-link">
+                  <LogOut size={16} /> Change User
+              </button>
+          </div>
       </div>
       <div className="editor-content" style={{ display: 'flex', flex: 1, minHeight: 0, overflow: 'hidden' }}>
         <Group orientation="horizontal" style={{ width: '100%', height: '100%' }}>
