@@ -37,11 +37,10 @@ def _worker(code: str, inputs: Dict[str, Any], outputs: List[str], queue: multip
         }
 
         # Execute the code
-        # We wrap the code in a function to allow 'return' statements if needed,
-        # or just exec it.
-        # If the user writes "return x + y", we need to handle it.
-        # A common pattern is to wrap it in a function definition.
-        
+        # The code must not contain return statements directly, so we wrap it in a function.
+        # The output variables should be assigned in the code.
+        if "return" in code:
+            raise ValueError("Return statements are not allowed in the code.")
         wrapped_code = f"def user_func({', '.join(inputs.keys())}):\n"
         for line in code.split('\n'):
             wrapped_code += f"    {line}\n"

@@ -26,6 +26,10 @@ export const NodeInspector: React.FC<NodeInspectorProps> = ({
   const [inputs, setInputs] = useState<{ key: string; socket_type: string }[]>([]);
   const [outputs, setOutputs] = useState<{ key: string; socket_type: string }[]>([]);
 
+  const isValidPythonIdentifier = (name: string) => {
+      return /^[a-zA-Z_][a-zA-Z0-9_]*$/.test(name);
+  };
+
   useEffect(() => {
     if (node) {
       setLabel(node.label);
@@ -67,8 +71,18 @@ export const NodeInspector: React.FC<NodeInspectorProps> = ({
   };
 
   const handleAddInput = () => {
-    const name = prompt('Input name:');
-    if (name) setInputs([...inputs, { key: name, socket_type: 'any' }]);
+    const name = prompt('Input name (must be a valid Python identifier):');
+    if (name) {
+        if (!isValidPythonIdentifier(name)) {
+            alert('Invalid name. Must start with a letter or underscore and contain only letters, numbers, and underscores.');
+            return;
+        }
+        if (inputs.some(i => i.key === name)) {
+            alert('Input with this name already exists.');
+            return;
+        }
+        setInputs([...inputs, { key: name, socket_type: 'any' }]);
+    }
   };
 
   const handleRemoveInput = (key: string) => {
@@ -76,8 +90,18 @@ export const NodeInspector: React.FC<NodeInspectorProps> = ({
   };
 
   const handleAddOutput = () => {
-    const name = prompt('Output name:');
-    if (name) setOutputs([...outputs, { key: name, socket_type: 'any' }]);
+    const name = prompt('Output name (must be a valid Python identifier):');
+    if (name) {
+        if (!isValidPythonIdentifier(name)) {
+            alert('Invalid name. Must start with a letter or underscore and contain only letters, numbers, and underscores.');
+            return;
+        }
+        if (outputs.some(o => o.key === name)) {
+            alert('Output with this name already exists.');
+            return;
+        }
+        setOutputs([...outputs, { key: name, socket_type: 'any' }]);
+    }
   };
 
   const handleRemoveOutput = (key: string) => {
