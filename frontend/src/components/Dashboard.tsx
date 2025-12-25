@@ -78,6 +78,20 @@ export const Dashboard: React.FC = () => {
     }
   };
 
+  const handleDeleteFolder = async (e: React.MouseEvent, id: string) => {
+    e.preventDefault();
+    e.stopPropagation();
+    if (!confirm('Are you sure you want to delete this folder? Sheets inside will be moved to the root.')) return;
+    
+    try {
+      await api.deleteFolder(id);
+      loadData();
+    } catch (e: any) {
+      console.error(e);
+      alert(`Error deleting folder: ${e.message || e}`);
+    }
+  };
+
   const handleMoveClick = (e: React.MouseEvent, id: string) => {
       e.preventDefault();
       e.stopPropagation();
@@ -174,6 +188,11 @@ export const Dashboard: React.FC = () => {
                 <div className="sheet-info" style={{justifyContent: 'flex-start'}}>
                     <FolderIcon size={20} />
                     <span className="sheet-name" style={{marginLeft: 10}}>{folder.name}</span>
+                </div>
+                <div className="sheet-actions">
+                    <button onClick={(e) => handleDeleteFolder(e, folder.id)} title="Delete Folder" className="danger">
+                        <Trash2 size={16} />
+                    </button>
                 </div>
             </div>
         ))}

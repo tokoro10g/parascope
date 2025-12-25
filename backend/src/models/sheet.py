@@ -17,7 +17,7 @@ class Folder(Base):
 
     parent: Mapped[Optional["Folder"]] = relationship("Folder", remote_side=[id], back_populates="children")
     children: Mapped[List["Folder"]] = relationship("Folder", back_populates="parent", cascade="all, delete-orphan")
-    sheets: Mapped[List["Sheet"]] = relationship(back_populates="folder", cascade="all, delete-orphan")
+    sheets: Mapped[List["Sheet"]] = relationship(back_populates="folder")
 
 
 class Sheet(Base):

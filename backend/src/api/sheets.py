@@ -1,7 +1,7 @@
 from uuid import UUID, uuid4
 
 from fastapi import APIRouter, Depends, HTTPException
-from sqlalchemy import select
+from sqlalchemy import select, update
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
 
@@ -34,6 +34,10 @@ async def list_folders(db: AsyncSession = Depends(get_db)):
 
 @router.delete("/folders/{folder_id}")
 async def delete_folder(folder_id: UUID, db: AsyncSession = Depends(get_db)):
+    # Move sheets to root
+    stmt = update(Sheet).where(Sheet.folder_id == folder_id).values(folder_id=None)
+    await db.execute(stmt)
+
     query = select(Folder).where(Folder.id == folder_id)
     result = await db.execute(query)
     folder = result.scalar_one_or_none()

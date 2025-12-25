@@ -51,6 +51,16 @@ export const api = {
     return res.json();
   },
 
+  async deleteFolder(folderId: string): Promise<void> {
+    const res = await fetch(`${API_BASE}/sheets/folders/${folderId}`, {
+      method: 'DELETE',
+    });
+    if (!res.ok) {
+      const err = await res.json();
+      throw new Error(err.detail || 'Failed to delete folder');
+    }
+  },
+
   async createFolder(name: string, parent_id?: string): Promise<Folder> {
     const res = await fetch(`${API_BASE}/sheets/folders`, {
       method: 'POST',
