@@ -34,6 +34,8 @@ Generated from `SPECIFICATIONS.tsv`.
     - [x] Catch user code exceptions and return stack traces (EH-01.0).
     - [x] Fail calculation if Input Node values are missing (EH-12.0).
     - [ ] Handle persistence failures with retry logic (EH-06.0).
+- [x] **Folders**:
+    - [x] Implement Folder data model and nesting logic (BB-FOL-01.0, BB-FOL-02.0, BB-FOL-04.0).
 
 ## 3. Frontend UI/UX (Initial Release)
 - [x] **Graph Editor**: Implement `rete.js` canvas (BB-S-01.0).
@@ -51,13 +53,14 @@ Generated from `SPECIFICATIONS.tsv`.
     - [x] Implement Delete Sheet action (UI-11.0).
     - [x] Implement Duplicate Sheet action (UI-12.0).
     - [x] Implement URL query parameter parsing for value overrides (UI-07.0).
+    - [x] Implement Folder navigation in Dashboard (BB-FOL-03.0).
 - [x] **Authentication**:
     - [x] Implement "Name" prompt on first visit (AUTH-02.0).
     - [x] Save identity in Cookies (AUTH-03.0).
     - [x] Add "Change user" menu (AUTH-04.0).
 - [x] **Input Node**:
     - [x] Distinct visual style from Parameters (BB-I-01.0).
-    - [ ] Inputs: Name, Unit (BB-I-01.0).
+    - [ ] Inputs: Name (BB-I-01.0).
 - [x] **Output Node**:
     - [x] Distinct visual style (BB-O-01.0).
     - [ ] Inputs: Name, Description (BB-O-01.0).
@@ -65,7 +68,7 @@ Generated from `SPECIFICATIONS.tsv`.
     - [ ] Inputs: Name, Options List, Selected Value (BB-OPT-01.0).
     - [ ] UI: Dropdown menu for selection (BB-OPT-01.0).
 - [ ] **Parameter Node**:
-    - [x] Inputs: Name, Value, Unit (BB-P-01.0, BB-P-04.0).
+    - [x] Inputs: Name, Value (BB-P-01.0).
     - [ ] Inputs: Range, Description (BB-P-02.0, BB-P-03.0, BB-P-05.0).
     - [x] Validation: Python variable name constraints (BB-P-02.0) [REMOVED].
     - [ ] Markdown rendering for description (BB-P-03.0).
@@ -76,7 +79,7 @@ Generated from `SPECIFICATIONS.tsv`.
     - [ ] Constraint: 1+ Outputs, 1+ Inputs (BB-F-01.0, BB-F-02.0).
 - [ ] **Feedback**:
     - [x] Display calculation errors/stack traces on output nodes (EH-02.0).
-    - [ ] Visual validation for unit/type errors (EH-03.0).
+    - [ ] Visual validation for type errors (EH-03.0).
     - [x] Duplicate name error messages (EH-10.0).
     - [ ] Success toasts (e.g., "Saved") (UI-05.0).
     - [x] Implement Evaluator Bar (Function Signature) (UI-09.0).
@@ -93,6 +96,9 @@ Generated from `SPECIFICATIONS.tsv`.
         - [x] Filter nodes to show Parameters, Inputs, and Outputs.
         - [x] Implement editable cells for Parameter values.
         - [x] Sync updates between Table and Graph.
+        - [x] Implement "Copy Table" button (UI-26.0).
+- [x] **Dark Mode**:
+    - [x] Support light and dark themes (UI-23.0).
 
 ## 4. Integration & Logic (Initial Release)
 - [ ] **Real-time Recalculation**: Trigger backend calc on input change (UI-01.0).
