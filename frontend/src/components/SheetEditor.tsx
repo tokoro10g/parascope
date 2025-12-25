@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo, useRef } from 'react';
+import React, { useState, useEffect, useMemo, useRef, useCallback } from 'react';
 import { useParams, useLocation, useSearchParams, useNavigate } from 'react-router-dom';
 import { useRete } from 'rete-react-plugin';
 import { ClassicPreset as Classic } from 'rete';
@@ -107,6 +107,25 @@ export const SheetEditor: React.FC = () => {
       }
   }, [editor, errorNodeId]);
 
+  const handleEvaluatorInputChange = useCallback((id: string, value: string) => {
+      setEvaluatorInputs(prev => ({ ...prev, [id]: value }));
+      
+      if (errorNodeId === id) {
+          setErrorNodeId(null);
+      }
+
+      ignoreNextSearchParamsChange.current = true;
+      setSearchParams(prev => {
+          const newParams = new URLSearchParams(prev);
+          if (value) {
+              newParams.set(id, value);
+          } else {
+              newParams.delete(id);
+          }
+          return newParams;
+      }, { replace: true });
+  }, [errorNodeId, setSearchParams]);
+
   useEffect(() => {
       if (editor) {
           const handleEdit = (nodeId: string) => {
@@ -121,8 +140,11 @@ export const SheetEditor: React.FC = () => {
               setIsDirty(true);
               setNodes([...editor.editor.getNodes()]);
           });
+          editor.setInputValueChangeListener((nodeId, value) => {
+              handleEvaluatorInputChange(nodeId, value);
+          });
       }
-  }, [editor]);
+  }, [editor, handleEvaluatorInputChange]);
 
   const calcCenterPosition = () => {
     if (!editor) return { x: 0, y: 0 };
@@ -263,6 +285,8 @@ export const SheetEditor: React.FC = () => {
       }
   };
 
+
+
   const handleAddNode = async (type: 'parameter' | 'function' | 'input' | 'output' | 'sheet') => {
       if (!editor || !currentSheet) return;
 
@@ -306,7 +330,13 @@ export const SheetEditor: React.FC = () => {
           inputs, 
           outputs, 
           data,
-          () => setIsDirty(true)
+          (val) => {
+              if (type === 'input') {
+                  handleEvaluatorInputChange(id, String(val));
+              } else {
+                  setIsDirty(true);
+              }
+          }
       );
       node.id = id;
       node.dbId = id;
@@ -447,25 +477,6 @@ export const SheetEditor: React.FC = () => {
     } finally {
         setIsCalculating(false);
     }
-  };
-
-  const handleEvaluatorInputChange = (id: string, value: string) => {
-      setEvaluatorInputs(prev => ({ ...prev, [id]: value }));
-      
-      if (errorNodeId === id) {
-          setErrorNodeId(null);
-      }
-
-      ignoreNextSearchParamsChange.current = true;
-      setSearchParams(prev => {
-          const newParams = new URLSearchParams(prev);
-          if (value) {
-              newParams.set(id, value);
-          } else {
-              newParams.delete(id);
-          }
-          return newParams;
-      }, { replace: true });
   };
 
   const handleNodeUpdate = async (nodeId: string, updates: NodeUpdates) => {

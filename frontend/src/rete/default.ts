@@ -54,7 +54,16 @@ export class ParascopeNode extends Classic.Node {
     });
 
     // Add a control to display value
-    if (type === 'input' || type === 'output') {
+    if (type === 'input') {
+        this.addControl(
+            'value',
+            new Classic.InputControl('text', {
+                initial: '',
+                readonly: false,
+                change: onChange,
+            })
+        );
+    } else if (type === 'output') {
         this.addControl(
             'value',
             new Classic.InputControl('text', {
@@ -154,6 +163,7 @@ export async function createEditor(container: HTMLElement) {
   let onNodeDoubleClick: ((nodeId: string) => void) | undefined;
   let onGraphChange: (() => void) | undefined;
   let onNodeEdit: ((nodeId: string) => void) | undefined;
+  let onInputValueChange: ((nodeId: string, value: string) => void) | undefined;
 
   AreaExtensions.selectableNodes(area, AreaExtensions.selector(), {
     accumulating: AreaExtensions.accumulateOnCtrl(),
@@ -233,6 +243,9 @@ export async function createEditor(container: HTMLElement) {
     setGraphChangeListener: (cb: () => void) => {
         onGraphChange = cb;
     },
+    setInputValueChangeListener: (cb: (nodeId: string, value: string) => void) => {
+        onInputValueChange = cb;
+    },
     undo: () => history.undo(),
     redo: () => history.redo(),
 
@@ -255,7 +268,13 @@ export async function createEditor(container: HTMLElement) {
             inputs, 
             outputs, 
             n.data || {},
-            () => { if (onGraphChange) onGraphChange(); }
+            (val) => { 
+                if (n.type === 'input') {
+                    if (onInputValueChange && n.id) onInputValueChange(n.id, String(val));
+                } else {
+                    if (onGraphChange) onGraphChange(); 
+                }
+            }
         );
         node.id = n.id; // Use the DB ID as the Rete ID
         node.dbId = n.id;
