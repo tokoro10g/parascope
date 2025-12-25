@@ -16,7 +16,7 @@ Generated from `SPECIFICATIONS.tsv`.
 - [x] **API**: Create endpoints for saving/loading graphs and values (DH-01.0, DH-02.0).
     - [x] Create endpoint for listing sheets by owner (DH-05.0).
     - [x] Create endpoint for cloning sheets (DH-06.0).
-    - [ ] Ensure URL-injected values are treated as transient (not saved) (DH-08.0).
+    - [x] Ensure URL-injected values are treated as transient (not saved) (DH-08.0).
 - [x] **Graph Engine**: Implement DAG logic with `networkx` (CF-01.0).
     - [x] Ensure circular dependencies are rejected (CF-01.0).
 - [x] **Calculation Engine**:
@@ -26,10 +26,10 @@ Generated from `SPECIFICATIONS.tsv`.
     - [x] Implement execution timeout logic (e.g., 5s limit) (EH-11.0).
     - [x] Implement `stdout` capture for user functions (UI-18.0).
     - [ ] **Optimization (Graph Compilation)**:
-        - [ ] Implement Topological Sort for execution order (EE-02.0).
+        - [x] Implement Topological Sort for execution order (EE-02.0).
         - [ ] Implement Python Code Generator to transpile DAG to single script (EE-02.0).
         - [ ] Refactor `calculate` endpoint to execute generated script (EE-02.0).
-        - [ ] Map execution errors back to original nodes (EH-01.0).
+        - [x] Map execution errors back to original nodes (EH-01.0).
 - [ ] **Error Handling**:
     - [x] Catch user code exceptions and return stack traces (EH-01.0).
     - [x] Fail calculation if Input Node values are missing (EH-12.0).
@@ -40,7 +40,7 @@ Generated from `SPECIFICATIONS.tsv`.
     - [x] Implement Context Menu for adding nodes (UI-06.0).
     - [ ] Implement "Edit Sheet" context menu action with state-preserving navigation (UI-08.0).
     - [x] Implement Undo/Redo history (UI-15.0).
-    - [ ] Implement Connection constraints (Max 1 input, Multiple outputs) (BB-C-01.0).
+    - [x] Implement Connection constraints (Max 1 input, Multiple outputs) (BB-C-01.0).
     - [x] Implement Editor Toolbar (UI-17.0).
     - [x] Implement Keyboard Shortcuts (Delete, Ctrl+S) (UI-19.0).
     - [x] Auto-open Node Inspector on creation (UI-24.0).
@@ -67,17 +67,17 @@ Generated from `SPECIFICATIONS.tsv`.
 - [ ] **Parameter Node**:
     - [x] Inputs: Name, Value, Unit (BB-P-01.0, BB-P-04.0).
     - [ ] Inputs: Range, Description (BB-P-02.0, BB-P-03.0, BB-P-05.0).
-    - [ ] Validation: Python variable name constraints (BB-P-02.0).
+    - [x] Validation: Python variable name constraints (BB-P-02.0) [REMOVED].
     - [ ] Markdown rendering for description (BB-P-03.0).
 - [ ] **Function Node**:
     - [ ] Inputs: Name, Python Code, Description (BB-F-03.0 - BB-F-05.0).
-    - [ ] Validation: Python function name constraints (BB-F-03.0).
+    - [x] Validation: Python function name constraints (BB-F-03.0).
     - [ ] Markdown rendering for description (BB-F-04.0).
     - [ ] Constraint: 1+ Outputs, 1+ Inputs (BB-F-01.0, BB-F-02.0).
 - [ ] **Feedback**:
     - [x] Display calculation errors/stack traces on output nodes (EH-02.0).
     - [ ] Visual validation for unit/type errors (EH-03.0).
-    - [ ] Duplicate name error messages (EH-10.0).
+    - [x] Duplicate name error messages (EH-10.0).
     - [ ] Success toasts (e.g., "Saved") (UI-05.0).
     - [x] Implement Evaluator Bar (Function Signature) (UI-09.0).
     - [x] Implement Sheet Deletion with confirmation (UI-11.0).
@@ -101,9 +101,9 @@ Generated from `SPECIFICATIONS.tsv`.
     - [x] Implement logic to expose Input/Output Nodes as sockets (BB-S-04.0).
     - [ ] Validate that all nested sheet inputs are connected (No defaults) (BB-S-05.0).
     - [x] Implement Sheet Picker Modal for importing (UI-16.0).
-    - [ ] Auto-calculate on load if inputs are satisfied (UI-27.0).
+    - [x] Auto-calculate on load if inputs are satisfied (UI-27.0).
 - [ ] **Graph Integrity**:
-    - [ ] Auto-remove connections on node deletion (EH-04.0).
+    - [x] Auto-remove connections on node deletion (EH-04.0).
     - [ ] Validate function dependencies before saving (EH-05.0).
     - [ ] Enforce unique parameter names per sheet (EH-09.0).
 
