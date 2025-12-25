@@ -1,9 +1,10 @@
 import React, { useEffect, useState } from 'react';
 import { Link, useNavigate, useParams } from 'react-router-dom';
-import { Copy, Trash2, Folder as FolderIcon, FolderPlus, ArrowLeft, FolderInput, FileText } from 'lucide-react';
+import { Copy, Trash2, Folder as FolderIcon, FolderPlus, ArrowLeft, FolderInput, FileText, LogOut } from 'lucide-react';
 import { api, type SheetSummary, type Folder } from '../api';
 import { FolderPickerModal } from './FolderPickerModal';
 import { ParascopeLogo } from './ParascopeLogo';
+import { useAuth } from '../contexts/AuthContext';
 
 export const Dashboard: React.FC = () => {
   const { folderId } = useParams<{ folderId: string }>();
@@ -13,6 +14,7 @@ export const Dashboard: React.FC = () => {
   const [moveModalOpen, setMoveModalOpen] = useState(false);
   const [sheetToMove, setSheetToMove] = useState<string | null>(null);
   const navigate = useNavigate();
+  const { user, logout } = useAuth();
 
   useEffect(() => {
       setCurrentFolderId(folderId);
@@ -149,9 +151,17 @@ export const Dashboard: React.FC = () => {
 
   return (
     <div className="dashboard">
-      <div style={{display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '20px'}}>
-        <ParascopeLogo size={48} strokeColor="var(--text-color, #333)" />
-        <h1 style={{margin: 0}}>Parascope</h1>
+      <div style={{display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '20px'}}>
+        <div style={{display: 'flex', alignItems: 'center', gap: '12px'}}>
+            <ParascopeLogo size={48} strokeColor="var(--text-color, #333)" />
+            <h1 style={{margin: 0}}>Parascope</h1>
+        </div>
+        <div style={{display: 'flex', alignItems: 'center', gap: '10px'}}>
+            <span>Hello, <b>{user}</b></span>
+            <button onClick={logout} title="Change User" style={{background: 'none', border: 'none', cursor: 'pointer', padding: 5, color: 'var(--text-color, #333)'}}>
+                <LogOut size={20} />
+            </button>
+        </div>
       </div>
       <div className="actions">
         <button onClick={handleCreateSheet}>+ Create New Sheet</button>

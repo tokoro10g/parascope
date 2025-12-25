@@ -1,4 +1,14 @@
+import Cookies from 'js-cookie';
+
 const API_BASE = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000';
+
+const getHeaders = (headers: Record<string, string> = {}) => {
+  const user = Cookies.get('parascope_user');
+  if (user) {
+    headers['X-Parascope-User'] = user;
+  }
+  return headers;
+};
 
 export interface Sheet {
   id: string;
@@ -42,18 +52,23 @@ export interface ConnectionData {
 
 export const api = {
   async listSheets(): Promise<SheetSummary[]> {
-    const res = await fetch(`${API_BASE}/sheets/`);
+    const res = await fetch(`${API_BASE}/sheets/`, {
+      headers: getHeaders(),
+    });
     return res.json();
   },
 
   async listFolders(): Promise<Folder[]> {
-    const res = await fetch(`${API_BASE}/sheets/folders`);
+    const res = await fetch(`${API_BASE}/sheets/folders`, {
+      headers: getHeaders(),
+    });
     return res.json();
   },
 
   async deleteFolder(folderId: string): Promise<void> {
     const res = await fetch(`${API_BASE}/sheets/folders/${folderId}`, {
       method: 'DELETE',
+      headers: getHeaders(),
     });
     if (!res.ok) {
       const err = await res.json();
@@ -64,7 +79,7 @@ export const api = {
   async createFolder(name: string, parent_id?: string): Promise<Folder> {
     const res = await fetch(`${API_BASE}/sheets/folders`, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: getHeaders({ 'Content-Type': 'application/json' }),
       body: JSON.stringify({ name, parent_id }),
     });
     return res.json();
@@ -73,21 +88,23 @@ export const api = {
   async createSheet(name: string = 'Untitled', folder_id?: string): Promise<Sheet> {
     const res = await fetch(`${API_BASE}/sheets/`, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: getHeaders({ 'Content-Type': 'application/json' }),
       body: JSON.stringify({ name, folder_id }),
     });
     return res.json();
   },
 
   async getSheet(id: string): Promise<Sheet> {
-    const res = await fetch(`${API_BASE}/sheets/${id}`);
+    const res = await fetch(`${API_BASE}/sheets/${id}`, {
+      headers: getHeaders(),
+    });
     return res.json();
   },
 
   async updateSheet(id: string, sheet: Partial<Sheet>): Promise<Sheet> {
     const res = await fetch(`${API_BASE}/sheets/${id}`, {
       method: 'PUT',
-      headers: { 'Content-Type': 'application/json' },
+      headers: getHeaders({ 'Content-Type': 'application/json' }),
       body: JSON.stringify(sheet),
     });
     return res.json();
@@ -96,6 +113,7 @@ export const api = {
   async duplicateSheet(id: string): Promise<Sheet> {
     const res = await fetch(`${API_BASE}/sheets/${id}/duplicate`, {
       method: 'POST',
+      headers: getHeaders(),
     });
     if (!res.ok) {
       const err = await res.json();

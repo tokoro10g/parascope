@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Save, Sliders, Sigma, LogIn, LogOut, FilePlus, Undo, Redo } from 'lucide-react';
+import { useAuth } from '../contexts/AuthContext';
 
 interface EditorBarProps {
   sheetName?: string;
@@ -21,6 +22,7 @@ export const EditorBar: React.FC<EditorBarProps> = ({
   onRedo,
 }) => {
   const [name, setName] = useState(sheetName || '');
+  const { user, logout } = useAuth();
 
   useEffect(() => {
     setName(sheetName || '');
@@ -99,6 +101,13 @@ export const EditorBar: React.FC<EditorBarProps> = ({
         >
             <Save size={18} />
         </button>
+      </div>
+
+      <div className="toolbar-group user-group" style={{ marginLeft: 'auto', display: 'flex', alignItems: 'center', gap: '8px', paddingRight: '10px' }}>
+          <span style={{ fontSize: '0.9em', color: '#666' }}>{user}</span>
+          <button type="button" onClick={logout} title="Change User">
+              <LogOut size={18} />
+          </button>
       </div>
     </div>
   );

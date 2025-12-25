@@ -51,10 +51,10 @@ Generated from `SPECIFICATIONS.tsv`.
     - [x] Implement Delete Sheet action (UI-11.0).
     - [x] Implement Duplicate Sheet action (UI-12.0).
     - [x] Implement URL query parameter parsing for value overrides (UI-07.0).
-- [ ] **Authentication**:
-    - [ ] Implement "Name" prompt on first visit (AUTH-02.0).
-    - [ ] Save identity in Cookies (AUTH-03.0).
-    - [ ] Add "Change user" menu (AUTH-04.0).
+- [x] **Authentication**:
+    - [x] Implement "Name" prompt on first visit (AUTH-02.0).
+    - [x] Save identity in Cookies (AUTH-03.0).
+    - [x] Add "Change user" menu (AUTH-04.0).
 - [x] **Input Node**:
     - [x] Distinct visual style from Parameters (BB-I-01.0).
     - [ ] Inputs: Name, Unit (BB-I-01.0).

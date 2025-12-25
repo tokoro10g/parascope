@@ -6,6 +6,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
 
 from ..core.database import get_db
+from ..core.auth import get_current_user
 from ..models.sheet import Connection, Folder, Node, Sheet
 from ..schemas.sheet import (
     FolderCreate,
@@ -56,9 +57,14 @@ async def list_sheets(skip: int = 0, limit: int = 100, db: AsyncSession = Depend
     return sheets
 
 @router.post("/", response_model=SheetRead)
-async def create_sheet(sheet_in: SheetCreate, db: AsyncSession = Depends(get_db)):
+async def create_sheet(
+    sheet_in: SheetCreate, 
+    db: AsyncSession = Depends(get_db),
+    current_user: str | None = Depends(get_current_user)
+):
     # Create Sheet
-    db_sheet = Sheet(name=sheet_in.name, owner_name=sheet_in.owner_name, folder_id=sheet_in.folder_id)
+    owner = current_user if current_user else sheet_in.owner_name
+    db_sheet = Sheet(name=sheet_in.name, owner_name=owner, folder_id=sheet_in.folder_id)
     db.add(db_sheet)
     await db.flush() # Get ID
 
