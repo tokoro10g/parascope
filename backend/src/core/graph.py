@@ -83,8 +83,6 @@ class GraphProcessor:
                     val = input_overrides[node.label]
             
             if val is None or val == "":
-                # val = node.data.get("value", 0) # Old behavior: default to 0
-                # New behavior: Fail if no value provided
                 raise NodeExecutionError(
                     str(node.id),
                     node.label,

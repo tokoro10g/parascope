@@ -85,10 +85,6 @@ export const SheetEditor: React.FC = () => {
   useEffect(() => {
       if (editor && location.hash) {
           const nodeId = location.hash.substring(1);
-          // Only zoom if the node exists and we are not currently loading (handled by loadSheet)
-          // But loadSheet is async.
-          // Simple check: if node exists in editor.
-          // Note: loadSheet handles the initial hash focus. This is for subsequent changes.
           editor.zoomToNode(nodeId);
       }
   }, [editor, location.hash]);

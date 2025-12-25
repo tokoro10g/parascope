@@ -143,16 +143,8 @@ async def update_sheet(sheet_id: UUID, sheet_in: SheetUpdate, db: AsyncSession =
     
     if sheet_in.nodes is not None:
         # Clear existing
-        # Note: cascade delete should handle this if we delete the sheet, but we are keeping the sheet.
-        # We need to manually clear the collections or delete via query.
-        
-        # Clear existing
         db_sheet.connections = [] # Clear connections first to avoid FK issues if we clear nodes
         db_sheet.nodes = []
-        
-        # We need to flush to ensure deletions happen before re-insertions if IDs are reused?
-        # Actually, if we reuse IDs, we should probably update instead of delete/insert.
-        # But for MVP, let's try clearing the list. SQLAlchemy should handle the deletes.
         
         # Re-create Nodes
         for node_in in sheet_in.nodes:
