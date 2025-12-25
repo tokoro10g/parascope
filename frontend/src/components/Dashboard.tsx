@@ -3,6 +3,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import { Copy, Trash2, Folder as FolderIcon, FolderPlus, ArrowLeft, FolderInput, FileText } from 'lucide-react';
 import { api, type SheetSummary, type Folder } from '../api';
 import { FolderPickerModal } from './FolderPickerModal';
+import { ParascopeLogo } from './ParascopeLogo';
 
 export const Dashboard: React.FC = () => {
   const [sheets, setSheets] = useState<SheetSummary[]>([]);
@@ -125,7 +126,10 @@ export const Dashboard: React.FC = () => {
 
   return (
     <div className="dashboard">
-      <h1>Parascope Dashboard</h1>
+      <div style={{display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '20px'}}>
+        <ParascopeLogo size={48} strokeColor="var(--text-color, #333)" />
+        <h1 style={{margin: 0}}>Parascope</h1>
+      </div>
       <div className="actions">
         <button onClick={handleCreateSheet}>+ Create New Sheet</button>
         <button onClick={handleCreateFolder}><FolderPlus size={16} style={{marginRight: 5}}/> New Folder</button>

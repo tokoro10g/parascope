@@ -12,6 +12,7 @@ import { EvaluatorBar, type EvaluatorInput, type EvaluatorOutput } from './Evalu
 import { NodeInspector, type NodeUpdates } from './NodeInspector';
 import { SheetPickerModal } from './SheetPickerModal';
 import { SheetTable } from './SheetTable';
+import { ParascopeLogo } from './ParascopeLogo';
 
 export const SheetEditor: React.FC = () => {
   const { sheetId } = useParams<{ sheetId: string }>();
@@ -542,7 +543,8 @@ export const SheetEditor: React.FC = () => {
 
   return (
     <div className="sheet-editor">
-      <div className="nav-bar">
+      <div className="nav-bar" style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+          <ParascopeLogo size={16} strokeColor="var(--text-color, #333)" />
           <a href="/" onClick={handleBackClick} style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
             <ArrowLeft size={16} /> Back to Dashboard
           </a>
