@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { Presets } from 'rete-react-plugin';
-import { Sliders, Sigma, LogIn, LogOut, FilePlus } from 'lucide-react';
+import { Sigma, LogIn, LogOut, Import, CaseLower } from 'lucide-react';
 import './custom-node.css';
 
 const styles: Record<string, { background: string; borderColor: string }> = {
@@ -13,11 +13,11 @@ const styles: Record<string, { background: string; borderColor: string }> = {
 };
 
 const icons: Record<string, any> = {
-    parameter: Sliders,
+    parameter: CaseLower,
     function: Sigma,
     input: LogIn,
     output: LogOut,
-    sheet: FilePlus
+    sheet: Import
 };
 
 export function CustomNode(props: any) {

@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Save, Sliders, Sigma, FilePlus, Undo, Redo, LogIn, LogOut } from 'lucide-react';
+import { Save, Sigma, Import, Undo, Redo, LogIn, LogOut, CaseLower } from 'lucide-react';
 
 interface EditorBarProps {
   sheetName?: string;
@@ -53,7 +53,7 @@ export const EditorBar: React.FC<EditorBarProps> = ({
       </div>
       <div className="toolbar-group node-actions-group">
         <button type="button" onClick={() => onAddNode('parameter')} title="Add Parameter">
-            <Sliders size={18} />
+            <CaseLower size={18} />
         </button>
         <button type="button" onClick={() => onAddNode('function')} title="Add Function">
             <Sigma size={18} />
@@ -65,7 +65,7 @@ export const EditorBar: React.FC<EditorBarProps> = ({
             <LogOut size={18} />
         </button>
         <button type="button" onClick={() => onAddNode('sheet')} title="Import Sheet">
-            <FilePlus size={18} />
+            <Import size={18} />
         </button>
       </div>
 
