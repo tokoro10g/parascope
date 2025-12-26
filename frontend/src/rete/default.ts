@@ -266,6 +266,7 @@ export async function createEditor(container: HTMLElement) {
   area.use(contextMenu);
 
   AreaExtensions.zoomAt(area, editor.getNodes());
+  AreaExtensions.snapGrid(area, { size: 20 });
   
   let lastNodePicked: string | null = null;
   let lastNodePickedTime = 0;
