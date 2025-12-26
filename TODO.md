@@ -62,12 +62,15 @@ Generated from `SPECIFICATIONS.tsv`.
     - [x] Distinct visual style from Parameters (BB-I-01.0).
     - [ ] Name (BB-I-01.0).
     - [ ] Range (BB-I-03.0).
+    - [ ] Description (BB-I-04.0).
 - [x] **Output Node**:
     - [x] Distinct visual style (BB-O-01.0).
-    - [ ] Name, Description (BB-O-01.0).
+    - [ ] Name (BB-O-01.0).
+    - [ ] Description (BB-O-03.0).
     - [ ] Range (BB-O-02.0).
 - [ ] **Option Node**:
     - [ ] Name, Options List, Selected Value (BB-OPT-01.0).
+    - [ ] Description (BB-OPT-03.0).
     - [ ] UI: Dropdown menu for selection (BB-OPT-01.0).
 - [ ] **Parameter Node**:
     - [x] Name, Value (BB-P-01.0).
