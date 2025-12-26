@@ -15,15 +15,16 @@ export const SheetTable: React.FC<SheetTableProps> = ({ nodes, onUpdateValue, on
   );
 
   const handleCopyTable = () => {
-    const headers = ['Name', 'Type', 'Value'];
+    const headers = ['Name', 'Type', 'Value', 'URL'];
     const rows = tableNodes.map((node) => {
       const nameControl = node.controls['name'] as any;
       const valueControl = node.controls['value'] as any;
 
       const name = nameControl?.value || node.label;
       const value = valueControl?.value || '';
+      const url = `${window.location.origin}${window.location.pathname}#${node.id}`;
 
-      return [name, node.type, value].join('\t');
+      return [name, node.type, value, url].join('\t');
     });
 
     const tsv = [headers.join('\t'), ...rows].join('\n');
