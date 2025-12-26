@@ -558,7 +558,11 @@ export const SheetEditor: React.FC = () => {
   const handleSelectNode = (nodeId: string) => {
       if (!editor) return;
       editor.zoomToNode(nodeId);
-      navigate(`#${nodeId}`, { replace: true });
+      navigate({
+        pathname: location.pathname,
+        search: location.search,
+        hash: `#${nodeId}`
+      }, { replace: true });
   };
 
   return (

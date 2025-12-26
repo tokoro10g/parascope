@@ -141,6 +141,16 @@ export async function createEditor(container: HTMLElement) {
                     }
                 },
                 {
+                    label: 'Copy URL',
+                    key: 'copy-url',
+                    handler: () => {
+                        const url = `${window.location.origin}${window.location.pathname}${window.location.search}#${context.id}`;
+                        if (navigator.clipboard && navigator.clipboard.writeText) {
+                            navigator.clipboard.writeText(url).catch(err => console.error('Failed to copy URL:', err));
+                        }
+                    }
+                },
+                {
                     label: 'Delete',
                     key: 'delete',
                     handler: async () => {

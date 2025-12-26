@@ -12,7 +12,14 @@ export const SheetTable: React.FC<SheetTableProps> = ({ nodes, onUpdateValue, on
   // Filter for Parameters, Inputs, and Outputs
   const tableNodes = nodes.filter(
     (node) => node.type === 'parameter' || node.type === 'output' || node.type === 'input'
-  );
+  ).sort((a, b) => {
+      const typeOrder: Record<string, number> = {
+          'input': 0,
+          'parameter': 1,
+          'output': 2
+      };
+      return (typeOrder[a.type] ?? 99) - (typeOrder[b.type] ?? 99);
+  });
 
   const handleCopyTable = () => {
     const headers = ['Name', 'Type', 'Value', 'URL'];
@@ -22,7 +29,7 @@ export const SheetTable: React.FC<SheetTableProps> = ({ nodes, onUpdateValue, on
 
       const name = nameControl?.value || node.label;
       const value = valueControl?.value || '';
-      const url = `${window.location.origin}${window.location.pathname}#${node.id}`;
+      const url = `${window.location.origin}${window.location.pathname}${window.location.search}#${node.id}`;
 
       return [name, node.type, value, url].join('\t');
     });
