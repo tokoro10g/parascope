@@ -14,16 +14,17 @@
 ## 🛠️ Tech Stack
 
 ### Frontend
-*   **Framework**: React 18 + TypeScript + Vite
+*   **Framework**: React + TypeScript + Vite
 *   **Graph Library**: Rete.js (Classic Preset)
 *   **Styling**: CSS Modules, Lucide React (Icons)
 *   **Package Manager**: pnpm
 
 ### Backend
 *   **Framework**: FastAPI (Python 3.12)
-*   **Database**: PostgreSQL 16
+*   **Database**: PostgreSQL
 *   **ORM**: SQLAlchemy (Async)
 *   **Runtime**: Docker / Docker Compose
+*   **Package Manager**: uv
 
 ## 🏁 Quick Start
 
