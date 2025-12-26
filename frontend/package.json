@@ -20,6 +20,7 @@
     "lucide-react": "^0.562.0",
     "react": "^19.2.3",
     "react-dom": "^19.2.3",
+    "react-markdown": "^10.1.0",
     "react-resizable-panels": "^4.0.15",
     "react-router-dom": "^7.11.0",
     "rete": "^2.0.6",

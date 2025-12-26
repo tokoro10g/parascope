@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import ReactMarkdown from 'react-markdown';
 import type { ParascopeNode } from '../rete';
 
 export interface NodeUpdates {
@@ -25,6 +26,7 @@ export const NodeInspector: React.FC<NodeInspectorProps> = ({
   const [data, setData] = useState<Record<string, any>>({});
   const [inputs, setInputs] = useState<{ key: string; socket_type: string }[]>([]);
   const [outputs, setOutputs] = useState<{ key: string; socket_type: string }[]>([]);
+  const [showPreview, setShowPreview] = useState(false);
 
   const isValidPythonIdentifier = (name: string) => {
       return /^[a-zA-Z_][a-zA-Z0-9_]*$/.test(name);
@@ -120,6 +122,41 @@ export const NodeInspector: React.FC<NodeInspectorProps> = ({
             value={label} 
             onChange={e => setLabel(e.target.value)} 
           />
+        </div>
+
+        <div className="form-group">
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '5px' }}>
+            <label htmlFor="node-description" style={{ marginBottom: 0 }}>Description (Markdown):</label>
+            <button 
+                type="button" 
+                onClick={() => setShowPreview(!showPreview)}
+                style={{ fontSize: '0.8em', padding: '2px 8px', cursor: 'pointer' }}
+            >
+                {showPreview ? 'Edit' : 'Preview'}
+            </button>
+          </div>
+          
+          {showPreview ? (
+              <div className="markdown-preview" style={{ 
+                  border: '1px solid var(--border-color)', 
+                  padding: '10px', 
+                  minHeight: '100px', 
+                  borderRadius: '4px', 
+                  background: 'var(--input-bg)',
+                  color: 'var(--text-color)'
+              }}>
+                  <ReactMarkdown>{data.description || '*No description*'}</ReactMarkdown>
+              </div>
+          ) : (
+              <textarea 
+                id="node-description"
+                value={data.description || ''} 
+                onChange={e => setData({ ...data, description: e.target.value })}
+                rows={5}
+                style={{ width: '100%', fontFamily: 'sans-serif' }}
+                placeholder="Enter description here..."
+              />
+          )}
         </div>
 
         {(node.type === 'parameter' || node.type === 'input') && (
