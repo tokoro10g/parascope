@@ -47,6 +47,11 @@ export const SheetEditor: React.FC = () => {
   const [isSheetPickerOpen, setIsSheetPickerOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
 
+  const lastResultRef = useRef(lastResult);
+  lastResultRef.current = lastResult;
+  const evaluatorInputsRef = useRef(evaluatorInputs);
+  evaluatorInputsRef.current = evaluatorInputs;
+
   const ignoreNextSearchParamsChange = useRef(false);
 
   // Warn on exit if dirty
@@ -94,12 +99,27 @@ export const SheetEditor: React.FC = () => {
       return;
     }
 
+    if (nodes.length === 0) return;
+
     const overrides: Record<string, string> = {};
     searchParams.forEach((value, key) => {
-      overrides[key] = value;
+      const node = nodes.find((n) => n.type === 'input' && n.label === key);
+      if (node && node.id) {
+        overrides[node.id] = value;
+      }
     });
-    setEvaluatorInputs(overrides);
-  }, [searchParams]);
+    setEvaluatorInputs((prev) => {
+      const prevKeys = Object.keys(prev);
+      const newKeys = Object.keys(overrides);
+      if (prevKeys.length !== newKeys.length) return overrides;
+
+      for (const key of newKeys) {
+        if (prev[key] !== overrides[key]) return overrides;
+      }
+
+      return prev;
+    });
+  }, [searchParams, nodes]);
 
   // Handle Hash Changes for Focus
   useEffect(() => {
@@ -129,27 +149,39 @@ export const SheetEditor: React.FC = () => {
 
   const handleEvaluatorInputChange = useCallback(
     (id: string, value: string) => {
+      if (
+        evaluatorInputsRef.current &&
+        evaluatorInputsRef.current[id] === value
+      ) {
+        return;
+      }
+
       setEvaluatorInputs((prev) => ({ ...prev, [id]: value }));
 
       if (errorNodeId === id) {
         setErrorNodeId(null);
       }
 
+      const node = nodes.find((n) => n.id === id);
+      const label = node?.label;
+
+      if (!label) return;
+
       ignoreNextSearchParamsChange.current = true;
       setSearchParams(
         (prev) => {
           const newParams = new URLSearchParams(prev);
           if (value) {
-            newParams.set(id, value);
+            newParams.set(label, value);
           } else {
-            newParams.delete(id);
+            newParams.delete(label);
           }
           return newParams;
         },
         { replace: true },
       );
     },
-    [errorNodeId, setSearchParams],
+    [errorNodeId, setSearchParams, nodes],
   );
 
   useEffect(() => {
@@ -162,10 +194,65 @@ export const SheetEditor: React.FC = () => {
       };
       editor.setNodeDoubleClickListener(handleEdit);
       editor.setNodeEditListener(handleEdit);
+      editor.setNodeRemoveListener(async (nodeId) => {
+        const node = editor.editor.getNode(nodeId);
+        if (node && (node.type === 'input' || node.type === 'output')) {
+          return window.confirm(
+            `Deleting this ${node.type} node may break sheets that use this sheet as a function. Are you sure?`,
+          );
+        }
+        return true;
+      });
       editor.setEditNestedSheetListener((nodeId) => {
         const node = editor.editor.getNode(nodeId);
         if (node && node.initialData?.sheetId) {
-          window.open(`/sheet/${node.initialData.sheetId}`, '_blank');
+          const connections = editor.editor
+            .getConnections()
+            .filter((c) => c.target === nodeId);
+          const queryParams = new URLSearchParams();
+
+          connections.forEach((c) => {
+            const sourceId = c.source;
+            const inputKey = c.targetInput;
+            let value: any = undefined;
+
+            // 1. Check lastResult (calculated values)
+            if (lastResultRef.current && sourceId in lastResultRef.current) {
+              const nodeResult = lastResultRef.current[sourceId];
+              value = nodeResult?.[c.sourceOutput];
+            }
+            // 2. Check evaluatorInputs (if source is an input node)
+            else if (
+              evaluatorInputsRef.current &&
+              sourceId in evaluatorInputsRef.current
+            ) {
+              value = evaluatorInputsRef.current[sourceId];
+            }
+            // 3. Check node control value (fallback for constants/inputs)
+            else {
+              const sourceNode = editor.editor.getNode(sourceId);
+              if (sourceNode?.controls?.value) {
+                const control = sourceNode.controls.value as any;
+                if (control && control.value !== undefined) {
+                  value = control.value;
+                }
+              }
+            }
+
+            if (value !== undefined) {
+              const stringValue =
+                typeof value === 'object'
+                  ? JSON.stringify(value)
+                  : String(value);
+              queryParams.set(inputKey, stringValue);
+            }
+          });
+
+          const queryString = queryParams.toString();
+          const url = `/sheet/${node.initialData.sheetId}${
+            queryString ? `?${queryString}` : ''
+          }`;
+          window.open(url, '_blank');
         }
       });
       editor.setGraphChangeListener(() => {
@@ -201,6 +288,79 @@ export const SheetEditor: React.FC = () => {
     setIsLoading(true);
     try {
       const sheet = await api.getSheet(id);
+
+      // --- SYNC NESTED SHEETS ---
+      const nestedSheetNodes = sheet.nodes.filter(
+        (n) => n.type === 'sheet' && n.data?.sheetId,
+      );
+      if (nestedSheetNodes.length > 0) {
+        const updatedNodes = [...sheet.nodes];
+        let connectionsChanged = false;
+        const validConnectionIds = new Set(sheet.connections.map((c) => c.id));
+
+        await Promise.all(
+          nestedSheetNodes.map(async (node) => {
+            try {
+              const childSheet = await api.getSheet(node.data.sheetId);
+
+              // Update Inputs (from child's Input nodes)
+              const newInputs = childSheet.nodes
+                .filter((n) => n.type === 'input')
+                .map((n) => ({ key: n.label, socket_type: 'any' }));
+
+              // Update Outputs (from child's Output nodes)
+              const newOutputs = childSheet.nodes
+                .filter((n) => n.type === 'output')
+                .map((n) => ({ key: n.label, socket_type: 'any' }));
+
+              // Find the node in the array and update it
+              const nodeIndex = updatedNodes.findIndex((n) => n.id === node.id);
+              if (nodeIndex !== -1) {
+                updatedNodes[nodeIndex] = {
+                  ...updatedNodes[nodeIndex],
+                  inputs: newInputs,
+                  outputs: newOutputs,
+                };
+              }
+
+              // Validate Connections
+              // Remove connections to/from this node that reference non-existent sockets
+              const inputKeys = new Set(newInputs.map((i) => i.key));
+              const outputKeys = new Set(newOutputs.map((o) => o.key));
+
+              sheet.connections.forEach((c) => {
+                if (c.target_id === node.id) {
+                  if (!inputKeys.has(c.target_port)) {
+                    validConnectionIds.delete(c.id);
+                    connectionsChanged = true;
+                  }
+                }
+                if (c.source_id === node.id) {
+                  if (!outputKeys.has(c.source_port)) {
+                    validConnectionIds.delete(c.id);
+                    connectionsChanged = true;
+                  }
+                }
+              });
+            } catch (err) {
+              console.error(
+                `Failed to sync nested sheet ${node.data.sheetId}`,
+                err,
+              );
+            }
+          }),
+        );
+
+        sheet.nodes = updatedNodes;
+        if (connectionsChanged) {
+          sheet.connections = sheet.connections.filter((c) =>
+            validConnectionIds.has(c.id),
+          );
+          console.warn('Removed invalid connections due to nested sheet updates');
+        }
+      }
+      // --------------------------
+
       setCurrentSheet(sheet);
       setLastResult(null);
       // Note: evaluatorInputs are handled by the useEffect on searchParams
@@ -217,7 +377,11 @@ export const SheetEditor: React.FC = () => {
       const inputNodes = sheet.nodes.filter((n) => n.type === 'input');
       const inputsFromParams: Record<string, string> = {};
       searchParams.forEach((value, key) => {
-        inputsFromParams[key] = value;
+        // Map Name -> ID
+        const node = inputNodes.find((n) => n.label === key);
+        if (node && node.id) {
+          inputsFromParams[node.id] = value;
+        }
       });
 
       const allInputsProvided = inputNodes.every(
@@ -537,6 +701,15 @@ export const SheetEditor: React.FC = () => {
     if (!node) return;
 
     if (updates.label) {
+      if (node.type === 'input' || node.type === 'output') {
+        if (
+          !window.confirm(
+            `Renaming this ${node.type} node may break sheets that use this sheet as a function. Are you sure?`,
+          )
+        ) {
+          return;
+        }
+      }
       node.label = updates.label;
     }
 
@@ -622,13 +795,23 @@ export const SheetEditor: React.FC = () => {
         style={{ display: 'flex', alignItems: 'center', gap: '10px' }}
       >
         <ParascopeLogo size={16} strokeColor="var(--text-color, #333)" />
-        <a
-          href="/"
+        <button
+          type="button"
           onClick={handleBackClick}
-          style={{ display: 'flex', alignItems: 'center', gap: '4px' }}
+          style={{
+            display: 'flex',
+            alignItems: 'center',
+            gap: '4px',
+            background: 'none',
+            border: 'none',
+            color: 'inherit',
+            cursor: 'pointer',
+            padding: 0,
+            font: 'inherit',
+          }}
         >
           <ArrowLeft size={16} /> Back to Dashboard
-        </a>
+        </button>
         <div
           style={{
             marginLeft: 'auto',

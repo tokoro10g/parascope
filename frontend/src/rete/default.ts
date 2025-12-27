@@ -202,6 +202,10 @@ export async function createEditor(container: HTMLElement) {
           label: 'Delete',
           key: 'delete',
           handler: async () => {
+            if (onNodeRemove) {
+              const shouldRemove = await onNodeRemove(context.id);
+              if (!shouldRemove) return;
+            }
             const connections = editor.getConnections().filter((c) => {
               return c.source === context.id || c.target === context.id;
             });
@@ -227,6 +231,7 @@ export async function createEditor(container: HTMLElement) {
   let onNodeEdit: ((nodeId: string) => void) | undefined;
   let onInputValueChange: ((nodeId: string, value: string) => void) | undefined;
   let onEditNestedSheet: ((nodeId: string) => void) | undefined;
+  let onNodeRemove: ((nodeId: string) => Promise<boolean>) | undefined;
 
   AreaExtensions.selectableNodes(area, AreaExtensions.selector(), {
     accumulating: AreaExtensions.accumulateOnCtrl(),
@@ -318,6 +323,9 @@ export async function createEditor(container: HTMLElement) {
     },
     setEditNestedSheetListener: (cb: (nodeId: string) => void) => {
       onEditNestedSheet = cb;
+    },
+    setNodeRemoveListener: (cb: (nodeId: string) => Promise<boolean>) => {
+      onNodeRemove = cb;
     },
     setGraphChangeListener: (cb: () => void) => {
       onGraphChange = cb;

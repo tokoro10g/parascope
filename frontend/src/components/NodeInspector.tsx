@@ -275,8 +275,7 @@ export const NodeInspector: React.FC<NodeInspectorProps> = ({
         )}
 
         {(node.type === 'parameter' || node.type === 'input') && (
-          <>
-            {node.type === 'parameter' && (
+          node.type === 'parameter' && (
               <div className="form-group">
                 <label htmlFor="node-value">Value:</label>
                 <input
@@ -288,8 +287,7 @@ export const NodeInspector: React.FC<NodeInspectorProps> = ({
                   }
                 />
               </div>
-            )}
-          </>
+            )
         )}
 
         {node.type === 'function' && (
