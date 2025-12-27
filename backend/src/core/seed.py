@@ -26,27 +26,90 @@ async def seed_database(session: AsyncSession):
     # ==========================================
     sheet1_id = uuid.uuid4()
     sheet1 = Sheet(id=sheet1_id, name="Tsiolkovsky Rocket Equation", owner_name="System", folder_id=folder_id)
-    
+
     # Nodes
-    node_isp = Node(id=uuid.uuid4(), sheet_id=sheet1_id, type="input", label="Isp [s]", inputs=[], outputs=[{"key": "value", "socket_type": "any"}], position_x=100, position_y=100, data={"description": "Specific Impulse of the engine in seconds."})
-    node_m0 = Node(id=uuid.uuid4(), sheet_id=sheet1_id, type="input", label="Initial Mass (m0) [kg]", inputs=[], outputs=[{"key": "value", "socket_type": "any"}], position_x=100, position_y=250, data={"description": "Initial total mass of the rocket (wet mass) in kg."})
-    node_mf = Node(id=uuid.uuid4(), sheet_id=sheet1_id, type="input", label="Final Mass (mf) [kg]", inputs=[], outputs=[{"key": "value", "socket_type": "any"}], position_x=100, position_y=400, data={"description": "Final mass of the rocket (dry mass) in kg."})
-    
-    node_rocket_func = Node(
-        id=uuid.uuid4(), sheet_id=sheet1_id, type="function", label="Calculate Delta-V",
-        inputs=[{"key": "Isp", "socket_type": "any"}, {"key": "m0", "socket_type": "any"}, {"key": "mf", "socket_type": "any"}],
-        outputs=[{"key": "DeltaV", "socket_type": "any"}],
-        position_x=500, position_y=250,
-        data={"code": "g0 = 9.80665\nDeltaV = Isp * g0 * math.log(m0 / mf)", "description": "Calculates the Delta-V using the Tsiolkovsky rocket equation: $\\Delta V = I_{sp} \\cdot g_0 \\cdot \\ln(\\frac{m_0}{m_f})$"}
+    node_isp = Node(
+        id=uuid.uuid4(),
+        sheet_id=sheet1_id,
+        type="input",
+        label="Isp [s]",
+        inputs=[],
+        outputs=[{"key": "value", "socket_type": "any"}],
+        position_x=100,
+        position_y=100,
+        data={"description": "Specific Impulse of the engine in seconds."},
     )
-    
-    node_dv = Node(id=uuid.uuid4(), sheet_id=sheet1_id, type="output", label="Delta-V [m/s]", inputs=[{"key": "value", "socket_type": "any"}], outputs=[], position_x=900, position_y=250, data={"description": "The total change in velocity achievable by the rocket."})
+    node_m0 = Node(
+        id=uuid.uuid4(),
+        sheet_id=sheet1_id,
+        type="input",
+        label="Initial Mass (m0) [kg]",
+        inputs=[],
+        outputs=[{"key": "value", "socket_type": "any"}],
+        position_x=100,
+        position_y=250,
+        data={"description": "Initial total mass of the rocket (wet mass) in kg."},
+    )
+    node_mf = Node(
+        id=uuid.uuid4(),
+        sheet_id=sheet1_id,
+        type="input",
+        label="Final Mass (mf) [kg]",
+        inputs=[],
+        outputs=[{"key": "value", "socket_type": "any"}],
+        position_x=100,
+        position_y=400,
+        data={"description": "Final mass of the rocket (dry mass) in kg."},
+    )
+
+    node_rocket_func = Node(
+        id=uuid.uuid4(),
+        sheet_id=sheet1_id,
+        type="function",
+        label="Calculate Delta-V",
+        inputs=[
+            {"key": "Isp", "socket_type": "any"},
+            {"key": "m0", "socket_type": "any"},
+            {"key": "mf", "socket_type": "any"},
+        ],
+        outputs=[{"key": "DeltaV", "socket_type": "any"}],
+        position_x=500,
+        position_y=250,
+        data={
+            "code": "g0 = 9.80665\nDeltaV = Isp * g0 * math.log(m0 / mf)",
+            "description": "Calculates the Delta-V using the Tsiolkovsky rocket equation: $\\Delta V = I_{sp} \\cdot g_0 \\cdot \\ln(\\frac{m_0}{m_f})$",
+        },
+    )
+
+    node_dv = Node(
+        id=uuid.uuid4(),
+        sheet_id=sheet1_id,
+        type="output",
+        label="Delta-V [m/s]",
+        inputs=[{"key": "value", "socket_type": "any"}],
+        outputs=[],
+        position_x=900,
+        position_y=250,
+        data={"description": "The total change in velocity achievable by the rocket."},
+    )
 
     # Connections
-    conn1_1 = Connection(sheet_id=sheet1_id, source_id=node_isp.id, source_port="value", target_id=node_rocket_func.id, target_port="Isp")
-    conn1_2 = Connection(sheet_id=sheet1_id, source_id=node_m0.id, source_port="value", target_id=node_rocket_func.id, target_port="m0")
-    conn1_3 = Connection(sheet_id=sheet1_id, source_id=node_mf.id, source_port="value", target_id=node_rocket_func.id, target_port="mf")
-    conn1_4 = Connection(sheet_id=sheet1_id, source_id=node_rocket_func.id, source_port="DeltaV", target_id=node_dv.id, target_port="value")
+    conn1_1 = Connection(
+        sheet_id=sheet1_id, source_id=node_isp.id, source_port="value", target_id=node_rocket_func.id, target_port="Isp"
+    )
+    conn1_2 = Connection(
+        sheet_id=sheet1_id, source_id=node_m0.id, source_port="value", target_id=node_rocket_func.id, target_port="m0"
+    )
+    conn1_3 = Connection(
+        sheet_id=sheet1_id, source_id=node_mf.id, source_port="value", target_id=node_rocket_func.id, target_port="mf"
+    )
+    conn1_4 = Connection(
+        sheet_id=sheet1_id,
+        source_id=node_rocket_func.id,
+        source_port="DeltaV",
+        target_id=node_dv.id,
+        target_port="value",
+    )
 
     session.add(sheet1)
     session.add_all([node_isp, node_m0, node_mf, node_rocket_func, node_dv])
@@ -60,22 +123,65 @@ async def seed_database(session: AsyncSession):
     sheet2_id = uuid.uuid4()
     sheet2 = Sheet(id=sheet2_id, name="Dynamic Pressure (q)", owner_name="System", folder_id=folder_id)
 
-    node_rho = Node(id=uuid.uuid4(), sheet_id=sheet2_id, type="input", label="Density (rho) [kg/m3]", inputs=[], outputs=[{"key": "value", "socket_type": "any"}], position_x=100, position_y=100, data={"description": "Air density in kg/m³."})
-    node_vel = Node(id=uuid.uuid4(), sheet_id=sheet2_id, type="input", label="Velocity (v) [m/s]", inputs=[], outputs=[{"key": "value", "socket_type": "any"}], position_x=100, position_y=250, data={"description": "Velocity of the object relative to the fluid in m/s."})
-    
+    node_rho = Node(
+        id=uuid.uuid4(),
+        sheet_id=sheet2_id,
+        type="input",
+        label="Density (rho) [kg/m3]",
+        inputs=[],
+        outputs=[{"key": "value", "socket_type": "any"}],
+        position_x=100,
+        position_y=100,
+        data={"description": "Air density in kg/m³."},
+    )
+    node_vel = Node(
+        id=uuid.uuid4(),
+        sheet_id=sheet2_id,
+        type="input",
+        label="Velocity (v) [m/s]",
+        inputs=[],
+        outputs=[{"key": "value", "socket_type": "any"}],
+        position_x=100,
+        position_y=250,
+        data={"description": "Velocity of the object relative to the fluid in m/s."},
+    )
+
     node_q_func = Node(
-        id=uuid.uuid4(), sheet_id=sheet2_id, type="function", label="Calculate q",
+        id=uuid.uuid4(),
+        sheet_id=sheet2_id,
+        type="function",
+        label="Calculate q",
         inputs=[{"key": "rho", "socket_type": "any"}, {"key": "v", "socket_type": "any"}],
         outputs=[{"key": "q", "socket_type": "any"}],
-        position_x=500, position_y=175,
-        data={"code": "q = 0.5 * rho * v**2", "description": "Calculates dynamic pressure: $q = \\frac{1}{2} \\rho v^2$"}
+        position_x=500,
+        position_y=175,
+        data={
+            "code": "q = 0.5 * rho * v**2",
+            "description": "Calculates dynamic pressure: $q = \\frac{1}{2} \\rho v^2$",
+        },
     )
-    
-    node_q = Node(id=uuid.uuid4(), sheet_id=sheet2_id, type="output", label="Dynamic Pressure (q) [Pa]", inputs=[{"key": "value", "socket_type": "any"}], outputs=[], position_x=900, position_y=175, data={"description": "Dynamic pressure in Pascals."})
 
-    conn2_1 = Connection(sheet_id=sheet2_id, source_id=node_rho.id, source_port="value", target_id=node_q_func.id, target_port="rho")
-    conn2_2 = Connection(sheet_id=sheet2_id, source_id=node_vel.id, source_port="value", target_id=node_q_func.id, target_port="v")
-    conn2_3 = Connection(sheet_id=sheet2_id, source_id=node_q_func.id, source_port="q", target_id=node_q.id, target_port="value")
+    node_q = Node(
+        id=uuid.uuid4(),
+        sheet_id=sheet2_id,
+        type="output",
+        label="Dynamic Pressure (q) [Pa]",
+        inputs=[{"key": "value", "socket_type": "any"}],
+        outputs=[],
+        position_x=900,
+        position_y=175,
+        data={"description": "Dynamic pressure in Pascals."},
+    )
+
+    conn2_1 = Connection(
+        sheet_id=sheet2_id, source_id=node_rho.id, source_port="value", target_id=node_q_func.id, target_port="rho"
+    )
+    conn2_2 = Connection(
+        sheet_id=sheet2_id, source_id=node_vel.id, source_port="value", target_id=node_q_func.id, target_port="v"
+    )
+    conn2_3 = Connection(
+        sheet_id=sheet2_id, source_id=node_q_func.id, source_port="q", target_id=node_q.id, target_port="value"
+    )
 
     session.add(sheet2)
     session.add_all([node_rho, node_vel, node_q_func, node_q])
@@ -90,44 +196,133 @@ async def seed_database(session: AsyncSession):
     sheet3 = Sheet(id=sheet3_id, name="Aerodynamic Drag Force", owner_name="System", folder_id=folder_id)
 
     # Inputs
-    node_cd = Node(id=uuid.uuid4(), sheet_id=sheet3_id, type="input", label="Drag Coeff (Cd)", inputs=[], outputs=[{"key": "value", "socket_type": "any"}], position_x=100, position_y=50, data={"description": "Drag coefficient (dimensionless)."})
-    node_area = Node(id=uuid.uuid4(), sheet_id=sheet3_id, type="input", label="Ref Area (A) [m2]", inputs=[], outputs=[{"key": "value", "socket_type": "any"}], position_x=100, position_y=200, data={"description": "Reference area (usually frontal area) in m²."})
-    node_d_rho = Node(id=uuid.uuid4(), sheet_id=sheet3_id, type="input", label="Density [kg/m3]", inputs=[], outputs=[{"key": "value", "socket_type": "any"}], position_x=100, position_y=350, data={"description": "Air density in kg/m³."})
-    node_d_vel = Node(id=uuid.uuid4(), sheet_id=sheet3_id, type="input", label="Velocity [m/s]", inputs=[], outputs=[{"key": "value", "socket_type": "any"}], position_x=100, position_y=500, data={"description": "Velocity in m/s."})
+    node_cd = Node(
+        id=uuid.uuid4(),
+        sheet_id=sheet3_id,
+        type="input",
+        label="Drag Coeff (Cd)",
+        inputs=[],
+        outputs=[{"key": "value", "socket_type": "any"}],
+        position_x=100,
+        position_y=50,
+        data={"description": "Drag coefficient (dimensionless)."},
+    )
+    node_area = Node(
+        id=uuid.uuid4(),
+        sheet_id=sheet3_id,
+        type="input",
+        label="Ref Area (A) [m2]",
+        inputs=[],
+        outputs=[{"key": "value", "socket_type": "any"}],
+        position_x=100,
+        position_y=200,
+        data={"description": "Reference area (usually frontal area) in m²."},
+    )
+    node_d_rho = Node(
+        id=uuid.uuid4(),
+        sheet_id=sheet3_id,
+        type="input",
+        label="Density [kg/m3]",
+        inputs=[],
+        outputs=[{"key": "value", "socket_type": "any"}],
+        position_x=100,
+        position_y=350,
+        data={"description": "Air density in kg/m³."},
+    )
+    node_d_vel = Node(
+        id=uuid.uuid4(),
+        sheet_id=sheet3_id,
+        type="input",
+        label="Velocity [m/s]",
+        inputs=[],
+        outputs=[{"key": "value", "socket_type": "any"}],
+        position_x=100,
+        position_y=500,
+        data={"description": "Velocity in m/s."},
+    )
 
     # Nested Sheet: Dynamic Pressure
     node_nested_q = Node(
-        id=uuid.uuid4(), sheet_id=sheet3_id, type="sheet", label="Dynamic Pressure (q)",
-        inputs=[{"key": "Density (rho) [kg/m3]", "socket_type": "any"}, {"key": "Velocity (v) [m/s]", "socket_type": "any"}],
+        id=uuid.uuid4(),
+        sheet_id=sheet3_id,
+        type="sheet",
+        label="Dynamic Pressure (q)",
+        inputs=[
+            {"key": "Density (rho) [kg/m3]", "socket_type": "any"},
+            {"key": "Velocity (v) [m/s]", "socket_type": "any"},
+        ],
         outputs=[{"key": "Dynamic Pressure (q) [Pa]", "socket_type": "any"}],
-        position_x=500, position_y=400,
-        data={"sheetId": str(sheet2_id)}
+        position_x=500,
+        position_y=400,
+        data={"sheetId": str(sheet2_id)},
     )
 
     # Function: Drag
     node_drag_func = Node(
-        id=uuid.uuid4(), sheet_id=sheet3_id, type="function", label="Calculate Drag",
-        inputs=[{"key": "Cd", "socket_type": "any"}, {"key": "A", "socket_type": "any"}, {"key": "q", "socket_type": "any"}],
+        id=uuid.uuid4(),
+        sheet_id=sheet3_id,
+        type="function",
+        label="Calculate Drag",
+        inputs=[
+            {"key": "Cd", "socket_type": "any"},
+            {"key": "A", "socket_type": "any"},
+            {"key": "q", "socket_type": "any"},
+        ],
         outputs=[{"key": "Drag", "socket_type": "any"}],
-        position_x=900, position_y=250,
-        data={"code": "Drag = Cd * A * q", "description": "Calculates drag force: $F_d = C_d \\cdot A \\cdot q$"}
+        position_x=900,
+        position_y=250,
+        data={"code": "Drag = Cd * A * q", "description": "Calculates drag force: $F_d = C_d \\cdot A \\cdot q$"},
     )
 
     # Output
-    node_drag = Node(id=uuid.uuid4(), sheet_id=sheet3_id, type="output", label="Drag Force [N]", inputs=[{"key": "value", "socket_type": "any"}], outputs=[], position_x=1200, position_y=250, data={"description": "Aerodynamic drag force in Newtons."})
+    node_drag = Node(
+        id=uuid.uuid4(),
+        sheet_id=sheet3_id,
+        type="output",
+        label="Drag Force [N]",
+        inputs=[{"key": "value", "socket_type": "any"}],
+        outputs=[],
+        position_x=1200,
+        position_y=250,
+        data={"description": "Aerodynamic drag force in Newtons."},
+    )
 
     # Connections
     # Inputs to Nested Q
-    conn3_1 = Connection(sheet_id=sheet3_id, source_id=node_d_rho.id, source_port="value", target_id=node_nested_q.id, target_port="Density (rho) [kg/m3]")
-    conn3_2 = Connection(sheet_id=sheet3_id, source_id=node_d_vel.id, source_port="value", target_id=node_nested_q.id, target_port="Velocity (v) [m/s]")
-    
+    conn3_1 = Connection(
+        sheet_id=sheet3_id,
+        source_id=node_d_rho.id,
+        source_port="value",
+        target_id=node_nested_q.id,
+        target_port="Density (rho) [kg/m3]",
+    )
+    conn3_2 = Connection(
+        sheet_id=sheet3_id,
+        source_id=node_d_vel.id,
+        source_port="value",
+        target_id=node_nested_q.id,
+        target_port="Velocity (v) [m/s]",
+    )
+
     # Inputs to Drag Func
-    conn3_3 = Connection(sheet_id=sheet3_id, source_id=node_cd.id, source_port="value", target_id=node_drag_func.id, target_port="Cd")
-    conn3_4 = Connection(sheet_id=sheet3_id, source_id=node_area.id, source_port="value", target_id=node_drag_func.id, target_port="A")
-    conn3_5 = Connection(sheet_id=sheet3_id, source_id=node_nested_q.id, source_port="Dynamic Pressure (q) [Pa]", target_id=node_drag_func.id, target_port="q")
+    conn3_3 = Connection(
+        sheet_id=sheet3_id, source_id=node_cd.id, source_port="value", target_id=node_drag_func.id, target_port="Cd"
+    )
+    conn3_4 = Connection(
+        sheet_id=sheet3_id, source_id=node_area.id, source_port="value", target_id=node_drag_func.id, target_port="A"
+    )
+    conn3_5 = Connection(
+        sheet_id=sheet3_id,
+        source_id=node_nested_q.id,
+        source_port="Dynamic Pressure (q) [Pa]",
+        target_id=node_drag_func.id,
+        target_port="q",
+    )
 
     # Func to Output
-    conn3_6 = Connection(sheet_id=sheet3_id, source_id=node_drag_func.id, source_port="Drag", target_id=node_drag.id, target_port="value")
+    conn3_6 = Connection(
+        sheet_id=sheet3_id, source_id=node_drag_func.id, source_port="Drag", target_id=node_drag.id, target_port="value"
+    )
 
     session.add(sheet3)
     session.add_all([node_cd, node_area, node_d_rho, node_d_vel, node_nested_q, node_drag_func, node_drag])
@@ -142,72 +337,252 @@ async def seed_database(session: AsyncSession):
     sheet4 = Sheet(id=sheet4_id, name="SSTO Feasibility Check", owner_name="System", folder_id=folder_id)
 
     # Parameters
-    node_pay = Node(id=uuid.uuid4(), sheet_id=sheet4_id, type="parameter", label="Payload Mass [kg]", inputs=[], outputs=[{"key": "value", "socket_type": "any"}], position_x=100, position_y=100, data={"value": 2000, "description": "Mass of the payload to be delivered to orbit."})
-    node_prop = Node(id=uuid.uuid4(), sheet_id=sheet4_id, type="parameter", label="Propellant Mass [kg]", inputs=[], outputs=[{"key": "value", "socket_type": "any"}], position_x=100, position_y=250, data={"value": 93000, "description": "Mass of the propellant."})
-    node_struc = Node(id=uuid.uuid4(), sheet_id=sheet4_id, type="parameter", label="Structure Mass [kg]", inputs=[], outputs=[{"key": "value", "socket_type": "any"}], position_x=100, position_y=400, data={"value": 5000, "description": "Mass of the rocket structure (tanks, engines, etc.)."})
-    node_ssto_isp = Node(id=uuid.uuid4(), sheet_id=sheet4_id, type="parameter", label="Engine Isp [s]", inputs=[], outputs=[{"key": "value", "socket_type": "any"}], position_x=100, position_y=550, data={"value": 380, "description": "Specific Impulse of the SSTO engine."})
-    node_target_dv = Node(id=uuid.uuid4(), sheet_id=sheet4_id, type="parameter", label="Target Delta-V [m/s]", inputs=[], outputs=[{"key": "value", "socket_type": "any"}], position_x=100, position_y=700, data={"value": 9000, "description": "Required Delta-V to reach the target orbit."})
+    node_pay = Node(
+        id=uuid.uuid4(),
+        sheet_id=sheet4_id,
+        type="parameter",
+        label="Payload Mass [kg]",
+        inputs=[],
+        outputs=[{"key": "value", "socket_type": "any"}],
+        position_x=100,
+        position_y=100,
+        data={"value": 2000, "description": "Mass of the payload to be delivered to orbit."},
+    )
+    node_prop = Node(
+        id=uuid.uuid4(),
+        sheet_id=sheet4_id,
+        type="parameter",
+        label="Propellant Mass [kg]",
+        inputs=[],
+        outputs=[{"key": "value", "socket_type": "any"}],
+        position_x=100,
+        position_y=250,
+        data={"value": 93000, "description": "Mass of the propellant."},
+    )
+    node_struc = Node(
+        id=uuid.uuid4(),
+        sheet_id=sheet4_id,
+        type="parameter",
+        label="Structure Mass [kg]",
+        inputs=[],
+        outputs=[{"key": "value", "socket_type": "any"}],
+        position_x=100,
+        position_y=400,
+        data={"value": 5000, "description": "Mass of the rocket structure (tanks, engines, etc.)."},
+    )
+    node_ssto_isp = Node(
+        id=uuid.uuid4(),
+        sheet_id=sheet4_id,
+        type="parameter",
+        label="Engine Isp [s]",
+        inputs=[],
+        outputs=[{"key": "value", "socket_type": "any"}],
+        position_x=100,
+        position_y=550,
+        data={"value": 380, "description": "Specific Impulse of the SSTO engine."},
+    )
+    node_target_dv = Node(
+        id=uuid.uuid4(),
+        sheet_id=sheet4_id,
+        type="parameter",
+        label="Target Delta-V [m/s]",
+        inputs=[],
+        outputs=[{"key": "value", "socket_type": "any"}],
+        position_x=100,
+        position_y=700,
+        data={"value": 9000, "description": "Required Delta-V to reach the target orbit."},
+    )
 
     # Function: Mass Sums
     node_mass_func = Node(
-        id=uuid.uuid4(), sheet_id=sheet4_id, type="function", label="Calculate Masses",
-        inputs=[{"key": "mp", "socket_type": "any"}, {"key": "mprop", "socket_type": "any"}, {"key": "ms", "socket_type": "any"}],
+        id=uuid.uuid4(),
+        sheet_id=sheet4_id,
+        type="function",
+        label="Calculate Masses",
+        inputs=[
+            {"key": "mp", "socket_type": "any"},
+            {"key": "mprop", "socket_type": "any"},
+            {"key": "ms", "socket_type": "any"},
+        ],
         outputs=[{"key": "m0", "socket_type": "any"}, {"key": "mf", "socket_type": "any"}],
-        position_x=400, position_y=250,
-        data={"code": "m0 = mp + mprop + ms\nmf = mp + ms", "description": "Calculates initial (wet) and final (dry) masses."}
+        position_x=400,
+        position_y=250,
+        data={
+            "code": "m0 = mp + mprop + ms\nmf = mp + ms",
+            "description": "Calculates initial (wet) and final (dry) masses.",
+        },
     )
 
     # Nested: Rocket Equation
     node_nested_rocket = Node(
-        id=uuid.uuid4(), sheet_id=sheet4_id, type="sheet", label="Tsiolkovsky Rocket Equation",
-        inputs=[{"key": "Isp [s]", "socket_type": "any"}, {"key": "Initial Mass (m0) [kg]", "socket_type": "any"}, {"key": "Final Mass (mf) [kg]", "socket_type": "any"}],
+        id=uuid.uuid4(),
+        sheet_id=sheet4_id,
+        type="sheet",
+        label="Tsiolkovsky Rocket Equation",
+        inputs=[
+            {"key": "Isp [s]", "socket_type": "any"},
+            {"key": "Initial Mass (m0) [kg]", "socket_type": "any"},
+            {"key": "Final Mass (mf) [kg]", "socket_type": "any"},
+        ],
         outputs=[{"key": "Delta-V [m/s]", "socket_type": "any"}],
-        position_x=800, position_y=400,
-        data={"sheetId": str(sheet1_id)}
+        position_x=800,
+        position_y=400,
+        data={"sheetId": str(sheet1_id)},
     )
 
     # Function: Margin Check
     node_margin_func = Node(
-        id=uuid.uuid4(), sheet_id=sheet4_id, type="function", label="Check Feasibility",
+        id=uuid.uuid4(),
+        sheet_id=sheet4_id,
+        type="function",
+        label="Check Feasibility",
         inputs=[{"key": "Achieved_DV", "socket_type": "any"}, {"key": "Target_DV", "socket_type": "any"}],
         outputs=[{"key": "Margin", "socket_type": "any"}, {"key": "Is_Feasible", "socket_type": "any"}],
-        position_x=1200, position_y=500,
-        data={"code": "Margin = Achieved_DV - Target_DV\nIs_Feasible = \"YES\" if Margin >= 0 else \"NO\"", "description": "Checks if the achieved Delta-V meets the target."}
+        position_x=1200,
+        position_y=500,
+        data={
+            "code": 'Margin = Achieved_DV - Target_DV\nIs_Feasible = "YES" if Margin >= 0 else "NO"',
+            "description": "Checks if the achieved Delta-V meets the target.",
+        },
     )
 
     # Outputs
-    node_out_dv = Node(id=uuid.uuid4(), sheet_id=sheet4_id, type="output", label="Achieved Delta-V", inputs=[{"key": "value", "socket_type": "any"}], outputs=[], position_x=1600, position_y=400, data={"description": "The calculated Delta-V capability of the vehicle."})
-    node_out_margin = Node(id=uuid.uuid4(), sheet_id=sheet4_id, type="output", label="Margin [m/s]", inputs=[{"key": "value", "socket_type": "any"}], outputs=[], position_x=1600, position_y=550, data={"description": "Excess Delta-V available (or deficit if negative)."})
-    node_out_feas = Node(id=uuid.uuid4(), sheet_id=sheet4_id, type="output", label="Feasible?", inputs=[{"key": "value", "socket_type": "any"}], outputs=[], position_x=1600, position_y=700, data={"description": "Boolean-like string indicating if the mission is feasible."})
+    node_out_dv = Node(
+        id=uuid.uuid4(),
+        sheet_id=sheet4_id,
+        type="output",
+        label="Achieved Delta-V",
+        inputs=[{"key": "value", "socket_type": "any"}],
+        outputs=[],
+        position_x=1600,
+        position_y=400,
+        data={"description": "The calculated Delta-V capability of the vehicle."},
+    )
+    node_out_margin = Node(
+        id=uuid.uuid4(),
+        sheet_id=sheet4_id,
+        type="output",
+        label="Margin [m/s]",
+        inputs=[{"key": "value", "socket_type": "any"}],
+        outputs=[],
+        position_x=1600,
+        position_y=550,
+        data={"description": "Excess Delta-V available (or deficit if negative)."},
+    )
+    node_out_feas = Node(
+        id=uuid.uuid4(),
+        sheet_id=sheet4_id,
+        type="output",
+        label="Feasible?",
+        inputs=[{"key": "value", "socket_type": "any"}],
+        outputs=[],
+        position_x=1600,
+        position_y=700,
+        data={"description": "Boolean-like string indicating if the mission is feasible."},
+    )
 
     # Connections
     # Inputs -> Mass Func
-    conn4_1 = Connection(sheet_id=sheet4_id, source_id=node_pay.id, source_port="value", target_id=node_mass_func.id, target_port="mp")
-    conn4_2 = Connection(sheet_id=sheet4_id, source_id=node_prop.id, source_port="value", target_id=node_mass_func.id, target_port="mprop")
-    conn4_3 = Connection(sheet_id=sheet4_id, source_id=node_struc.id, source_port="value", target_id=node_mass_func.id, target_port="ms")
+    conn4_1 = Connection(
+        sheet_id=sheet4_id, source_id=node_pay.id, source_port="value", target_id=node_mass_func.id, target_port="mp"
+    )
+    conn4_2 = Connection(
+        sheet_id=sheet4_id,
+        source_id=node_prop.id,
+        source_port="value",
+        target_id=node_mass_func.id,
+        target_port="mprop",
+    )
+    conn4_3 = Connection(
+        sheet_id=sheet4_id, source_id=node_struc.id, source_port="value", target_id=node_mass_func.id, target_port="ms"
+    )
 
     # Mass Func -> Nested Rocket
-    conn4_4 = Connection(sheet_id=sheet4_id, source_id=node_mass_func.id, source_port="m0", target_id=node_nested_rocket.id, target_port="Initial Mass (m0) [kg]")
-    conn4_5 = Connection(sheet_id=sheet4_id, source_id=node_mass_func.id, source_port="mf", target_id=node_nested_rocket.id, target_port="Final Mass (mf) [kg]")
-    
+    conn4_4 = Connection(
+        sheet_id=sheet4_id,
+        source_id=node_mass_func.id,
+        source_port="m0",
+        target_id=node_nested_rocket.id,
+        target_port="Initial Mass (m0) [kg]",
+    )
+    conn4_5 = Connection(
+        sheet_id=sheet4_id,
+        source_id=node_mass_func.id,
+        source_port="mf",
+        target_id=node_nested_rocket.id,
+        target_port="Final Mass (mf) [kg]",
+    )
+
     # Isp -> Nested Rocket
-    conn4_6 = Connection(sheet_id=sheet4_id, source_id=node_ssto_isp.id, source_port="value", target_id=node_nested_rocket.id, target_port="Isp [s]")
+    conn4_6 = Connection(
+        sheet_id=sheet4_id,
+        source_id=node_ssto_isp.id,
+        source_port="value",
+        target_id=node_nested_rocket.id,
+        target_port="Isp [s]",
+    )
 
     # Nested Rocket -> Margin Func & Output
-    conn4_7 = Connection(sheet_id=sheet4_id, source_id=node_nested_rocket.id, source_port="Delta-V [m/s]", target_id=node_margin_func.id, target_port="Achieved_DV")
-    conn4_8 = Connection(sheet_id=sheet4_id, source_id=node_nested_rocket.id, source_port="Delta-V [m/s]", target_id=node_out_dv.id, target_port="value")
+    conn4_7 = Connection(
+        sheet_id=sheet4_id,
+        source_id=node_nested_rocket.id,
+        source_port="Delta-V [m/s]",
+        target_id=node_margin_func.id,
+        target_port="Achieved_DV",
+    )
+    conn4_8 = Connection(
+        sheet_id=sheet4_id,
+        source_id=node_nested_rocket.id,
+        source_port="Delta-V [m/s]",
+        target_id=node_out_dv.id,
+        target_port="value",
+    )
 
     # Target DV -> Margin Func
-    conn4_9 = Connection(sheet_id=sheet4_id, source_id=node_target_dv.id, source_port="value", target_id=node_margin_func.id, target_port="Target_DV")
+    conn4_9 = Connection(
+        sheet_id=sheet4_id,
+        source_id=node_target_dv.id,
+        source_port="value",
+        target_id=node_margin_func.id,
+        target_port="Target_DV",
+    )
 
     # Margin Func -> Outputs
-    conn4_10 = Connection(sheet_id=sheet4_id, source_id=node_margin_func.id, source_port="Margin", target_id=node_out_margin.id, target_port="value")
-    conn4_11 = Connection(sheet_id=sheet4_id, source_id=node_margin_func.id, source_port="Is_Feasible", target_id=node_out_feas.id, target_port="value")
+    conn4_10 = Connection(
+        sheet_id=sheet4_id,
+        source_id=node_margin_func.id,
+        source_port="Margin",
+        target_id=node_out_margin.id,
+        target_port="value",
+    )
+    conn4_11 = Connection(
+        sheet_id=sheet4_id,
+        source_id=node_margin_func.id,
+        source_port="Is_Feasible",
+        target_id=node_out_feas.id,
+        target_port="value",
+    )
 
     session.add(sheet4)
-    session.add_all([node_pay, node_prop, node_struc, node_ssto_isp, node_target_dv, node_mass_func, node_nested_rocket, node_margin_func, node_out_dv, node_out_margin, node_out_feas])
+    session.add_all(
+        [
+            node_pay,
+            node_prop,
+            node_struc,
+            node_ssto_isp,
+            node_target_dv,
+            node_mass_func,
+            node_nested_rocket,
+            node_margin_func,
+            node_out_dv,
+            node_out_margin,
+            node_out_feas,
+        ]
+    )
     await session.flush()
-    session.add_all([conn4_1, conn4_2, conn4_3, conn4_4, conn4_5, conn4_6, conn4_7, conn4_8, conn4_9, conn4_10, conn4_11])
-    
+    session.add_all(
+        [conn4_1, conn4_2, conn4_3, conn4_4, conn4_5, conn4_6, conn4_7, conn4_8, conn4_9, conn4_10, conn4_11]
+    )
+
     await session.commit()
     print("Database seeded successfully.")

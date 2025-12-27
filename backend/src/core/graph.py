@@ -24,12 +24,12 @@ class GraphProcessor:
         # Add nodes
         for node in self.sheet.nodes:
             self.graph.add_node(node.id, type=node.type, data=node.data)
-        
+
         # Add edges
         for conn in self.sheet.connections:
-            self.graph.add_edge(conn.source_id, conn.target_id, 
-                                source_port=conn.source_port, 
-                                target_port=conn.target_port)
+            self.graph.add_edge(
+                conn.source_id, conn.target_id, source_port=conn.source_port, target_port=conn.target_port
+            )
 
     def validate(self):
         if not nx.is_directed_acyclic_graph(self.graph):
@@ -38,9 +38,9 @@ class GraphProcessor:
     def _parse_value(self, val: Any) -> Any:
         try:
             if isinstance(val, str):
-                if val.lower() == 'true':
+                if val.lower() == "true":
                     return True
-                elif val.lower() == 'false':
+                elif val.lower() == "false":
                     return False
                 else:
                     return float(val)
@@ -50,28 +50,28 @@ class GraphProcessor:
 
     async def execute(self, input_overrides: Dict[str, Any] = None) -> Dict[UUID, Any]:
         self.validate()
-        
+
         # Topological sort
         execution_order = list(nx.topological_sort(self.graph))
-        
+
         for node_id in execution_order:
             node = self.node_map[node_id]
             await self._execute_node(node, input_overrides)
-            
+
         return self.results
 
     async def _execute_node(self, node: Node, input_overrides: Dict[str, Any] = None):
         node_type = node.type
-        
+
         if node_type == "parameter":
             # Return the value defined in data
             val = self._parse_value(node.data.get("value", 0))
-            self.results[node.id] = {'value': val}
-            
+            self.results[node.id] = {"value": val}
+
         elif node_type == "input":
             # Check overrides or default
             val = None
-            
+
             if input_overrides:
                 # Check by ID first (Frontend sends IDs)
                 if str(node.id) in input_overrides:
@@ -79,29 +79,25 @@ class GraphProcessor:
                 # Check by Label (URL params might use labels)
                 elif node.label in input_overrides:
                     val = input_overrides[node.label]
-            
+
             if val is None or val == "":
-                raise NodeExecutionError(
-                    str(node.id),
-                    node.label,
-                    "Input requires a value"
-                )
-            
+                raise NodeExecutionError(str(node.id), node.label, "Input requires a value")
+
             val = self._parse_value(val)
-            self.results[node.id] = {'value': val}
+            self.results[node.id] = {"value": val}
 
         elif node_type == "function":
             # Gather inputs
             inputs = {}
             in_edges = self.graph.in_edges(node.id, data=True)
-            
+
             for u, _v, data in in_edges:
                 # data contains 'target_port' which maps to the function argument name
-                arg_name = data['target_port']
-                inputs[arg_name] = self.results[u][data['source_port']]
+                arg_name = data["target_port"]
+                inputs[arg_name] = self.results[u][data["source_port"]]
 
-            outputs = [o['key'] for o in self.node_map[node.id].outputs]
-            
+            outputs = [o["key"] for o in self.node_map[node.id].outputs]
+
             # Execute code
             code = node.data.get("code", "")
             if not code:
@@ -109,7 +105,7 @@ class GraphProcessor:
                 return
 
             exec_result = execute_python_code(code, inputs, outputs)
-            
+
             if exec_result.success:
                 self.results[node.id] = exec_result.result
             else:
@@ -118,22 +114,23 @@ class GraphProcessor:
         elif node_type == "sheet":
             if not self.db:
                 raise NodeExecutionError(str(node.id), node.label, "Database session required for nested sheets")
-            
+
             nested_sheet_id = node.data.get("sheetId")
             if not nested_sheet_id:
                 raise NodeExecutionError(str(node.id), node.label, "No sheet selected")
 
             # Fetch nested sheet
             try:
-                stmt = select(Sheet).where(Sheet.id == UUID(nested_sheet_id)).options(
-                    selectinload(Sheet.nodes),
-                    selectinload(Sheet.connections)
+                stmt = (
+                    select(Sheet)
+                    .where(Sheet.id == UUID(nested_sheet_id))
+                    .options(selectinload(Sheet.nodes), selectinload(Sheet.connections))
                 )
                 result = await self.db.execute(stmt)
                 nested_sheet = result.scalar_one_or_none()
             except Exception as e:
                 raise NodeExecutionError(str(node.id), node.label, f"Invalid sheet ID: {e}")
-            
+
             if not nested_sheet:
                 raise NodeExecutionError(str(node.id), node.label, f"Nested sheet {nested_sheet_id} not found")
 
@@ -142,18 +139,18 @@ class GraphProcessor:
             in_edges = self.graph.in_edges(node.id, data=True)
             for u, _v, data in in_edges:
                 # target_port on parent node corresponds to Input Node Label in child sheet
-                input_label = data['target_port']
-                if u in self.results and data['source_port'] in self.results[u]:
-                    nested_inputs[input_label] = self.results[u][data['source_port']]
+                input_label = data["target_port"]
+                if u in self.results and data["source_port"] in self.results[u]:
+                    nested_inputs[input_label] = self.results[u][data["source_port"]]
                 else:
-                     # Should not happen if topological sort is correct
-                     pass
+                    # Should not happen if topological sort is correct
+                    pass
 
             # Execute nested sheet
             # TODO: Add cycle detection / depth limit
             nested_processor = GraphProcessor(nested_sheet, self.db)
             nested_results = await nested_processor.execute(input_overrides=nested_inputs)
-            
+
             # Map outputs
             node_outputs = {}
             for n in nested_sheet.nodes:
@@ -161,7 +158,7 @@ class GraphProcessor:
                     # The value of the output node
                     if n.id in nested_results:
                         node_outputs[n.label] = nested_results[n.id]
-            
+
             self.results[node.id] = node_outputs
 
         elif node_type == "output":
@@ -169,11 +166,10 @@ class GraphProcessor:
             in_edges = list(self.graph.in_edges(node.id, data=True))
             if in_edges:
                 source_id = in_edges[0][0]
-                source_port = in_edges[0][2]['source_port']
+                source_port = in_edges[0][2]["source_port"]
                 self.results[node.id] = self.results[source_id][source_port]
             else:
                 self.results[node.id] = None
-        
-        elif node_type == "option":
-             self.results[node.id] = node.data.get("value")
 
+        elif node_type == "option":
+            self.results[node.id] = node.data.get("value")

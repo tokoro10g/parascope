@@ -9,6 +9,7 @@ class PortDefinition(BaseModel):
     socket_type: Optional[str] = None
     label: Optional[str] = None
 
+
 class NodeBase(BaseModel):
     type: str
     label: str
@@ -18,13 +19,16 @@ class NodeBase(BaseModel):
     position_y: float
     data: Dict[str, Any] = {}
 
+
 class NodeCreate(NodeBase):
     id: Optional[UUID] = None
+
 
 class NodeRead(NodeBase):
     id: UUID
     sheet_id: UUID
     model_config = ConfigDict(from_attributes=True)
+
 
 class ConnectionBase(BaseModel):
     source_id: UUID
@@ -34,33 +38,41 @@ class ConnectionBase(BaseModel):
     source_handle: Optional[str] = None
     target_handle: Optional[str] = None
 
+
 class ConnectionCreate(ConnectionBase):
     id: Optional[UUID] = None
+
 
 class ConnectionRead(ConnectionBase):
     id: UUID
     sheet_id: UUID
     model_config = ConfigDict(from_attributes=True)
 
+
 class FolderBase(BaseModel):
     name: str
     parent_id: Optional[UUID] = None
 
+
 class FolderCreate(FolderBase):
     pass
+
 
 class FolderRead(FolderBase):
     id: UUID
     model_config = ConfigDict(from_attributes=True)
+
 
 class SheetBase(BaseModel):
     name: str
     owner_name: Optional[str] = None
     folder_id: Optional[UUID] = None
 
+
 class SheetCreate(SheetBase):
     nodes: List[NodeCreate] = []
     connections: List[ConnectionCreate] = []
+
 
 class SheetRead(SheetBase):
     id: UUID
@@ -68,10 +80,12 @@ class SheetRead(SheetBase):
     connections: List[ConnectionRead]
     model_config = ConfigDict(from_attributes=True)
 
+
 class SheetSummary(SheetBase):
     id: UUID
     folder_id: Optional[UUID] = None
     model_config = ConfigDict(from_attributes=True)
+
 
 class SheetUpdate(BaseModel):
     name: Optional[str] = None

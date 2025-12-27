@@ -28,25 +28,13 @@ async def test_sheet_crud_and_dependencies():
                     "label": "Param 1",
                     "position_x": 0,
                     "position_y": 0,
-                    "data": {"value": 10}
+                    "data": {"value": 10},
                 },
-                {
-                    "id": node2_id,
-                    "type": "output",
-                    "label": "Output 1",
-                    "position_x": 200,
-                    "position_y": 0,
-                    "data": {}
-                }
+                {"id": node2_id, "type": "output", "label": "Output 1", "position_x": 200, "position_y": 0, "data": {}},
             ],
             "connections": [
-                {
-                    "source_id": node1_id,
-                    "target_id": node2_id,
-                    "source_port": "output",
-                    "target_port": "input"
-                }
-            ]
+                {"source_id": node1_id, "target_id": node2_id, "source_port": "output", "target_port": "input"}
+            ],
         }
         response = await client.post("/sheets/", json=sheet_data)
         assert response.status_code == 200
@@ -83,19 +71,14 @@ async def test_sheet_crud_and_dependencies():
         # 6. Verify Duplicate Still Exists
         response = await client.get(f"/sheets/{dup_id}")
         assert response.status_code == 200
-        
+
         # 7. Delete Duplicate
         response = await client.delete(f"/sheets/{dup_id}")
         assert response.status_code == 204
 
         # 8. Update Sheet (Verify Connections Persist)
         # Create a new sheet for update test
-        sheet_data = {
-            "name": "Update Test",
-            "owner_name": "Tester",
-            "nodes": [],
-            "connections": []
-        }
+        sheet_data = {"name": "Update Test", "owner_name": "Tester", "nodes": [], "connections": []}
         response = await client.post("/sheets/", json=sheet_data)
         update_id = response.json()["id"]
 
@@ -110,25 +93,13 @@ async def test_sheet_crud_and_dependencies():
                     "label": "Param 1",
                     "position_x": 0,
                     "position_y": 0,
-                    "data": {"value": 10}
+                    "data": {"value": 10},
                 },
-                {
-                    "id": node2_id,
-                    "type": "output",
-                    "label": "Output 1",
-                    "position_x": 200,
-                    "position_y": 0,
-                    "data": {}
-                }
+                {"id": node2_id, "type": "output", "label": "Output 1", "position_x": 200, "position_y": 0, "data": {}},
             ],
             "connections": [
-                {
-                    "source_id": node1_id,
-                    "target_id": node2_id,
-                    "source_port": "output",
-                    "target_port": "input"
-                }
-            ]
+                {"source_id": node1_id, "target_id": node2_id, "source_port": "output", "target_port": "input"}
+            ],
         }
         response = await client.put(f"/sheets/{update_id}", json=update_data)
         assert response.status_code == 200
@@ -136,7 +107,7 @@ async def test_sheet_crud_and_dependencies():
         assert updated_sheet["name"] == "Updated Name"
         assert len(updated_sheet["nodes"]) == 2
         assert len(updated_sheet["connections"]) == 1
-        
+
         # Verify persistence
         response = await client.get(f"/sheets/{update_id}")
         fetched_sheet = response.json()
@@ -165,7 +136,7 @@ async def test_sheet_crud_and_dependencies():
                     "position_y": 0,
                     "data": {"sheetId": sheet_a_id},
                     "inputs": [],
-                    "outputs": []
+                    "outputs": [],
                 }
             ]
         }
@@ -174,7 +145,7 @@ async def test_sheet_crud_and_dependencies():
 
         # 4. Attempt to Delete Sheet A
         response = await client.delete(f"/sheets/{sheet_a_id}")
-        
+
         # 5. Assert Failure
         assert response.status_code == 400
         assert "Cannot delete sheet. It is used in 'Sheet B'" in response.json()["detail"]

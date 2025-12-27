@@ -15,10 +15,7 @@ from src.main import app
 async def test_physics_calculation_scenario():
     async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as client:
         # 1. Create Sheet
-        sheet_data = {
-            "name": "Physics Calculation",
-            "owner_name": "Tester"
-        }
+        sheet_data = {"name": "Physics Calculation", "owner_name": "Tester"}
         response = await client.post("/sheets/", json=sheet_data)
         assert response.status_code == 200
         sheet = response.json()
@@ -39,7 +36,7 @@ async def test_physics_calculation_scenario():
                 "position_x": 0,
                 "position_y": 0,
                 "data": {"value": 10},
-                "outputs": [{"key": "value", "socket_type": "number"}]
+                "outputs": [{"key": "value", "socket_type": "number"}],
             },
             {
                 "id": accel_id,
@@ -48,7 +45,7 @@ async def test_physics_calculation_scenario():
                 "position_x": 0,
                 "position_y": 100,
                 "data": {"value": 9.8},
-                "outputs": [{"key": "value", "socket_type": "number"}]
+                "outputs": [{"key": "value", "socket_type": "number"}],
             },
             {
                 "id": func_id,
@@ -57,11 +54,8 @@ async def test_physics_calculation_scenario():
                 "position_x": 200,
                 "position_y": 50,
                 "data": {"code": "return m * a"},
-                "inputs": [
-                    {"key": "m", "socket_type": "number"},
-                    {"key": "a", "socket_type": "number"}
-                ],
-                "outputs": [{"key": "result", "socket_type": "number"}]
+                "inputs": [{"key": "m", "socket_type": "number"}, {"key": "a", "socket_type": "number"}],
+                "outputs": [{"key": "result", "socket_type": "number"}],
             },
             {
                 "id": output_id,
@@ -69,8 +63,8 @@ async def test_physics_calculation_scenario():
                 "label": "Force Output",
                 "position_x": 400,
                 "position_y": 50,
-                "inputs": [{"key": "in", "socket_type": "number"}]
-            }
+                "inputs": [{"key": "in", "socket_type": "number"}],
+            },
         ]
 
         # 3. Define Connections
@@ -81,7 +75,7 @@ async def test_physics_calculation_scenario():
                 "source_handle": "value",
                 "target_handle": "m",
                 "source_port": "value",
-                "target_port": "m"
+                "target_port": "m",
             },
             {
                 "source_id": accel_id,
@@ -89,7 +83,7 @@ async def test_physics_calculation_scenario():
                 "source_handle": "value",
                 "target_handle": "a",
                 "source_port": "value",
-                "target_port": "a"
+                "target_port": "a",
             },
             {
                 "source_id": func_id,
@@ -97,15 +91,12 @@ async def test_physics_calculation_scenario():
                 "source_handle": "result",
                 "target_handle": "in",
                 "source_port": "result",
-                "target_port": "in"
-            }
+                "target_port": "in",
+            },
         ]
 
         # 4. Update Sheet with Graph
-        update_data = {
-            "nodes": nodes,
-            "connections": connections
-        }
+        update_data = {"nodes": nodes, "connections": connections}
         response = await client.put(f"/sheets/{sheet_id}", json=update_data)
         assert response.status_code == 200
 
@@ -121,7 +112,7 @@ async def test_physics_calculation_scenario():
         assert results[accel_id]["value"] == 9.8
         # Function (10 * 9.8 = 98.0)
         assert results[func_id]["result"] == 98.0
-        
+
         # Output
         assert results[output_id] == 98.0
 
