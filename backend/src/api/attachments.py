@@ -1,8 +1,10 @@
-from fastapi import APIRouter, UploadFile, File, HTTPException
-from fastapi.responses import FileResponse
-from pathlib import Path
 import shutil
 import uuid
+from pathlib import Path
+
+from fastapi import APIRouter, File, HTTPException, UploadFile
+from fastapi.responses import FileResponse
+
 from ..core.config import settings
 
 router = APIRouter(prefix="/attachments", tags=["attachments"])

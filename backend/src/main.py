@@ -1,13 +1,13 @@
+import os
 from contextlib import asynccontextmanager
 from pathlib import Path
-import os
 
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
-from .api import calculate, sheets, attachments
+from .api import attachments, calculate, sheets
 from .core.config import settings
-from .core.database import Base, engine, AsyncSessionLocal
+from .core.database import AsyncSessionLocal, Base, engine
 from .core.seed import seed_database
 
 

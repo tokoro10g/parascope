@@ -1,7 +1,10 @@
 import uuid
-from sqlalchemy import select, text
+
+from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
-from ..models.sheet import Sheet, Node, Connection, Folder
+
+from ..models.sheet import Connection, Folder, Node, Sheet
+
 
 async def seed_database(session: AsyncSession):
     # Check if database is empty

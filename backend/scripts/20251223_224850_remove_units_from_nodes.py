@@ -1,13 +1,15 @@
 import asyncio
-import sys
 import os
+import sys
 
 # Add the parent directory to sys.path to allow imports from src
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 from sqlalchemy import text
 from sqlalchemy.ext.asyncio import create_async_engine
+
 from src.core.config import settings
+
 
 async def remove_units():
     print(f"Connecting to database at {settings.DATABASE_URL}...")
