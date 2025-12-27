@@ -51,6 +51,8 @@ export const SheetEditor: React.FC = () => {
   lastResultRef.current = lastResult;
   const evaluatorInputsRef = useRef(evaluatorInputs);
   evaluatorInputsRef.current = evaluatorInputs;
+  const searchParamsRef = useRef(searchParams);
+  searchParamsRef.current = searchParams;
 
   const ignoreNextSearchParamsChange = useRef(false);
 
@@ -174,8 +176,8 @@ export const SheetEditor: React.FC = () => {
         setLastResult(null);
         // Note: evaluatorInputs are handled by the useEffect on searchParams
 
-        const focusNodeId = location.hash
-          ? location.hash.substring(1)
+        const focusNodeId = window.location.hash
+          ? window.location.hash.substring(1)
           : undefined;
         await editor.loadSheet(sheet, focusNodeId);
         setNodes([...editor.editor.getNodes()]);
@@ -185,7 +187,7 @@ export const SheetEditor: React.FC = () => {
         // Auto-calculate (UI-27.0)
         const inputNodes = sheet.nodes.filter((n) => n.type === 'input');
         const inputsFromParams: Record<string, string> = {};
-        searchParams.forEach((value, key) => {
+        searchParamsRef.current.forEach((value, key) => {
           // Map Name -> ID
           const node = inputNodes.find((n) => n.label === key);
           if (node?.id) {
@@ -215,7 +217,7 @@ export const SheetEditor: React.FC = () => {
         alert(`Error loading sheet: ${e}`);
       }
     },
-    [editor, location.hash, searchParams],
+    [editor],
   );
 
   // Load the specific sheet when sheetId changes
