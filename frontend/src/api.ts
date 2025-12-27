@@ -85,7 +85,10 @@ export const api = {
     return res.json();
   },
 
-  async createSheet(name: string = 'Untitled', folder_id?: string): Promise<Sheet> {
+  async createSheet(
+    name: string = 'Untitled',
+    folder_id?: string,
+  ): Promise<Sheet> {
     const res = await fetch(`${API_BASE}/sheets/`, {
       method: 'POST',
       headers: getHeaders({ 'Content-Type': 'application/json' }),
@@ -132,26 +135,31 @@ export const api = {
     }
   },
 
-  async calculate(sheetId: string, inputs?: Record<string, any>): Promise<Record<string, any>> {
+  async calculate(
+    sheetId: string,
+    inputs?: Record<string, any>,
+  ): Promise<Record<string, any>> {
     const res = await fetch(`${API_BASE}/calculate/${sheetId}`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(inputs || {}),
     });
     if (!res.ok) {
-        const err = await res.json();
-        if (typeof err.detail === 'object' && err.detail.node_id) {
-            const error = new Error(err.detail.message);
-            (error as any).nodeId = err.detail.node_id;
-            throw error;
-        }
-        throw new Error(err.detail || 'Calculation failed');
+      const err = await res.json();
+      if (typeof err.detail === 'object' && err.detail.node_id) {
+        const error = new Error(err.detail.message);
+        (error as any).nodeId = err.detail.node_id;
+        throw error;
+      }
+      throw new Error(err.detail || 'Calculation failed');
     }
     return res.json();
   },
 };
 
-export const uploadAttachment = async (file: File): Promise<{ filename: string; url: string }> => {
+export const uploadAttachment = async (
+  file: File,
+): Promise<{ filename: string; url: string }> => {
   const formData = new FormData();
   formData.append('file', file);
 

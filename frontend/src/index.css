@@ -1,4 +1,6 @@
-*, *::before, *::after {
+*,
+*::before,
+*::after {
   box-sizing: border-box;
 }
 
@@ -14,23 +16,23 @@
   --text-color: #213547;
   --text-secondary: #666;
   --text-muted: #999;
-  
+
   --primary-color: #646cff;
   --primary-hover: #535bf2;
-  
+
   --border-color: #ccc;
   --border-light: #ddd;
-  
+
   --panel-bg: #f0f0f0;
   --panel-bg-secondary: #e0e0e0;
   --panel-bg-translucent: rgba(255, 255, 255, 0.95);
-  
+
   --item-bg: #ffffff;
   --item-hover: #f9f9f9;
-  
+
   --input-bg: #ffffff;
   --button-bg: #f9f9f9;
-  
+
   --danger-color: #ff4d4f;
   --danger-hover: #ff7875;
 
@@ -46,17 +48,17 @@
     --text-color: rgba(255, 255, 255, 0.87);
     --text-secondary: #ccc;
     --text-muted: #aaa;
-    
+
     --border-color: #444;
     --border-light: #555;
-    
+
     --panel-bg: #333;
     --panel-bg-secondary: #2a2a2a;
     --panel-bg-translucent: rgba(30, 30, 30, 0.95);
-    
+
     --item-bg: #333;
     --item-hover: #444;
-    
+
     --input-bg: #222;
     --button-bg: #1a1a1a;
   }
@@ -111,12 +113,17 @@ button:focus-visible {
   margin: 0.2em 0;
 }
 
-.compact-markdown ul, .compact-markdown ol {
+.compact-markdown ul,
+.compact-markdown ol {
   margin: 0.2em 0;
   padding-left: 1.2em;
 }
 
-.compact-markdown h1, .compact-markdown h2, .compact-markdown h3, .compact-markdown h4, .compact-markdown h5, .compact-markdown h6 {
+.compact-markdown h1,
+.compact-markdown h2,
+.compact-markdown h3,
+.compact-markdown h4,
+.compact-markdown h5,
+.compact-markdown h6 {
   margin: 0.5em 0 0.2em 0;
 }
-

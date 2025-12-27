@@ -1,25 +1,23 @@
 import { createRoot } from 'react-dom/client';
 import { ClassicPreset as Classic, type GetSchemes, NodeEditor } from 'rete';
 import { type Area2D, AreaExtensions, AreaPlugin } from 'rete-area-plugin';
+import { ConnectionPathPlugin } from 'rete-connection-path-plugin';
 import {
   ConnectionPlugin,
   Presets as ConnectionPresets,
 } from 'rete-connection-plugin';
 import {
-  ConnectionPathPlugin,
-} from 'rete-connection-path-plugin';
-import {
-  ContextMenuPlugin,
   type ContextMenuExtra,
+  ContextMenuPlugin,
 } from 'rete-context-menu-plugin';
+import { HistoryPlugin, Presets as HistoryPresets } from 'rete-history-plugin';
 import {
   type ReactArea2D,
   ReactPlugin,
   Presets as ReactPresets,
 } from 'rete-react-plugin';
-import { HistoryPlugin, Presets as HistoryPresets } from 'rete-history-plugin';
-import type { Sheet } from '../api';
 import styled from 'styled-components';
+import type { Sheet } from '../api';
 
 import { CustomNode } from './CustomNode';
 
@@ -93,22 +91,22 @@ export class ParascopeNode extends Classic.Node {
 
     // Add a control to display value
     if (type === 'input') {
-        this.addControl(
-            'value',
-            new Classic.InputControl('text', {
-                initial: '',
-                readonly: false,
-                change: onChange,
-            })
-        );
+      this.addControl(
+        'value',
+        new Classic.InputControl('text', {
+          initial: '',
+          readonly: false,
+          change: onChange,
+        }),
+      );
     } else if (type === 'output') {
-        this.addControl(
-            'value',
-            new Classic.InputControl('text', {
-                initial: '',
-                readonly: true,
-            })
-        );
+      this.addControl(
+        'value',
+        new Classic.InputControl('text', {
+          initial: '',
+          readonly: true,
+        }),
+      );
     } else if (data.value !== undefined) {
       this.addControl(
         'value',
@@ -136,7 +134,6 @@ type Schemes = GetSchemes<
 
 type AreaExtra = Area2D<Schemes> | ReactArea2D<Schemes> | ContextMenuExtra;
 
-
 export async function createEditor(container: HTMLElement) {
   const editor = new NodeEditor<Schemes>();
   const area = new AreaPlugin<Schemes, AreaExtra>(container);
@@ -147,63 +144,65 @@ export async function createEditor(container: HTMLElement) {
 
   const contextMenu = new ContextMenuPlugin<Schemes>({
     items: (context) => {
-        if (context === 'root') {
-            return { searchBar: false, list: [] };
-        }
-        
-        // Check for connection (has source/target)
-        if ('source' in context && 'target' in context) {
-             return {
-                searchBar: false,
-                list: [
-                    {
-                        label: 'Delete',
-                        key: 'delete',
-                        handler: async () => {
-                            await editor.removeConnection(context.id);
-                        }
-                    }
-                ]
-            };
-        }
+      if (context === 'root') {
+        return { searchBar: false, list: [] };
+      }
 
-        // Node
+      // Check for connection (has source/target)
+      if ('source' in context && 'target' in context) {
         return {
-            searchBar: false,
-            list: [
-                {
-                    label: 'Edit',
-                    key: 'edit',
-                    handler: () => {
-                        if (onNodeEdit) onNodeEdit(context.id);
-                    }
-                },
-                {
-                    label: 'Copy URL',
-                    key: 'copy-url',
-                    handler: () => {
-                        const url = `${window.location.origin}${window.location.pathname}${window.location.search}#${context.id}`;
-                        if (navigator.clipboard && navigator.clipboard.writeText) {
-                            navigator.clipboard.writeText(url).catch(err => console.error('Failed to copy URL:', err));
-                        }
-                    }
-                },
-                {
-                    label: 'Delete',
-                    key: 'delete',
-                    handler: async () => {
-                        const connections = editor.getConnections().filter(c => {
-                            return c.source === context.id || c.target === context.id;
-                        });
-                        for (const c of connections) {
-                            await editor.removeConnection(c.id);
-                        }
-                        await editor.removeNode(context.id);
-                    }
-                }
-            ]
+          searchBar: false,
+          list: [
+            {
+              label: 'Delete',
+              key: 'delete',
+              handler: async () => {
+                await editor.removeConnection(context.id);
+              },
+            },
+          ],
         };
-    }
+      }
+
+      // Node
+      return {
+        searchBar: false,
+        list: [
+          {
+            label: 'Edit',
+            key: 'edit',
+            handler: () => {
+              if (onNodeEdit) onNodeEdit(context.id);
+            },
+          },
+          {
+            label: 'Copy URL',
+            key: 'copy-url',
+            handler: () => {
+              const url = `${window.location.origin}${window.location.pathname}${window.location.search}#${context.id}`;
+              if (navigator.clipboard && navigator.clipboard.writeText) {
+                navigator.clipboard
+                  .writeText(url)
+                  .catch((err) => console.error('Failed to copy URL:', err));
+              }
+            },
+          },
+          {
+            label: 'Delete',
+            key: 'delete',
+            handler: async () => {
+              const connections = editor.getConnections().filter((c) => {
+                return c.source === context.id || c.target === context.id;
+              });
+              for (const c of connections) {
+                await editor.removeConnection(c.id);
+              }
+              await editor.removeNode(context.id);
+            },
+          },
+        ],
+      };
+    },
   });
 
   // We need to expose a way to set the callback later, or pass it in.
@@ -222,41 +221,45 @@ export async function createEditor(container: HTMLElement) {
   reactRender.use(pathPlugin);
 
   connection.addPreset(ConnectionPresets.classic.setup());
-  reactRender.addPreset(ReactPresets.classic.setup({
-    customize: {
-      node: () => {
+  reactRender.addPreset(
+    ReactPresets.classic.setup({
+      customize: {
+        node: () => {
           return CustomNode;
+        },
       },
-    },
-  }));
-  reactRender.addPreset(ReactPresets.contextMenu.setup({
-    customize: {
-      main: () => CustomMenu,
-      item: () => CustomItem,
-      search: () => CustomSearch,
-      common: () => Common,
-      subitems: () => Subitems,
-    },
-  }));
+    }),
+  );
+  reactRender.addPreset(
+    ReactPresets.contextMenu.setup({
+      customize: {
+        main: () => CustomMenu,
+        item: () => CustomItem,
+        search: () => CustomSearch,
+        common: () => Common,
+        subitems: () => Subitems,
+      },
+    }),
+  );
 
   // Listen for changes
-  editor.addPipe(context => {
-      if (
-          context.type === 'connectioncreated' ||
-          context.type === 'connectionremoved' ||
-          context.type === 'nodecreated' ||
-          context.type === 'noderemoved'
-      ) {
-          if (onGraphChange) onGraphChange();
-      }
-      return context;
+  editor.addPipe((context) => {
+    if (
+      context.type === 'connectioncreated' ||
+      context.type === 'connectionremoved' ||
+      context.type === 'nodecreated' ||
+      context.type === 'noderemoved'
+    ) {
+      if (onGraphChange) onGraphChange();
+    }
+    return context;
   });
 
-  area.addPipe(context => {
-      if (context.type === 'nodetranslated') {
-          if (onGraphChange) onGraphChange();
-      }
-      return context;
+  area.addPipe((context) => {
+    if (context.type === 'nodetranslated') {
+      if (onGraphChange) onGraphChange();
+    }
+    return context;
   });
 
   editor.use(area);
@@ -267,41 +270,43 @@ export async function createEditor(container: HTMLElement) {
 
   AreaExtensions.zoomAt(area, editor.getNodes());
   AreaExtensions.snapGrid(area, { size: 20 });
-  
+
   let lastNodePicked: string | null = null;
   let lastNodePickedTime = 0;
 
-  area.addPipe(context => {
+  area.addPipe((context) => {
     if (context.type === 'nodepicked') {
-        const nodeId = context.data.id;
-        const now = Date.now();
-        if (lastNodePicked === nodeId && now - lastNodePickedTime < 300) {
-            if (onNodeDoubleClick) {
-                onNodeDoubleClick(nodeId);
-            }
+      const nodeId = context.data.id;
+      const now = Date.now();
+      if (lastNodePicked === nodeId && now - lastNodePickedTime < 300) {
+        if (onNodeDoubleClick) {
+          onNodeDoubleClick(nodeId);
         }
-        lastNodePicked = nodeId;
-        lastNodePickedTime = now;
+      }
+      lastNodePicked = nodeId;
+      lastNodePickedTime = now;
     }
-    if (context.type ===  'zoom' && context.data.source === 'dblclick') return
-    return context
-  })
+    if (context.type === 'zoom' && context.data.source === 'dblclick') return;
+    return context;
+  });
 
   return {
     editor,
     area,
     destroy: () => area.destroy(),
     setNodeDoubleClickListener: (cb: (nodeId: string) => void) => {
-        onNodeDoubleClick = cb;
+      onNodeDoubleClick = cb;
     },
     setNodeEditListener: (cb: (nodeId: string) => void) => {
-        onNodeEdit = cb;
+      onNodeEdit = cb;
     },
     setGraphChangeListener: (cb: () => void) => {
-        onGraphChange = cb;
+      onGraphChange = cb;
     },
-    setInputValueChangeListener: (cb: (nodeId: string, value: string) => void) => {
-        onInputValueChange = cb;
+    setInputValueChangeListener: (
+      cb: (nodeId: string, value: string) => void,
+    ) => {
+      onInputValueChange = cb;
     },
     undo: () => history.undo(),
     redo: () => history.redo(),
@@ -320,18 +325,19 @@ export async function createEditor(container: HTMLElement) {
         const outputs = Array.isArray(n.outputs) ? n.outputs : [];
 
         const node = new ParascopeNode(
-            n.type, 
-            n.label || n.type, 
-            inputs, 
-            outputs, 
-            n.data || {},
-            (val) => { 
-                if (n.type === 'input') {
-                    if (onInputValueChange && n.id) onInputValueChange(n.id, String(val));
-                } else {
-                    if (onGraphChange) onGraphChange(); 
-                }
+          n.type,
+          n.label || n.type,
+          inputs,
+          outputs,
+          n.data || {},
+          (val) => {
+            if (n.type === 'input') {
+              if (onInputValueChange && n.id)
+                onInputValueChange(n.id, String(val));
+            } else {
+              if (onGraphChange) onGraphChange();
             }
+          },
         );
         node.id = n.id; // Use the DB ID as the Rete ID
         node.dbId = n.id;
@@ -370,59 +376,62 @@ export async function createEditor(container: HTMLElement) {
 
       return new Promise<void>((resolve) => {
         setTimeout(async () => {
-            // Force update nodes to recalculate socket positions after auto-sizing
-            for (const node of editor.getNodes()) {
-                await area.update('node', node.id);
-            }
-            
-            if (focusNodeId) {
-                const node = editor.getNode(focusNodeId);
-                if (node) {
-                    await AreaExtensions.zoomAt(area, [node]);
-                } else {
-                    await AreaExtensions.zoomAt(area, editor.getNodes());
-                }
+          // Force update nodes to recalculate socket positions after auto-sizing
+          for (const node of editor.getNodes()) {
+            await area.update('node', node.id);
+          }
+
+          if (focusNodeId) {
+            const node = editor.getNode(focusNodeId);
+            if (node) {
+              await AreaExtensions.zoomAt(area, [node]);
             } else {
-                await AreaExtensions.zoomAt(area, editor.getNodes());
+              await AreaExtensions.zoomAt(area, editor.getNodes());
             }
-            resolve();
+          } else {
+            await AreaExtensions.zoomAt(area, editor.getNodes());
+          }
+          resolve();
         }, 200);
       });
     },
 
     // Helper to get current graph state
     getGraphData: () => {
-      const isUuid = (id: string) => /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(id);
+      const isUuid = (id: string) =>
+        /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(
+          id,
+        );
 
       const nodes = editor.getNodes().map((n) => {
         const data: Record<string, any> = {};
-        
+
         // Capture control values
         for (const [key, control] of Object.entries(n.controls)) {
-            if (control instanceof Classic.InputControl) {
-                // Don't save values for input/output nodes as they are transient
-                if (n.type !== 'input' && n.type !== 'output') {
-                    data[key] = control.value;
-                }
+          if (control instanceof Classic.InputControl) {
+            // Don't save values for input/output nodes as they are transient
+            if (n.type !== 'input' && n.type !== 'output') {
+              data[key] = control.value;
             }
+          }
         }
 
         // Preserve original data if not overwritten by controls
         return {
-            id: isUuid(n.id) ? n.id : undefined,
-            type: n.type,
-            label: n.label,
-            position_x: area.nodeViews.get(n.id)?.position.x || 0,
-            position_y: area.nodeViews.get(n.id)?.position.y || 0,
-            inputs: Object.keys(n.inputs).map((k) => ({
+          id: isUuid(n.id) ? n.id : undefined,
+          type: n.type,
+          label: n.label,
+          position_x: area.nodeViews.get(n.id)?.position.x || 0,
+          position_y: area.nodeViews.get(n.id)?.position.y || 0,
+          inputs: Object.keys(n.inputs).map((k) => ({
             key: k,
             socket_type: 'any',
-            })),
-            outputs: Object.keys(n.outputs).map((k) => ({
+          })),
+          outputs: Object.keys(n.outputs).map((k) => ({
             key: k,
             socket_type: 'any',
-            })),
-            data: { ...n.initialData, ...data }, 
+          })),
+          data: { ...n.initialData, ...data },
         };
       });
 
@@ -437,34 +446,38 @@ export async function createEditor(container: HTMLElement) {
       return { nodes, connections };
     },
 
-    updateNodeValues: (inputs: Record<string, any>, outputs: Record<string, any>) => {
-        editor.getNodes().forEach(node => {
-            const valueControl = node.controls.value as Classic.InputControl<'text'>;
-            if (!valueControl) return;
+    updateNodeValues: (
+      inputs: Record<string, any>,
+      outputs: Record<string, any>,
+    ) => {
+      editor.getNodes().forEach((node) => {
+        const valueControl = node.controls
+          .value as Classic.InputControl<'text'>;
+        if (!valueControl) return;
 
-            if (node.type === 'input') {
-                const val = inputs[node.id];
-                const newVal = String(val !== undefined ? val : '');
-                if (valueControl.value !== newVal) {
-                    valueControl.setValue(newVal);
-                    area.update('node', node.id);
-                }
-            } else if (node.type === 'output') {
-                const val = outputs[node.id];
-                const newVal = String(val !== undefined ? val : '');
-                if (valueControl.value !== newVal) {
-                    valueControl.setValue(newVal);
-                    area.update('node', node.id);
-                }
-            }
-        });
+        if (node.type === 'input') {
+          const val = inputs[node.id];
+          const newVal = String(val !== undefined ? val : '');
+          if (valueControl.value !== newVal) {
+            valueControl.setValue(newVal);
+            area.update('node', node.id);
+          }
+        } else if (node.type === 'output') {
+          const val = outputs[node.id];
+          const newVal = String(val !== undefined ? val : '');
+          if (valueControl.value !== newVal) {
+            valueControl.setValue(newVal);
+            area.update('node', node.id);
+          }
+        }
+      });
     },
 
     zoomToNode: (nodeId: string) => {
-        const node = editor.getNode(nodeId);
-        if (node) {
-            AreaExtensions.zoomAt(area, [node]);
-        }
-    }
+      const node = editor.getNode(nodeId);
+      if (node) {
+        AreaExtensions.zoomAt(area, [node]);
+      }
+    },
   };
 }

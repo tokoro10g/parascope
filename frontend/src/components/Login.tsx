@@ -1,7 +1,8 @@
-import React, { useState } from 'react';
+import type React from 'react';
+import { useState } from 'react';
+import { useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import { ParascopeLogo } from './ParascopeLogo';
-import { useLocation, useNavigate } from 'react-router-dom';
 
 export const Login: React.FC = () => {
   const [name, setName] = useState('');
@@ -13,17 +14,17 @@ export const Login: React.FC = () => {
   const usernameDescription = import.meta.env.VITE_USERNAME_DESCRIPTION;
 
   const isValid = (input: string) => {
-      if (!input.trim()) return false;
-      if (usernameRegex) {
-          try {
-              const regex = new RegExp(usernameRegex);
-              return regex.test(input);
-          } catch (e) {
-              console.error("Invalid regex in env:", e);
-              return true;
-          }
+    if (!input.trim()) return false;
+    if (usernameRegex) {
+      try {
+        const regex = new RegExp(usernameRegex);
+        return regex.test(input);
+      } catch (e) {
+        console.error('Invalid regex in env:', e);
+        return true;
       }
-      return true;
+    }
+    return true;
   };
 
   const from = location.state?.from || '/';
@@ -39,11 +40,21 @@ export const Login: React.FC = () => {
   return (
     <div className="login-page">
       <div className="login-card">
-        <div style={{ marginBottom: '20px', display: 'flex', justifyContent: 'center' }}>
+        <div
+          style={{
+            marginBottom: '20px',
+            display: 'flex',
+            justifyContent: 'center',
+          }}
+        >
           <ParascopeLogo size={64} strokeColor="var(--text-color)" />
         </div>
-        <h1 style={{ margin: '0 0 20px 0', fontSize: '24px' }}>Welcome to Parascope</h1>
-        <p style={{ marginBottom: '30px', color: 'var(--text-secondary)' }}>Please enter your name to continue</p>
+        <h1 style={{ margin: '0 0 20px 0', fontSize: '24px' }}>
+          Welcome to Parascope
+        </h1>
+        <p style={{ marginBottom: '30px', color: 'var(--text-secondary)' }}>
+          Please enter your name to continue
+        </p>
 
         <form onSubmit={handleSubmit}>
           <input
@@ -55,9 +66,9 @@ export const Login: React.FC = () => {
             autoFocus
           />
           {usernameDescription && (
-              <p style={{ color: 'var(--text-muted)', fontSize: '0.9em' }}>
-                  {usernameDescription}
-              </p>
+            <p style={{ color: 'var(--text-muted)', fontSize: '0.9em' }}>
+              {usernameDescription}
+            </p>
           )}
           <button
             type="submit"

@@ -1,5 +1,5 @@
-import React from 'react';
 import { Play } from 'lucide-react';
+import type React from 'react';
 
 export interface EvaluatorInput {
   id: string;
@@ -56,21 +56,30 @@ export const EvaluatorBar: React.FC<EvaluatorBarProps> = ({
         <span className="arrow"> =&gt; </span>
         <span className="paren">[</span>
         {outputs.map((output, i) => {
-            let displayValue = '?';
-            if (output.value !== undefined) {
-                displayValue = JSON.stringify(output.value);
-            }
-            return (
+          let displayValue = '?';
+          if (output.value !== undefined) {
+            displayValue = JSON.stringify(output.value);
+          }
+          return (
             <span key={output.id} className="output-param">
-                <span className="label">{output.label}:</span>
-                <span key={output.value} className="value value-blink">{displayValue}</span>
-                {i < outputs.length - 1 && <span className="comma">, </span>}
+              <span className="label">{output.label}:</span>
+              <span key={output.value} className="value value-blink">
+                {displayValue}
+              </span>
+              {i < outputs.length - 1 && <span className="comma">, </span>}
             </span>
-            );
+          );
         })}
         <span className="paren">]</span>
       </div>
-      <button type="button" onClick={onCalculate} disabled={isCalculating} className="calculate-btn" style={{ marginLeft: 'auto' }} title="Run Calculation">
+      <button
+        type="button"
+        onClick={onCalculate}
+        disabled={isCalculating}
+        className="calculate-btn"
+        style={{ marginLeft: 'auto' }}
+        title="Run Calculation"
+      >
         {isCalculating ? '...' : <Play size={18} fill="currentColor" />}
       </button>
     </div>

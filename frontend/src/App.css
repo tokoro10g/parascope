@@ -30,13 +30,13 @@
 }
 
 .toolbar button {
-    padding: 6px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    line-height: 1;
-    min-width: 32px;
-    height: 32px;
+  padding: 6px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  line-height: 1;
+  min-width: 32px;
+  height: 32px;
 }
 
 .editor-bar {
@@ -44,8 +44,12 @@
 }
 
 @keyframes blink-highlight {
-  0% { background-color: rgba(0, 255, 0, 0.5); }
-  100% { background-color: transparent; }
+  0% {
+    background-color: rgba(0, 255, 0, 0.5);
+  }
+  100% {
+    background-color: transparent;
+  }
 }
 
 .value-blink {
@@ -124,7 +128,7 @@
   background-color: var(--panel-bg-translucent);
   border: 1px solid var(--border-light);
   border-radius: 8px;
-  box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
   padding: 8px;
   gap: 8px;
   flex-wrap: wrap;
@@ -132,49 +136,49 @@
 }
 
 .rete-container .editor-bar .toolbar-group {
-    display: flex;
-    align-items: center;
-    gap: 4px;
+  display: flex;
+  align-items: center;
+  gap: 4px;
 }
 
 .rete-container .editor-bar .sheet-name-group {
-    width: 100%;
-    flex-basis: 100%;
+  width: 100%;
+  flex-basis: 100%;
 }
 
 .rete-container .editor-bar .node-actions-group {
-    flex-wrap: nowrap;
-    flex-grow: 1;
+  flex-wrap: nowrap;
+  flex-grow: 1;
 }
 
 .rete-container .editor-bar .save-group {
-    margin-left: auto;
+  margin-left: auto;
 }
 
 .rete-container .editor-bar .sheet-name-input {
-    width: 100%;
-    min-width: 100px;
-    background-color: var(--input-bg);
-    color: var(--text-color);
-    margin-right: 0;
-    border-color: transparent;
+  width: 100%;
+  min-width: 100px;
+  background-color: var(--input-bg);
+  color: var(--text-color);
+  margin-right: 0;
+  border-color: transparent;
 }
 
 .rete-container .editor-bar .sheet-name-input:focus {
-    border-color: var(--primary-color);
+  border-color: var(--primary-color);
 }
 
 .rete-container .editor-bar button {
-    background-color: var(--button-bg);
-    border: 1px solid var(--border-light);
-    color: var(--text-color);
-    border-radius: 4px;
-    cursor: pointer;
+  background-color: var(--button-bg);
+  border: 1px solid var(--border-light);
+  color: var(--text-color);
+  border-radius: 4px;
+  cursor: pointer;
 }
 
 .rete-container .editor-bar button:hover {
-    background-color: var(--item-hover);
-    border-color: var(--primary-color);
+  background-color: var(--item-hover);
+  border-color: var(--primary-color);
 }
 
 .loading-overlay {
@@ -203,7 +207,7 @@
   border: none;
   border-top: 1px solid var(--border-color);
   border-radius: 0;
-  box-shadow: 0 -2px 5px rgba(0,0,0,0.05);
+  box-shadow: 0 -2px 5px rgba(0, 0, 0, 0.05);
   padding: 8px 16px;
   transform: none;
   max-width: none;
@@ -243,38 +247,38 @@
 }
 
 .sheet-item .sheet-info {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    width: 100%;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;
 }
 
 .sheet-item .sheet-actions {
-    display: flex;
-    gap: 8px;
-    margin-left: 16px;
+  display: flex;
+  gap: 8px;
+  margin-left: 16px;
 }
 
 .sheet-item .sheet-actions button {
-    padding: 4px;
-    font-size: 0.8em;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    line-height: 1;
-    width: 28px;
-    height: 28px;
-    min-width: unset;
+  padding: 4px;
+  font-size: 0.8em;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  line-height: 1;
+  width: 28px;
+  height: 28px;
+  min-width: unset;
 }
 
 .sheet-item .sheet-actions button.danger {
-    background-color: var(--danger-color);
-    color: white;
-    border: none;
+  background-color: var(--danger-color);
+  color: white;
+  border: none;
 }
 
 .sheet-item .sheet-actions button.danger:hover {
-    background-color: var(--danger-hover);
+  background-color: var(--danger-hover);
 }
 
 .sheet-item:hover {
@@ -357,12 +361,15 @@
   text-decoration: underline;
 }
 
-.paren, .comma, .arrow {
+.paren,
+.comma,
+.arrow {
   color: var(--text-secondary);
   font-weight: bold;
 }
 
-.input-param, .output-param {
+.input-param,
+.output-param {
   display: inline-flex;
   align-items: center;
   background: var(--item-bg);
@@ -371,7 +378,8 @@
   border: 1px solid var(--border-light);
 }
 
-.input-param label, .output-param .label {
+.input-param label,
+.output-param .label {
   margin-right: 4px;
   color: var(--text-secondary);
 }
@@ -447,7 +455,8 @@
   font-size: 0.9em;
 }
 
-.sheet-table th, .sheet-table td {
+.sheet-table th,
+.sheet-table td {
   text-align: left;
   padding: 6px;
   border-bottom: 1px solid var(--border-light);
@@ -518,7 +527,8 @@
   font-weight: bold;
 }
 
-.form-group input, .form-group textarea {
+.form-group input,
+.form-group textarea {
   width: 100%;
   padding: 8px;
   border: 1px solid var(--border-color);
@@ -594,7 +604,7 @@
   background: var(--item-bg);
   padding: 40px;
   border-radius: 8px;
-  box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
   width: 100%;
   max-width: 400px;
   text-align: center;

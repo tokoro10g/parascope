@@ -1,5 +1,6 @@
-import React, { createContext, useContext, useState, useEffect } from 'react';
 import Cookies from 'js-cookie';
+import type React from 'react';
+import { createContext, useContext, useEffect, useState } from 'react';
 
 interface AuthContextType {
   user: string | null;
@@ -10,7 +11,9 @@ interface AuthContextType {
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
-export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
+  children,
+}) => {
   const [user, setUser] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 

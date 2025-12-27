@@ -1,4 +1,4 @@
-import React from 'react';
+import type React from 'react';
 
 interface ParascopeLogoProps extends React.SVGProps<SVGSVGElement> {
   size?: number | string;
@@ -8,8 +8,8 @@ interface ParascopeLogoProps extends React.SVGProps<SVGSVGElement> {
 
 export const ParascopeLogo: React.FC<ParascopeLogoProps> = ({
   size = 100,
-  strokeColor = "currentColor",
-  fillColor = "currentColor",
+  strokeColor = 'currentColor',
+  fillColor = 'currentColor',
   style,
   ...props
 }) => {
