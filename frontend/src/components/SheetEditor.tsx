@@ -700,7 +700,7 @@ export const SheetEditor: React.FC = () => {
     const node = editor.editor.getNode(nodeId);
     if (!node) return;
 
-    if (updates.label) {
+    if (updates.label && updates.label !== node.label) {
       if (node.type === 'input' || node.type === 'output') {
         if (
           !window.confirm(
