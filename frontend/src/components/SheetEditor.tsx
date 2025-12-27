@@ -168,6 +168,9 @@ export const SheetEditor: React.FC = () => {
             console.warn(
               'Removed invalid connections due to nested sheet updates',
             );
+            alert(
+              'Some connections were removed because the inputs/outputs of nested sheets have changed.',
+            );
           }
         }
         // --------------------------
