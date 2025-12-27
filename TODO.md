@@ -45,7 +45,7 @@ Generated from `SPECIFICATIONS.tsv`.
 ## 3. Frontend UI/UX (Initial Release)
 - [x] **Graph Editor**: Implement `rete.js` canvas (BB-S-01.0).
     - [x] Implement Context Menu for adding nodes (UI-06.0).
-    - [ ] Implement "Edit Sheet" context menu action with state-preserving navigation (UI-08.0).
+    - [x] Implement "Edit Sheet" context menu action with state-preserving navigation (UI-08.0).
     - [x] Implement Undo/Redo history (UI-15.0).
     - [x] Implement Connection constraints (Max 1 input, Multiple outputs) (BB-C-01.0).
     - [x] Implement Editor Toolbar (UI-17.0).
@@ -67,12 +67,12 @@ Generated from `SPECIFICATIONS.tsv`.
     - [x] Implement Image Attachment UI (Upload/Delete/View) (DH-09.0).
 - [x] **Input Node**:
     - [x] Distinct visual style from Parameters (BB-I-01.0).
-    - [ ] Name (BB-I-01.0).
+    - [x] Name (BB-I-01.0).
     - [ ] Range (BB-I-03.0).
     - [x] Description (BB-I-04.0).
 - [x] **Output Node**:
     - [x] Distinct visual style (BB-O-01.0).
-    - [ ] Name (BB-O-01.0).
+    - [x] Name (BB-O-01.0).
     - [x] Description (BB-O-03.0).
     - [ ] Range (BB-O-02.0).
 - [ ] **Option Node**:
@@ -85,7 +85,7 @@ Generated from `SPECIFICATIONS.tsv`.
     - [x] Validation: Python variable name constraints (BB-P-02.0) [REMOVED].
     - [x] Markdown rendering for description (BB-P-03.0).
 - [ ] **Function Node**:
-    - [ ] Name, Python Code, Description (BB-F-03.0 - BB-F-05.0).
+    - [x] Name, Python Code, Description (BB-F-03.0 - BB-F-05.0).
     - [x] Validation: Python function name constraints (BB-F-03.0).
     - [x] Markdown rendering for description (BB-F-04.0).
 - [ ] **Feedback**:
@@ -116,13 +116,13 @@ Generated from `SPECIFICATIONS.tsv`.
 - [ ] **Sheet Nesting**:
     - [x] Implement linking mechanism for nested sheets (BB-S-02.0, BB-S-03.0).
     - [x] Implement logic to expose Input/Output Nodes as sockets (BB-S-04.0).
-    - [ ] Validate that all nested sheet inputs are connected (No defaults) (BB-S-05.0).
+    - [x] Validate that all nested sheet inputs are connected (No defaults) (BB-S-05.0).
     - [x] Implement Sheet Picker Modal for importing (UI-16.0).
     - [x] Auto-calculate on load if inputs are satisfied (UI-27.0).
 - [ ] **Graph Integrity**:
     - [x] Auto-remove connections on node deletion (EH-04.0).
     - [ ] Validate function dependencies before saving (EH-05.0).
-    - [ ] Enforce unique parameter names per sheet (EH-09.0).
+    - [x] Enforce unique input names per sheet (EH-09.0).
 
 ## 5. Future Scope (Post-Initial)
 - [ ] **Concurrency**: Sheet-level mutex (FS-C-01.0, EH-08.0).

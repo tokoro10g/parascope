@@ -701,6 +701,20 @@ export const SheetEditor: React.FC = () => {
     if (!node) return;
 
     if (updates.label && updates.label !== node.label) {
+      // Check for duplicate input/output names
+      if (node.type === 'input' || node.type === 'output') {
+        const existingNode = nodes.find(
+          (n) =>
+            n.type === node.type && n.label === updates.label && n.id !== nodeId,
+        );
+        if (existingNode) {
+          alert(
+            `An ${node.type} node with the name "${updates.label}" already exists.`,
+          );
+          return;
+        }
+      }
+
       if (node.type === 'input' || node.type === 'output') {
         if (
           !window.confirm(
