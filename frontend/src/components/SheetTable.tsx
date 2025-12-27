@@ -1,6 +1,9 @@
 import React from 'react';
 import { ParascopeNode } from '../rete';
 import { Copy } from 'lucide-react';
+import ReactMarkdown from 'react-markdown';
+import remarkMath from 'remark-math';
+import rehypeKatex from 'rehype-katex';
 
 interface SheetTableProps {
   nodes: ParascopeNode[];
@@ -17,6 +20,19 @@ export const SheetTable: React.FC<SheetTableProps> = ({ nodes, onUpdateValue, on
           'input': 0,
           'parameter': 1,
           'output': 2
+      };
+      return (typeOrder[a.type] ?? 99) - (typeOrder[b.type] ?? 99);
+  });
+
+  // Filter for Descriptions (Parameters, Inputs, Functions, Outputs)
+  const descriptionNodes = nodes.filter(
+    (node) => ['parameter', 'input', 'function', 'output'].includes(node.type)
+  ).sort((a, b) => {
+      const typeOrder: Record<string, number> = {
+          'parameter': 0,
+          'input': 1,
+          'function': 2,
+          'output': 3
       };
       return (typeOrder[a.type] ?? 99) - (typeOrder[b.type] ?? 99);
   });
@@ -72,52 +88,86 @@ export const SheetTable: React.FC<SheetTableProps> = ({ nodes, onUpdateValue, on
   };
 
   return (
-    <div className="sheet-table">
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '10px' }}>
-        <h3 style={{ margin: 0 }}>Parameters & I/O</h3>
-        <button type="button" onClick={handleCopyTable} style={{ padding: '4px 8px', fontSize: '0.8em', display: 'flex', alignItems: 'center', gap: '4px' }}>
-            <Copy size={14} />
-            Copy Table
-        </button>
+    <div className="sheet-table" style={{ display: 'flex', flexDirection: 'column', height: '100%', overflow: 'hidden' }}>
+      <div style={{ flex: '0 0 auto', maxHeight: '50%', display: 'flex', flexDirection: 'column', borderBottom: '1px solid var(--border-color)', paddingBottom: '10px', marginBottom: '10px' }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '10px', padding: '0 10px' }}>
+            <h3 style={{ margin: 0 }}>Parameters & I/O</h3>
+            <button type="button" onClick={handleCopyTable} style={{ padding: '4px 8px', fontSize: '0.8em', display: 'flex', alignItems: 'center', gap: '4px' }}>
+                <Copy size={14} />
+                Copy Table
+            </button>
+        </div>
+        <div style={{ overflowY: 'auto', padding: '0 10px' }}>
+            <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+                <thead>
+                <tr>
+                    <th style={{ textAlign: 'left', borderBottom: '1px solid var(--border-color)' }}>Name</th>
+                    <th style={{ textAlign: 'left', borderBottom: '1px solid var(--border-color)' }}>Type</th>
+                    <th style={{ textAlign: 'left', borderBottom: '1px solid var(--border-color)' }}>Value</th>
+                </tr>
+                </thead>
+                <tbody>
+                {tableNodes.map((node) => {
+                    const isParameter = node.type === 'parameter';
+                    const nameControl = node.controls['name'] as any;
+                    const valueControl = node.controls['value'] as any;
+                    
+                    const name = nameControl?.value || node.label;
+                    const value = valueControl?.value;
+
+                    return (
+                    <tr key={node.id} onClick={() => onSelectNode(node.id)} style={{ cursor: 'pointer' }}>
+                        <td style={{ padding: '4px 0' }}>{name}</td>
+                        <td style={{ padding: '4px 0' }}>{node.type}</td>
+                        <td style={{ padding: '4px 0' }}>
+                        {isParameter ? (
+                            <input
+                            value={value}
+                            onChange={(e) => onUpdateValue(node.id, parseFloat(e.target.value))}
+                            onClick={(e) => e.stopPropagation()} // Prevent row selection when editing
+                            style={{ width: '100%' }}
+                            />
+                        ) : (
+                            <span>{value}</span>
+                        )}
+                        </td>
+                    </tr>
+                    );
+                })}
+                </tbody>
+            </table>
+        </div>
       </div>
-      <table>
-        <thead>
-          <tr>
-            <th>Name</th>
-            <th>Type</th>
-            <th>Value</th>
-          </tr>
-        </thead>
-        <tbody>
-          {tableNodes.map((node) => {
-            const isParameter = node.type === 'parameter';
+
+      <div className="description-panel" style={{ flex: 1, overflowY: 'auto', padding: '0 10px' }}>
+        <h3 style={{ marginTop: 0 }}>Descriptions</h3>
+        {descriptionNodes.map(node => {
             const nameControl = node.controls['name'] as any;
-            const valueControl = node.controls['value'] as any;
-            
             const name = nameControl?.value || node.label;
-            const value = valueControl?.value;
+            const description = node.initialData?.description;
+
+            if (!description) return null;
 
             return (
-              <tr key={node.id} onClick={() => onSelectNode(node.id)} style={{ cursor: 'pointer' }}>
-                <td>{name}</td>
-                <td>{node.type}</td>
-                <td>
-                  {isParameter ? (
-                    <input
-                      value={value}
-                      onChange={(e) => onUpdateValue(node.id, parseFloat(e.target.value))}
-                      onClick={(e) => e.stopPropagation()} // Prevent row selection when editing
-                      style={{ width: '100%' }}
-                    />
-                  ) : (
-                    <span>{value}</span>
-                  )}
-                </td>
-              </tr>
+                <div key={node.id} style={{ marginBottom: '20px', borderBottom: '1px solid var(--border-light)', paddingBottom: '10px' }}>
+                    <h4 style={{ margin: '0 0 5px 0', fontSize: '0.9em', color: 'var(--text-secondary)', display: 'flex', justifyContent: 'space-between' }}>
+                        <span>{name}</span>
+                        <span style={{ fontSize: '0.8em', fontWeight: 'normal', opacity: 0.7 }}>{node.type}</span>
+                    </h4>
+                    <div className="markdown-body" style={{ fontSize: '0.9em', lineHeight: '1.4' }}>
+                        <ReactMarkdown remarkPlugins={[remarkMath]} rehypePlugins={[rehypeKatex]}>
+                            {description}
+                        </ReactMarkdown>
+                    </div>
+                </div>
             );
-          })}
-        </tbody>
-      </table>
+        })}
+        {descriptionNodes.every(n => !n.initialData?.description) && (
+            <div style={{ color: 'var(--text-muted)', fontStyle: 'italic', fontSize: '0.9em' }}>
+                No descriptions available.
+            </div>
+        )}
+      </div>
     </div>
   );
 };

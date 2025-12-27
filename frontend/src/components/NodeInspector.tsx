@@ -1,5 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import ReactMarkdown from 'react-markdown';
+import remarkMath from 'remark-math';
+import rehypeKatex from 'rehype-katex';
 import type { ParascopeNode } from '../rete';
 import { uploadAttachment, getAttachmentUrl } from '../api';
 
@@ -175,7 +177,9 @@ export const NodeInspector: React.FC<NodeInspectorProps> = ({
                   background: 'var(--input-bg)',
                   color: 'var(--text-color)'
               }}>
-                  <ReactMarkdown>{data.description || '*No description*'}</ReactMarkdown>
+                  <ReactMarkdown remarkPlugins={[remarkMath]} rehypePlugins={[rehypeKatex]}>
+                    {data.description || '*No description*'}
+                  </ReactMarkdown>
               </div>
           ) : (
               <textarea 
