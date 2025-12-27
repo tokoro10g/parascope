@@ -20,23 +20,23 @@ export const FolderPickerModal: React.FC<FolderPickerModalProps> = ({
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
+    const loadData = async () => {
+      setLoading(true);
+      try {
+        const foldersData = await api.listFolders();
+        setFolders(foldersData);
+      } catch (e) {
+        console.error(e);
+        alert('Failed to load folders');
+      } finally {
+        setLoading(false);
+      }
+    };
+
     if (isOpen) {
       loadData();
     }
   }, [isOpen]);
-
-  const loadData = async () => {
-    setLoading(true);
-    try {
-      const foldersData = await api.listFolders();
-      setFolders(foldersData);
-    } catch (e) {
-      console.error(e);
-      alert('Failed to load folders');
-    } finally {
-      setLoading(false);
-    }
-  };
 
   if (!isOpen) return null;
 
@@ -82,20 +82,26 @@ export const FolderPickerModal: React.FC<FolderPickerModalProps> = ({
             fontSize: '1em',
           }}
         >
-          <span
+          <button
+            type="button"
             onClick={() => setCurrentFolderId(undefined)}
             style={{
               cursor: 'pointer',
               color: currentFolderId ? '#007bff' : 'inherit',
               fontWeight: !currentFolderId ? 'bold' : 'normal',
+              background: 'none',
+              border: 'none',
+              padding: 0,
+              font: 'inherit',
             }}
           >
             Home
-          </span>
+          </button>
           {breadcrumbs.map((folder, index) => (
             <React.Fragment key={folder.id}>
               <span style={{ color: '#999' }}>/</span>
-              <span
+              <button
+                type="button"
                 onClick={() => setCurrentFolderId(folder.id)}
                 style={{
                   cursor: 'pointer',
@@ -103,10 +109,14 @@ export const FolderPickerModal: React.FC<FolderPickerModalProps> = ({
                     index === breadcrumbs.length - 1 ? 'inherit' : '#007bff',
                   fontWeight:
                     index === breadcrumbs.length - 1 ? 'bold' : 'normal',
+                  background: 'none',
+                  border: 'none',
+                  padding: 0,
+                  font: 'inherit',
                 }}
               >
                 {folder.name}
-              </span>
+              </button>
             </React.Fragment>
           ))}
         </div>
@@ -116,20 +126,37 @@ export const FolderPickerModal: React.FC<FolderPickerModalProps> = ({
         ) : (
           <div className="sheet-list">
             {currentFolderId && (
-              <div className="sheet-item folder-item" onClick={handleUp}>
+              <button
+                type="button"
+                className="sheet-item folder-item"
+                onClick={handleUp}
+                style={{
+                  width: '100%',
+                  textAlign: 'left',
+                  font: 'inherit',
+                  cursor: 'pointer',
+                }}
+              >
                 <div className="sheet-info">
                   <ArrowLeft size={20} />
                   <span className="sheet-name" style={{ marginLeft: 10 }}>
                     .. (Up)
                   </span>
                 </div>
-              </div>
+              </button>
             )}
             {currentFolders.map((folder) => (
-              <div
+              <button
+                type="button"
                 key={folder.id}
                 className="sheet-item folder-item"
                 onClick={() => setCurrentFolderId(folder.id)}
+                style={{
+                  width: '100%',
+                  textAlign: 'left',
+                  font: 'inherit',
+                  cursor: 'pointer',
+                }}
               >
                 <div className="sheet-info">
                   <FolderIcon size={20} />
@@ -137,17 +164,17 @@ export const FolderPickerModal: React.FC<FolderPickerModalProps> = ({
                     {folder.name}
                   </span>
                 </div>
-              </div>
+              </button>
             ))}
             {currentFolders.length === 0 && (
               <p style={{ padding: 20, color: '#666' }}>No subfolders.</p>
             )}
           </div>
         )}
-        <button onClick={() => onSelect(currentFolderId)}>
+        <button type="button" onClick={() => onSelect(currentFolderId)}>
           Move to This Folder
         </button>
-        <button onClick={onClose} style={{ marginTop: '20px' }}>
+        <button type="button" onClick={onClose} style={{ marginTop: '20px' }}>
           Cancel
         </button>
       </div>

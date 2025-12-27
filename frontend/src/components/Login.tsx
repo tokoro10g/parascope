@@ -63,7 +63,6 @@ export const Login: React.FC = () => {
             onChange={(e) => setName(e.target.value)}
             placeholder="Your Name"
             className="login-input"
-            autoFocus
           />
           {usernameDescription && (
             <p style={{ color: 'var(--text-muted)', fontSize: '0.9em' }}>

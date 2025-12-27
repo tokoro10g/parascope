@@ -46,13 +46,13 @@ export const NodeInspector: React.FC<NodeInspectorProps> = ({
 
       const currentData = { ...(node.initialData || {}) };
       // Sync value from control if it exists, as it might be newer than initialData
-      if (node.controls['value']) {
-        const control = node.controls['value'] as any;
+      if (node.controls.value) {
+        const control = node.controls.value as any;
         // Check if control has a value property (it should for InputControl)
         if (control && control.value !== undefined) {
           // Try to parse as number if it looks like one, since we store value as number in data
           const val = parseFloat(control.value);
-          if (!isNaN(val)) {
+          if (!Number.isNaN(val)) {
             currentData.value = val;
           } else {
             currentData.value = control.value;
@@ -127,7 +127,7 @@ export const NodeInspector: React.FC<NodeInspectorProps> = ({
   };
 
   const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (e.target.files && e.target.files[0]) {
+    if (e.target.files?.[0]) {
       try {
         const result = await uploadAttachment(e.target.files[0]);
         setData({ ...data, attachment: result.filename });
@@ -232,7 +232,15 @@ export const NodeInspector: React.FC<NodeInspectorProps> = ({
             </div>
 
             <div className="form-group">
-              <label>Attachment:</label>
+              <div
+                style={{
+                  display: 'block',
+                  marginBottom: '5px',
+                  fontWeight: 'bold',
+                }}
+              >
+                Attachment:
+              </div>
               {data.attachment ? (
                 <div
                   className="attachment-preview"
@@ -274,21 +282,20 @@ export const NodeInspector: React.FC<NodeInspectorProps> = ({
           </>
         )}
 
-        {(node.type === 'parameter' || node.type === 'input') && (
+        {(node.type === 'parameter' || node.type === 'input') &&
           node.type === 'parameter' && (
-              <div className="form-group">
-                <label htmlFor="node-value">Value:</label>
-                <input
-                  id="node-value"
-                  type="number"
-                  value={data.value || 0}
-                  onChange={(e) =>
-                    setData({ ...data, value: parseFloat(e.target.value) })
-                  }
-                />
-              </div>
-            )
-        )}
+            <div className="form-group">
+              <label htmlFor="node-value">Value:</label>
+              <input
+                id="node-value"
+                type="number"
+                value={data.value || 0}
+                onChange={(e) =>
+                  setData({ ...data, value: parseFloat(e.target.value) })
+                }
+              />
+            </div>
+          )}
 
         {node.type === 'function' && (
           <>

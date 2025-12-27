@@ -23,6 +23,7 @@ export const ParascopeLogo: React.FC<ParascopeLogoProps> = ({
       style={style}
       {...props}
     >
+      <title>Parascope Logo</title>
       <g fill="none" stroke={strokeColor} strokeWidth="6" strokeLinecap="butt">
         <rect x="10" y="10" width="80" height="80" rx="4" ry="4" />
         <line x1="50" y1="4" x2="50" y2="14" />

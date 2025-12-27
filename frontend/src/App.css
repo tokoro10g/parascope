@@ -572,6 +572,7 @@
 }
 
 .input-error {
+  /* biome-ignore lint/complexity/noImportantStyles: Needed to override Rete styles */
   border: 2px solid var(--danger-color) !important;
   background-color: #ffebee;
   outline: none;

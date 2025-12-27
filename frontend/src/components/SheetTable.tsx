@@ -52,8 +52,8 @@ export const SheetTable: React.FC<SheetTableProps> = ({
   const handleCopyTable = () => {
     const headers = ['Name', 'Type', 'Value', 'URL'];
     const rows = tableNodes.map((node) => {
-      const nameControl = node.controls['name'] as any;
-      const valueControl = node.controls['value'] as any;
+      const nameControl = node.controls.name as any;
+      const valueControl = node.controls.value as any;
 
       const name = nameControl?.value || node.label;
       const value = valueControl?.value || '';
@@ -64,7 +64,7 @@ export const SheetTable: React.FC<SheetTableProps> = ({
 
     const tsv = [headers.join('\t'), ...rows].join('\n');
 
-    if (navigator.clipboard && navigator.clipboard.writeText) {
+    if (navigator.clipboard?.writeText) {
       navigator.clipboard
         .writeText(tsv)
         .then(() => {
@@ -181,8 +181,8 @@ export const SheetTable: React.FC<SheetTableProps> = ({
             <tbody>
               {tableNodes.map((node) => {
                 const isParameter = node.type === 'parameter';
-                const nameControl = node.controls['name'] as any;
-                const valueControl = node.controls['value'] as any;
+                const nameControl = node.controls.name as any;
+                const valueControl = node.controls.value as any;
 
                 const name = nameControl?.value || node.label;
                 const value = valueControl?.value;
@@ -223,7 +223,7 @@ export const SheetTable: React.FC<SheetTableProps> = ({
       >
         <h3 style={{ marginTop: 0 }}>Descriptions</h3>
         {descriptionNodes.map((node) => {
-          const nameControl = node.controls['name'] as any;
+          const nameControl = node.controls.name as any;
           const name = nameControl?.value || node.label;
           const description = node.initialData?.description;
           const sheetId = node.initialData?.sheetId;

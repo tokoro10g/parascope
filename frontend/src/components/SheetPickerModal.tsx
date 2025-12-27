@@ -26,28 +26,28 @@ export const SheetPickerModal: React.FC<SheetPickerModalProps> = ({
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
+    const loadData = async () => {
+      setLoading(true);
+      try {
+        const [sheetsData, foldersData] = await Promise.all([
+          api.listSheets(),
+          api.listFolders(),
+        ]);
+        // @ts-expect-error
+        setSheets(sheetsData);
+        setFolders(foldersData);
+      } catch (e) {
+        console.error(e);
+        alert('Failed to load data');
+      } finally {
+        setLoading(false);
+      }
+    };
+
     if (isOpen) {
       loadData();
     }
   }, [isOpen]);
-
-  const loadData = async () => {
-    setLoading(true);
-    try {
-      const [sheetsData, foldersData] = await Promise.all([
-        api.listSheets(),
-        api.listFolders(),
-      ]);
-      // @ts-expect-error
-      setSheets(sheetsData);
-      setFolders(foldersData);
-    } catch (e) {
-      console.error(e);
-      alert('Failed to load data');
-    } finally {
-      setLoading(false);
-    }
-  };
 
   if (!isOpen) return null;
 
@@ -97,7 +97,8 @@ export const SheetPickerModal: React.FC<SheetPickerModalProps> = ({
             fontSize: '1em',
           }}
         >
-          <span
+          <button
+            type="button"
             onClick={() => setCurrentFolderId(undefined)}
             style={{
               cursor: 'pointer',
@@ -108,16 +109,21 @@ export const SheetPickerModal: React.FC<SheetPickerModalProps> = ({
               display: 'flex',
               alignItems: 'center',
               gap: 4,
+              background: 'none',
+              border: 'none',
+              padding: 0,
+              font: 'inherit',
             }}
           >
             <Home size={16} /> Home
-          </span>
+          </button>
           {breadcrumbs.map((folder, index) => (
             <React.Fragment key={folder.id}>
               <span style={{ color: 'var(--text-color-secondary, #999)' }}>
                 /
               </span>
-              <span
+              <button
+                type="button"
                 onClick={() => setCurrentFolderId(folder.id)}
                 style={{
                   cursor: 'pointer',
@@ -130,10 +136,14 @@ export const SheetPickerModal: React.FC<SheetPickerModalProps> = ({
                   display: 'flex',
                   alignItems: 'center',
                   gap: 4,
+                  background: 'none',
+                  border: 'none',
+                  padding: 0,
+                  font: 'inherit',
                 }}
               >
                 <FolderIcon size={16} /> {folder.name}
-              </span>
+              </button>
             </React.Fragment>
           ))}
         </div>
@@ -143,44 +153,68 @@ export const SheetPickerModal: React.FC<SheetPickerModalProps> = ({
         ) : (
           <div className="sheet-list">
             {currentFolderId && (
-              <div className="sheet-item folder-item" onClick={handleUp}>
+              <button
+                type="button"
+                className="sheet-item folder-item"
+                onClick={handleUp}
+                style={{
+                  width: '100%',
+                  textAlign: 'left',
+                  font: 'inherit',
+                  cursor: 'pointer',
+                }}
+              >
                 <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
                   <ArrowLeft size={20} />
                   <strong>.. (Up)</strong>
                 </div>
-              </div>
+              </button>
             )}
             {currentFolders.map((folder) => (
-              <div
+              <button
+                type="button"
                 key={folder.id}
                 className="sheet-item folder-item"
                 onClick={() => setCurrentFolderId(folder.id)}
+                style={{
+                  width: '100%',
+                  textAlign: 'left',
+                  font: 'inherit',
+                  cursor: 'pointer',
+                }}
               >
                 <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
                   <FolderIcon size={20} />
                   <strong>{folder.name}</strong>
                 </div>
-              </div>
+              </button>
             ))}
             {currentSheets.map((sheet) => (
-              <div
+              <button
+                type="button"
                 key={sheet.id}
                 className="sheet-item"
                 onClick={() => onSelect(sheet)}
+                style={{
+                  width: '100%',
+                  textAlign: 'left',
+                  font: 'inherit',
+                  cursor: 'pointer',
+                }}
               >
                 <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
                   <FileSpreadsheet size={20} />
                   <strong>{sheet.name}</strong>
                 </div>
                 <span className="sheet-id">{sheet.id}</span>
-              </div>
+              </button>
             ))}
             {currentSheets.length === 0 && currentFolders.length === 0 && (
               <p>No items in this folder.</p>
             )}
           </div>
         )}
-        <button onClick={onClose} style={{ marginTop: '20px' }}>
+        <button type="button" onClick={onClose} style={{ marginTop: '20px' }}>
           Cancel
         </button>
       </div>

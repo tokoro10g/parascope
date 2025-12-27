@@ -8,7 +8,7 @@ import {
   LogOut,
   Trash2,
 } from 'lucide-react';
-import React, { useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import { Link, useNavigate, useParams } from 'react-router-dom';
 import { api, type Folder, type SheetSummary } from '../api';
 import { useAuth } from '../contexts/AuthContext';
@@ -27,15 +27,7 @@ export const Dashboard: React.FC = () => {
   const navigate = useNavigate();
   const { user, logout } = useAuth();
 
-  useEffect(() => {
-    setCurrentFolderId(folderId);
-  }, [folderId]);
-
-  useEffect(() => {
-    loadData();
-  }, []);
-
-  const loadData = async () => {
+  const loadData = useCallback(async () => {
     try {
       const [sheetsData, foldersData] = await Promise.all([
         api.listSheets(),
@@ -46,7 +38,15 @@ export const Dashboard: React.FC = () => {
     } catch (e) {
       console.error('Failed to load data', e);
     }
-  };
+  }, []);
+
+  useEffect(() => {
+    setCurrentFolderId(folderId);
+  }, [folderId]);
+
+  useEffect(() => {
+    loadData();
+  }, [loadData]);
 
   const handleCreateSheet = async () => {
     try {
@@ -67,7 +67,7 @@ export const Dashboard: React.FC = () => {
       try {
         await api.createFolder(name, currentFolderId);
         loadData();
-      } catch (e) {
+      } catch (_e) {
         alert('Failed to create folder');
       }
     }
@@ -193,6 +193,7 @@ export const Dashboard: React.FC = () => {
             Hello, <b>{user}</b>
           </span>
           <button
+            type="button"
             onClick={logout}
             title="Change User"
             className="link-button"
@@ -203,8 +204,10 @@ export const Dashboard: React.FC = () => {
         </div>
       </div>
       <div className="actions">
-        <button onClick={handleCreateSheet}>+ Create New Sheet</button>
-        <button onClick={handleCreateFolder}>
+        <button type="button" onClick={handleCreateSheet}>
+          + Create New Sheet
+        </button>
+        <button type="button" onClick={handleCreateFolder}>
           <FolderPlus size={16} style={{ marginRight: 5 }} /> New Folder
         </button>
       </div>
@@ -219,51 +222,79 @@ export const Dashboard: React.FC = () => {
           fontSize: '1.1em',
         }}
       >
-        <span
+        <button
+          type="button"
           onClick={() => navigate('/')}
           style={{
             cursor: 'pointer',
             color: currentFolderId ? '#007bff' : 'inherit',
             fontWeight: !currentFolderId ? 'bold' : 'normal',
+            background: 'none',
+            border: 'none',
+            padding: 0,
+            font: 'inherit',
           }}
         >
           Home
-        </span>
+        </button>
         {breadcrumbs.map((folder, index) => (
           <React.Fragment key={folder.id}>
             <span style={{ color: '#999' }}>/</span>
-            <span
+            <button
+              type="button"
               onClick={() => navigate(`/folder/${folder.id}`)}
               style={{
                 cursor: 'pointer',
                 color: index === breadcrumbs.length - 1 ? 'inherit' : '#007bff',
                 fontWeight:
                   index === breadcrumbs.length - 1 ? 'bold' : 'normal',
+                background: 'none',
+                border: 'none',
+                padding: 0,
+                font: 'inherit',
               }}
             >
               {folder.name}
-            </span>
+            </button>
           </React.Fragment>
         ))}
       </div>
 
       <div className="sheet-list">
         {currentFolderId && (
-          <div className="sheet-item folder-item" onClick={handleUp}>
+          <button
+            type="button"
+            className="sheet-item folder-item"
+            onClick={handleUp}
+            style={{
+              width: '100%',
+              textAlign: 'left',
+              font: 'inherit',
+              cursor: 'pointer',
+            }}
+          >
             <div className="sheet-info">
               <ArrowLeft size={20} />
               <span className="sheet-name" style={{ marginLeft: 10 }}>
                 .. (Up)
               </span>
             </div>
-          </div>
+          </button>
         )}
 
         {currentFolders.map((folder) => (
+          /* biome-ignore lint/a11y/useSemanticElements: Cannot use <button> because it contains nested interactive elements */
           <div
             key={folder.id}
             className="sheet-item folder-item"
             onClick={() => navigate(`/folder/${folder.id}`)}
+            role="button"
+            tabIndex={0}
+            onKeyDown={(e) => {
+              if (e.key === 'Enter' || e.key === ' ') {
+                navigate(`/folder/${folder.id}`);
+              }
+            }}
           >
             <div
               className="sheet-info"
@@ -276,6 +307,7 @@ export const Dashboard: React.FC = () => {
             </div>
             <div className="sheet-actions">
               <button
+                type="button"
                 onClick={(e) => handleDeleteFolder(e, folder.id)}
                 title="Delete Folder"
                 className="danger"
@@ -301,18 +333,21 @@ export const Dashboard: React.FC = () => {
             </Link>
             <div className="sheet-actions">
               <button
+                type="button"
                 onClick={(e) => handleMoveClick(e, sheet.id)}
                 title="Move to Folder"
               >
                 <FolderInput size={16} />
               </button>
               <button
+                type="button"
                 onClick={(e) => handleDuplicate(e, sheet.id)}
                 title="Duplicate"
               >
                 <Copy size={16} />
               </button>
               <button
+                type="button"
                 onClick={(e) => handleDelete(e, sheet.id)}
                 title="Delete"
                 className="danger"

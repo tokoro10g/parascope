@@ -85,12 +85,145 @@ export const SheetEditor: React.FC = () => {
     }
   };
 
+  const handleLoadSheet = useCallback(
+    async (id: string) => {
+      if (!editor) return;
+      setIsLoading(true);
+      try {
+        const sheet = await api.getSheet(id);
+
+        // --- SYNC NESTED SHEETS ---
+        const nestedSheetNodes = sheet.nodes.filter(
+          (n) => n.type === 'sheet' && n.data?.sheetId,
+        );
+        if (nestedSheetNodes.length > 0) {
+          const updatedNodes = [...sheet.nodes];
+          let connectionsChanged = false;
+          const validConnectionIds = new Set(
+            sheet.connections.map((c) => c.id),
+          );
+
+          await Promise.all(
+            nestedSheetNodes.map(async (node) => {
+              try {
+                const childSheet = await api.getSheet(node.data.sheetId);
+
+                // Update Inputs (from child's Input nodes)
+                const newInputs = childSheet.nodes
+                  .filter((n) => n.type === 'input')
+                  .map((n) => ({ key: n.label, socket_type: 'any' }));
+
+                // Update Outputs (from child's Output nodes)
+                const newOutputs = childSheet.nodes
+                  .filter((n) => n.type === 'output')
+                  .map((n) => ({ key: n.label, socket_type: 'any' }));
+
+                // Find the node in the array and update it
+                const nodeIndex = updatedNodes.findIndex(
+                  (n) => n.id === node.id,
+                );
+                if (nodeIndex !== -1) {
+                  updatedNodes[nodeIndex] = {
+                    ...updatedNodes[nodeIndex],
+                    inputs: newInputs,
+                    outputs: newOutputs,
+                  };
+                }
+
+                // Validate Connections
+                // Remove connections to/from this node that reference non-existent sockets
+                const inputKeys = new Set(newInputs.map((i) => i.key));
+                const outputKeys = new Set(newOutputs.map((o) => o.key));
+
+                sheet.connections.forEach((c) => {
+                  if (c.target_id === node.id) {
+                    if (!inputKeys.has(c.target_port)) {
+                      validConnectionIds.delete(c.id);
+                      connectionsChanged = true;
+                    }
+                  }
+                  if (c.source_id === node.id) {
+                    if (!outputKeys.has(c.source_port)) {
+                      validConnectionIds.delete(c.id);
+                      connectionsChanged = true;
+                    }
+                  }
+                });
+              } catch (err) {
+                console.error(
+                  `Failed to sync nested sheet ${node.data.sheetId}`,
+                  err,
+                );
+              }
+            }),
+          );
+
+          sheet.nodes = updatedNodes;
+          if (connectionsChanged) {
+            sheet.connections = sheet.connections.filter((c) =>
+              validConnectionIds.has(c.id),
+            );
+            console.warn(
+              'Removed invalid connections due to nested sheet updates',
+            );
+          }
+        }
+        // --------------------------
+
+        setCurrentSheet(sheet);
+        setLastResult(null);
+        // Note: evaluatorInputs are handled by the useEffect on searchParams
+
+        const focusNodeId = location.hash
+          ? location.hash.substring(1)
+          : undefined;
+        await editor.loadSheet(sheet, focusNodeId);
+        setNodes([...editor.editor.getNodes()]);
+        setIsDirty(false);
+        setIsLoading(false);
+
+        // Auto-calculate (UI-27.0)
+        const inputNodes = sheet.nodes.filter((n) => n.type === 'input');
+        const inputsFromParams: Record<string, string> = {};
+        searchParams.forEach((value, key) => {
+          // Map Name -> ID
+          const node = inputNodes.find((n) => n.label === key);
+          if (node?.id) {
+            inputsFromParams[node.id] = value;
+          }
+        });
+
+        const allInputsProvided = inputNodes.every(
+          (n) => n.id && inputsFromParams[n.id],
+        );
+
+        if (inputNodes.length === 0 || allInputsProvided) {
+          setIsCalculating(true);
+          try {
+            const result = await api.calculate(sheet.id, inputsFromParams);
+            setLastResult(result);
+            editor.updateNodeValues(inputsFromParams, result);
+            setNodes([...editor.editor.getNodes()]);
+          } catch (e) {
+            console.error('Auto-calculation failed', e);
+          } finally {
+            setIsCalculating(false);
+          }
+        }
+      } catch (e) {
+        console.error(e);
+        alert(`Error loading sheet: ${e}`);
+      }
+    },
+    [editor, location.hash, searchParams],
+  );
+
   // Load the specific sheet when sheetId changes
   useEffect(() => {
     if (sheetId) {
       handleLoadSheet(sheetId);
     }
-  }, [sheetId, editor]); // Depend on editor to ensure it's ready
+  }, [sheetId, handleLoadSheet]);
 
   // Sync URL Query Params to Evaluator Inputs
   useEffect(() => {
@@ -104,7 +237,7 @@ export const SheetEditor: React.FC = () => {
     const overrides: Record<string, string> = {};
     searchParams.forEach((value, key) => {
       const node = nodes.find((n) => n.type === 'input' && n.label === key);
-      if (node && node.id) {
+      if (node?.id) {
         overrides[node.id] = value;
       }
     });
@@ -205,7 +338,7 @@ export const SheetEditor: React.FC = () => {
       });
       editor.setEditNestedSheetListener((nodeId) => {
         const node = editor.editor.getNode(nodeId);
-        if (node && node.initialData?.sheetId) {
+        if (node?.initialData?.sheetId) {
           const connections = editor.editor
             .getConnections()
             .filter((c) => c.target === nodeId);
@@ -214,7 +347,7 @@ export const SheetEditor: React.FC = () => {
           connections.forEach((c) => {
             const sourceId = c.source;
             const inputKey = c.targetInput;
-            let value: any = undefined;
+            let value: any;
 
             // 1. Check lastResult (calculated values)
             if (lastResultRef.current && sourceId in lastResultRef.current) {
@@ -283,131 +416,7 @@ export const SheetEditor: React.FC = () => {
     return { x: x, y: y };
   };
 
-  const handleLoadSheet = async (id: string) => {
-    if (!editor) return;
-    setIsLoading(true);
-    try {
-      const sheet = await api.getSheet(id);
-
-      // --- SYNC NESTED SHEETS ---
-      const nestedSheetNodes = sheet.nodes.filter(
-        (n) => n.type === 'sheet' && n.data?.sheetId,
-      );
-      if (nestedSheetNodes.length > 0) {
-        const updatedNodes = [...sheet.nodes];
-        let connectionsChanged = false;
-        const validConnectionIds = new Set(sheet.connections.map((c) => c.id));
-
-        await Promise.all(
-          nestedSheetNodes.map(async (node) => {
-            try {
-              const childSheet = await api.getSheet(node.data.sheetId);
-
-              // Update Inputs (from child's Input nodes)
-              const newInputs = childSheet.nodes
-                .filter((n) => n.type === 'input')
-                .map((n) => ({ key: n.label, socket_type: 'any' }));
-
-              // Update Outputs (from child's Output nodes)
-              const newOutputs = childSheet.nodes
-                .filter((n) => n.type === 'output')
-                .map((n) => ({ key: n.label, socket_type: 'any' }));
-
-              // Find the node in the array and update it
-              const nodeIndex = updatedNodes.findIndex((n) => n.id === node.id);
-              if (nodeIndex !== -1) {
-                updatedNodes[nodeIndex] = {
-                  ...updatedNodes[nodeIndex],
-                  inputs: newInputs,
-                  outputs: newOutputs,
-                };
-              }
-
-              // Validate Connections
-              // Remove connections to/from this node that reference non-existent sockets
-              const inputKeys = new Set(newInputs.map((i) => i.key));
-              const outputKeys = new Set(newOutputs.map((o) => o.key));
-
-              sheet.connections.forEach((c) => {
-                if (c.target_id === node.id) {
-                  if (!inputKeys.has(c.target_port)) {
-                    validConnectionIds.delete(c.id);
-                    connectionsChanged = true;
-                  }
-                }
-                if (c.source_id === node.id) {
-                  if (!outputKeys.has(c.source_port)) {
-                    validConnectionIds.delete(c.id);
-                    connectionsChanged = true;
-                  }
-                }
-              });
-            } catch (err) {
-              console.error(
-                `Failed to sync nested sheet ${node.data.sheetId}`,
-                err,
-              );
-            }
-          }),
-        );
-
-        sheet.nodes = updatedNodes;
-        if (connectionsChanged) {
-          sheet.connections = sheet.connections.filter((c) =>
-            validConnectionIds.has(c.id),
-          );
-          console.warn('Removed invalid connections due to nested sheet updates');
-        }
-      }
-      // --------------------------
-
-      setCurrentSheet(sheet);
-      setLastResult(null);
-      // Note: evaluatorInputs are handled by the useEffect on searchParams
-
-      const focusNodeId = location.hash
-        ? location.hash.substring(1)
-        : undefined;
-      await editor.loadSheet(sheet, focusNodeId);
-      setNodes([...editor.editor.getNodes()]);
-      setIsDirty(false);
-      setIsLoading(false);
-
-      // Auto-calculate (UI-27.0)
-      const inputNodes = sheet.nodes.filter((n) => n.type === 'input');
-      const inputsFromParams: Record<string, string> = {};
-      searchParams.forEach((value, key) => {
-        // Map Name -> ID
-        const node = inputNodes.find((n) => n.label === key);
-        if (node && node.id) {
-          inputsFromParams[node.id] = value;
-        }
-      });
-
-      const allInputsProvided = inputNodes.every(
-        (n) => n.id && inputsFromParams[n.id],
-      );
-
-      if (inputNodes.length === 0 || allInputsProvided) {
-        setIsCalculating(true);
-        try {
-          const result = await api.calculate(sheet.id, inputsFromParams);
-          setLastResult(result);
-          editor.updateNodeValues(inputsFromParams, result);
-          setNodes([...editor.editor.getNodes()]);
-        } catch (e) {
-          console.error('Auto-calculation failed', e);
-        } finally {
-          setIsCalculating(false);
-        }
-      }
-    } catch (e) {
-      console.error(e);
-      alert(`Error loading sheet: ${e}`);
-    }
-  };
-
-  const handleSaveSheet = async () => {
+  const handleSaveSheet = useCallback(async () => {
     if (!currentSheet || !editor) return;
     try {
       const graphData = editor.getGraphData();
@@ -442,7 +451,7 @@ export const SheetEditor: React.FC = () => {
       console.error(e);
       alert(`Error saving sheet: ${e}`);
     }
-  };
+  }, [currentSheet, editor]);
 
   // Keyboard Shortcuts for Undo/Redo
   useEffect(() => {
@@ -705,7 +714,9 @@ export const SheetEditor: React.FC = () => {
       if (node.type === 'input' || node.type === 'output') {
         const existingNode = nodes.find(
           (n) =>
-            n.type === node.type && n.label === updates.label && n.id !== nodeId,
+            n.type === node.type &&
+            n.label === updates.label &&
+            n.id !== nodeId,
         );
         if (existingNode) {
           alert(
@@ -779,7 +790,7 @@ export const SheetEditor: React.FC = () => {
     if (!editor) return;
     const node = editor.editor.getNode(nodeId);
     if (node) {
-      const control = node.controls['value'] as any;
+      const control = node.controls.value as any;
       if (control) {
         control.setValue(String(value));
         editor.area.update('node', nodeId);
