@@ -77,7 +77,8 @@ async def seed_database(session: AsyncSession):
         position_y=250,
         data={
             "code": "g0 = 9.80665\nDeltaV = Isp * g0 * math.log(m0 / mf)",
-            "description": "Calculates the Delta-V using the Tsiolkovsky rocket equation: $\\Delta V = I_{sp} \\cdot g_0 \\cdot \\ln(\\frac{m_0}{m_f})$",
+            "description": "Calculates the Delta-V using the Tsiolkovsky rocket equation: "
+            "$\\Delta V = I_{sp} \\cdot g_0 \\cdot \\ln(\\frac{m_0}{m_f})$",
         },
     )
 

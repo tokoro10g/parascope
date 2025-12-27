@@ -67,7 +67,7 @@ def _worker(code: str, inputs: Dict[str, Any], outputs: List[str], queue: multip
         if len(outputs) == 1:
             result = {outputs[0]: result}
         else:
-            result = dict(zip(outputs, result))
+            result = dict(zip(outputs, result, strict=True))
     queue.put(ExecutionResult(result=result, stdout=redirected_output.getvalue(), error=error, success=success))
 
 

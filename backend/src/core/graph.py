@@ -129,7 +129,7 @@ class GraphProcessor:
                 result = await self.db.execute(stmt)
                 nested_sheet = result.scalar_one_or_none()
             except Exception as e:
-                raise NodeExecutionError(str(node.id), node.label, f"Invalid sheet ID: {e}")
+                raise NodeExecutionError(str(node.id), node.label, f"Invalid sheet ID: {e}") from e
 
             if not nested_sheet:
                 raise NodeExecutionError(str(node.id), node.label, f"Nested sheet {nested_sheet_id} not found")

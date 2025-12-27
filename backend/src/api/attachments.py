@@ -23,7 +23,7 @@ async def upload_file(file: UploadFile = File(...)):
         with file_path.open("wb") as buffer:
             shutil.copyfileobj(file.file, buffer)
     except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Could not save file: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Could not save file: {str(e)}") from e
 
     return {"filename": new_filename, "url": f"/attachments/{new_filename}"}
 
