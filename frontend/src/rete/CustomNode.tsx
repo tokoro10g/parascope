@@ -1,6 +1,5 @@
 import { CaseLower, Import, LogIn, LogOut, Sigma } from 'lucide-react';
-import { useEffect, useRef, useState } from 'react';
-import { createPortal } from 'react-dom';
+import { useEffect, useRef } from 'react';
 import { Presets } from 'rete-react-plugin';
 import './custom-node.css';
 
@@ -25,11 +24,12 @@ export function CustomNode(props: any) {
   const type = data.type;
   const typeClass = `node-${type}`;
   const ref = useRef<HTMLDivElement>(null);
-  const [titleEl, setTitleEl] = useState<HTMLElement | null>(null);
 
   // Apply styles on every render to ensure they persist over Rete's updates
   useEffect(() => {
     if (ref.current) {
+      // When not using display: contents, the wrapper is ref.current.
+      // The actual node element is the first child.
       const nodeEl = ref.current.firstElementChild as HTMLElement;
       if (nodeEl) {
         nodeEl.classList.add(typeClass);
@@ -44,15 +44,10 @@ export function CustomNode(props: any) {
         nodeEl.style.setProperty('width', 'auto', 'important');
         nodeEl.style.setProperty('height', 'auto', 'important');
 
-        // Find title element
+        // Find title element and add padding for the icon
         const title = nodeEl.querySelector('.title') as HTMLElement;
         if (title) {
-          setTitleEl(title);
-          // Ensure title has flex layout
-          title.style.display = 'flex';
-          title.style.justifyContent = 'space-between';
-          title.style.alignItems = 'center';
-          title.style.gap = '8px';
+          title.style.paddingRight = '30px'; // Make space for the icon
         }
       }
     }
@@ -85,9 +80,22 @@ export function CustomNode(props: any) {
   const Icon = icons[type];
 
   return (
-    <div ref={ref} style={{ display: 'contents' }}>
+    <div ref={ref} style={{ position: 'relative' }}>
       <Presets.classic.Node {...props} />
-      {titleEl && Icon && createPortal(<Icon size={16} />, titleEl)}
+      {Icon && (
+        <div
+          style={{
+            position: 'absolute',
+            top: '8px',
+            right: '8px',
+            pointerEvents: 'none',
+            color: 'white', // Title text is white, so icon should be too
+            zIndex: 1,
+          }}
+        >
+          <Icon size={16} />
+        </div>
+      )}
     </div>
   );
 }
