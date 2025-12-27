@@ -1,15 +1,21 @@
 from contextlib import asynccontextmanager
+from pathlib import Path
+import os
 
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
-from .api import calculate, sheets
+from .api import calculate, sheets, attachments
+from .core.config import settings
 from .core.database import Base, engine, AsyncSessionLocal
 from .core.seed import seed_database
 
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
+    # Ensure upload directory exists
+    Path(settings.UPLOAD_DIR).mkdir(parents=True, exist_ok=True)
+
     # Create tables on startup
     async with engine.begin() as conn:
         await conn.run_sync(Base.metadata.create_all)
@@ -20,7 +26,6 @@ async def lifespan(app: FastAPI):
         
     yield
 
-import os
 
 app = FastAPI(title="Parascope Backend", lifespan=lifespan)
 
@@ -36,6 +41,7 @@ app.add_middleware(
 
 app.include_router(sheets.router)
 app.include_router(calculate.router)
+app.include_router(attachments.router)
 
 @app.get("/")
 async def root():

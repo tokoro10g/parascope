@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import ReactMarkdown from 'react-markdown';
 import type { ParascopeNode } from '../rete';
+import { uploadAttachment, getAttachmentUrl } from '../api';
 
 export interface NodeUpdates {
     label?: string;
@@ -110,6 +111,35 @@ export const NodeInspector: React.FC<NodeInspectorProps> = ({
     setOutputs(outputs.filter(o => o.key !== key));
   };
 
+  const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files && e.target.files[0]) {
+      try {
+        const result = await uploadAttachment(e.target.files[0]);
+        setData({ ...data, attachment: result.filename });
+      } catch (error) {
+        console.error('Upload failed:', error);
+        alert('Failed to upload attachment');
+      }
+    }
+  };
+
+  const handleRemoveAttachment = () => {
+    const newData = { ...data };
+    delete newData.attachment;
+    setData(newData);
+  };
+
+  const handleInsertToDescription = () => {
+    if (!data.attachment) return;
+    const url = getAttachmentUrl(data.attachment);
+    const markdownImage = `![Attachment](${url})`;
+    
+    setData(prev => ({
+      ...prev,
+      description: prev.description ? `${prev.description}\n\n${markdownImage}` : markdownImage
+    }));
+  };
+
   return (
     <div className="modal-overlay">
       <div className="modal-content">
@@ -156,6 +186,26 @@ export const NodeInspector: React.FC<NodeInspectorProps> = ({
                 style={{ width: '100%', fontFamily: 'sans-serif' }}
                 placeholder="Enter description here..."
               />
+          )}
+        </div>
+
+        <div className="form-group">
+          <label>Attachment:</label>
+          {data.attachment ? (
+            <div className="attachment-preview" style={{ marginTop: '5px' }}>
+              <img 
+                src={getAttachmentUrl(data.attachment)} 
+                alt="Attachment" 
+                style={{ maxWidth: '100%', maxHeight: '200px', display: 'block', marginBottom: '10px', borderRadius: '4px', border: '1px solid var(--border-color)' }} 
+              />
+              <div style={{ display: 'flex', gap: '10px' }}>
+                <a href={getAttachmentUrl(data.attachment)} target="_blank" rel="noreferrer" style={{ color: 'var(--link-color, #007bff)' }}>Open Original</a>
+                <button type="button" onClick={handleInsertToDescription}>Insert into Description</button>
+                <button type="button" onClick={handleRemoveAttachment}>Remove</button>
+              </div>
+            </div>
+          ) : (
+            <input type="file" onChange={handleFileUpload} />
           )}
         </div>
 

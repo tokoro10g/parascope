@@ -5,6 +5,7 @@ Generated from `SPECIFICATIONS.tsv`.
 ## 1. Infrastructure & Tooling (Core Tooling)
 - [x] **Repository**: Set up Monorepo structure (T-DEV-04.0).
 - [x] **Containerization**: Configure Docker Compose for Backend and Frontend (T-DEV-03.0).
+- [x] **File Storage**: Configure Docker Volume for attachments (T-DEV-05.0).
 - [x] **Backend Setup**: Initialize Python project with `uv` (T-BE-01.0, T-DEV-02.0).
 - [x] **Frontend Setup**: Initialize Vite + React project with `pnpm` (T-FE-01.0, T-DEV-02.0).
 - [x] **Database**: Provision PostgreSQL instance (T-BE-02.0).
@@ -13,6 +14,10 @@ Generated from `SPECIFICATIONS.tsv`.
 ## 2. Backend Core (Initial Release)
 - [x] **Data Models**: Design schemas for Sheets, Functions, Parameters, Input/Output Nodes, and Values (DH-01.0, DH-02.0).
     - [x] Use UUIDs for all entity primary keys (DH-04.0).
+    - [x] **Attachments**:
+        - [x] Implement API for uploading images (DH-09.0).
+        - [x] Implement storage logic (local filesystem/volume) (DH-10.0).
+        - [x] Implement API for serving images (DH-11.0).
 - [x] **API**: Create endpoints for saving/loading graphs and values (DH-01.0, DH-02.0).
     - [x] Create endpoint for listing sheets by owner (DH-05.0).
     - [x] Create endpoint for cloning sheets (DH-06.0).
@@ -58,6 +63,8 @@ Generated from `SPECIFICATIONS.tsv`.
     - [x] Implement "Name" prompt on first visit (AUTH-02.0).
     - [x] Save identity in Cookies (AUTH-03.0).
     - [x] Add "Change user" menu (AUTH-04.0).
+- [x] **Node Inspector**:
+    - [x] Implement Image Attachment UI (Upload/Delete/View) (DH-09.0).
 - [x] **Input Node**:
     - [x] Distinct visual style from Parameters (BB-I-01.0).
     - [ ] Name (BB-I-01.0).
