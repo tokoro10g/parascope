@@ -24,15 +24,16 @@ export const SheetTable: React.FC<SheetTableProps> = ({ nodes, onUpdateValue, on
       return (typeOrder[a.type] ?? 99) - (typeOrder[b.type] ?? 99);
   });
 
-  // Filter for Descriptions (Parameters, Inputs, Functions, Outputs)
+  // Filter for Descriptions (Parameters, Inputs, Functions, Outputs, Sheets)
   const descriptionNodes = nodes.filter(
-    (node) => ['parameter', 'input', 'function', 'output'].includes(node.type)
+    (node) => ['parameter', 'input', 'function', 'output', 'sheet'].includes(node.type)
   ).sort((a, b) => {
       const typeOrder: Record<string, number> = {
           'parameter': 0,
           'input': 1,
           'function': 2,
-          'output': 3
+          'sheet': 3,
+          'output': 4
       };
       return (typeOrder[a.type] ?? 99) - (typeOrder[b.type] ?? 99);
   });
@@ -145,24 +146,33 @@ export const SheetTable: React.FC<SheetTableProps> = ({ nodes, onUpdateValue, on
             const nameControl = node.controls['name'] as any;
             const name = nameControl?.value || node.label;
             const description = node.initialData?.description;
+            const sheetId = node.initialData?.sheetId;
 
-            if (!description) return null;
+            if (!description && node.type !== 'sheet') return null;
 
             return (
-                <div key={node.id} style={{ marginBottom: '20px', borderBottom: '1px solid var(--border-light)', paddingBottom: '10px' }}>
-                    <h4 style={{ margin: '0 0 5px 0', fontSize: '0.9em', color: 'var(--text-secondary)', display: 'flex', justifyContent: 'space-between' }}>
+                <div key={node.id} style={{ marginBottom: '8px', borderBottom: '1px solid var(--border-light)', paddingBottom: '8px' }}>
+                    <h4 style={{ margin: '0 0 2px 0', fontSize: '0.85em', color: 'var(--text-secondary)', display: 'flex', justifyContent: 'space-between' }}>
                         <span>{name}</span>
                         <span style={{ fontSize: '0.8em', fontWeight: 'normal', opacity: 0.7 }}>{node.type}</span>
                     </h4>
-                    <div className="markdown-body" style={{ fontSize: '0.9em', lineHeight: '1.4' }}>
-                        <ReactMarkdown remarkPlugins={[remarkMath]} rehypePlugins={[rehypeKatex]}>
-                            {description}
-                        </ReactMarkdown>
-                    </div>
+                    {node.type === 'sheet' && sheetId ? (
+                        <div style={{ fontSize: '0.85em' }}>
+                            <a href={`/sheet/${sheetId}`} target="_blank" rel="noreferrer" style={{ color: 'var(--link-color, #007bff)' }}>
+                                Open Referenced Sheet
+                            </a>
+                        </div>
+                    ) : (
+                        <div className="markdown-body compact-markdown" style={{ fontSize: '0.85em', lineHeight: '1.3' }}>
+                            <ReactMarkdown remarkPlugins={[remarkMath]} rehypePlugins={[rehypeKatex]}>
+                                {description}
+                            </ReactMarkdown>
+                        </div>
+                    )}
                 </div>
             );
         })}
-        {descriptionNodes.every(n => !n.initialData?.description) && (
+        {descriptionNodes.every(n => !n.initialData?.description && n.type !== 'sheet') && (
             <div style={{ color: 'var(--text-muted)', fontStyle: 'italic', fontSize: '0.9em' }}>
                 No descriptions available.
             </div>

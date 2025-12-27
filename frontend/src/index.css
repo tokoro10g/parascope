@@ -107,3 +107,16 @@ button:focus-visible {
   outline: 4px auto -webkit-focus-ring-color;
 }
 
+.compact-markdown p {
+  margin: 0.2em 0;
+}
+
+.compact-markdown ul, .compact-markdown ol {
+  margin: 0.2em 0;
+  padding-left: 1.2em;
+}
+
+.compact-markdown h1, .compact-markdown h2, .compact-markdown h3, .compact-markdown h4, .compact-markdown h5, .compact-markdown h6 {
+  margin: 0.5em 0 0.2em 0;
+}
+

@@ -156,62 +156,66 @@ export const NodeInspector: React.FC<NodeInspectorProps> = ({
           />
         </div>
 
-        <div className="form-group">
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '5px' }}>
-            <label htmlFor="node-description" style={{ marginBottom: 0 }}>Description (Markdown):</label>
-            <button 
-                type="button" 
-                onClick={() => setShowPreview(!showPreview)}
-                style={{ fontSize: '0.8em', padding: '2px 8px', cursor: 'pointer' }}
-            >
-                {showPreview ? 'Edit' : 'Preview'}
-            </button>
-          </div>
-          
-          {showPreview ? (
-              <div className="markdown-preview" style={{ 
-                  border: '1px solid var(--border-color)', 
-                  padding: '10px', 
-                  minHeight: '100px', 
-                  borderRadius: '4px', 
-                  background: 'var(--input-bg)',
-                  color: 'var(--text-color)'
-              }}>
-                  <ReactMarkdown remarkPlugins={[remarkMath]} rehypePlugins={[rehypeKatex]}>
-                    {data.description || '*No description*'}
-                  </ReactMarkdown>
+        {node.type !== 'sheet' && (
+          <>
+            <div className="form-group">
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '5px' }}>
+                <label htmlFor="node-description" style={{ marginBottom: 0 }}>Description (Markdown):</label>
+                <button 
+                    type="button" 
+                    onClick={() => setShowPreview(!showPreview)}
+                    style={{ fontSize: '0.8em', padding: '2px 8px', cursor: 'pointer' }}
+                >
+                    {showPreview ? 'Edit' : 'Preview'}
+                </button>
               </div>
-          ) : (
-              <textarea 
-                id="node-description"
-                value={data.description || ''} 
-                onChange={e => setData({ ...data, description: e.target.value })}
-                rows={5}
-                style={{ width: '100%', fontFamily: 'sans-serif' }}
-                placeholder="Enter description here..."
-              />
-          )}
-        </div>
-
-        <div className="form-group">
-          <label>Attachment:</label>
-          {data.attachment ? (
-            <div className="attachment-preview" style={{ marginTop: '5px' }}>
-              <img 
-                src={getAttachmentUrl(data.attachment)} 
-                alt="Attachment" 
-                style={{ maxWidth: '100%', maxHeight: '200px', display: 'block', marginBottom: '10px', borderRadius: '4px', border: '1px solid var(--border-color)' }} 
-              />
-              <div style={{ display: 'flex', gap: '10px' }}>
-                <a href={getAttachmentUrl(data.attachment)} target="_blank" rel="noreferrer" style={{ color: 'var(--link-color, #007bff)' }}>Open Original</a>
-                <button type="button" onClick={handleInsertToDescription}>Insert into Description</button>
-                <button type="button" onClick={handleRemoveAttachment}>Remove</button>
-              </div>
+              
+              {showPreview ? (
+                  <div className="markdown-preview" style={{ 
+                      border: '1px solid var(--border-color)', 
+                      padding: '10px', 
+                      minHeight: '100px', 
+                      borderRadius: '4px', 
+                      background: 'var(--input-bg)',
+                      color: 'var(--text-color)'
+                  }}>
+                      <ReactMarkdown remarkPlugins={[remarkMath]} rehypePlugins={[rehypeKatex]}>
+                        {data.description || '*No description*'}
+                      </ReactMarkdown>
+                  </div>
+              ) : (
+                  <textarea 
+                    id="node-description"
+                    value={data.description || ''} 
+                    onChange={e => setData({ ...data, description: e.target.value })}
+                    rows={5}
+                    style={{ width: '100%', fontFamily: 'sans-serif' }}
+                    placeholder="Enter description here..."
+                  />
+              )}
             </div>
-          ) : (
-            <input type="file" onChange={handleFileUpload} />
-          )}
-        </div>
+
+            <div className="form-group">
+              <label>Attachment:</label>
+              {data.attachment ? (
+                <div className="attachment-preview" style={{ marginTop: '5px' }}>
+                  <img 
+                    src={getAttachmentUrl(data.attachment)} 
+                    alt="Attachment" 
+                    style={{ maxWidth: '100%', maxHeight: '200px', display: 'block', marginBottom: '10px', borderRadius: '4px', border: '1px solid var(--border-color)' }} 
+                  />
+                  <div style={{ display: 'flex', gap: '10px' }}>
+                    <a href={getAttachmentUrl(data.attachment)} target="_blank" rel="noreferrer" style={{ color: 'var(--link-color, #007bff)' }}>Open Original</a>
+                    <button type="button" onClick={handleInsertToDescription}>Insert into Description</button>
+                    <button type="button" onClick={handleRemoveAttachment}>Remove</button>
+                  </div>
+                </div>
+              ) : (
+                <input type="file" onChange={handleFileUpload} />
+              )}
+            </div>
+          </>
+        )}
 
         {(node.type === 'parameter' || node.type === 'input') && (
           <>
