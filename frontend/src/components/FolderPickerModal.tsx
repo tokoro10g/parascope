@@ -92,7 +92,8 @@ export const FolderPickerModal: React.FC<FolderPickerModalProps> = ({
               background: 'none',
               border: 'none',
               padding: 0,
-              font: 'inherit',
+              fontFamily: 'inherit',
+              fontSize: 'inherit',
             }}
           >
             Home
@@ -112,7 +113,8 @@ export const FolderPickerModal: React.FC<FolderPickerModalProps> = ({
                   background: 'none',
                   border: 'none',
                   padding: 0,
-                  font: 'inherit',
+                  fontFamily: 'inherit',
+                  fontSize: 'inherit',
                 }}
               >
                 {folder.name}

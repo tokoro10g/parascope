@@ -112,7 +112,8 @@ export const SheetPickerModal: React.FC<SheetPickerModalProps> = ({
               background: 'none',
               border: 'none',
               padding: 0,
-              font: 'inherit',
+              fontFamily: 'inherit',
+              fontSize: 'inherit',
             }}
           >
             <Home size={16} /> Home
@@ -139,7 +140,8 @@ export const SheetPickerModal: React.FC<SheetPickerModalProps> = ({
                   background: 'none',
                   border: 'none',
                   padding: 0,
-                  font: 'inherit',
+                  fontFamily: 'inherit',
+                  fontSize: 'inherit',
                 }}
               >
                 <FolderIcon size={16} /> {folder.name}

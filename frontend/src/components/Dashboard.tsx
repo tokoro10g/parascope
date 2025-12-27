@@ -232,7 +232,8 @@ export const Dashboard: React.FC = () => {
             background: 'none',
             border: 'none',
             padding: 0,
-            font: 'inherit',
+            fontFamily: 'inherit',
+            fontSize: 'inherit',
           }}
         >
           Home
@@ -251,7 +252,8 @@ export const Dashboard: React.FC = () => {
                 background: 'none',
                 border: 'none',
                 padding: 0,
-                font: 'inherit',
+                fontFamily: 'inherit',
+                fontSize: 'inherit',
               }}
             >
               {folder.name}
