@@ -458,7 +458,7 @@
 .sheet-table th,
 .sheet-table td {
   text-align: left;
-  padding: 6px;
+  padding: 4px;
   border-bottom: 1px solid var(--border-light);
   color: var(--text-color);
 }
@@ -473,7 +473,6 @@
 }
 
 .sheet-table input {
-  padding: 2px 4px;
   border: 1px solid var(--border-color);
   border-radius: 3px;
   box-sizing: border-box;

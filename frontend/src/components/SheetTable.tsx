@@ -193,9 +193,9 @@ export const SheetTable: React.FC<SheetTableProps> = ({
                     onClick={() => onSelectNode(node.id)}
                     style={{ cursor: 'pointer' }}
                   >
-                    <td style={{ padding: '4px 0' }}>{name}</td>
-                    <td style={{ padding: '4px 0' }}>{node.type}</td>
-                    <td style={{ padding: '4px 0' }}>
+                    <td>{name}</td>
+                    <td>{node.type}</td>
+                    <td>
                       {isParameter ? (
                         <input
                           value={value}
