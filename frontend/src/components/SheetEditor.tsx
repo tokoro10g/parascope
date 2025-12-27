@@ -162,6 +162,12 @@ export const SheetEditor: React.FC = () => {
       };
       editor.setNodeDoubleClickListener(handleEdit);
       editor.setNodeEditListener(handleEdit);
+      editor.setEditNestedSheetListener((nodeId) => {
+        const node = editor.editor.getNode(nodeId);
+        if (node && node.initialData?.sheetId) {
+          window.open(`/sheet/${node.initialData.sheetId}`, '_blank');
+        }
+      });
       editor.setGraphChangeListener(() => {
         setIsDirty(true);
         setNodes([...editor.editor.getNodes()]);

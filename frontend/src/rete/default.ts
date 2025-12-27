@@ -165,42 +165,57 @@ export async function createEditor(container: HTMLElement) {
       }
 
       // Node
+      const items = [
+        {
+          label: 'Edit',
+          key: 'edit',
+          handler: () => {
+            if (onNodeEdit) onNodeEdit(context.id);
+          },
+        },
+      ];
+
+      if (context.type === 'sheet') {
+        items.push({
+          label: 'Edit Sheet',
+          key: 'edit-sheet',
+          handler: () => {
+            if (onEditNestedSheet) onEditNestedSheet(context.id);
+          },
+        });
+      }
+
+      items.push(
+        {
+          label: 'Copy URL',
+          key: 'copy-url',
+          handler: () => {
+            const url = `${window.location.origin}${window.location.pathname}${window.location.search}#${context.id}`;
+            if (navigator.clipboard && navigator.clipboard.writeText) {
+              navigator.clipboard
+                .writeText(url)
+                .catch((err) => console.error('Failed to copy URL:', err));
+            }
+          },
+        },
+        {
+          label: 'Delete',
+          key: 'delete',
+          handler: async () => {
+            const connections = editor.getConnections().filter((c) => {
+              return c.source === context.id || c.target === context.id;
+            });
+            for (const c of connections) {
+              await editor.removeConnection(c.id);
+            }
+            await editor.removeNode(context.id);
+          },
+        },
+      );
+
       return {
         searchBar: false,
-        list: [
-          {
-            label: 'Edit',
-            key: 'edit',
-            handler: () => {
-              if (onNodeEdit) onNodeEdit(context.id);
-            },
-          },
-          {
-            label: 'Copy URL',
-            key: 'copy-url',
-            handler: () => {
-              const url = `${window.location.origin}${window.location.pathname}${window.location.search}#${context.id}`;
-              if (navigator.clipboard && navigator.clipboard.writeText) {
-                navigator.clipboard
-                  .writeText(url)
-                  .catch((err) => console.error('Failed to copy URL:', err));
-              }
-            },
-          },
-          {
-            label: 'Delete',
-            key: 'delete',
-            handler: async () => {
-              const connections = editor.getConnections().filter((c) => {
-                return c.source === context.id || c.target === context.id;
-              });
-              for (const c of connections) {
-                await editor.removeConnection(c.id);
-              }
-              await editor.removeNode(context.id);
-            },
-          },
-        ],
+        list: items,
       };
     },
   });
@@ -211,6 +226,7 @@ export async function createEditor(container: HTMLElement) {
   let onGraphChange: (() => void) | undefined;
   let onNodeEdit: ((nodeId: string) => void) | undefined;
   let onInputValueChange: ((nodeId: string, value: string) => void) | undefined;
+  let onEditNestedSheet: ((nodeId: string) => void) | undefined;
 
   AreaExtensions.selectableNodes(area, AreaExtensions.selector(), {
     accumulating: AreaExtensions.accumulateOnCtrl(),
@@ -299,6 +315,9 @@ export async function createEditor(container: HTMLElement) {
     },
     setNodeEditListener: (cb: (nodeId: string) => void) => {
       onNodeEdit = cb;
+    },
+    setEditNestedSheetListener: (cb: (nodeId: string) => void) => {
+      onEditNestedSheet = cb;
     },
     setGraphChangeListener: (cb: () => void) => {
       onGraphChange = cb;
