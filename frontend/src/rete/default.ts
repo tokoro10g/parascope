@@ -494,7 +494,10 @@ export async function createEditor(container: HTMLElement) {
 
         // Capture control values
         for (const [key, control] of Object.entries(n.controls)) {
-          if (control instanceof Classic.InputControl) {
+          if (
+            control instanceof Classic.InputControl ||
+            control instanceof DropdownControl
+          ) {
             // Don't save values for input/output nodes as they are transient
             if (n.type !== 'input' && n.type !== 'output') {
               data[key] = control.value;
