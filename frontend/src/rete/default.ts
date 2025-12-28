@@ -20,6 +20,7 @@ import styled from 'styled-components';
 import type { Sheet } from '../api';
 
 import { CustomNode } from './CustomNode';
+import { DropdownControl, DropdownControlComponent } from './DropdownControl';
 
 // --- Styled Components for Context Menu ---
 const { Menu, Item, Search, Common, Subitems } = ReactPresets.contextMenu;
@@ -68,6 +69,7 @@ export class ParascopeNode extends Classic.Node {
   public dbId?: string; // ID from the database
   public type: string;
   public initialData: Record<string, any>;
+  public onChange?: (value: any) => void;
 
   constructor(
     type: string,
@@ -80,6 +82,7 @@ export class ParascopeNode extends Classic.Node {
     super(label);
     this.type = type;
     this.initialData = data;
+    this.onChange = onChange;
 
     inputs.forEach((inp) => {
       this.addInput(inp.key, new Classic.Input(socket, inp.key));
@@ -89,17 +92,43 @@ export class ParascopeNode extends Classic.Node {
       this.addOutput(out.key, new Classic.Output(socket, out.key));
     });
 
+    this.setupControl();
+  }
+
+  setupControl() {
+    const data = this.initialData;
+    const onChange = this.onChange;
+
+    if (this.controls.value) {
+      this.removeControl('value');
+    }
+
     // Add a control to display value
-    if (type === 'input') {
-      this.addControl(
-        'value',
-        new Classic.InputControl('text', {
-          initial: '',
-          readonly: false,
-          change: onChange,
-        }),
-      );
-    } else if (type === 'output') {
+    if (this.type === 'input') {
+      if (data.dataType === 'option' && data.options) {
+        this.addControl(
+          'value',
+          new DropdownControl(
+            data.options,
+            String(
+              data.value !== undefined ? data.value : data.options[0] || '',
+            ),
+            (val) => {
+              if (onChange) onChange(val);
+            },
+          ),
+        );
+      } else {
+        this.addControl(
+          'value',
+          new Classic.InputControl('text', {
+            initial: '',
+            readonly: false,
+            change: onChange,
+          }),
+        );
+      }
+    } else if (this.type === 'output') {
       this.addControl(
         'value',
         new Classic.InputControl('text', {
@@ -107,19 +136,30 @@ export class ParascopeNode extends Classic.Node {
           readonly: true,
         }),
       );
-    } else if (type === 'parameter') {
-      // For parameters, we might want to show the value or the selected option
-      // If it's an option type, we could potentially show a dropdown here in the future,
-      // but for now, text input is fine as the inspector handles the selection.
-      // However, if it IS an option, we should probably make sure the display reflects that.
-      this.addControl(
-        'value',
-        new Classic.InputControl('text', {
-          initial: String(data.value !== undefined ? data.value : ''),
-          readonly: false,
-          change: onChange,
-        }),
-      );
+    } else if (this.type === 'parameter') {
+      if (data.dataType === 'option' && data.options) {
+        this.addControl(
+          'value',
+          new DropdownControl(
+            data.options,
+            String(
+              data.value !== undefined ? data.value : data.options[0] || '',
+            ),
+            (val) => {
+              if (onChange) onChange(val);
+            },
+          ),
+        );
+      } else {
+        this.addControl(
+          'value',
+          new Classic.InputControl('text', {
+            initial: String(data.value !== undefined ? data.value : ''),
+            readonly: false,
+            change: onChange,
+          }),
+        );
+      }
     } else if (data.value !== undefined) {
       this.addControl(
         'value',
@@ -260,6 +300,12 @@ export async function createEditor(container: HTMLElement) {
       customize: {
         node: () => {
           return CustomNode;
+        },
+        control: (data) => {
+          if (data.payload instanceof DropdownControl) {
+            return DropdownControlComponent;
+          }
+          return ReactPresets.classic.Control;
         },
       },
     }),

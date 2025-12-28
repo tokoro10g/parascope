@@ -5,10 +5,26 @@
   text-align: left;
 }
 
-.rete input {
+.rete input,
+.rete select {
+  min-width: 200px;
+  box-sizing: border-box;
   background-color: var(--input-bg);
-  border-color: var(--border-color);
   color: var(--text-color);
+  font-size: 14px;
+  border-radius: 4px;
+  border: 1px solid var(--border-color);
+  height: 30px;
+  line-height: 20px;
+  margin: 0;
+}
+
+.rete input {
+  padding: 4px 8px;
+}
+
+.rete select {
+  padding: 4px 4px;
 }
 
 .rete.headless {

@@ -745,11 +745,7 @@ export const SheetEditor: React.FC = () => {
 
     if (updates.initialData) {
       node.initialData = { ...node.initialData, ...updates.initialData };
-      if (updates.initialData.value !== undefined && node.controls.value) {
-        (node.controls.value as any).setValue(
-          String(updates.initialData.value),
-        );
-      }
+      node.setupControl();
     }
 
     if (updates.inputs) {

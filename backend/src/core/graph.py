@@ -48,6 +48,16 @@ class GraphProcessor:
             pass
         return val
 
+    def _validate_option(self, node: Node, value: Any):
+        if node.data.get("dataType") == "option":
+            options = node.data.get("options", [])
+            # Options are strictly strings
+            str_value = str(value)
+            if str_value not in options:
+                raise NodeExecutionError(
+                    str(node.id), node.label, f"Value '{value}' is not a valid option. Allowed: {options}"
+                )
+
     async def execute(self, input_overrides: Dict[str, Any] = None) -> Dict[UUID, Any]:
         self.validate()
 
@@ -65,7 +75,15 @@ class GraphProcessor:
 
         if node_type == "parameter":
             # Return the value defined in data
-            val = self._parse_value(node.data.get("value", 0))
+            val = node.data.get("value", 0)
+
+            if node.data.get("dataType") == "option":
+                self._validate_option(node, val)
+                # Ensure it's a string
+                val = str(val)
+            else:
+                val = self._parse_value(val)
+
             self.results[node.id] = {"value": val}
 
         elif node_type == "input":
@@ -81,9 +99,18 @@ class GraphProcessor:
                     val = input_overrides[node.label]
 
             if val is None or val == "":
+                # Fallback to default value if present (e.g. for testing)
+                val = node.data.get("value")
+
+            if val is None or val == "":
                 raise NodeExecutionError(str(node.id), node.label, "Input requires a value")
 
-            val = self._parse_value(val)
+            if node.data.get("dataType") == "option":
+                self._validate_option(node, val)
+                val = str(val)
+            else:
+                val = self._parse_value(val)
+
             self.results[node.id] = {"value": val}
 
         elif node_type == "function":
