@@ -107,6 +107,19 @@ export class ParascopeNode extends Classic.Node {
           readonly: true,
         }),
       );
+    } else if (type === 'parameter') {
+      // For parameters, we might want to show the value or the selected option
+      // If it's an option type, we could potentially show a dropdown here in the future,
+      // but for now, text input is fine as the inspector handles the selection.
+      // However, if it IS an option, we should probably make sure the display reflects that.
+      this.addControl(
+        'value',
+        new Classic.InputControl('text', {
+          initial: String(data.value !== undefined ? data.value : ''),
+          readonly: false,
+          change: onChange,
+        }),
+      );
     } else if (data.value !== undefined) {
       this.addControl(
         'value',

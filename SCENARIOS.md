@@ -95,6 +95,35 @@ This document outlines typical user journeys to validate system requirements and
     *   **Feedback**: The output socket shows the calculated volume.
     *   **Linking**: If Alice updates "Cylinder Volume" later, "Fuel Tank Assembly" will reflect the changes.
 
+## Scenario 6: Material Selection (Option Node)
+**Goal**: Select a material from a list and have its properties update automatically.
+
+1.  **Setup**: Alice wants to calculate the mass of a beam based on its material.
+2.  **Option Definition**:
+    *   **Action**: Alice adds a **Parameter Node** labeled `Material`.
+    *   **Action**: In the **Node Inspector**, she changes the **Type** from "Number" to "Option".
+    *   **Action**: She adds options: "Steel", "Aluminum", "Titanium".
+    *   **Action**: She selects "Steel" as the current value.
+3.  **Logic Implementation**:
+    *   **Action**: Alice adds a **Function Node** labeled `Get Density`.
+    *   **Input**: Code:
+        ```python
+        densities = {
+            "Steel": 7850,
+            "Aluminum": 2700,
+            "Titanium": 4500
+        }
+        density = densities.get(material, 0)
+        ```
+    *   **Wiring**: Connects `Material` output to `Get Density` input `material`.
+4.  **Calculation**:
+    *   **Action**: Alice adds a **Parameter Node** `Volume` (Value: `2`).
+    *   **Action**: Adds a **Function Node** `Calculate Mass` (Code: `mass = density * volume`).
+    *   **Wiring**: Connects `Get Density` output `density` and `Volume` output to `Calculate Mass`.
+5.  **Interaction**:
+    *   **Action**: Alice changes the `Material` parameter from "Steel" to "Aluminum" via the dropdown in the Inspector (or on the node itself if supported).
+    *   **Result**: `Get Density` updates to `2700`. `Calculate Mass` updates accordingly.
+
 ## Scenario 5: URL Parameter Override (Preview Mode)
 **Goal**: Share a specific calculation case without modifying the saved sheet.
 

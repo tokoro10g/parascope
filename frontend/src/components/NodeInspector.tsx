@@ -45,15 +45,25 @@ export const NodeInspector: React.FC<NodeInspectorProps> = ({
       setLabel(node.label);
 
       const currentData = { ...(node.initialData || {}) };
+
+      // Initialize defaults for new fields
+      if (!currentData.dataType) currentData.dataType = 'number';
+      if (!currentData.options) currentData.options = [];
+
       // Sync value from control if it exists, as it might be newer than initialData
       if (node.controls.value) {
         const control = node.controls.value as any;
         // Check if control has a value property (it should for InputControl)
         if (control && control.value !== undefined) {
           // Try to parse as number if it looks like one, since we store value as number in data
-          const val = parseFloat(control.value);
-          if (!Number.isNaN(val)) {
-            currentData.value = val;
+          // Only parse as float if dataType is number (or not set, assuming number)
+          if (currentData.dataType === 'number') {
+            const val = parseFloat(control.value);
+            if (!Number.isNaN(val)) {
+              currentData.value = val;
+            } else {
+              currentData.value = control.value;
+            }
           } else {
             currentData.value = control.value;
           }
@@ -282,20 +292,107 @@ export const NodeInspector: React.FC<NodeInspectorProps> = ({
           </>
         )}
 
-        {(node.type === 'parameter' || node.type === 'input') &&
-          node.type === 'parameter' && (
+        {(node.type === 'parameter' || node.type === 'input') && (
+          <>
             <div className="form-group">
-              <label htmlFor="node-value">Value:</label>
-              <input
-                id="node-value"
-                type="number"
-                value={data.value || 0}
-                onChange={(e) =>
-                  setData({ ...data, value: parseFloat(e.target.value) })
-                }
-              />
+              <label htmlFor="node-type">Type:</label>
+              <select
+                id="node-type"
+                value={data.dataType || 'number'}
+                onChange={(e) => setData({ ...data, dataType: e.target.value })}
+                style={{ width: '100%', padding: '8px', marginBottom: '10px' }}
+              >
+                <option value="number">Number</option>
+                <option value="option">Option (Enum)</option>
+              </select>
             </div>
-          )}
+
+            {data.dataType === 'option' && (
+              <div className="form-group">
+                <div style={{ marginBottom: '5px', fontWeight: 'bold' }}>
+                  Options:
+                </div>
+                <ul style={{ listStyle: 'none', padding: 0 }}>
+                  {(data.options || []).map((opt: string, idx: number) => (
+                    <li
+                      // biome-ignore lint/suspicious/noArrayIndexKey: Options are primitive strings
+                      key={idx}
+                      style={{
+                        display: 'flex',
+                        gap: '5px',
+                        marginBottom: '5px',
+                      }}
+                    >
+                      <input
+                        value={opt}
+                        onChange={(e) => {
+                          const newOptions = [...(data.options || [])];
+                          newOptions[idx] = e.target.value;
+                          setData({ ...data, options: newOptions });
+                        }}
+                        style={{ flex: 1 }}
+                      />
+                      <button
+                        type="button"
+                        onClick={() => {
+                          const newOptions = (data.options || []).filter(
+                            (_: any, i: number) => i !== idx,
+                          );
+                          setData({ ...data, options: newOptions });
+                        }}
+                      >
+                        x
+                      </button>
+                    </li>
+                  ))}
+                </ul>
+                <button
+                  type="button"
+                  onClick={() =>
+                    setData({
+                      ...data,
+                      options: [...(data.options || []), 'New Option'],
+                    })
+                  }
+                >
+                  + Add Option
+                </button>
+              </div>
+            )}
+
+            {node.type === 'parameter' && (
+              <div className="form-group">
+                <label htmlFor="node-value">Value:</label>
+                {data.dataType === 'option' ? (
+                  <select
+                    id="node-value"
+                    value={data.value || ''}
+                    onChange={(e) =>
+                      setData({ ...data, value: e.target.value })
+                    }
+                    style={{ width: '100%', padding: '8px' }}
+                  >
+                    <option value="">Select an option...</option>
+                    {(data.options || []).map((opt: string) => (
+                      <option key={opt} value={opt}>
+                        {opt}
+                      </option>
+                    ))}
+                  </select>
+                ) : (
+                  <input
+                    id="node-value"
+                    type="number"
+                    value={data.value || 0}
+                    onChange={(e) =>
+                      setData({ ...data, value: parseFloat(e.target.value) })
+                    }
+                  />
+                )}
+              </div>
+            )}
+          </>
+        )}
 
         {node.type === 'function' && (
           <>
