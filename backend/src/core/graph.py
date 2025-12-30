@@ -100,12 +100,7 @@ class GraphProcessor:
 
         for node_id in execution_order:
             node = self.node_map[node_id]
-            try:
-                await self._execute_node(node, input_overrides)
-            except NodeExecutionError as e:
-                self.results[node_id] = {"error": e.error_message, "value": None}
-            except Exception as e:
-                self.results[node_id] = {"error": str(e), "value": None}
+            await self._execute_node(node, input_overrides)
 
         return self.results
 
