@@ -507,6 +507,14 @@ export const SheetEditor: React.FC = () => {
             node.addInput(i.key, new Classic.Input(socket, i.key));
           }
         });
+        // Reorder inputs to match updates.inputs order
+        const orderedInputs: typeof node.inputs = {};
+        updates.inputs.forEach((i) => {
+          if (node.inputs[i.key]) {
+            orderedInputs[i.key] = node.inputs[i.key]!;
+          }
+        });
+        node.inputs = orderedInputs;
       }
 
       if (updates.outputs) {
@@ -521,6 +529,14 @@ export const SheetEditor: React.FC = () => {
             node.addOutput(o.key, new Classic.Output(socket, o.key));
           }
         });
+        // Reorder outputs to match updates.outputs order
+        const orderedOutputs: typeof node.outputs = {};
+        updates.outputs.forEach((o) => {
+          if (node.outputs[o.key]) {
+            orderedOutputs[o.key] = node.outputs[o.key]!;
+          }
+        });
+        node.outputs = orderedOutputs;
       }
 
       editor.area.update('node', nodeId);
