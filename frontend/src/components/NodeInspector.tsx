@@ -5,7 +5,7 @@ import { useEffect, useState } from 'react';
 import ReactMarkdown from 'react-markdown';
 import rehypeKatex from 'rehype-katex';
 import remarkMath from 'remark-math';
-import { getAttachmentUrl, uploadAttachment } from '../api';
+import { API_BASE, getAttachmentUrl, uploadAttachment } from '../api';
 import type { ParascopeNode } from '../rete';
 
 export interface NodeUpdates {
@@ -86,6 +86,13 @@ export const NodeInspector: React.FC<NodeInspectorProps> = ({
   }, [node]);
 
   if (!isOpen || !node) return null;
+
+  const transformUrl = (url: string) => {
+    if (url.startsWith('/attachments/')) {
+      return `${API_BASE}${url}`;
+    }
+    return url;
+  };
 
   const handleSave = () => {
     onSave(node.id, {
@@ -264,6 +271,7 @@ export const NodeInspector: React.FC<NodeInspectorProps> = ({
                   <ReactMarkdown
                     remarkPlugins={[remarkMath]}
                     rehypePlugins={[rehypeKatex]}
+                    urlTransform={transformUrl}
                   >
                     {data.description || '*No description*'}
                   </ReactMarkdown>

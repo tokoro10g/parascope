@@ -1,0 +1,2 @@
+"Tsiolkovsky's theoretical rocket from t = 0 to t = delta_t"
+By Halserach - Own work, CC BY-SA 4.0, https://commons.wikimedia.org/w/index.php?curid=136802741

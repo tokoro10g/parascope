@@ -1,4 +1,6 @@
+import shutil
 import uuid
+from pathlib import Path
 
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -62,6 +64,30 @@ async def seed_database(session: AsyncSession):
         data={"description": "Final mass of the rocket (dry mass) in kg."},
     )
 
+    # Prepare attachment for Rocket Equation node
+    resource_dir = Path(__file__).resolve().parent.parent.parent / "resources"
+    upload_dir = Path(__file__).resolve().parent.parent.parent / "uploads"
+    upload_dir.mkdir(exist_ok=True)
+
+    image_name = "Tsiolkovsky's_Theoretical_Rocket_Diagram.png"
+    source_image = resource_dir / image_name
+
+    rocket_func_data = {
+        "code": "g0 = 9.80665\nDeltaV = Isp * g0 * math.log(m0 / mf)",
+        "description": "Calculates the Delta-V using the Tsiolkovsky rocket equation: \n"
+        "$$\n\\Delta V = I_{sp} g_0 \\ln(\\frac{m_0}{m_f})\n$$",
+    }
+
+    if source_image.exists():
+        # Create a unique filename for the attachment
+        target_name = f"{uuid.uuid4()}_{image_name}"
+        shutil.copy(source_image, upload_dir / target_name)
+
+        rocket_func_data["attachment"] = target_name
+        rocket_func_data["description"] += f"\n\n![Attachment](/attachments/{target_name})"
+    else:
+        print(f"Warning: Could not find seed image at {source_image}")
+
     node_rocket_func = Node(
         id=uuid.uuid4(),
         sheet_id=sheet1_id,
@@ -75,11 +101,7 @@ async def seed_database(session: AsyncSession):
         outputs=[{"key": "DeltaV", "socket_type": "any"}],
         position_x=500,
         position_y=250,
-        data={
-            "code": "g0 = 9.80665\nDeltaV = Isp * g0 * math.log(m0 / mf)",
-            "description": "Calculates the Delta-V using the Tsiolkovsky rocket equation: "
-            "$\\Delta V = I_{sp} \\cdot g_0 \\cdot \\ln(\\frac{m_0}{m_f})$",
-        },
+        data=rocket_func_data,
     )
 
     node_dv = Node(

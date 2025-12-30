@@ -3,6 +3,7 @@ import type React from 'react';
 import ReactMarkdown from 'react-markdown';
 import rehypeKatex from 'rehype-katex';
 import remarkMath from 'remark-math';
+import { API_BASE } from '../api';
 import type { ParascopeNode } from '../rete';
 
 interface SheetTableProps {
@@ -16,6 +17,13 @@ export const SheetTable: React.FC<SheetTableProps> = ({
   onUpdateValue,
   onSelectNode,
 }) => {
+  const transformUrl = (url: string) => {
+    if (url.startsWith('/attachments/')) {
+      return `${API_BASE}${url}`;
+    }
+    return url;
+  };
+
   // Filter for Parameters, Inputs, and Outputs
   const tableNodes = nodes
     .filter(
@@ -289,6 +297,7 @@ export const SheetTable: React.FC<SheetTableProps> = ({
                   <ReactMarkdown
                     remarkPlugins={[remarkMath]}
                     rehypePlugins={[rehypeKatex]}
+                    urlTransform={transformUrl}
                   >
                     {description}
                   </ReactMarkdown>
