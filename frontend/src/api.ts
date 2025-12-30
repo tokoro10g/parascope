@@ -156,6 +156,22 @@ export const api = {
     }
     return res.json();
   },
+
+  async uploadAttachment(
+    file: File,
+  ): Promise<{ filename: string; url: string }> {
+    const formData = new FormData();
+    formData.append('file', file);
+    const res = await fetch(`${API_BASE}/attachments/upload`, {
+      method: 'POST',
+      headers: getHeaders(),
+      body: formData,
+    });
+    if (!res.ok) {
+      throw new Error('Failed to upload attachment');
+    }
+    return res.json();
+  },
 };
 
 export interface NodeResult {
@@ -167,26 +183,3 @@ export interface NodeResult {
   valid?: boolean;
   error?: string;
 }
-
-export const uploadAttachment = async (
-  file: File,
-): Promise<{ filename: string; url: string }> => {
-  const formData = new FormData();
-  formData.append('file', file);
-
-  const response = await fetch(`${API_BASE}/attachments/upload`, {
-    method: 'POST',
-    headers: getHeaders(),
-    body: formData,
-  });
-
-  if (!response.ok) {
-    throw new Error('Failed to upload attachment');
-  }
-
-  return response.json();
-};
-
-export const getAttachmentUrl = (filename: string) => {
-  return `${API_BASE}/attachments/${filename}`;
-};

@@ -5,7 +5,7 @@ import { useEffect, useState } from 'react';
 import ReactMarkdown from 'react-markdown';
 import rehypeKatex from 'rehype-katex';
 import remarkMath from 'remark-math';
-import { API_BASE, getAttachmentUrl, uploadAttachment } from '../api';
+import { API_BASE, api } from '../api';
 import type { ParascopeNode } from '../rete';
 
 export interface NodeUpdates {
@@ -92,6 +92,10 @@ export const NodeInspector: React.FC<NodeInspectorProps> = ({
       return `${API_BASE}${url}`;
     }
     return url;
+  };
+
+  const getAttachmentUrl = (filename: string) => {
+    return `attachments/${filename}`;
   };
 
   const handleSave = () => {
@@ -187,7 +191,7 @@ export const NodeInspector: React.FC<NodeInspectorProps> = ({
   const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files?.[0]) {
       try {
-        const result = await uploadAttachment(e.target.files[0]);
+        const result = await api.uploadAttachment(e.target.files[0]);
         setData({ ...data, attachment: result.filename });
       } catch (error) {
         console.error('Upload failed:', error);
