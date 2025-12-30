@@ -70,8 +70,8 @@ Generated from `SPECIFICATIONS.tsv`.
     - [x] Name (BB-I-01.0).
     - [ ] Range (BB-I-03.0).
     - [x] Description (BB-I-04.0).
-    - [ ] Type Selection (Number/Option) (BB-I-01.0).
-    - [ ] Options List Definition (BB-I-05.0).
+    - [x] Type Selection (Number/Option) (BB-I-01.0).
+    - [x] Options List Definition (BB-I-05.0).
 - [x] **Output Node**:
     - [x] Distinct visual style (BB-O-01.0).
     - [x] Name (BB-O-01.0).
@@ -82,8 +82,8 @@ Generated from `SPECIFICATIONS.tsv`.
     - [ ] Range, Description (BB-P-02.0, BB-P-05.0).
     - [x] Validation: Python variable name constraints (BB-P-02.0) [REMOVED].
     - [x] Markdown rendering for description (BB-P-03.0).
-    - [ ] Type Selection (Number/Option) (BB-P-01.0).
-    - [ ] Options List Definition (BB-P-06.0).
+    - [x] Type Selection (Number/Option) (BB-P-01.0).
+    - [x] Options List Definition (BB-P-06.0).
 - [ ] **Function Node**:
     - [x] Name, Python Code, Description (BB-F-03.0 - BB-F-05.0).
     - [x] Validation: Python function name constraints (BB-F-03.0).
