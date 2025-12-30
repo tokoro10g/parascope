@@ -55,7 +55,10 @@ export const NumberControlComponent: React.FC<{ data: NumberControl }> = ({
         return;
       }
       const num = Number(val);
-      if (Number.isNaN(num)) {
+      if (
+        (data.min !== undefined || data.max !== undefined) &&
+        Number.isNaN(num)
+      ) {
         setIsValid(false);
         return;
       }
@@ -91,7 +94,6 @@ export const NumberControlComponent: React.FC<{ data: NumberControl }> = ({
 
   return (
     <input
-      type="number"
       value={value}
       onChange={handleChange}
       readOnly={data.readonly}
@@ -99,12 +101,13 @@ export const NumberControlComponent: React.FC<{ data: NumberControl }> = ({
       onDoubleClick={(e) => e.stopPropagation()}
       style={{
         width: '100%',
+        color: isValid ? undefined : 'red',
         borderColor: isValid ? undefined : 'red',
         backgroundColor: isValid ? undefined : 'rgba(255, 0, 0, 0.1)',
       }}
       title={
         !isValid
-          ? `Value must be between ${data.min ?? '-∞'} and ${data.max ?? '+∞'}`
+          ? `Value must be between ${data.min ?? '-Inf'} and ${data.max ?? '+Inf'}`
           : ''
       }
     />

@@ -385,7 +385,7 @@ export const NodeInspector: React.FC<NodeInspectorProps> = ({
                       onChange={(e) =>
                         setData({ ...data, min: e.target.value })
                       }
-                      placeholder="-∞"
+                      placeholder="-Inf"
                       style={{ width: '100%' }}
                     />
                   </div>
@@ -403,7 +403,7 @@ export const NodeInspector: React.FC<NodeInspectorProps> = ({
                       onChange={(e) =>
                         setData({ ...data, max: e.target.value })
                       }
-                      placeholder="+∞"
+                      placeholder="+Inf"
                       style={{ width: '100%' }}
                     />
                   </div>
