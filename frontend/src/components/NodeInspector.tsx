@@ -237,7 +237,7 @@ export const NodeInspector: React.FC<NodeInspectorProps> = ({
                     value={data.description || ''}
                     language="md"
                     placeholder="Enter description here..."
-                    onChange={(e) =>
+                    onChange={(e: any) =>
                       setData({ ...data, description: e.target.value })
                     }
                     padding={15}
@@ -410,7 +410,9 @@ export const NodeInspector: React.FC<NodeInspectorProps> = ({
                   value={data.code || ''}
                   language="py"
                   placeholder="result = x + 1"
-                  onChange={(e) => setData({ ...data, code: e.target.value })}
+                  onChange={(e: any) =>
+                    setData({ ...data, code: e.target.value })
+                  }
                   padding={15}
                   rows={30}
                   indentWidth={4}

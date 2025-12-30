@@ -323,6 +323,96 @@ export const SheetEditor: React.FC = () => {
     [errorNodeId, setSearchParams, nodes],
   );
 
+  const calcCenterPosition = useCallback(() => {
+    if (!editor) return { x: 0, y: 0 };
+    const area = editor.area;
+    const bounds = area.container.getBoundingClientRect();
+    const zoom = area.area.transform.k;
+    const x = (bounds.width / 2 - area.area.transform.x) / zoom;
+    const y = (bounds.height / 2 - area.area.transform.y) / zoom;
+    return { x: x, y: y };
+  }, [editor]);
+
+  const handleDuplicateNode = useCallback(
+    async (nodeId: string) => {
+      if (!editor || !currentSheet) return;
+      const originalNode = editor.editor.getNode(nodeId);
+      if (!originalNode) return;
+
+      const id = uuidv4();
+      const type = originalNode.type;
+      const label = originalNode.label;
+
+      const inputs = Object.keys(originalNode.inputs).map((key) => ({
+        key,
+        socket_type: 'any',
+      }));
+      const outputs = Object.keys(originalNode.outputs).map((key) => ({
+        key,
+        socket_type: 'any',
+      }));
+
+      const data = JSON.parse(JSON.stringify(originalNode.initialData));
+
+      if (originalNode.controls.value) {
+        const control = originalNode.controls.value as any;
+        if (control && control.value !== undefined) {
+          data.value = control.value;
+        }
+      }
+
+      const node = new ParascopeNode(
+        type,
+        label,
+        inputs,
+        outputs,
+        data,
+        (val) => {
+          if (type === 'input') {
+            handleEvaluatorInputChange(id, String(val));
+          } else {
+            setIsDirty(true);
+          }
+        },
+      );
+      node.id = id;
+      node.dbId = id;
+
+      await editor.editor.addNode(node);
+
+      const originalView = editor.area.nodeViews.get(nodeId);
+      const position = originalView
+        ? { x: originalView.position.x + 50, y: originalView.position.y + 50 }
+        : calcCenterPosition();
+
+      await editor.area.translate(node.id, position);
+
+      const newNodeData = {
+        id,
+        type,
+        label,
+        position_x: position.x,
+        position_y: position.y,
+        inputs,
+        outputs,
+        data,
+      };
+
+      setCurrentSheet((prev) =>
+        prev
+          ? {
+              ...prev,
+              nodes: [...prev.nodes, newNodeData],
+            }
+          : null,
+      );
+
+      setIsDirty(true);
+      setNodes([...editor.editor.getNodes()]);
+    },
+    [editor, currentSheet, handleEvaluatorInputChange, calcCenterPosition],
+  );
+
   const handleNodeUpdate = useCallback(
     (nodeId: string, updates: NodeUpdates) => {
       if (!editor) return;
@@ -442,6 +532,7 @@ export const SheetEditor: React.FC = () => {
       };
       editor.setNodeDoubleClickListener(handleEdit);
       editor.setNodeEditListener(handleEdit);
+      editor.setNodeDuplicateListener(handleDuplicateNode);
       editor.setNodeTypeChangeListener((nodeId, type) => {
         handleNodeUpdate(nodeId, { type });
       });
@@ -514,7 +605,12 @@ export const SheetEditor: React.FC = () => {
         handleEvaluatorInputChange(nodeId, value);
       });
     }
-  }, [editor, handleEvaluatorInputChange, handleNodeUpdate]);
+  }, [
+    editor,
+    handleEvaluatorInputChange,
+    handleNodeUpdate,
+    handleDuplicateNode,
+  ]);
 
   // Sync Evaluator Inputs back to Graph Nodes and Table View
   useEffect(() => {
@@ -523,16 +619,6 @@ export const SheetEditor: React.FC = () => {
       setNodes([...editor.editor.getNodes()]);
     }
   }, [editor, evaluatorInputs, lastResult]);
-
-  const calcCenterPosition = () => {
-    if (!editor) return { x: 0, y: 0 };
-    const area = editor.area;
-    const bounds = area.container.getBoundingClientRect();
-    const zoom = area.area.transform.k;
-    const x = (bounds.width / 2 - area.area.transform.x) / zoom;
-    const y = (bounds.height / 2 - area.area.transform.y) / zoom;
-    return { x: x, y: y };
-  };
 
   const handleSaveSheet = useCallback(async () => {
     if (!currentSheet || !editor) return;

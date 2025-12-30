@@ -256,6 +256,13 @@ export async function createEditor(container: HTMLElement) {
 
       items.push(
         {
+          label: 'Duplicate',
+          key: 'duplicate',
+          handler: () => {
+            if (onNodeDuplicate) onNodeDuplicate(context.id);
+          },
+        },
+        {
           label: 'Copy URL',
           key: 'copy-url',
           handler: () => {
@@ -298,6 +305,7 @@ export async function createEditor(container: HTMLElement) {
   let onNodeDoubleClick: ((nodeId: string) => void) | undefined;
   let onGraphChange: (() => void) | undefined;
   let onNodeEdit: ((nodeId: string) => void) | undefined;
+  let onNodeDuplicate: ((nodeId: string) => void) | undefined;
   let onNodeTypeChange: ((nodeId: string, type: string) => void) | undefined;
   let onInputValueChange: ((nodeId: string, value: string) => void) | undefined;
   let onEditNestedSheet: ((nodeId: string) => void) | undefined;
@@ -320,7 +328,7 @@ export async function createEditor(container: HTMLElement) {
         },
         control: (data) => {
           if (data.payload instanceof DropdownControl) {
-            return DropdownControlComponent;
+            return DropdownControlComponent as any;
           }
           return ReactPresets.classic.Control;
         },
@@ -396,6 +404,9 @@ export async function createEditor(container: HTMLElement) {
     },
     setNodeEditListener: (cb: (nodeId: string) => void) => {
       onNodeEdit = cb;
+    },
+    setNodeDuplicateListener: (cb: (nodeId: string) => void) => {
+      onNodeDuplicate = cb;
     },
     setNodeTypeChangeListener: (cb: (nodeId: string, type: string) => void) => {
       onNodeTypeChange = cb;

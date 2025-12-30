@@ -4,14 +4,22 @@ import { ClassicPreset } from 'rete';
 
 export class DropdownControl extends ClassicPreset.Control {
   private listeners: (() => void)[] = [];
+  public options: string[];
+  public value: string;
+  public onChange: (value: string) => void;
+  public readonly: boolean;
 
   constructor(
-    public options: string[],
-    public value: string,
-    public onChange: (value: string) => void,
-    public readonly: boolean = false,
+    options: string[],
+    value: string,
+    onChange: (value: string) => void,
+    readonly: boolean = false,
   ) {
     super();
+    this.options = options;
+    this.value = value;
+    this.onChange = onChange;
+    this.readonly = readonly;
   }
 
   setValue(val: string) {
