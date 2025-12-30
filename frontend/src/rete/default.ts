@@ -236,6 +236,22 @@ export async function createEditor(container: HTMLElement) {
             if (onEditNestedSheet) onEditNestedSheet(context.id);
           },
         });
+      } else if (context.type === 'input') {
+        items.push({
+          label: 'Switch to Parameter',
+          key: 'switch-to-parameter',
+          handler: () => {
+            if (onNodeTypeChange) onNodeTypeChange(context.id, 'parameter');
+          },
+        });
+      } else if (context.type === 'parameter') {
+        items.push({
+          label: 'Switch to Input',
+          key: 'switch-to-input',
+          handler: () => {
+            if (onNodeTypeChange) onNodeTypeChange(context.id, 'input');
+          },
+        });
       }
 
       items.push(
@@ -282,6 +298,7 @@ export async function createEditor(container: HTMLElement) {
   let onNodeDoubleClick: ((nodeId: string) => void) | undefined;
   let onGraphChange: (() => void) | undefined;
   let onNodeEdit: ((nodeId: string) => void) | undefined;
+  let onNodeTypeChange: ((nodeId: string, type: string) => void) | undefined;
   let onInputValueChange: ((nodeId: string, value: string) => void) | undefined;
   let onEditNestedSheet: ((nodeId: string) => void) | undefined;
   let onNodeRemove: ((nodeId: string) => Promise<boolean>) | undefined;
@@ -379,6 +396,9 @@ export async function createEditor(container: HTMLElement) {
     },
     setNodeEditListener: (cb: (nodeId: string) => void) => {
       onNodeEdit = cb;
+    },
+    setNodeTypeChangeListener: (cb: (nodeId: string, type: string) => void) => {
+      onNodeTypeChange = cb;
     },
     setEditNestedSheetListener: (cb: (nodeId: string) => void) => {
       onEditNestedSheet = cb;

@@ -323,6 +323,115 @@ export const SheetEditor: React.FC = () => {
     [errorNodeId, setSearchParams, nodes],
   );
 
+  const handleNodeUpdate = useCallback(
+    (nodeId: string, updates: NodeUpdates) => {
+      if (!editor) return;
+
+      const node = editor.editor.getNode(nodeId);
+      if (!node) return;
+
+      if (updates.label && updates.label !== node.label) {
+        // Check for duplicate input/output names
+        if (node.type === 'input' || node.type === 'output') {
+          const existingNode = nodes.find(
+            (n) =>
+              n.type === node.type &&
+              n.label === updates.label &&
+              n.id !== nodeId,
+          );
+          if (existingNode) {
+            alert(
+              `An ${node.type} node with the name "${updates.label}" already exists.`,
+            );
+            return;
+          }
+        }
+
+        if (node.type === 'input' || node.type === 'output') {
+          if (
+            !window.confirm(
+              `Renaming this ${node.type} node may break sheets that use this sheet as a function. Are you sure?`,
+            )
+          ) {
+            return;
+          }
+        }
+        node.label = updates.label;
+      }
+
+      if (updates.type && updates.type !== node.type) {
+        const existingNode = nodes.find(
+          (n) =>
+            n.type === updates.type &&
+            n.label === node.label &&
+            n.id !== nodeId,
+        );
+        if (existingNode) {
+          alert(
+            `An ${updates.type} node with the name "${node.label}" already exists.`,
+          );
+          return;
+        }
+        if (node.type === 'input') {
+          // An input node is going to be switched to a parameter node. Warn the user.
+          if (
+            !window.confirm(
+              `Switching this ${node.type} node to ${updates.type} node may break sheets that use this sheet as a function. Are you sure?`,
+            )
+          ) {
+            return;
+          }
+        }
+        node.type = updates.type;
+        node.setupControl();
+      }
+
+      if (updates.initialData) {
+        node.initialData = { ...node.initialData, ...updates.initialData };
+        node.setupControl();
+      }
+
+      if (updates.inputs) {
+        const newKeys = new Set(updates.inputs.map((i) => i.key));
+        Object.keys(node.inputs).forEach((key) => {
+          if (!newKeys.has(key)) {
+            node.removeInput(key);
+          }
+        });
+        updates.inputs.forEach((i) => {
+          if (!node.inputs[i.key]) {
+            node.addInput(i.key, new Classic.Input(socket, i.key));
+          }
+        });
+      }
+
+      if (updates.outputs) {
+        const newKeys = new Set(updates.outputs.map((o) => o.key));
+        Object.keys(node.outputs).forEach((key) => {
+          if (!newKeys.has(key)) {
+            node.removeOutput(key);
+          }
+        });
+        updates.outputs.forEach((o) => {
+          if (!node.outputs[o.key]) {
+            node.addOutput(o.key, new Classic.Output(socket, o.key));
+          }
+        });
+      }
+
+      editor.area.update('node', nodeId);
+
+      setIsDirty(true);
+
+      const graphData = editor.getGraphData();
+      setCurrentSheet((prev) =>
+        prev ? { ...prev, nodes: graphData.nodes } : null,
+      );
+      setNodes([...editor.editor.getNodes()]);
+    },
+    [editor, nodes],
+  );
+
   useEffect(() => {
     if (editor) {
       const handleEdit = (nodeId: string) => {
@@ -333,6 +442,9 @@ export const SheetEditor: React.FC = () => {
       };
       editor.setNodeDoubleClickListener(handleEdit);
       editor.setNodeEditListener(handleEdit);
+      editor.setNodeTypeChangeListener((nodeId, type) => {
+        handleNodeUpdate(nodeId, { type });
+      });
       editor.setNodeRemoveListener(async (nodeId) => {
         const node = editor.editor.getNode(nodeId);
         if (node && (node.type === 'input' || node.type === 'output')) {
@@ -402,7 +514,7 @@ export const SheetEditor: React.FC = () => {
         handleEvaluatorInputChange(nodeId, value);
       });
     }
-  }, [editor, handleEvaluatorInputChange]);
+  }, [editor, handleEvaluatorInputChange, handleNodeUpdate]);
 
   // Sync Evaluator Inputs back to Graph Nodes and Table View
   useEffect(() => {
@@ -709,85 +821,6 @@ export const SheetEditor: React.FC = () => {
     }
   };
 
-  const handleNodeUpdate = async (nodeId: string, updates: NodeUpdates) => {
-    if (!editor) return;
-
-    const node = editor.editor.getNode(nodeId);
-    if (!node) return;
-
-    if (updates.label && updates.label !== node.label) {
-      // Check for duplicate input/output names
-      if (node.type === 'input' || node.type === 'output') {
-        const existingNode = nodes.find(
-          (n) =>
-            n.type === node.type &&
-            n.label === updates.label &&
-            n.id !== nodeId,
-        );
-        if (existingNode) {
-          alert(
-            `An ${node.type} node with the name "${updates.label}" already exists.`,
-          );
-          return;
-        }
-      }
-
-      if (node.type === 'input' || node.type === 'output') {
-        if (
-          !window.confirm(
-            `Renaming this ${node.type} node may break sheets that use this sheet as a function. Are you sure?`,
-          )
-        ) {
-          return;
-        }
-      }
-      node.label = updates.label;
-    }
-
-    if (updates.initialData) {
-      node.initialData = { ...node.initialData, ...updates.initialData };
-      node.setupControl();
-    }
-
-    if (updates.inputs) {
-      const newKeys = new Set(updates.inputs.map((i) => i.key));
-      Object.keys(node.inputs).forEach((key) => {
-        if (!newKeys.has(key)) {
-          node.removeInput(key);
-        }
-      });
-      updates.inputs.forEach((i) => {
-        if (!node.inputs[i.key]) {
-          node.addInput(i.key, new Classic.Input(socket, i.key));
-        }
-      });
-    }
-
-    if (updates.outputs) {
-      const newKeys = new Set(updates.outputs.map((o) => o.key));
-      Object.keys(node.outputs).forEach((key) => {
-        if (!newKeys.has(key)) {
-          node.removeOutput(key);
-        }
-      });
-      updates.outputs.forEach((o) => {
-        if (!node.outputs[o.key]) {
-          node.addOutput(o.key, new Classic.Output(socket, o.key));
-        }
-      });
-    }
-
-    await editor.area.update('node', nodeId);
-
-    setIsDirty(true);
-
-    const graphData = editor.getGraphData();
-    setCurrentSheet((prev) =>
-      prev ? { ...prev, nodes: graphData.nodes } : null,
-    );
-    setNodes([...editor.editor.getNodes()]);
-  };
-
   const handleUpdateNodeValue = (nodeId: string, value: string) => {
     if (!editor) return;
     const node = editor.editor.getNode(nodeId);
@@ -822,6 +855,7 @@ export const SheetEditor: React.FC = () => {
         style={{ display: 'flex', alignItems: 'center', gap: '10px' }}
       >
         <ParascopeLogo size={16} />
+        <span style={{ fontWeight: 'bold' }}>Parascope</span>
         <button
           type="button"
           onClick={handleBackClick}

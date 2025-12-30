@@ -32,6 +32,11 @@ export function CustomNode(props: any) {
       // The actual node element is the first child.
       const nodeEl = ref.current.firstElementChild as HTMLElement;
       if (nodeEl) {
+        nodeEl.classList.remove(
+          ...Object.keys(styles).map((key) => {
+            return `node-${key}`;
+          }),
+        );
         nodeEl.classList.add(typeClass);
 
         const bg = styles[type]?.background;

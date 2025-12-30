@@ -9,6 +9,7 @@ import { getAttachmentUrl, uploadAttachment } from '../api';
 import type { ParascopeNode } from '../rete';
 
 export interface NodeUpdates {
+  type?: string;
   label?: string;
   initialData?: Record<string, any>;
   inputs?: { key: string; socket_type: string }[];
@@ -390,7 +391,7 @@ export const NodeInspector: React.FC<NodeInspectorProps> = ({
                     id="node-value"
                     value={data.value || 0}
                     onChange={(e) =>
-                      setData({ ...data, value: parseFloat(e.target.value) })
+                      setData({ ...data, value: e.target.value })
                     }
                   />
                 )}
