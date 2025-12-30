@@ -111,10 +111,10 @@ async def test_physics_calculation_scenario():
         # Accel
         assert results[accel_id]["value"] == 9.8
         # Function (10 * 9.8 = 98.0)
-        assert results[func_id]["result"] == 98.0
+        assert results[func_id]["outputs"]["result"] == 98.0
 
         # Output
-        assert results[output_id] == 98.0
+        assert results[output_id]["value"] == 98.0
 
         print("\nCalculation Successful!")
         print(f"Mass: {results[mass_id]}")
