@@ -58,7 +58,7 @@ class GraphProcessor:
             str_value = str(value)
             if str_value not in options:
                 raise NodeExecutionError(
-                    str(node.id), node.label, f"Value '{value}' is not a valid option. Allowed: {options}"
+                    str(node.id), node.label, f"Value '{value}' is not a valid option. Allowed: {options}", value
                 )
 
     def _validate_range(self, node: Node, value: Any):
@@ -77,7 +77,7 @@ class GraphProcessor:
                 min_val = float(min_val)
                 if value < min_val:
                     raise NodeExecutionError(
-                        str(node.id), node.label, f"Value {value} is less than minimum {min_val}"
+                        str(node.id), node.label, f"Value {value} is less than minimum {min_val}", value
                     )
             except ValueError:
                 pass
@@ -87,7 +87,7 @@ class GraphProcessor:
                 max_val = float(max_val)
                 if value > max_val:
                     raise NodeExecutionError(
-                        str(node.id), node.label, f"Value {value} is greater than maximum {max_val}"
+                        str(node.id), node.label, f"Value {value} is greater than maximum {max_val}", value
                     )
             except ValueError:
                 pass
@@ -100,7 +100,15 @@ class GraphProcessor:
 
         for node_id in execution_order:
             node = self.node_map[node_id]
-            await self._execute_node(node, input_overrides)
+            try:
+                await self._execute_node(node, input_overrides)
+            except NodeExecutionError as e:
+                self.results[node_id] = {"error": e.error_message, "value": e.value, "valid": False}
+                # Stop execution on first error
+                break
+            except Exception as e:
+                self.results[node_id] = {"error": str(e), "value": None, "valid": False}
+                break
 
         return self.results
 

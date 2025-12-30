@@ -122,9 +122,15 @@ export class ParascopeNode extends Classic.Node {
           ),
         );
       } else {
-        const min = data.min !== undefined && data.min !== '' ? Number(data.min) : undefined;
-        const max = data.max !== undefined && data.max !== '' ? Number(data.max) : undefined;
-        
+        const min =
+          data.min !== undefined && data.min !== ''
+            ? Number(data.min)
+            : undefined;
+        const max =
+          data.max !== undefined && data.max !== ''
+            ? Number(data.max)
+            : undefined;
+
         this.addControl(
           'value',
           new NumberControl(data.value || '', {
@@ -145,8 +151,14 @@ export class ParascopeNode extends Classic.Node {
           }),
         );
       } else {
-        const min = data.min !== undefined && data.min !== '' ? Number(data.min) : undefined;
-        const max = data.max !== undefined && data.max !== '' ? Number(data.max) : undefined;
+        const min =
+          data.min !== undefined && data.min !== ''
+            ? Number(data.min)
+            : undefined;
+        const max =
+          data.max !== undefined && data.max !== ''
+            ? Number(data.max)
+            : undefined;
 
         this.addControl(
           'value',
@@ -172,8 +184,14 @@ export class ParascopeNode extends Classic.Node {
           ),
         );
       } else {
-        const min = data.min !== undefined && data.min !== '' ? Number(data.min) : undefined;
-        const max = data.max !== undefined && data.max !== '' ? Number(data.max) : undefined;
+        const min =
+          data.min !== undefined && data.min !== ''
+            ? Number(data.min)
+            : undefined;
+        const max =
+          data.max !== undefined && data.max !== ''
+            ? Number(data.max)
+            : undefined;
 
         this.addControl(
           'value',

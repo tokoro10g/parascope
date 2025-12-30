@@ -364,7 +364,10 @@ export const NodeInspector: React.FC<NodeInspectorProps> = ({
 
             {(data.dataType === 'number' || !data.dataType) && (
               <div className="form-group">
-                <label style={{ display: 'block', marginBottom: '5px' }}>
+                <label
+                  htmlFor="node-min"
+                  style={{ display: 'block', marginBottom: '5px' }}
+                >
                   Range Validation:
                 </label>
                 <div style={{ display: 'flex', gap: '10px' }}>

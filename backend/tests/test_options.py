@@ -91,8 +91,11 @@ async def test_option_validation():
         assert response.status_code == 200
         
         response = await client.post(f"/calculate/{sheet_id}")
-        assert response.status_code == 400
-        assert "not a valid option" in response.json()["detail"]["message"]
+        assert response.status_code == 200
+        results = response.json()
+        assert results[param_id]["valid"] is False
+        assert "not a valid option" in results[param_id]["error"]
+        assert results[param_id]["value"] == "Titanium"
 
         # Reset Parameter to valid
         nodes[0]["data"]["value"] = "Steel"
@@ -106,5 +109,8 @@ async def test_option_validation():
 
         # 7. Test Invalid Input Override
         response = await client.post(f"/calculate/{sheet_id}", json={input_id: {"value": "Slow"}})
-        assert response.status_code == 400
-        assert "not a valid option" in response.json()["detail"]["message"]
+        assert response.status_code == 200
+        results = response.json()
+        assert results[input_id]["valid"] is False
+        assert "not a valid option" in results[input_id]["error"]
+        assert results[input_id]["value"] == "Slow"

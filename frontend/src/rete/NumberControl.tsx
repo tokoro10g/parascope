@@ -1,5 +1,5 @@
 import type React from 'react';
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { ClassicPreset } from 'rete';
 
 export class NumberControl extends ClassicPreset.Control {
@@ -48,6 +48,26 @@ export const NumberControlComponent: React.FC<{ data: NumberControl }> = ({
   const [value, setValue] = useState(data.value);
   const [isValid, setIsValid] = useState(true);
 
+  const validate = useCallback(
+    (val: string | number) => {
+      if (val === '' || val === undefined || val === null) {
+        setIsValid(true);
+        return;
+      }
+      const num = Number(val);
+      if (Number.isNaN(num)) {
+        setIsValid(false);
+        return;
+      }
+
+      let valid = true;
+      if (data.min !== undefined && num < data.min) valid = false;
+      if (data.max !== undefined && num > data.max) valid = false;
+      setIsValid(valid);
+    },
+    [data.min, data.max],
+  );
+
   useEffect(() => {
     setValue(data.value);
     validate(data.value);
@@ -55,30 +75,13 @@ export const NumberControlComponent: React.FC<{ data: NumberControl }> = ({
       setValue(data.value);
       validate(data.value);
     });
-  }, [data]);
-
-  const validate = (val: string | number) => {
-    if (val === '' || val === undefined || val === null) {
-      setIsValid(true);
-      return;
-    }
-    const num = Number(val);
-    if (Number.isNaN(num)) {
-      setIsValid(false);
-      return;
-    }
-
-    let valid = true;
-    if (data.min !== undefined && num < data.min) valid = false;
-    if (data.max !== undefined && num > data.max) valid = false;
-    setIsValid(valid);
-  };
+  }, [data, validate]);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const val = e.target.value;
     setValue(val);
     validate(val);
-    
+
     // Update data model
     data.setValue(val);
     if (data.onChange) {
@@ -99,7 +102,11 @@ export const NumberControlComponent: React.FC<{ data: NumberControl }> = ({
         borderColor: isValid ? undefined : 'red',
         backgroundColor: isValid ? undefined : 'rgba(255, 0, 0, 0.1)',
       }}
-      title={!isValid ? `Value must be between ${data.min ?? '-∞'} and ${data.max ?? '+∞'}` : ''}
+      title={
+        !isValid
+          ? `Value must be between ${data.min ?? '-∞'} and ${data.max ?? '+∞'}`
+          : ''
+      }
     />
   );
 };

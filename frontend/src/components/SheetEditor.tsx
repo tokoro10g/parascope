@@ -238,6 +238,17 @@ export const SheetEditor: React.FC = () => {
 
             const result = await api.calculate(sheet.id, apiInputs);
             setLastResult(result);
+
+            let firstErrorNodeId: string | null = null;
+            for (const [nodeId, nodeRes] of Object.entries(result)) {
+              if (nodeRes.valid === false || nodeRes.error) {
+                if (!firstErrorNodeId) {
+                  firstErrorNodeId = nodeId;
+                }
+              }
+            }
+            setErrorNodeId(firstErrorNodeId);
+
             editor.updateNodeValues(
               inputsFromParams,
               extractValuesFromResult(result),
@@ -985,6 +996,17 @@ export const SheetEditor: React.FC = () => {
       const result = await api.calculate(currentSheet.id, apiInputs);
       console.log('Calculation result:', result);
       setLastResult(result);
+
+      let firstErrorNodeId: string | null = null;
+      for (const [nodeId, nodeRes] of Object.entries(result)) {
+        if (nodeRes.valid === false || nodeRes.error) {
+          if (!firstErrorNodeId) {
+            firstErrorNodeId = nodeId;
+          }
+        }
+      }
+      setErrorNodeId(firstErrorNodeId);
+
       if (editor) {
         editor.updateNodeValues(
           evaluatorInputs,
@@ -992,7 +1014,6 @@ export const SheetEditor: React.FC = () => {
         );
         setNodes([...editor.editor.getNodes()]);
       }
-      setErrorNodeId(null);
     } catch (e: any) {
       console.error(e);
       if (e.nodeId) {
