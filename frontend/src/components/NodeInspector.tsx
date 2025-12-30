@@ -1,3 +1,4 @@
+import CodeEditor from '@uiw/react-textarea-code-editor';
 import { Trash2 } from 'lucide-react';
 import type React from 'react';
 import { useEffect, useState } from 'react';
@@ -229,16 +230,20 @@ export const NodeInspector: React.FC<NodeInspectorProps> = ({
                   </ReactMarkdown>
                 </div>
               ) : (
-                <textarea
-                  id="node-description"
-                  value={data.description || ''}
-                  onChange={(e) =>
-                    setData({ ...data, description: e.target.value })
-                  }
-                  rows={5}
-                  style={{ width: '100%', fontFamily: 'sans-serif' }}
-                  placeholder="Enter description here..."
-                />
+                <div style={{ overflow: 'auto' }}>
+                  <CodeEditor
+                    id="node-description"
+                    value={data.description || ''}
+                    language="md"
+                    placeholder="Enter description here..."
+                    onChange={(e) =>
+                      setData({ ...data, description: e.target.value })
+                    }
+                    padding={15}
+                    indentWidth={2}
+                    style={{ minWidth: 'max-content', fontFamily: 'monospace' }}
+                  />
+                </div>
               )}
             </div>
 
@@ -398,13 +403,19 @@ export const NodeInspector: React.FC<NodeInspectorProps> = ({
           <>
             <div className="form-group">
               <label htmlFor="node-code">Python Code:</label>
-              <textarea
-                id="node-code"
-                value={data.code || ''}
-                onChange={(e) => setData({ ...data, code: e.target.value })}
-                rows={30}
-                style={{ width: '100%', fontFamily: 'monospace' }}
-              />
+              <div style={{ overflow: 'auto' }}>
+                <CodeEditor
+                  id="node-code"
+                  value={data.code || ''}
+                  language="py"
+                  placeholder="result = x + 1"
+                  onChange={(e) => setData({ ...data, code: e.target.value })}
+                  padding={15}
+                  rows={30}
+                  indentWidth={4}
+                  style={{ minWidth: 'max-content', fontFamily: 'monospace' }}
+                />
+              </div>
               <small>
                 Use input names as variables. Assign result to output names.
               </small>

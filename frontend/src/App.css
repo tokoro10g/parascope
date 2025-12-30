@@ -526,6 +526,7 @@ button.danger:hover {
   font-weight: bold;
 }
 
+.w-tc-editor,
 .form-group input,
 .form-group textarea {
   width: 100%;
