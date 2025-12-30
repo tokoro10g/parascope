@@ -820,7 +820,7 @@ export const SheetEditor: React.FC = () => {
         className="nav-bar"
         style={{ display: 'flex', alignItems: 'center', gap: '10px' }}
       >
-        <ParascopeLogo size={16} strokeColor="var(--text-color, #333)" />
+        <ParascopeLogo size={16} />
         <button
           type="button"
           onClick={handleBackClick}
