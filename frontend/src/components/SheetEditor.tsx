@@ -446,12 +446,18 @@ export const SheetEditor: React.FC = () => {
         }
 
         if (node.type === 'input' || node.type === 'output') {
-          if (
-            !window.confirm(
-              `Renaming this ${node.type} node may break sheets that use this sheet as a function. Are you sure?`,
-            )
-          ) {
-            return;
+          const isDefaultLabel =
+            (node.type === 'input' && node.label === 'Input') ||
+            (node.type === 'output' && node.label === 'Output');
+
+          if (!isDefaultLabel) {
+            if (
+              !window.confirm(
+                `Renaming this ${node.type} node may break sheets that use this sheet as a function. Are you sure?`,
+              )
+            ) {
+              return;
+            }
           }
         }
         node.label = updates.label;
