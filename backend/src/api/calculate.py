@@ -102,7 +102,7 @@ async def calculate_sheet(
                 node_resp["value"] = result_val.get("value") if isinstance(result_val, dict) else result_val
                 node_resp["outputs"] = {"value": node_resp["value"]}
             elif node.type == "output":
-                node_resp["value"] = result_val
+                node_resp["value"] = result_val.get("value") if isinstance(result_val, dict) else result_val
             elif node.type in ["function", "sheet"]:
                 if isinstance(result_val, dict):
                     node_resp["outputs"] = result_val

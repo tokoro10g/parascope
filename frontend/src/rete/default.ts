@@ -136,17 +136,27 @@ export class ParascopeNode extends Classic.Node {
         );
       }
     } else if (this.type === 'output') {
-      const min = data.min !== undefined && data.min !== '' ? Number(data.min) : undefined;
-      const max = data.max !== undefined && data.max !== '' ? Number(data.max) : undefined;
+      if (data.dataType === 'option') {
+        this.addControl(
+          'value',
+          new Classic.InputControl('text', {
+            initial: String(data.value !== undefined ? data.value : ''),
+            readonly: true,
+          }),
+        );
+      } else {
+        const min = data.min !== undefined && data.min !== '' ? Number(data.min) : undefined;
+        const max = data.max !== undefined && data.max !== '' ? Number(data.max) : undefined;
 
-      this.addControl(
-        'value',
-        new NumberControl(data.value || '', {
-          readonly: true,
-          min,
-          max,
-        }),
-      );
+        this.addControl(
+          'value',
+          new NumberControl(data.value || '', {
+            readonly: true,
+            min,
+            max,
+          }),
+        );
+      }
     } else if (this.type === 'parameter') {
       if (data.dataType === 'option' && data.options) {
         this.addControl(
@@ -596,14 +606,14 @@ export async function createEditor(container: HTMLElement) {
 
         if (node.type === 'input') {
           const val = inputs[node.id];
-          const newVal = String(val !== undefined ? val : '');
+          const newVal = String(val !== undefined && val !== null ? val : '');
           if (valueControl.value !== newVal) {
             valueControl.setValue(newVal);
             area.update('node', node.id);
           }
         } else if (node.type === 'output') {
           const val = outputs[node.id];
-          const newVal = String(val !== undefined ? val : '');
+          const newVal = String(val !== undefined && val !== null ? val : '');
           if (valueControl.value !== newVal) {
             valueControl.setValue(newVal);
             area.update('node', node.id);

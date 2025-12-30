@@ -345,7 +345,9 @@ export const NodeInspector: React.FC<NodeInspectorProps> = ({
           </>
         )}
 
-        {(node.type === 'parameter' || node.type === 'input') && (
+        {(node.type === 'parameter' ||
+          node.type === 'input' ||
+          node.type === 'output') && (
           <>
             <div className="form-group">
               <label htmlFor="node-type">Type:</label>

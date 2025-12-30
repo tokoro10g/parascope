@@ -243,7 +243,12 @@ class GraphProcessor:
                      raise NodeExecutionError(str(node.id), node.label, f"Dependency '{self.node_map[source_id].label}' failed")
 
                 val = self.results[source_id][source_port]
-                self._validate_range(node, val)
+                
+                if node.data.get("dataType") == "option":
+                    self._validate_option(node, val)
+                else:
+                    self._validate_range(node, val)
+                
                 self.results[node.id] = val
             else:
                 self.results[node.id] = None
