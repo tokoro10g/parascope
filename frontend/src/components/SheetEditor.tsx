@@ -788,13 +788,13 @@ export const SheetEditor: React.FC = () => {
     setNodes([...editor.editor.getNodes()]);
   };
 
-  const handleUpdateNodeValue = (nodeId: string, value: number) => {
+  const handleUpdateNodeValue = (nodeId: string, value: string) => {
     if (!editor) return;
     const node = editor.editor.getNode(nodeId);
     if (node) {
       const control = node.controls.value as any;
       if (control) {
-        control.setValue(String(value));
+        control.setValue(value);
         editor.area.update('node', nodeId);
         setIsDirty(true);
         setNodes([...editor.editor.getNodes()]);

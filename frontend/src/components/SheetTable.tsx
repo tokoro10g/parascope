@@ -7,7 +7,7 @@ import type { ParascopeNode } from '../rete';
 
 interface SheetTableProps {
   nodes: ParascopeNode[];
-  onUpdateValue: (nodeId: string, value: number) => void;
+  onUpdateValue: (nodeId: string, value: string) => void;
   onSelectNode: (nodeId: string) => void;
 }
 
@@ -180,7 +180,8 @@ export const SheetTable: React.FC<SheetTableProps> = ({
             </thead>
             <tbody>
               {tableNodes.map((node) => {
-                const isParameter = node.type === 'parameter';
+                const isEditable =
+                  node.type === 'parameter' || node.type === 'input';
                 const nameControl = node.controls.name as any;
                 const valueControl = node.controls.value as any;
 
@@ -196,11 +197,11 @@ export const SheetTable: React.FC<SheetTableProps> = ({
                     <td>{name}</td>
                     <td>{node.type}</td>
                     <td>
-                      {isParameter ? (
+                      {isEditable ? (
                         <input
                           value={value}
                           onChange={(e) =>
-                            onUpdateValue(node.id, parseFloat(e.target.value))
+                            onUpdateValue(node.id, e.target.value)
                           }
                           onClick={(e) => e.stopPropagation()} // Prevent row selection when editing
                           style={{ width: '100%' }}
