@@ -186,6 +186,7 @@ export const SheetEditor: React.FC = () => {
         setNodes([...editor.editor.getNodes()]);
         setIsDirty(false);
         setIsLoading(false);
+        document.title = `Parascope - ${sheet.name}`;
 
         // Auto-calculate (UI-27.0)
         const inputNodes = sheet.nodes.filter((n) => n.type === 'input');

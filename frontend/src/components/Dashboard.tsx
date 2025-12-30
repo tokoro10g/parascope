@@ -42,7 +42,9 @@ export const Dashboard: React.FC = () => {
 
   useEffect(() => {
     setCurrentFolderId(folderId);
-  }, [folderId]);
+    const folder = folders.find((f) => f.id === folderId);
+    document.title = `Parascope - ${folder?.name || 'Home'}`;
+  }, [folderId, folders]);
 
   useEffect(() => {
     loadData();

@@ -1,5 +1,5 @@
 import type React from 'react';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import { ParascopeLogo } from './ParascopeLogo';
@@ -12,6 +12,10 @@ export const Login: React.FC = () => {
 
   const usernameRegex = import.meta.env.VITE_USERNAME_REGEX;
   const usernameDescription = import.meta.env.VITE_USERNAME_DESCRIPTION;
+
+  useEffect(() => {
+    document.title = 'Parascope - Login';
+  }, []);
 
   const isValid = (input: string) => {
     if (!input.trim()) return false;
