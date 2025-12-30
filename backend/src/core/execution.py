@@ -35,13 +35,11 @@ def _worker(code: str, inputs: Dict[str, Any], outputs: List[str], queue: multip
             "__builtins__": __builtins__,
             "math": __import__("math"),
             "np": __import__("numpy"),
+            # TODO: feature to customize the list of global modules
         }
 
         # Execute the code
-        # The code must not contain return statements directly, so we wrap it in a function.
         # The output variables should be assigned in the code.
-        if "return" in code:
-            raise ValueError("Return statements are not allowed in the code.")
         wrapped_code = f"def user_func({', '.join(inputs.keys())}):\n"
         for line in code.split("\n"):
             wrapped_code += f"    {line}\n"

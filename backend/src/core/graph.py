@@ -43,7 +43,10 @@ class GraphProcessor:
                 elif val.lower() == "false":
                     return False
                 else:
-                    return float(val)
+                    try:
+                        return int(val)
+                    except ValueError:
+                        return float(val)
         except ValueError:
             pass
         return val
