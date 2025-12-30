@@ -379,6 +379,8 @@ export const NodeInspector: React.FC<NodeInspectorProps> = ({
                       />
                       <button
                         type="button"
+                        className="danger"
+                        style={{ padding: '2px' }}
                         onClick={() => {
                           const newOptions = (data.options || []).filter(
                             (_: any, i: number) => i !== idx,
@@ -386,7 +388,7 @@ export const NodeInspector: React.FC<NodeInspectorProps> = ({
                           setData({ ...data, options: newOptions });
                         }}
                       >
-                        x
+                        <Trash2 size={12} />
                       </button>
                     </li>
                   ))}
@@ -465,7 +467,7 @@ export const NodeInspector: React.FC<NodeInspectorProps> = ({
             <div className="io-section">
               <div className="io-column">
                 <h3>Inputs</h3>
-                <ul style={{ fontFamily: 'monospace', padding: 0 }}>
+                <ul style={{ padding: 0 }}>
                   {inputs.map((i, idx) => (
                     <li
                       // biome-ignore lint/suspicious/noArrayIndexKey: Order matters here
@@ -484,6 +486,7 @@ export const NodeInspector: React.FC<NodeInspectorProps> = ({
                         }
                         style={{
                           flex: 1,
+                          fontFamily: 'monospace',
                           borderColor: isValidPythonIdentifier(i.key)
                             ? undefined
                             : 'red',
@@ -528,7 +531,7 @@ export const NodeInspector: React.FC<NodeInspectorProps> = ({
 
               <div className="io-column">
                 <h3>Outputs</h3>
-                <ul style={{ fontFamily: 'monospace', padding: 0 }}>
+                <ul style={{ padding: 0 }}>
                   {outputs.map((o, idx) => (
                     <li
                       // biome-ignore lint/suspicious/noArrayIndexKey: Order matters here
@@ -547,6 +550,7 @@ export const NodeInspector: React.FC<NodeInspectorProps> = ({
                         }
                         style={{
                           flex: 1,
+                          fontFamily: 'monospace',
                           borderColor: isValidPythonIdentifier(o.key)
                             ? undefined
                             : 'red',
