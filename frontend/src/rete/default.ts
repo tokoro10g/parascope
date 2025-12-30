@@ -536,6 +536,8 @@ export async function createEditor(container: HTMLElement) {
           }
         }
       }
+      // Clear history to prevent undoing sheet loading
+      history.clear();
 
       return new Promise<void>((resolve) => {
         setTimeout(async () => {
