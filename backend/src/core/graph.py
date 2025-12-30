@@ -61,6 +61,37 @@ class GraphProcessor:
                     str(node.id), node.label, f"Value '{value}' is not a valid option. Allowed: {options}"
                 )
 
+    def _validate_range(self, node: Node, value: Any):
+        if value is None:
+            return
+
+        # Only validate numbers
+        if not isinstance(value, (int, float)):
+            return
+
+        min_val = node.data.get("min")
+        max_val = node.data.get("max")
+
+        if min_val is not None and min_val != "":
+            try:
+                min_val = float(min_val)
+                if value < min_val:
+                    raise NodeExecutionError(
+                        str(node.id), node.label, f"Value {value} is less than minimum {min_val}"
+                    )
+            except ValueError:
+                pass
+
+        if max_val is not None and max_val != "":
+            try:
+                max_val = float(max_val)
+                if value > max_val:
+                    raise NodeExecutionError(
+                        str(node.id), node.label, f"Value {value} is greater than maximum {max_val}"
+                    )
+            except ValueError:
+                pass
+
     async def execute(self, input_overrides: Dict[str, Any] = None) -> Dict[UUID, Any]:
         self.validate()
 
@@ -69,7 +100,12 @@ class GraphProcessor:
 
         for node_id in execution_order:
             node = self.node_map[node_id]
-            await self._execute_node(node, input_overrides)
+            try:
+                await self._execute_node(node, input_overrides)
+            except NodeExecutionError as e:
+                self.results[node_id] = {"error": e.error_message, "value": None}
+            except Exception as e:
+                self.results[node_id] = {"error": str(e), "value": None}
 
         return self.results
 
@@ -86,6 +122,7 @@ class GraphProcessor:
                 val = str(val)
             else:
                 val = self._parse_value(val)
+                self._validate_range(node, val)
 
             self.results[node.id] = {"value": val}
 
@@ -113,6 +150,7 @@ class GraphProcessor:
                 val = str(val)
             else:
                 val = self._parse_value(val)
+                self._validate_range(node, val)
 
             self.results[node.id] = {"value": val}
 
@@ -124,6 +162,10 @@ class GraphProcessor:
             for u, _v, data in in_edges:
                 # data contains 'target_port' which maps to the function argument name
                 arg_name = data["target_port"]
+                
+                if u in self.results and isinstance(self.results[u], dict) and "error" in self.results[u]:
+                     raise NodeExecutionError(str(node.id), node.label, f"Dependency '{self.node_map[u].label}' failed")
+
                 inputs[arg_name] = self.results[u][data["source_port"]]
 
             outputs = [o["key"] for o in self.node_map[node.id].outputs]
@@ -170,6 +212,10 @@ class GraphProcessor:
             for u, _v, data in in_edges:
                 # target_port on parent node corresponds to Input Node Label in child sheet
                 input_label = data["target_port"]
+                
+                if u in self.results and isinstance(self.results[u], dict) and "error" in self.results[u]:
+                     raise NodeExecutionError(str(node.id), node.label, f"Dependency '{self.node_map[u].label}' failed")
+
                 if u in self.results and data["source_port"] in self.results[u]:
                     nested_inputs[input_label] = self.results[u][data["source_port"]]
                 else:
@@ -197,7 +243,13 @@ class GraphProcessor:
             if in_edges:
                 source_id = in_edges[0][0]
                 source_port = in_edges[0][2]["source_port"]
-                self.results[node.id] = self.results[source_id][source_port]
+                
+                if source_id in self.results and isinstance(self.results[source_id], dict) and "error" in self.results[source_id]:
+                     raise NodeExecutionError(str(node.id), node.label, f"Dependency '{self.node_map[source_id].label}' failed")
+
+                val = self.results[source_id][source_port]
+                self._validate_range(node, val)
+                self.results[node.id] = val
             else:
                 self.results[node.id] = None
 

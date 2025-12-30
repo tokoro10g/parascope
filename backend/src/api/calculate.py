@@ -68,6 +68,10 @@ async def calculate_sheet(
                 "outputs": {},
             }
 
+            # Check for error
+            if isinstance(result_val, dict) and "error" in result_val:
+                node_resp["error"] = result_val["error"]
+
             # Populate inputs
             if node.type not in ["input", "parameter"]:
                 in_edges = processor.graph.in_edges(node.id, data=True)

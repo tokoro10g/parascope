@@ -21,6 +21,7 @@ import type { Sheet } from '../api';
 
 import { CustomNode } from './CustomNode';
 import { DropdownControl, DropdownControlComponent } from './DropdownControl';
+import { NumberControl, NumberControlComponent } from './NumberControl';
 
 // --- Styled Components for Context Menu ---
 const { Menu, Item, Search, Common, Subitems } = ReactPresets.contextMenu;
@@ -121,21 +122,29 @@ export class ParascopeNode extends Classic.Node {
           ),
         );
       } else {
+        const min = data.min !== undefined && data.min !== '' ? Number(data.min) : undefined;
+        const max = data.max !== undefined && data.max !== '' ? Number(data.max) : undefined;
+        
         this.addControl(
           'value',
-          new Classic.InputControl('text', {
-            initial: '',
+          new NumberControl(data.value || '', {
             readonly: false,
             change: onChange,
+            min,
+            max,
           }),
         );
       }
     } else if (this.type === 'output') {
+      const min = data.min !== undefined && data.min !== '' ? Number(data.min) : undefined;
+      const max = data.max !== undefined && data.max !== '' ? Number(data.max) : undefined;
+
       this.addControl(
         'value',
-        new Classic.InputControl('text', {
-          initial: '',
+        new NumberControl(data.value || '', {
           readonly: true,
+          min,
+          max,
         }),
       );
     } else if (this.type === 'parameter') {
@@ -153,12 +162,16 @@ export class ParascopeNode extends Classic.Node {
           ),
         );
       } else {
+        const min = data.min !== undefined && data.min !== '' ? Number(data.min) : undefined;
+        const max = data.max !== undefined && data.max !== '' ? Number(data.max) : undefined;
+
         this.addControl(
           'value',
-          new Classic.InputControl('text', {
-            initial: String(data.value !== undefined ? data.value : ''),
+          new NumberControl(data.value !== undefined ? data.value : '', {
             readonly: false,
             change: onChange,
+            min,
+            max,
           }),
         );
       }
@@ -331,6 +344,9 @@ export async function createEditor(container: HTMLElement) {
         control: (data) => {
           if (data.payload instanceof DropdownControl) {
             return DropdownControlComponent as any;
+          }
+          if (data.payload instanceof NumberControl) {
+            return NumberControlComponent as any;
           }
           return ReactPresets.classic.Control;
         },
@@ -529,7 +545,8 @@ export async function createEditor(container: HTMLElement) {
         for (const [key, control] of Object.entries(n.controls)) {
           if (
             control instanceof Classic.InputControl ||
-            control instanceof DropdownControl
+            control instanceof DropdownControl ||
+            control instanceof NumberControl
           ) {
             // Don't save values for input/output nodes as they are transient
             if (n.type !== 'input' && n.type !== 'output') {

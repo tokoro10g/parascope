@@ -360,6 +360,52 @@ export const NodeInspector: React.FC<NodeInspectorProps> = ({
               </select>
             </div>
 
+            {(data.dataType === 'number' || !data.dataType) && (
+              <div className="form-group">
+                <label style={{ display: 'block', marginBottom: '5px' }}>
+                  Range Validation:
+                </label>
+                <div style={{ display: 'flex', gap: '10px' }}>
+                  <div style={{ flex: 1 }}>
+                    <label
+                      htmlFor="node-min"
+                      style={{ fontSize: '0.8em', display: 'block' }}
+                    >
+                      Min
+                    </label>
+                    <input
+                      id="node-min"
+                      type="number"
+                      value={data.min !== undefined ? data.min : ''}
+                      onChange={(e) =>
+                        setData({ ...data, min: e.target.value })
+                      }
+                      placeholder="-∞"
+                      style={{ width: '100%' }}
+                    />
+                  </div>
+                  <div style={{ flex: 1 }}>
+                    <label
+                      htmlFor="node-max"
+                      style={{ fontSize: '0.8em', display: 'block' }}
+                    >
+                      Max
+                    </label>
+                    <input
+                      id="node-max"
+                      type="number"
+                      value={data.max !== undefined ? data.max : ''}
+                      onChange={(e) =>
+                        setData({ ...data, max: e.target.value })
+                      }
+                      placeholder="+∞"
+                      style={{ width: '100%' }}
+                    />
+                  </div>
+                </div>
+              </div>
+            )}
+
             {data.dataType === 'option' && (
               <div className="form-group">
                 <div style={{ marginBottom: '5px', fontWeight: 'bold' }}>
