@@ -382,7 +382,6 @@ export const NodeInspector: React.FC<NodeInspectorProps> = ({
                 ) : (
                   <input
                     id="node-value"
-                    type="number"
                     value={data.value || 0}
                     onChange={(e) =>
                       setData({ ...data, value: parseFloat(e.target.value) })
