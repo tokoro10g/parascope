@@ -44,7 +44,8 @@
 }
 
 @keyframes blink-highlight {
-  0% {
+  0%,
+  50% {
     background-color: rgba(0, 255, 0, 0.5);
   }
   100% {
@@ -53,7 +54,7 @@
 }
 
 .value-blink {
-  animation: blink-highlight 1s ease-out;
+  animation: blink-highlight 2s ease-out;
   border-radius: 4px;
   padding: 0 4px;
 }
