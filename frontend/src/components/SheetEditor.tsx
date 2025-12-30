@@ -341,7 +341,7 @@ export const SheetEditor: React.FC = () => {
 
       const id = uuidv4();
       const type = originalNode.type;
-      const label = originalNode.label;
+      const label = `${originalNode.label} (copy)`;
 
       const inputs = Object.keys(originalNode.inputs).map((key) => ({
         key,
