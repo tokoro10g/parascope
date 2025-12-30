@@ -1,5 +1,5 @@
 import CodeEditor from '@uiw/react-textarea-code-editor';
-import { Trash2 } from 'lucide-react';
+import { ArrowDown, ArrowUp, Trash2 } from 'lucide-react';
 import type React from 'react';
 import { useEffect, useState } from 'react';
 import ReactMarkdown from 'react-markdown';
@@ -98,45 +98,83 @@ export const NodeInspector: React.FC<NodeInspectorProps> = ({
   };
 
   const handleAddInput = () => {
-    const name = prompt('Input name (must be a valid Python identifier):');
-    if (name) {
-      if (!isValidPythonIdentifier(name)) {
-        alert(
-          'Invalid name. Must start with a letter or underscore and contain only letters, numbers, and underscores.',
-        );
-        return;
-      }
-      if (inputs.some((i) => i.key === name)) {
-        alert('Input with this name already exists.');
-        return;
-      }
-      setInputs([...inputs, { key: name, socket_type: 'any' }]);
+    let name = 'input';
+    let counter = 1;
+    while (inputs.some((i) => i.key === name)) {
+      name = `input_${counter}`;
+      counter++;
     }
+    setInputs([...inputs, { key: name, socket_type: 'any' }]);
   };
 
-  const handleRemoveInput = (key: string) => {
-    setInputs(inputs.filter((i) => i.key !== key));
+  const handleRemoveInput = (index: number) => {
+    const newInputs = [...inputs];
+    newInputs.splice(index, 1);
+    setInputs(newInputs);
+  };
+
+  const handleInputNameChange = (index: number, newName: string) => {
+    const newInputs = [...inputs];
+    newInputs[index].key = newName;
+    setInputs(newInputs);
+  };
+
+  const handleMoveInput = (index: number, direction: 'up' | 'down') => {
+    if (direction === 'up' && index > 0) {
+      const newInputs = [...inputs];
+      [newInputs[index], newInputs[index - 1]] = [
+        newInputs[index - 1],
+        newInputs[index],
+      ];
+      setInputs(newInputs);
+    } else if (direction === 'down' && index < inputs.length - 1) {
+      const newInputs = [...inputs];
+      [newInputs[index], newInputs[index + 1]] = [
+        newInputs[index + 1],
+        newInputs[index],
+      ];
+      setInputs(newInputs);
+    }
   };
 
   const handleAddOutput = () => {
-    const name = prompt('Output name (must be a valid Python identifier):');
-    if (name) {
-      if (!isValidPythonIdentifier(name)) {
-        alert(
-          'Invalid name. Must start with a letter or underscore and contain only letters, numbers, and underscores.',
-        );
-        return;
-      }
-      if (outputs.some((o) => o.key === name)) {
-        alert('Output with this name already exists.');
-        return;
-      }
-      setOutputs([...outputs, { key: name, socket_type: 'any' }]);
+    let name = 'output';
+    let counter = 1;
+    while (outputs.some((o) => o.key === name)) {
+      name = `output_${counter}`;
+      counter++;
     }
+    setOutputs([...outputs, { key: name, socket_type: 'any' }]);
   };
 
-  const handleRemoveOutput = (key: string) => {
-    setOutputs(outputs.filter((o) => o.key !== key));
+  const handleRemoveOutput = (index: number) => {
+    const newOutputs = [...outputs];
+    newOutputs.splice(index, 1);
+    setOutputs(newOutputs);
+  };
+
+  const handleOutputNameChange = (index: number, newName: string) => {
+    const newOutputs = [...outputs];
+    newOutputs[index].key = newName;
+    setOutputs(newOutputs);
+  };
+
+  const handleMoveOutput = (index: number, direction: 'up' | 'down') => {
+    if (direction === 'up' && index > 0) {
+      const newOutputs = [...outputs];
+      [newOutputs[index], newOutputs[index - 1]] = [
+        newOutputs[index - 1],
+        newOutputs[index],
+      ];
+      setOutputs(newOutputs);
+    } else if (direction === 'down' && index < outputs.length - 1) {
+      const newOutputs = [...outputs];
+      [newOutputs[index], newOutputs[index + 1]] = [
+        newOutputs[index + 1],
+        newOutputs[index],
+      ];
+      setOutputs(newOutputs);
+    }
   };
 
   const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -427,14 +465,56 @@ export const NodeInspector: React.FC<NodeInspectorProps> = ({
             <div className="io-section">
               <div className="io-column">
                 <h3>Inputs</h3>
-                <ul style={{ fontFamily: 'monospace' }}>
-                  {inputs.map((i) => (
-                    <li key={i.key}>
-                      {i.key}
+                <ul style={{ fontFamily: 'monospace', padding: 0 }}>
+                  {inputs.map((i, idx) => (
+                    <li
+                      // biome-ignore lint/suspicious/noArrayIndexKey: Order matters here
+                      key={idx}
+                      style={{
+                        display: 'flex',
+                        gap: '5px',
+                        marginBottom: '5px',
+                        alignItems: 'center',
+                      }}
+                    >
+                      <input
+                        value={i.key}
+                        onChange={(e) =>
+                          handleInputNameChange(idx, e.target.value)
+                        }
+                        style={{
+                          flex: 1,
+                          borderColor: isValidPythonIdentifier(i.key)
+                            ? undefined
+                            : 'red',
+                        }}
+                        title={
+                          isValidPythonIdentifier(i.key)
+                            ? ''
+                            : 'Invalid Python identifier'
+                        }
+                      />
                       <button
                         type="button"
-                        onClick={() => handleRemoveInput(i.key)}
+                        onClick={() => handleMoveInput(idx, 'up')}
+                        disabled={idx === 0}
+                        style={{ padding: '2px' }}
+                      >
+                        <ArrowUp size={12} />
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => handleMoveInput(idx, 'down')}
+                        disabled={idx === inputs.length - 1}
+                        style={{ padding: '2px' }}
+                      >
+                        <ArrowDown size={12} />
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => handleRemoveInput(idx)}
                         className="danger"
+                        style={{ padding: '2px' }}
                       >
                         <Trash2 size={12} />
                       </button>
@@ -448,14 +528,56 @@ export const NodeInspector: React.FC<NodeInspectorProps> = ({
 
               <div className="io-column">
                 <h3>Outputs</h3>
-                <ul style={{ fontFamily: 'monospace' }}>
-                  {outputs.map((o) => (
-                    <li key={o.key}>
-                      {o.key}
+                <ul style={{ fontFamily: 'monospace', padding: 0 }}>
+                  {outputs.map((o, idx) => (
+                    <li
+                      // biome-ignore lint/suspicious/noArrayIndexKey: Order matters here
+                      key={idx}
+                      style={{
+                        display: 'flex',
+                        gap: '5px',
+                        marginBottom: '5px',
+                        alignItems: 'center',
+                      }}
+                    >
+                      <input
+                        value={o.key}
+                        onChange={(e) =>
+                          handleOutputNameChange(idx, e.target.value)
+                        }
+                        style={{
+                          flex: 1,
+                          borderColor: isValidPythonIdentifier(o.key)
+                            ? undefined
+                            : 'red',
+                        }}
+                        title={
+                          isValidPythonIdentifier(o.key)
+                            ? ''
+                            : 'Invalid Python identifier'
+                        }
+                      />
                       <button
                         type="button"
-                        onClick={() => handleRemoveOutput(o.key)}
+                        onClick={() => handleMoveOutput(idx, 'up')}
+                        disabled={idx === 0}
+                        style={{ padding: '2px' }}
+                      >
+                        <ArrowUp size={12} />
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => handleMoveOutput(idx, 'down')}
+                        disabled={idx === outputs.length - 1}
+                        style={{ padding: '2px' }}
+                      >
+                        <ArrowDown size={12} />
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => handleRemoveOutput(idx)}
                         className="danger"
+                        style={{ padding: '2px' }}
                       >
                         <Trash2 size={12} />
                       </button>
