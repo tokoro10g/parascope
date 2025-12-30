@@ -11,7 +11,7 @@ import {
 import { ClassicPreset as Classic } from 'rete';
 import { useRete } from 'rete-react-plugin';
 import { v4 as uuidv4 } from 'uuid';
-import { api, type Sheet, type NodeResult } from '../api';
+import { api, type NodeResult, type Sheet } from '../api';
 import { useAuth } from '../contexts/AuthContext';
 import { createEditor, ParascopeNode, socket } from '../rete';
 import { EditorBar } from './EditorBar';
