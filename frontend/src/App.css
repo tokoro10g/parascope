@@ -223,6 +223,16 @@
   margin-bottom: 20px;
 }
 
+button.danger {
+  background-color: var(--danger-color);
+  color: white;
+  border: none;
+}
+
+button.danger:hover {
+  background-color: var(--danger-hover);
+}
+
 .sheet-list {
   display: flex;
   flex-direction: column;
@@ -269,16 +279,6 @@
   width: 28px;
   height: 28px;
   min-width: unset;
-}
-
-.sheet-item .sheet-actions button.danger {
-  background-color: var(--danger-color);
-  color: white;
-  border: none;
-}
-
-.sheet-item .sheet-actions button.danger:hover {
-  background-color: var(--danger-hover);
 }
 
 .sheet-item:hover {
@@ -508,7 +508,7 @@
   background: var(--item-bg);
   padding: 20px;
   border-radius: 8px;
-  width: 500px;
+  width: 50%;
   max-width: 90%;
   max-height: 90vh;
   overflow-y: auto;
@@ -556,6 +556,13 @@
   justify-content: space-between;
   padding: 4px 0;
   border-bottom: 1px solid var(--border-light);
+}
+
+.io-column li button {
+  padding: 4px;
+  width: 28px;
+  height: 28px;
+  min-width: unset;
 }
 
 .modal-actions {

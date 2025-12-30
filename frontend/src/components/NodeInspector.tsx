@@ -1,3 +1,4 @@
+import { Trash2 } from 'lucide-react';
 import type React from 'react';
 import { useEffect, useState } from 'react';
 import ReactMarkdown from 'react-markdown';
@@ -401,7 +402,7 @@ export const NodeInspector: React.FC<NodeInspectorProps> = ({
                 id="node-code"
                 value={data.code || ''}
                 onChange={(e) => setData({ ...data, code: e.target.value })}
-                rows={10}
+                rows={30}
                 style={{ width: '100%', fontFamily: 'monospace' }}
               />
               <small>
@@ -412,15 +413,16 @@ export const NodeInspector: React.FC<NodeInspectorProps> = ({
             <div className="io-section">
               <div className="io-column">
                 <h3>Inputs</h3>
-                <ul>
+                <ul style={{ fontFamily: 'monospace' }}>
                   {inputs.map((i) => (
                     <li key={i.key}>
                       {i.key}
                       <button
                         type="button"
                         onClick={() => handleRemoveInput(i.key)}
+                        className="danger"
                       >
-                        x
+                        <Trash2 size={12} />
                       </button>
                     </li>
                   ))}
@@ -432,15 +434,16 @@ export const NodeInspector: React.FC<NodeInspectorProps> = ({
 
               <div className="io-column">
                 <h3>Outputs</h3>
-                <ul>
+                <ul style={{ fontFamily: 'monospace' }}>
                   {outputs.map((o) => (
                     <li key={o.key}>
                       {o.key}
                       <button
                         type="button"
                         onClick={() => handleRemoveOutput(o.key)}
+                        className="danger"
                       >
-                        x
+                        <Trash2 size={12} />
                       </button>
                     </li>
                   ))}
