@@ -501,7 +501,11 @@ async def seed_database(session: AsyncSession):
         outputs=[],
         position_x=1600,
         position_y=700,
-        data={"description": "Boolean-like string indicating if the mission is feasible."},
+        data={
+            "description": "Boolean-like string indicating if the mission is feasible.",
+            "dataType": "option",
+            "options": ["YES", "NO"],
+        },
     )
 
     # Connections
