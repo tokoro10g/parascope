@@ -68,6 +68,8 @@ export class ParascopeNode extends Classic.Node {
   height = 150;
   public dbId?: string; // ID from the database
   public type: string;
+  public x = 0;
+  public y = 0;
   public initialData: Record<string, any>;
   public onChange?: (value: any) => void;
 

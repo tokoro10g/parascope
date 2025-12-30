@@ -30,7 +30,12 @@ export const SheetTable: React.FC<SheetTableProps> = ({
         parameter: 1,
         output: 2,
       };
-      return (typeOrder[a.type] ?? 99) - (typeOrder[b.type] ?? 99);
+      const typeDiff = (typeOrder[a.type] ?? 99) - (typeOrder[b.type] ?? 99);
+      if (typeDiff !== 0) return typeDiff;
+
+      // Secondary sort by position (x then y)
+      if (a.x !== b.x) return (a.x || 0) - (b.x || 0);
+      return (a.y || 0) - (b.y || 0);
     });
 
   // Filter for Descriptions (Parameters, Inputs, Functions, Outputs, Sheets)
@@ -46,7 +51,12 @@ export const SheetTable: React.FC<SheetTableProps> = ({
         sheet: 3,
         output: 4,
       };
-      return (typeOrder[a.type] ?? 99) - (typeOrder[b.type] ?? 99);
+      const typeDiff = (typeOrder[a.type] ?? 99) - (typeOrder[b.type] ?? 99);
+      if (typeDiff !== 0) return typeDiff;
+
+      // Secondary sort by position (x then y)
+      if (a.x !== b.x) return (a.x || 0) - (b.x || 0);
+      return (a.y || 0) - (b.y || 0);
     });
 
   const handleCopyTable = () => {

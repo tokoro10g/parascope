@@ -183,7 +183,15 @@ export const SheetEditor: React.FC = () => {
           ? window.location.hash.substring(1)
           : undefined;
         await editor.loadSheet(sheet, focusNodeId);
-        setNodes([...editor.editor.getNodes()]);
+        const nodes = [...editor.editor.getNodes()];
+        nodes.forEach((n) => {
+          const pos = editor.area.nodeViews.get(n.id)?.position;
+          if (pos) {
+            n.x = pos.x;
+            n.y = pos.y;
+          }
+        });
+        setNodes(nodes);
         setIsDirty(false);
         setIsLoading(false);
         document.title = `Parascope - ${sheet.name}`;
@@ -599,7 +607,15 @@ export const SheetEditor: React.FC = () => {
       });
       editor.setGraphChangeListener(() => {
         setIsDirty(true);
-        setNodes([...editor.editor.getNodes()]);
+        const nodes = [...editor.editor.getNodes()];
+        nodes.forEach((n) => {
+          const pos = editor.area.nodeViews.get(n.id)?.position;
+          if (pos) {
+            n.x = pos.x;
+            n.y = pos.y;
+          }
+        });
+        setNodes(nodes);
       });
       editor.setInputValueChangeListener((nodeId, value) => {
         handleEvaluatorInputChange(nodeId, value);
@@ -616,7 +632,15 @@ export const SheetEditor: React.FC = () => {
   useEffect(() => {
     if (editor) {
       editor.updateNodeValues(evaluatorInputs, lastResult || {});
-      setNodes([...editor.editor.getNodes()]);
+      const nodes = [...editor.editor.getNodes()];
+      nodes.forEach((n) => {
+        const pos = editor.area.nodeViews.get(n.id)?.position;
+        if (pos) {
+          n.x = pos.x;
+          n.y = pos.y;
+        }
+      });
+      setNodes(nodes);
     }
   }, [editor, evaluatorInputs, lastResult]);
 
@@ -852,7 +876,19 @@ export const SheetEditor: React.FC = () => {
   const evaluatorProps = useMemo(() => {
     if (!currentSheet) return { inputs: [], outputs: [] };
 
-    const inputs: EvaluatorInput[] = currentSheet.nodes
+    // Use nodes state if available (for live position updates), otherwise fallback to currentSheet
+    // But currentSheet.nodes are NodeData, nodes are ParascopeNode.
+    // We need to normalize or just use nodes if we are sure it's populated.
+    // nodes is populated after loadSheet.
+
+    const sourceNodes = nodes.length > 0 ? nodes : [];
+
+    const sortedNodes = [...sourceNodes].sort((a, b) => {
+      if (a.x !== b.x) return a.x - b.x;
+      return a.y - b.y;
+    });
+
+    const inputs: EvaluatorInput[] = sortedNodes
       .filter((n) => n.type === 'input' && n.id)
       .map((n) => ({
         id: n.id!,
@@ -861,7 +897,7 @@ export const SheetEditor: React.FC = () => {
           evaluatorInputs[n.id!] !== undefined ? evaluatorInputs[n.id!] : '',
       }));
 
-    const outputs: EvaluatorOutput[] = currentSheet.nodes
+    const outputs: EvaluatorOutput[] = sortedNodes
       .filter((n) => n.type === 'output' && n.id)
       .map((n) => ({
         id: n.id!,
@@ -870,7 +906,7 @@ export const SheetEditor: React.FC = () => {
       }));
 
     return { inputs, outputs };
-  }, [currentSheet, evaluatorInputs, lastResult]);
+  }, [currentSheet, nodes, evaluatorInputs, lastResult]);
 
   useEffect(() => {
     if (editor) {
