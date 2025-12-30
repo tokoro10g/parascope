@@ -11,10 +11,23 @@ import {
 import { ClassicPreset as Classic } from 'rete';
 import { useRete } from 'rete-react-plugin';
 import { v4 as uuidv4 } from 'uuid';
-import { api, type Sheet } from '../api';
+import { api, type Sheet, type NodeResult } from '../api';
 import { useAuth } from '../contexts/AuthContext';
 import { createEditor, ParascopeNode, socket } from '../rete';
 import { EditorBar } from './EditorBar';
+
+const extractValuesFromResult = (
+  result: Record<string, NodeResult>,
+): Record<string, any> => {
+  const values: Record<string, any> = {};
+  Object.entries(result).forEach(([id, nodeRes]) => {
+    if (nodeRes.value !== undefined) {
+      values[id] = nodeRes.value;
+    }
+  });
+  return values;
+};
+
 import {
   EvaluatorBar,
   type EvaluatorInput,
@@ -35,9 +48,10 @@ export const SheetEditor: React.FC = () => {
   const [currentSheet, setCurrentSheet] = useState<Sheet | null>(null);
   const [nodes, setNodes] = useState<ParascopeNode[]>([]);
   const [isCalculating, setIsCalculating] = useState(false);
-  const [lastResult, setLastResult] = useState<Record<string, any> | null>(
-    null,
-  );
+  const [lastResult, setLastResult] = useState<Record<
+    string,
+    NodeResult
+  > | null>(null);
   const [evaluatorInputs, setEvaluatorInputs] = useState<
     Record<string, string>
   >({});
@@ -214,9 +228,20 @@ export const SheetEditor: React.FC = () => {
         if (inputNodes.length === 0 || allInputsProvided) {
           setIsCalculating(true);
           try {
-            const result = await api.calculate(sheet.id, inputsFromParams);
+            const apiInputs: Record<string, { value: any }> = {};
+            Object.entries(inputsFromParams).forEach(([id, value]) => {
+              const node = inputNodes.find((n) => n.id === id);
+              if (node) {
+                apiInputs[node.label] = { value };
+              }
+            });
+
+            const result = await api.calculate(sheet.id, apiInputs);
             setLastResult(result);
-            editor.updateNodeValues(inputsFromParams, result);
+            editor.updateNodeValues(
+              inputsFromParams,
+              extractValuesFromResult(result),
+            );
             setNodes([...editor.editor.getNodes()]);
           } catch (e) {
             console.error('Auto-calculation failed', e);
@@ -591,7 +616,7 @@ export const SheetEditor: React.FC = () => {
             // 1. Check lastResult (calculated values)
             if (lastResultRef.current && sourceId in lastResultRef.current) {
               const nodeResult = lastResultRef.current[sourceId];
-              value = nodeResult?.[c.sourceOutput];
+              value = nodeResult?.outputs?.[c.sourceOutput];
             }
             // 2. Check evaluatorInputs (if source is an input node)
             else if (
@@ -924,7 +949,7 @@ export const SheetEditor: React.FC = () => {
       .map((n) => ({
         id: n.id!,
         label: n.label,
-        value: lastResult ? lastResult[n.id!] : undefined,
+        value: lastResult ? lastResult[n.id!]?.value : undefined,
       }));
 
     return { inputs, outputs };
@@ -936,7 +961,10 @@ export const SheetEditor: React.FC = () => {
       evaluatorProps.inputs.forEach((i) => {
         inputValues[i.id] = i.value;
       });
-      editor.updateNodeValues(inputValues, lastResult || {});
+      editor.updateNodeValues(
+        inputValues,
+        lastResult ? extractValuesFromResult(lastResult) : {},
+      );
     }
   }, [editor, evaluatorProps, lastResult]);
 
@@ -946,11 +974,22 @@ export const SheetEditor: React.FC = () => {
     try {
       await handleSaveSheet();
 
-      const result = await api.calculate(currentSheet.id, evaluatorInputs);
+      const apiInputs: Record<string, { value: any }> = {};
+      Object.entries(evaluatorInputs).forEach(([id, value]) => {
+        const node = nodes.find((n) => n.id === id);
+        if (node) {
+          apiInputs[node.label] = { value };
+        }
+      });
+
+      const result = await api.calculate(currentSheet.id, apiInputs);
       console.log('Calculation result:', result);
       setLastResult(result);
       if (editor) {
-        editor.updateNodeValues(evaluatorInputs, result);
+        editor.updateNodeValues(
+          evaluatorInputs,
+          extractValuesFromResult(result),
+        );
         setNodes([...editor.editor.getNodes()]);
       }
       setErrorNodeId(null);

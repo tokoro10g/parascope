@@ -137,12 +137,12 @@ export const api = {
 
   async calculate(
     sheetId: string,
-    inputs?: Record<string, any>,
-  ): Promise<Record<string, any>> {
+    inputs: Record<string, { value: any }>,
+  ): Promise<Record<string, NodeResult>> {
     const res = await fetch(`${API_BASE}/calculate/${sheetId}`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(inputs || {}),
+      body: JSON.stringify(inputs),
     });
     if (!res.ok) {
       const err = await res.json();
@@ -156,6 +156,14 @@ export const api = {
     return res.json();
   },
 };
+
+export interface NodeResult {
+  type: string;
+  label: string;
+  value?: any;
+  inputs: Record<string, any>;
+  outputs: Record<string, any>;
+}
 
 export const uploadAttachment = async (
   file: File,

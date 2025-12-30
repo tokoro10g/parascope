@@ -99,12 +99,12 @@ async def test_option_validation():
         await client.put(f"/sheets/{sheet_id}", json={"nodes": nodes, "connections": connections})
 
         # 6. Test Valid Input Override
-        response = await client.post(f"/calculate/{sheet_id}", json={input_id: "Accurate"})
+        response = await client.post(f"/calculate/{sheet_id}", json={input_id: {"value": "Accurate"}})
         assert response.status_code == 200
         results = response.json()
         assert results[input_id]["value"] == "Accurate"
 
         # 7. Test Invalid Input Override
-        response = await client.post(f"/calculate/{sheet_id}", json={input_id: "Slow"})
+        response = await client.post(f"/calculate/{sheet_id}", json={input_id: {"value": "Slow"}})
         assert response.status_code == 400
         assert "not a valid option" in response.json()["detail"]["message"]
