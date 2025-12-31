@@ -1,9 +1,4 @@
-import {
-  ArrowLeft,
-  FileSpreadsheet,
-  Folder as FolderIcon,
-  Home,
-} from 'lucide-react';
+import { ArrowLeft, Folder as FolderIcon, Home, Workflow } from 'lucide-react';
 import React, { useEffect, useState } from 'react';
 import { api, type Folder, type Sheet } from '../api';
 
@@ -160,7 +155,7 @@ export const SheetPickerModal: React.FC<SheetPickerModalProps> = ({
                 className="sheet-item folder-item"
                 onClick={handleUp}
               >
-                <div className='sheet-info'>
+                <div className="sheet-info">
                   <ArrowLeft size={20} />
                   <strong>.. (Up)</strong>
                 </div>
@@ -173,7 +168,7 @@ export const SheetPickerModal: React.FC<SheetPickerModalProps> = ({
                 className="sheet-item folder-item"
                 onClick={() => setCurrentFolderId(folder.id)}
               >
-                <div className='sheet-info'>
+                <div className="sheet-info">
                   <FolderIcon size={20} />
                   <strong>{folder.name}</strong>
                 </div>
@@ -186,8 +181,8 @@ export const SheetPickerModal: React.FC<SheetPickerModalProps> = ({
                 className="sheet-item"
                 onClick={() => onSelect(sheet)}
               >
-                <div className='sheet-info'>
-                  <FileSpreadsheet size={20} />
+                <div className="sheet-info">
+                  <Workflow size={20} />
                   <strong>{sheet.name}</strong>
                 </div>
                 <span className="sheet-id">{sheet.id}</span>

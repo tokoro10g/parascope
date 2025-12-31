@@ -60,7 +60,10 @@ export const EvaluatorBar: React.FC<EvaluatorBarProps> = ({
           if (output.value !== undefined && !isCalculating) {
             let value = output.value;
             const valueAsNumber = Number.parseFloat(value);
-            if (!Number.isNaN(valueAsNumber) && Math.floor(valueAsNumber) !== valueAsNumber) {
+            if (
+              !Number.isNaN(valueAsNumber) &&
+              Math.floor(valueAsNumber) !== valueAsNumber
+            ) {
               value = valueAsNumber.toPrecision(6);
             }
             displayValue = value;

@@ -1,12 +1,12 @@
 import {
   ArrowLeft,
   Copy,
-  FileText,
   Folder as FolderIcon,
   FolderInput,
   FolderPlus,
   LogOut,
   Trash2,
+  Workflow,
 } from 'lucide-react';
 import React, { useCallback, useEffect, useState } from 'react';
 import { Link, useNavigate, useParams } from 'react-router-dom';
@@ -305,9 +305,7 @@ export const Dashboard: React.FC = () => {
               style={{ justifyContent: 'flex-start' }}
             >
               <FolderIcon size={20} />
-              <span className="sheet-name" style={{ marginLeft: 10 }}>
-                {folder.name}
-              </span>
+              <span className="sheet-name">{folder.name}</span>
             </div>
             <div className="sheet-actions">
               <button
@@ -325,16 +323,15 @@ export const Dashboard: React.FC = () => {
         {currentSheets.map((sheet) => (
           <div key={sheet.id} className="sheet-item">
             <Link to={`/sheet/${sheet.id}`} className="sheet-link">
-              <div className="sheet-info">
-                <div style={{ display: 'flex', alignItems: 'center' }}>
-                  <FileText size={20} />
-                  <span className="sheet-name" style={{ marginLeft: 10 }}>
-                    {sheet.name}
-                  </span>
-                </div>
-                <span className="sheet-id">{sheet.id}</span>
+              <div
+                className="sheet-info"
+                style={{ justifyContent: 'flex-start' }}
+              >
+                <Workflow size={20} />
+                <span className="sheet-name">{sheet.name}</span>
               </div>
             </Link>
+            <span className="sheet-id">{sheet.id}</span>
             <div className="sheet-actions">
               <button
                 type="button"

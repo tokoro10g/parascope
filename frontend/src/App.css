@@ -265,6 +265,7 @@ button.danger:hover {
   display: flex;
   justify-content: space-between;
   align-items: center;
+  gap: 10px;
 }
 
 .sheet-item .sheet-actions {

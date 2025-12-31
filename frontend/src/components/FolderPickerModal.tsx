@@ -135,9 +135,7 @@ export const FolderPickerModal: React.FC<FolderPickerModalProps> = ({
               >
                 <div className="sheet-info">
                   <ArrowLeft size={20} />
-                  <span className="sheet-name">
-                    .. (Up)
-                  </span>
+                  <span className="sheet-name">.. (Up)</span>
                 </div>
               </button>
             )}
@@ -150,9 +148,7 @@ export const FolderPickerModal: React.FC<FolderPickerModalProps> = ({
               >
                 <div className="sheet-info">
                   <FolderIcon size={20} />
-                  <span className="sheet-name">
-                    {folder.name}
-                  </span>
+                  <span className="sheet-name">{folder.name}</span>
                 </div>
               </button>
             ))}

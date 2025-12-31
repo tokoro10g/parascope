@@ -206,7 +206,10 @@ export const SheetTable: React.FC<SheetTableProps> = ({
                 const name = nameControl?.value || node.label;
                 let value = valueControl?.value;
                 const valueAsNumber = Number.parseFloat(value);
-                if (!Number.isNaN(valueAsNumber) && Math.floor(valueAsNumber) !== valueAsNumber) {
+                if (
+                  !Number.isNaN(valueAsNumber) &&
+                  Math.floor(valueAsNumber) !== valueAsNumber
+                ) {
                   value = valueAsNumber.toPrecision(6);
                 }
 
