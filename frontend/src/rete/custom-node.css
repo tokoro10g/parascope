@@ -46,6 +46,12 @@
   border: 2px solid #f44336;
 }
 
+/* Selected State */
+.node-selected {
+  box-shadow: 0 0 10px 4px #ffd700;
+  border: 2px solid #ffd700;
+}
+
 /* Auto-size nodes */
 .node-parameter,
 .node-function,

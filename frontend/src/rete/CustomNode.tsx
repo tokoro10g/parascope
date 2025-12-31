@@ -39,6 +39,12 @@ export function CustomNode(props: any) {
         );
         nodeEl.classList.add(typeClass);
 
+        if (data.selected) {
+          nodeEl.classList.add('node-selected');
+        } else {
+          nodeEl.classList.remove('node-selected');
+        }
+
         const bg = styles[type]?.background;
         const bc = styles[type]?.borderColor;
 
