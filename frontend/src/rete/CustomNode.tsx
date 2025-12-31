@@ -54,6 +54,12 @@ export function CustomNode(props: any) {
         // Force auto size
         nodeEl.style.setProperty('width', 'auto', 'important');
         nodeEl.style.setProperty('height', 'auto', 'important');
+
+        // Find title element and add padding for the icon
+        const title = nodeEl.querySelector('.title') as HTMLElement;
+        if (title) {
+          title.style.paddingRight = '30px'; // Make space for the icon
+        }
       }
     }
   });
