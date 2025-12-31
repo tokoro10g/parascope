@@ -38,15 +38,16 @@ async def list_folders(db: AsyncSession = Depends(get_db)):
 
 @router.delete("/folders/{folder_id}")
 async def delete_folder(folder_id: UUID, db: AsyncSession = Depends(get_db)):
-    # Move sheets to root
-    stmt = update(Sheet).where(Sheet.folder_id == folder_id).values(folder_id=None)
-    await db.execute(stmt)
-
     query = select(Folder).where(Folder.id == folder_id)
     result = await db.execute(query)
     folder = result.scalar_one_or_none()
+
     if not folder:
         raise HTTPException(status_code=404, detail="Folder not found")
+
+    # Move sheets to parent
+    stmt = update(Sheet).where(Sheet.folder_id == folder_id).values(folder_id=folder.parent_id)
+    await db.execute(stmt)
 
     await db.delete(folder)
     await db.commit()

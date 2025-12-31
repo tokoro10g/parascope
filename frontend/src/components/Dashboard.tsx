@@ -106,7 +106,7 @@ export const Dashboard: React.FC = () => {
     e.stopPropagation();
     if (
       !confirm(
-        'Are you sure you want to delete this folder? Sheets inside will be moved to the root.',
+        'Are you sure you want to delete this folder? Sheets inside will be moved to the parent.',
       )
     )
       return;
