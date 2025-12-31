@@ -58,7 +58,9 @@ export const DropdownControlComponent: React.FC<{ data: DropdownControl }> = ({
       disabled={data.readonly}
       onPointerDown={(e) => e.stopPropagation()}
       onDoubleClick={(e) => e.stopPropagation()}
+      style={{ fontFamily: 'monospace' }}
     >
+      <option key="" value=""></option>
       {data.options.map((opt) => (
         <option key={opt} value={opt}>
           {opt}

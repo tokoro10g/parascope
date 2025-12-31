@@ -204,6 +204,8 @@ export const SheetTable: React.FC<SheetTableProps> = ({
               {tableNodes.map((node) => {
                 const isEditable =
                   node.type === 'parameter' || node.type === 'input';
+                const isDropdown =
+                  isEditable && node.initialData.dataType === 'option';
                 const nameControl = node.controls.name as any;
                 const valueControl = node.controls.value as any;
 
@@ -229,7 +231,26 @@ export const SheetTable: React.FC<SheetTableProps> = ({
                         fontSize: '.8rem',
                       }}
                     >
-                      {isEditable ? (
+                      {isDropdown ? (
+                        <select
+                          value={value}
+                          onChange={(e) =>{
+                            onUpdateValue(node.id, e.target.value);}
+                          }
+                          onClick={(e) => e.stopPropagation()} // Prevent row selection when editing
+                          style={{
+                            textAlign: 'right',
+                            fontFamily: 'monospace',
+                          }}
+                        >
+                          <option key="" value=""></option>
+                          {node.initialData.options.map((opt: string) => (
+                            <option key={opt} value={opt}>
+                              {opt}
+                            </option>
+                          ))}
+                        </select>
+                      ) : isEditable ? (
                         <input
                           size={9}
                           value={value}

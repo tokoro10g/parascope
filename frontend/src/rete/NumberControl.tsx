@@ -101,6 +101,7 @@ export const NumberControlComponent: React.FC<{ data: NumberControl }> = ({
       onDoubleClick={(e) => e.stopPropagation()}
       style={{
         width: '100%',
+        fontFamily: 'monospace',
         color: isValid ? undefined : 'red',
         borderColor: isValid ? undefined : 'red',
         backgroundColor: isValid ? undefined : 'rgba(255, 0, 0, 0.1)',
