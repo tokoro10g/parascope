@@ -95,7 +95,7 @@ export const NodeInspector: React.FC<NodeInspectorProps> = ({
   };
 
   const getAttachmentUrl = (filename: string) => {
-    return `attachments/${filename}`;
+    return `/attachments/${filename}`;
   };
 
   const handleSave = () => {
@@ -314,7 +314,7 @@ export const NodeInspector: React.FC<NodeInspectorProps> = ({
                   style={{ marginTop: '5px' }}
                 >
                   <img
-                    src={getAttachmentUrl(data.attachment)}
+                    src={API_BASE + getAttachmentUrl(data.attachment)}
                     alt="Attachment"
                     style={{
                       maxWidth: '100%',
@@ -327,7 +327,7 @@ export const NodeInspector: React.FC<NodeInspectorProps> = ({
                   />
                   <div style={{ display: 'flex', gap: '10px' }}>
                     <a
-                      href={getAttachmentUrl(data.attachment)}
+                      href={API_BASE + getAttachmentUrl(data.attachment)}
                       target="_blank"
                       rel="noreferrer"
                       style={{ color: 'var(--link-color, #007bff)' }}
