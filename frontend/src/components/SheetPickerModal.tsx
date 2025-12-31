@@ -159,14 +159,8 @@ export const SheetPickerModal: React.FC<SheetPickerModalProps> = ({
                 type="button"
                 className="sheet-item folder-item"
                 onClick={handleUp}
-                style={{
-                  width: '100%',
-                  textAlign: 'left',
-                  font: 'inherit',
-                  cursor: 'pointer',
-                }}
               >
-                <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                <div className='sheet-info'>
                   <ArrowLeft size={20} />
                   <strong>.. (Up)</strong>
                 </div>
@@ -178,14 +172,8 @@ export const SheetPickerModal: React.FC<SheetPickerModalProps> = ({
                 key={folder.id}
                 className="sheet-item folder-item"
                 onClick={() => setCurrentFolderId(folder.id)}
-                style={{
-                  width: '100%',
-                  textAlign: 'left',
-                  font: 'inherit',
-                  cursor: 'pointer',
-                }}
               >
-                <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                <div className='sheet-info'>
                   <FolderIcon size={20} />
                   <strong>{folder.name}</strong>
                 </div>
@@ -197,14 +185,8 @@ export const SheetPickerModal: React.FC<SheetPickerModalProps> = ({
                 key={sheet.id}
                 className="sheet-item"
                 onClick={() => onSelect(sheet)}
-                style={{
-                  width: '100%',
-                  textAlign: 'left',
-                  font: 'inherit',
-                  cursor: 'pointer',
-                }}
               >
-                <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                <div className='sheet-info'>
                   <FileSpreadsheet size={20} />
                   <strong>{sheet.name}</strong>
                 </div>

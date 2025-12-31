@@ -234,6 +234,10 @@ button.danger:hover {
   background-color: var(--danger-hover);
 }
 
+.breadcrumbs button {
+  min-width: unset;
+}
+
 .sheet-list {
   display: flex;
   flex-direction: column;
@@ -261,7 +265,7 @@ button.danger:hover {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  width: 100%;
+  gap: 10px;
 }
 
 .sheet-item .sheet-actions {

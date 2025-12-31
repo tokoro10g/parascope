@@ -73,13 +73,6 @@ export const EditorBar: React.FC<EditorBarProps> = ({
         </button>
         <button
           type="button"
-          onClick={() => onAddNode('function')}
-          title="Add Function"
-        >
-          <Sigma size={18} />
-        </button>
-        <button
-          type="button"
           onClick={() => onAddNode('input')}
           title="Add Input Node"
         >
@@ -91,6 +84,13 @@ export const EditorBar: React.FC<EditorBarProps> = ({
           title="Add Output Node"
         >
           <LogOut size={18} />
+        </button>
+        <button
+          type="button"
+          onClick={() => onAddNode('function')}
+          title="Add Function"
+        >
+          <Sigma size={18} />
         </button>
         <button
           type="button"

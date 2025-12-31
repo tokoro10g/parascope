@@ -58,7 +58,12 @@ export const EvaluatorBar: React.FC<EvaluatorBarProps> = ({
         {outputs.map((output, i) => {
           let displayValue = '?';
           if (output.value !== undefined && !isCalculating) {
-            displayValue = JSON.stringify(output.value);
+            let value = output.value;
+            const valueAsNumber = Number.parseFloat(value);
+            if (!Number.isNaN(valueAsNumber) && Math.floor(valueAsNumber) !== valueAsNumber) {
+              value = valueAsNumber.toPrecision(6);
+            }
+            displayValue = value;
           }
           return (
             <span key={output.id} className="output-param">

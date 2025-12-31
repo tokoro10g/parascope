@@ -132,16 +132,10 @@ export const FolderPickerModal: React.FC<FolderPickerModalProps> = ({
                 type="button"
                 className="sheet-item folder-item"
                 onClick={handleUp}
-                style={{
-                  width: '100%',
-                  textAlign: 'left',
-                  font: 'inherit',
-                  cursor: 'pointer',
-                }}
               >
                 <div className="sheet-info">
                   <ArrowLeft size={20} />
-                  <span className="sheet-name" style={{ marginLeft: 10 }}>
+                  <span className="sheet-name">
                     .. (Up)
                   </span>
                 </div>
@@ -153,16 +147,10 @@ export const FolderPickerModal: React.FC<FolderPickerModalProps> = ({
                 key={folder.id}
                 className="sheet-item folder-item"
                 onClick={() => setCurrentFolderId(folder.id)}
-                style={{
-                  width: '100%',
-                  textAlign: 'left',
-                  font: 'inherit',
-                  cursor: 'pointer',
-                }}
               >
                 <div className="sheet-info">
                   <FolderIcon size={20} />
-                  <span className="sheet-name" style={{ marginLeft: 10 }}>
+                  <span className="sheet-name">
                     {folder.name}
                   </span>
                 </div>
