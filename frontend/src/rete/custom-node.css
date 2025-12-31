@@ -3,31 +3,41 @@
 /* Parameter Node - Green */
 .node-parameter .title {
   background: #4caf50;
+  border-radius: 8px 8px 0px 0px;
   color: white;
+  padding-right: 30px;
 }
 
 /* Function Node - Blue */
 .node-function .title {
   background: #2196f3;
+  border-radius: 8px 8px 0px 0px;
   color: white;
+  padding-right: 30px;
 }
 
 /* Input Node - Orange */
 .node-input .title {
   background: #ff9800;
+  border-radius: 8px 8px 0px 0px;
   color: white;
+  padding-right: 30px;
 }
 
 /* Output Node - Purple */
 .node-output .title {
   background: #9c27b0;
+  border-radius: 8px 8px 0px 0px;
   color: white;
+  padding-right: 30px;
 }
 
 /* Sheet Node - Cyan */
 .node-sheet .title {
   background: #00bcd4;
+  border-radius: 8px 8px 0px 0px;
   color: white;
+  padding-right: 30px;
 }
 
 /* Error State */
