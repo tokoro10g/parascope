@@ -23,6 +23,10 @@ export const SheetTable: React.FC<SheetTableProps> = ({
     }
     return url;
   };
+  const numberFormat = new Intl.NumberFormat('en-US', {
+    maximumSignificantDigits: 6,
+    useGrouping: false,
+  });
 
   // Filter for Parameters, Inputs, and Outputs
   const tableNodes = nodes
@@ -206,11 +210,8 @@ export const SheetTable: React.FC<SheetTableProps> = ({
                 const name = nameControl?.value || node.label;
                 let value = valueControl?.value;
                 const valueAsNumber = Number.parseFloat(value);
-                if (
-                  !Number.isNaN(valueAsNumber) &&
-                  Math.floor(valueAsNumber) !== valueAsNumber
-                ) {
-                  value = valueAsNumber.toPrecision(6);
+                if (!isEditable && !Number.isNaN(valueAsNumber)) {
+                  value = numberFormat.format(valueAsNumber);
                 }
 
                 return (

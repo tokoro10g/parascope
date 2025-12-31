@@ -32,6 +32,10 @@ export const EvaluatorBar: React.FC<EvaluatorBarProps> = ({
   isCalculating,
   errorNodeId,
 }) => {
+  const numberFormat = new Intl.NumberFormat('en-US', {
+    maximumSignificantDigits: 6,
+    useGrouping: false,
+  });
   return (
     <div className="toolbar evaluator-bar">
       <div className="signature">
@@ -60,11 +64,8 @@ export const EvaluatorBar: React.FC<EvaluatorBarProps> = ({
           if (output.value !== undefined && !isCalculating) {
             let value = output.value;
             const valueAsNumber = Number.parseFloat(value);
-            if (
-              !Number.isNaN(valueAsNumber) &&
-              Math.floor(valueAsNumber) !== valueAsNumber
-            ) {
-              value = valueAsNumber.toPrecision(6);
+            if (!Number.isNaN(valueAsNumber)) {
+              value = numberFormat.format(valueAsNumber);
             }
             displayValue = value;
           }
