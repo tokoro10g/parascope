@@ -222,15 +222,25 @@ export const SheetTable: React.FC<SheetTableProps> = ({
                   >
                     <td>{name}</td>
                     <td>{node.type}</td>
-                    <td>
+                    <td
+                      style={{
+                        textAlign: 'right',
+                        fontFamily: 'monospace',
+                        fontSize: '.8rem',
+                      }}
+                    >
                       {isEditable ? (
                         <input
+                          size={9}
                           value={value}
                           onChange={(e) =>
                             onUpdateValue(node.id, e.target.value)
                           }
                           onClick={(e) => e.stopPropagation()} // Prevent row selection when editing
-                          style={{ width: '100%' }}
+                          style={{
+                            textAlign: 'right',
+                            fontFamily: 'monospace',
+                          }}
                         />
                       ) : (
                         <span>{value}</span>
