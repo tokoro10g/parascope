@@ -150,19 +150,22 @@ export const SheetTable: React.FC<SheetTableProps> = ({
           marginBottom: '10px',
         }}
       >
+        <div style={{ marginBottom: '10px' }}>
+          <button
+            type="button"
+            onClick={onCalculate}
+            disabled={isCalculating}
+            className="run-button"
+            style={{ width: '100%' }}
+            title="Run Calculation"
+          >
+            {isCalculating ? '...' : <Play size={14} fill="currentColor" />}
+            Run Calculation
+          </button>
+        </div>
         <div className="sheet-table-header">
           <h3>Parameters & I/O</h3>
           <div className="sheet-table-actions">
-            <button
-              type="button"
-              onClick={onCalculate}
-              disabled={isCalculating}
-              className="run-button"
-              title="Run Calculation"
-            >
-              {isCalculating ? '...' : <Play size={14} fill="currentColor" />}
-              Run
-            </button>
             <button
               type="button"
               onClick={handleCopyTable}
