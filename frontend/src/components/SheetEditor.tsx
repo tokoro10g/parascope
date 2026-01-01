@@ -380,13 +380,74 @@ export const SheetEditor: React.FC = () => {
     return { x: x, y: y };
   }, [editor]);
 
+  const addNode = useCallback(
+    async (
+      type: string,
+      label: string,
+      inputs: { key: string; socket_type: string }[],
+      outputs: { key: string; socket_type: string }[],
+      data: Record<string, any>,
+      position: { x: number; y: number },
+      shouldEdit = false,
+    ) => {
+      if (!editor) return;
+      const id = uuidv4();
+
+      const node = new ParascopeNode(
+        type,
+        label,
+        inputs,
+        outputs,
+        data,
+        (val) => {
+          if (type === 'input') {
+            handleEvaluatorInputChange(id, String(val));
+          } else {
+            setIsDirty(true);
+          }
+        },
+      );
+      node.id = id;
+      node.dbId = id;
+
+      await editor.editor.addNode(node);
+      await editor.area.translate(node.id, position);
+
+      if (shouldEdit) {
+        setEditingNode(node);
+      }
+
+      const newNodeData = {
+        id,
+        type,
+        label,
+        position_x: position.x,
+        position_y: position.y,
+        inputs,
+        outputs,
+        data,
+      };
+
+      setCurrentSheet((prev) =>
+        prev
+          ? {
+              ...prev,
+              nodes: [...prev.nodes, newNodeData],
+            }
+          : null,
+      );
+      setNodes([...editor.editor.getNodes()]);
+      setIsDirty(true);
+    },
+    [editor, handleEvaluatorInputChange],
+  );
+
   const handleDuplicateNode = useCallback(
     async (nodeId: string) => {
       if (!editor || !currentSheet) return;
       const originalNode = editor.editor.getNode(nodeId);
       if (!originalNode) return;
 
-      const id = uuidv4();
       const type = originalNode.type;
       const label = `${originalNode.label} (copy)`;
 
@@ -408,56 +469,14 @@ export const SheetEditor: React.FC = () => {
         }
       }
 
-      const node = new ParascopeNode(
-        type,
-        label,
-        inputs,
-        outputs,
-        data,
-        (val) => {
-          if (type === 'input') {
-            handleEvaluatorInputChange(id, String(val));
-          } else {
-            setIsDirty(true);
-          }
-        },
-      );
-      node.id = id;
-      node.dbId = id;
-
-      await editor.editor.addNode(node);
-
       const originalView = editor.area.nodeViews.get(nodeId);
       const position = originalView
         ? { x: originalView.position.x + 50, y: originalView.position.y + 50 }
         : calcCenterPosition();
 
-      await editor.area.translate(node.id, position);
-
-      const newNodeData = {
-        id,
-        type,
-        label,
-        position_x: position.x,
-        position_y: position.y,
-        inputs,
-        outputs,
-        data,
-      };
-
-      setCurrentSheet((prev) =>
-        prev
-          ? {
-              ...prev,
-              nodes: [...prev.nodes, newNodeData],
-            }
-          : null,
-      );
-
-      setIsDirty(true);
-      setNodes([...editor.editor.getNodes()]);
+      await addNode(type, label, inputs, outputs, data, position);
     },
-    [editor, currentSheet, handleEvaluatorInputChange, calcCenterPosition],
+    [editor, currentSheet, calcCenterPosition, addNode],
   );
 
   const handleNodeUpdate = useCallback(
@@ -534,66 +553,59 @@ export const SheetEditor: React.FC = () => {
         node.setupControl();
       }
 
-      if (updates.inputs) {
-        const newKeys = new Set(updates.inputs.map((i) => i.key));
-        const keysToRemove = Object.keys(node.inputs).filter(
+      const syncSockets = async (
+        updates: { key: string }[],
+        isInput: boolean,
+      ) => {
+        const currentSockets = isInput ? node.inputs : node.outputs;
+        const newKeys = new Set(updates.map((i) => i.key));
+        const keysToRemove = Object.keys(currentSockets).filter(
           (key) => !newKeys.has(key),
         );
 
         for (const key of keysToRemove) {
           const connections = editor.editor
             .getConnections()
-            .filter((c) => c.target === nodeId && c.targetInput === key);
+            .filter((c) =>
+              isInput
+                ? c.target === nodeId && c.targetInput === key
+                : c.source === nodeId && c.sourceOutput === key,
+            );
           for (const c of connections) {
             await editor.editor.removeConnection(c.id);
           }
-          node.removeInput(key);
+          if (isInput) node.removeInput(key);
+          else node.removeOutput(key);
         }
 
-        updates.inputs.forEach((i) => {
-          if (!node.inputs[i.key]) {
-            node.addInput(i.key, new Classic.Input(socket, i.key));
+        updates.forEach((item) => {
+          const sockets = isInput ? node.inputs : node.outputs;
+          if (!sockets[item.key]) {
+            if (isInput)
+              node.addInput(item.key, new Classic.Input(socket, item.key));
+            else
+              node.addOutput(item.key, new Classic.Output(socket, item.key));
           }
         });
-        // Reorder inputs to match updates.inputs order
-        const orderedInputs: typeof node.inputs = {};
-        updates.inputs.forEach((i) => {
-          if (node.inputs[i.key]) {
-            orderedInputs[i.key] = node.inputs[i.key]!;
+
+        const orderedSockets: Record<string, any> = {};
+        updates.forEach((item) => {
+          const sockets = isInput ? node.inputs : node.outputs;
+          if (sockets[item.key]) {
+            orderedSockets[item.key] = sockets[item.key];
           }
         });
-        node.inputs = orderedInputs;
+
+        if (isInput) node.inputs = orderedSockets;
+        else node.outputs = orderedSockets;
+      };
+
+      if (updates.inputs) {
+        await syncSockets(updates.inputs, true);
       }
 
       if (updates.outputs) {
-        const newKeys = new Set(updates.outputs.map((o) => o.key));
-        const keysToRemove = Object.keys(node.outputs).filter(
-          (key) => !newKeys.has(key),
-        );
-
-        for (const key of keysToRemove) {
-          const connections = editor.editor
-            .getConnections()
-            .filter((c) => c.source === nodeId && c.sourceOutput === key);
-          for (const c of connections) {
-            await editor.editor.removeConnection(c.id);
-          }
-          node.removeOutput(key);
-        }
-
-        updates.outputs.forEach((o) => {
-          if (!node.outputs[o.key]) {
-            node.addOutput(o.key, new Classic.Output(socket, o.key));
-          }
-        });
-        // Reorder outputs to match updates.outputs order
-        const orderedOutputs: typeof node.outputs = {};
-        updates.outputs.forEach((o) => {
-          if (node.outputs[o.key]) {
-            orderedOutputs[o.key] = node.outputs[o.key]!;
-          }
-        });
-        node.outputs = orderedOutputs;
+        await syncSockets(updates.outputs, false);
       }
 
       await editor.area.update('node', nodeId);
@@ -822,7 +834,6 @@ export const SheetEditor: React.FC = () => {
       return;
     }
 
-    const id = uuidv4();
     let label: string = type;
     let inputs: { key: string; socket_type: string }[] = [];
     let outputs: { key: string; socket_type: string }[] = [];
@@ -851,48 +862,8 @@ export const SheetEditor: React.FC = () => {
         break;
     }
 
-    const node = new ParascopeNode(
-      type,
-      label,
-      inputs,
-      outputs,
-      data,
-      (val) => {
-        if (type === 'input') {
-          handleEvaluatorInputChange(id, String(val));
-        } else {
-          setIsDirty(true);
-        }
-      },
-    );
-    node.id = id;
-    node.dbId = id;
-
-    await editor.editor.addNode(node);
     const centerPos = calcCenterPosition();
-    await editor.area.translate(node.id, centerPos);
-
-    setEditingNode(node);
-
-    const newNodeData = {
-      id,
-      type,
-      label,
-      position_x: centerPos.x,
-      position_y: centerPos.y,
-      inputs,
-      outputs,
-      data,
-    };
-
-    setCurrentSheet((prev) =>
-      prev
-        ? {
-            ...prev,
-            nodes: [...prev.nodes, newNodeData],
-          }
-        : null,
-    );
+    await addNode(type, label, inputs, outputs, data, centerPos, true);
   };
 
   const handleImportSheet = async (sheet: Sheet) => {
@@ -911,40 +882,12 @@ export const SheetEditor: React.FC = () => {
         .filter((n) => n.type === 'output')
         .map((n) => ({ key: n.label, socket_type: 'any' }));
 
-      const id = uuidv4();
       const type = 'sheet';
       const label = sheet.name;
       const data = { sheetId: sheet.id };
 
-      const node = new ParascopeNode(type, label, inputs, outputs, data, () =>
-        setIsDirty(true),
-      );
-      node.id = id;
-      node.dbId = id;
-
-      await editor.editor.addNode(node);
       const centerPos = calcCenterPosition();
-      await editor.area.translate(node.id, centerPos);
-
-      const newNodeData = {
-        id,
-        type,
-        label,
-        position_x: centerPos.x,
-        position_y: centerPos.y,
-        inputs,
-        outputs,
-        data,
-      };
-
-      setCurrentSheet((prev) =>
-        prev
-          ? {
-              ...prev,
-              nodes: [...prev.nodes, newNodeData],
-            }
-          : null,
-      );
+      await addNode(type, label, inputs, outputs, data, centerPos);
     } catch (e) {
       console.error(e);
       alert(`Error importing sheet: ${e}`);
