@@ -6,12 +6,12 @@ import {
   useParams,
   useSearchParams,
 } from 'react-router-dom';
-import { ClassicPreset as Classic } from 'rete';
 import { useRete } from 'rete-react-plugin';
-import { v4 as uuidv4 } from 'uuid';
-import { api, type NodeResult, type Sheet } from '../api';
+import { api, type Sheet } from '../api';
 import { useAuth } from '../contexts/AuthContext';
-import { createEditor, ParascopeNode, socket } from '../rete';
+import { useNodeOperations } from '../hooks/useNodeOperations';
+import { useSheetCalculation } from '../hooks/useSheetCalculation';
+import { createEditor, type ParascopeNode } from '../rete';
 import {
   createSocket,
   extractValuesFromResult,
@@ -24,7 +24,7 @@ import {
   type EvaluatorOutput,
 } from './EvaluatorBar';
 import { NavBar } from './NavBar';
-import { NodeInspector, type NodeUpdates } from './NodeInspector';
+import { NodeInspector } from './NodeInspector';
 import { SheetPickerModal } from './SheetPickerModal';
 import { SheetTable } from './SheetTable';
 import { TooltipLayer } from './TooltipLayer';
@@ -38,16 +38,18 @@ export const SheetEditor: React.FC = () => {
   const [ref, editor] = useRete(createEditor);
   const [currentSheet, setCurrentSheet] = useState<Sheet | null>(null);
   const [nodes, setNodes] = useState<ParascopeNode[]>([]);
-  const [isCalculating, setIsCalculating] = useState(false);
-  const [lastResult, setLastResult] = useState<Record<
-    string,
-    NodeResult
-  > | null>(null);
+  const {
+    isCalculating,
+    lastResult,
+    setLastResult,
+    errorNodeId,
+    setErrorNodeId,
+    calculate,
+  } = useSheetCalculation(editor);
   const [evaluatorInputs, setEvaluatorInputs] = useState<
     Record<string, string>
   >({});
   const [editingNode, setEditingNode] = useState<ParascopeNode | null>(null);
-  const [errorNodeId, setErrorNodeId] = useState<string | null>(null);
   const [isDirty, setIsDirty] = useState(false);
   const [isSheetPickerOpen, setIsSheetPickerOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
@@ -92,35 +94,54 @@ export const SheetEditor: React.FC = () => {
     }
   };
 
-  const applyCalculationResult = useCallback(
-    (result: Record<string, NodeResult>) => {
-      console.log('Calculation result:', result);
-      setLastResult(result);
+  const handleEvaluatorInputChange = useCallback(
+    (id: string, value: string) => {
+      if (
+        evaluatorInputsRef.current &&
+        evaluatorInputsRef.current[id] === value
+      ) {
+        return;
+      }
 
-      if (editor) {
-        editor.editor.getNodes().forEach((node) => {
-          const nodeRes = result[node.id];
-          if (nodeRes && (nodeRes.valid === false || nodeRes.error)) {
-            node.error = nodeRes.error || 'Invalid';
+      setEvaluatorInputs((prev) => ({ ...prev, [id]: value }));
+
+      if (errorNodeId === id) {
+        setErrorNodeId(null);
+      }
+
+      const node = nodes.find((n) => n.id === id);
+      const label = node?.label;
+
+      if (!label) return;
+
+      ignoreNextSearchParamsChange.current = true;
+      setSearchParams(
+        (prev) => {
+          const newParams = new URLSearchParams(prev);
+          if (value) {
+            newParams.set(label, value);
           } else {
-            node.error = undefined;
+            newParams.delete(label);
           }
-          editor.area.update('node', node.id);
-        });
-      }
-
-      let firstErrorNodeId: string | null = null;
-      for (const [nodeId, nodeRes] of Object.entries(result)) {
-        if (nodeRes.valid === false || nodeRes.error) {
-          if (!firstErrorNodeId) {
-            firstErrorNodeId = nodeId;
-          }
-        }
-      }
-      setErrorNodeId(firstErrorNodeId);
+          return newParams;
+        },
+        { replace: true },
+      );
     },
-    [editor],
+    [errorNodeId, setSearchParams, nodes, setErrorNodeId],
   );
+
+  const { addNode, handleDuplicateNode, handleNodeUpdate, calcCenterPosition } =
+    useNodeOperations(
+      editor?.editor,
+      editor?.area,
+      nodes,
+      setNodes,
+      setIsDirty,
+      setCurrentSheet,
+      currentSheet,
+      handleEvaluatorInputChange,
+    );
 
   const handleLoadSheet = useCallback(
     async (id: string) => {
@@ -184,7 +205,6 @@ export const SheetEditor: React.FC = () => {
         );
 
         if (inputNodes.length === 0 || allInputsProvided) {
-          setIsCalculating(true);
           try {
             const apiInputs: Record<string, { value: any }> = {};
             Object.entries(inputsFromParams).forEach(([id, value]) => {
@@ -194,8 +214,7 @@ export const SheetEditor: React.FC = () => {
               }
             });
 
-            const result = await api.calculate(sheet.id, apiInputs);
-            applyCalculationResult(result);
+            const result = await calculate(sheet.id, apiInputs);
 
             editor.updateNodeValues(
               inputsFromParams,
@@ -204,8 +223,6 @@ export const SheetEditor: React.FC = () => {
             setNodes([...editor.editor.getNodes()]);
           } catch (e) {
             console.error('Auto-calculation failed', e);
-          } finally {
-            setIsCalculating(false);
           }
         }
       } catch (e) {
@@ -213,7 +230,7 @@ export const SheetEditor: React.FC = () => {
         alert(`Error loading sheet: ${e}`);
       }
     },
-    [editor, applyCalculationResult],
+    [editor, calculate, setLastResult],
   );
 
   // Load the specific sheet when sheetId changes
@@ -259,287 +276,6 @@ export const SheetEditor: React.FC = () => {
       editor.zoomToNode(nodeId);
     }
   }, [editor, location.hash]);
-
-  const handleEvaluatorInputChange = useCallback(
-    (id: string, value: string) => {
-      if (
-        evaluatorInputsRef.current &&
-        evaluatorInputsRef.current[id] === value
-      ) {
-        return;
-      }
-
-      setEvaluatorInputs((prev) => ({ ...prev, [id]: value }));
-
-      if (errorNodeId === id) {
-        setErrorNodeId(null);
-      }
-
-      const node = nodes.find((n) => n.id === id);
-      const label = node?.label;
-
-      if (!label) return;
-
-      ignoreNextSearchParamsChange.current = true;
-      setSearchParams(
-        (prev) => {
-          const newParams = new URLSearchParams(prev);
-          if (value) {
-            newParams.set(label, value);
-          } else {
-            newParams.delete(label);
-          }
-          return newParams;
-        },
-        { replace: true },
-      );
-    },
-    [errorNodeId, setSearchParams, nodes],
-  );
-
-  const calcCenterPosition = useCallback(() => {
-    if (!editor) return { x: 0, y: 0 };
-    const area = editor.area;
-    const bounds = area.container.getBoundingClientRect();
-    const zoom = area.area.transform.k;
-    const x = (bounds.width / 2 - area.area.transform.x) / zoom;
-    const y = (bounds.height / 2 - area.area.transform.y) / zoom;
-    return { x: x, y: y };
-  }, [editor]);
-
-  const addNode = useCallback(
-    async (
-      type: string,
-      label: string,
-      inputs: { key: string; socket_type: string }[],
-      outputs: { key: string; socket_type: string }[],
-      data: Record<string, any>,
-      position: { x: number; y: number },
-      shouldEdit = false,
-    ) => {
-      if (!editor) return;
-      const id = uuidv4();
-
-      const node = new ParascopeNode(
-        type,
-        label,
-        inputs,
-        outputs,
-        data,
-        (val) => {
-          if (type === 'input') {
-            handleEvaluatorInputChange(id, String(val));
-          } else {
-            setIsDirty(true);
-          }
-        },
-      );
-      node.id = id;
-      node.dbId = id;
-
-      await editor.editor.addNode(node);
-      await editor.area.translate(node.id, position);
-
-      if (shouldEdit) {
-        setEditingNode(node);
-      }
-
-      const newNodeData = {
-        id,
-        type,
-        label,
-        position_x: position.x,
-        position_y: position.y,
-        inputs,
-        outputs,
-        data,
-      };
-
-      setCurrentSheet((prev) =>
-        prev
-          ? {
-              ...prev,
-              nodes: [...prev.nodes, newNodeData],
-            }
-          : null,
-      );
-      setNodes([...editor.editor.getNodes()]);
-      setIsDirty(true);
-    },
-    [editor, handleEvaluatorInputChange],
-  );
-
-  const handleDuplicateNode = useCallback(
-    async (nodeId: string) => {
-      if (!editor || !currentSheet) return;
-      const originalNode = editor.editor.getNode(nodeId);
-      if (!originalNode) return;
-
-      const type = originalNode.type;
-      const label = `${originalNode.label} (copy)`;
-
-      const inputs = Object.keys(originalNode.inputs).map(createSocket);
-      const outputs = Object.keys(originalNode.outputs).map(createSocket);
-
-      const data = JSON.parse(JSON.stringify(originalNode.initialData));
-
-      if (originalNode.controls.value) {
-        const control = originalNode.controls.value as any;
-        if (control && control.value !== undefined) {
-          data.value = control.value;
-        }
-      }
-
-      const originalView = editor.area.nodeViews.get(nodeId);
-      const position = originalView
-        ? { x: originalView.position.x + 50, y: originalView.position.y + 50 }
-        : calcCenterPosition();
-
-      await addNode(type, label, inputs, outputs, data, position);
-    },
-    [editor, currentSheet, calcCenterPosition, addNode],
-  );
-
-  const handleNodeUpdate = useCallback(
-    async (nodeId: string, updates: NodeUpdates) => {
-      if (!editor) return;
-
-      const node = editor.editor.getNode(nodeId);
-      if (!node) return;
-
-      if (updates.label && updates.label !== node.label) {
-        // Check for duplicate input/output names
-        if (node.type === 'input' || node.type === 'output') {
-          const existingNode = nodes.find(
-            (n) =>
-              n.type === node.type &&
-              n.label === updates.label &&
-              n.id !== nodeId,
-          );
-          if (existingNode) {
-            alert(
-              `An ${node.type} node with the name "${updates.label}" already exists.`,
-            );
-            return;
-          }
-        }
-
-        if (node.type === 'input' || node.type === 'output') {
-          const isDefaultLabel =
-            (node.type === 'input' && node.label === 'Input') ||
-            (node.type === 'output' && node.label === 'Output');
-
-          if (!isDefaultLabel) {
-            if (
-              !window.confirm(
-                `Renaming this ${node.type} node may break sheets that use this sheet as a function. Are you sure?`,
-              )
-            ) {
-              return;
-            }
-          }
-        }
-        node.label = updates.label;
-      }
-
-      if (updates.type && updates.type !== node.type) {
-        const existingNode = nodes.find(
-          (n) =>
-            n.type === updates.type &&
-            n.label === node.label &&
-            n.id !== nodeId,
-        );
-        if (existingNode) {
-          alert(
-            `An ${updates.type} node with the name "${node.label}" already exists.`,
-          );
-          return;
-        }
-        if (node.type === 'input') {
-          // An input node is going to be switched to a parameter node. Warn the user.
-          if (
-            !window.confirm(
-              `Switching this ${node.type} node to ${updates.type} node may break sheets that use this sheet as a function. Are you sure?`,
-            )
-          ) {
-            return;
-          }
-        }
-        node.type = updates.type;
-        node.setupControl();
-      }
-
-      if (updates.initialData) {
-        node.initialData = { ...node.initialData, ...updates.initialData };
-        node.setupControl();
-      }
-
-      const syncSockets = async (
-        updates: { key: string }[],
-        isInput: boolean,
-      ) => {
-        const currentSockets = isInput ? node.inputs : node.outputs;
-        const newKeys = new Set(updates.map((i) => i.key));
-        const keysToRemove = Object.keys(currentSockets).filter(
-          (key) => !newKeys.has(key),
-        );
-
-        for (const key of keysToRemove) {
-          const connections = editor.editor
-            .getConnections()
-            .filter((c) =>
-              isInput
-                ? c.target === nodeId && c.targetInput === key
-                : c.source === nodeId && c.sourceOutput === key,
-            );
-          for (const c of connections) {
-            await editor.editor.removeConnection(c.id);
-          }
-          if (isInput) node.removeInput(key);
-          else node.removeOutput(key);
-        }
-
-        updates.forEach((item) => {
-          const sockets = isInput ? node.inputs : node.outputs;
-          if (!sockets[item.key]) {
-            if (isInput)
-              node.addInput(item.key, new Classic.Input(socket, item.key));
-            else node.addOutput(item.key, new Classic.Output(socket, item.key));
-          }
-        });
-
-        const orderedSockets: Record<string, any> = {};
-        updates.forEach((item) => {
-          const sockets = isInput ? node.inputs : node.outputs;
-          if (sockets[item.key]) {
-            orderedSockets[item.key] = sockets[item.key];
-          }
-        });
-
-        if (isInput) node.inputs = orderedSockets;
-        else node.outputs = orderedSockets;
-      };
-
-      if (updates.inputs) {
-        await syncSockets(updates.inputs, true);
-      }
-
-      if (updates.outputs) {
-        await syncSockets(updates.outputs, false);
-      }
-
-      await editor.area.update('node', nodeId);
-
-      setIsDirty(true);
-
-      const graphData = editor.getGraphData();
-      setCurrentSheet((prev) =>
-        prev ? { ...prev, nodes: graphData.nodes } : null,
-      );
-      setNodes([...editor.editor.getNodes()]);
-    },
-    [editor, nodes],
-  );
 
   useEffect(() => {
     if (editor) {
@@ -632,6 +368,9 @@ export const SheetEditor: React.FC = () => {
       });
       editor.setInputValueChangeListener((nodeId, value) => {
         handleEvaluatorInputChange(nodeId, value);
+      });
+      editor.setContextMenuCallbacks({
+        onNodeDuplicate: handleDuplicateNode,
       });
     }
   }, [
@@ -867,7 +606,6 @@ export const SheetEditor: React.FC = () => {
 
   const handleCalculate = async () => {
     if (!currentSheet) return;
-    setIsCalculating(true);
     try {
       await handleSaveSheet();
 
@@ -879,8 +617,7 @@ export const SheetEditor: React.FC = () => {
         }
       });
 
-      const result = await api.calculate(currentSheet.id, apiInputs);
-      applyCalculationResult(result);
+      const result = await calculate(currentSheet.id, apiInputs);
 
       if (editor) {
         editor.updateNodeValues(
@@ -891,12 +628,7 @@ export const SheetEditor: React.FC = () => {
       }
     } catch (e: any) {
       console.error(e);
-      if (e.nodeId) {
-        setErrorNodeId(e.nodeId);
-      }
       alert(`Error calculating: ${e.message}`);
-    } finally {
-      setIsCalculating(false);
     }
   };
 
