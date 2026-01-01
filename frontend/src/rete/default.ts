@@ -6,7 +6,7 @@ import {
   ConnectionPlugin,
   Presets as ConnectionPresets,
 } from 'rete-connection-plugin';
-import { type ContextMenuExtra } from 'rete-context-menu-plugin';
+import type { ContextMenuExtra } from 'rete-context-menu-plugin';
 import { HistoryPlugin, Presets as HistoryPresets } from 'rete-history-plugin';
 import {
   type ReactArea2D,
@@ -16,9 +16,12 @@ import {
 import type { Sheet } from '../api';
 import { createSocket } from '../utils';
 
-import { CustomMenu, CustomItem, CustomSearch } from './ContextMenuStyles';
-import { createContextMenuPlugin, type ContextMenuCallbacks } from './contextMenu';
+import { CustomItem, CustomMenu, CustomSearch } from './ContextMenuStyles';
 import { CustomNode } from './CustomNode';
+import {
+  type ContextMenuCallbacks,
+  createContextMenuPlugin,
+} from './contextMenu';
 import { DropdownControl, DropdownControlComponent } from './DropdownControl';
 import { NumberControl, NumberControlComponent } from './NumberControl';
 import { ParascopeNode } from './ParascopeNode';

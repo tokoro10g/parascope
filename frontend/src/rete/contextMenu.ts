@@ -1,4 +1,4 @@
-import { NodeEditor } from 'rete';
+import type { NodeEditor } from 'rete';
 import { ContextMenuPlugin } from 'rete-context-menu-plugin';
 import type { Schemes } from './types';
 
@@ -81,7 +81,8 @@ export function createContextMenuPlugin(
           label: 'Duplicate',
           key: 'duplicate',
           handler: () => {
-            if (callbacks.onNodeDuplicate) callbacks.onNodeDuplicate(context.id);
+            if (callbacks.onNodeDuplicate)
+              callbacks.onNodeDuplicate(context.id);
           },
         },
         {

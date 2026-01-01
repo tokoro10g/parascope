@@ -1,5 +1,5 @@
 import { ClassicPreset as Classic, type GetSchemes } from 'rete';
-import { ParascopeNode } from './ParascopeNode';
+import type { ParascopeNode } from './ParascopeNode';
 
 export class Connection<
   A extends ParascopeNode,
