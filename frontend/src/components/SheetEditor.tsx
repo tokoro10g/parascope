@@ -504,8 +504,7 @@ export const SheetEditor: React.FC = () => {
           if (!sockets[item.key]) {
             if (isInput)
               node.addInput(item.key, new Classic.Input(socket, item.key));
-            else
-              node.addOutput(item.key, new Classic.Output(socket, item.key));
+            else node.addOutput(item.key, new Classic.Output(socket, item.key));
           }
         });
 
