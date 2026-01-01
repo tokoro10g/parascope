@@ -1028,11 +1028,18 @@ export const SheetEditor: React.FC = () => {
   const handleUpdateNodeValue = (nodeId: string, value: string) => {
     if (!editor) return;
     const node = editor.editor.getNode(nodeId);
-    if (node) {
+    if (!node) return;
+
+    if (node.type === 'input') {
+      // For input nodes, the source of truth is the Evaluator/URL.
+      // We update that, and let the useEffect sync it back to the node.
+      handleEvaluatorInputChange(nodeId, value);
+    } else {
+      // For parameter nodes, the source of truth is the node itself.
       const control = node.controls.value as any;
       if (control) {
         control.setValue(value);
-        editor.area.update('node', nodeId);
+        editor.area.update('control', nodeId);
         setIsDirty(true);
         setNodes([...editor.editor.getNodes()]);
       }
