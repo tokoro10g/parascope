@@ -14,7 +14,6 @@
   margin-top: 0;
   margin-bottom: 10px;
   font-size: 1.1em;
-  color: var(--text-color);
 }
 
 .sheet-table table {
@@ -28,7 +27,6 @@
   text-align: left;
   padding: 4px;
   border-bottom: 1px solid var(--border-light);
-  color: var(--text-color);
 }
 
 .sheet-table th {
@@ -45,13 +43,11 @@
   border-radius: 3px;
   box-sizing: border-box;
   background: var(--input-bg);
-  color: var(--text-color);
 }
 
 .sheet-table button {
   background: var(--button-bg);
   border: 1px solid var(--border-color);
-  color: var(--text-color);
 }
 
 .sheet-table button:hover {
@@ -118,4 +114,21 @@
   animation: blink-highlight 2s ease-out;
   border-radius: 4px;
   padding: 0 4px;
+}
+
+@keyframes error-highlight {
+  0%,
+  75% {
+    background-color: rgba(255, 77, 79, 0.5);
+  }
+  100% {
+    background-color: transparent;
+  }
+}
+
+.value-error {
+  animation: error-highlight 4s ease-out;
+  border-radius: 4px;
+  padding: 0 4px;
+  color: var(--danger-color);
 }

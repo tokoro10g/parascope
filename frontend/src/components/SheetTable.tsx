@@ -213,7 +213,7 @@ export const SheetTable: React.FC<SheetTableProps> = ({
                 const valueControl = node.controls.value as any;
 
                 const name = nameControl?.value || node.label;
-                let value = valueControl?.value;
+                const value = valueControl?.value;
                 const valueAsNumber = Number.parseFloat(value);
                 let displayValue = value;
 
@@ -230,6 +230,8 @@ export const SheetTable: React.FC<SheetTableProps> = ({
                   }
                 }
 
+                const hasError = !!node.error;
+
                 return (
                   <tr
                     key={node.id}
@@ -240,8 +242,13 @@ export const SheetTable: React.FC<SheetTableProps> = ({
                     <td>{node.type}</td>
                     <td
                       className={
-                        !isEditable && displayValue !== '?' ? 'value-blink' : ''
+                        hasError && !isCalculating
+                          ? 'value-error'
+                          : !isEditable && displayValue !== '?'
+                            ? 'value-blink'
+                            : ''
                       }
+                      title={hasError ? node.error : undefined}
                       style={{
                         textAlign: 'right',
                         fontFamily: 'monospace',

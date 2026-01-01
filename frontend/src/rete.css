@@ -10,7 +10,6 @@
   min-width: 200px;
   box-sizing: border-box;
   background-color: var(--input-bg);
-  color: var(--text-color);
   font-size: 14px;
   border-radius: 4px;
   border: 1px solid var(--border-color);

@@ -21,7 +21,6 @@
   width: 100%;
   max-width: 400px;
   text-align: center;
-  color: var(--text-color);
 }
 
 .login-input {

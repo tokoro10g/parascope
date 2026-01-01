@@ -137,7 +137,6 @@
   padding: 8px;
   gap: 8px;
   flex-wrap: wrap;
-  color: var(--text-color);
 }
 
 .rete-container .editor-bar .toolbar-group {
@@ -164,7 +163,6 @@
   width: 100%;
   min-width: 100px;
   background-color: var(--input-bg);
-  color: var(--text-color);
   margin-right: 0;
   border-color: transparent;
 }
@@ -176,7 +174,6 @@
 .rete-container .editor-bar button {
   background-color: var(--button-bg);
   border: 1px solid var(--border-light);
-  color: var(--text-color);
   border-radius: 4px;
   cursor: pointer;
 }
