@@ -1,6 +1,7 @@
 import { ArrowLeft, Folder as FolderIcon, Home, Workflow } from 'lucide-react';
 import React, { useEffect, useState } from 'react';
 import { api, type Folder, type Sheet } from '../api';
+import './Modal.css';
 
 interface SheetPickerModalProps {
   isOpen: boolean;

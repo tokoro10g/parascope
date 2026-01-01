@@ -1,0 +1,121 @@
+.sheet-table {
+  width: 100%;
+  height: 100%;
+  background: var(--bg-color);
+  border-left: 1px solid var(--border-color);
+  padding: 10px;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  box-sizing: border-box;
+}
+
+.sheet-table h3 {
+  margin-top: 0;
+  margin-bottom: 10px;
+  font-size: 1.1em;
+  color: var(--text-color);
+}
+
+.sheet-table table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.9em;
+}
+
+.sheet-table th,
+.sheet-table td {
+  text-align: left;
+  padding: 4px;
+  border-bottom: 1px solid var(--border-light);
+  color: var(--text-color);
+}
+
+.sheet-table th {
+  background-color: var(--panel-bg-secondary);
+  font-weight: 600;
+}
+
+.sheet-table tr:hover {
+  background-color: var(--item-hover);
+}
+
+.sheet-table input {
+  border: 1px solid var(--border-color);
+  border-radius: 3px;
+  box-sizing: border-box;
+  background: var(--input-bg);
+  color: var(--text-color);
+}
+
+.sheet-table button {
+  background: var(--button-bg);
+  border: 1px solid var(--border-color);
+  color: var(--text-color);
+}
+
+.sheet-table button:hover {
+  background: var(--item-hover);
+}
+
+.sheet-table-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 10px;
+  padding: 0 10px;
+}
+
+.sheet-table-header h3 {
+  margin: 0;
+}
+
+.sheet-table-actions {
+  display: flex;
+  gap: 8px;
+}
+
+.sheet-table .run-button {
+  background-color: #28a745;
+  color: white;
+  border: none;
+  padding: 4px 8px;
+  font-size: 0.8em;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.sheet-table .run-button:hover {
+  background-color: #218838;
+  border-color: transparent;
+}
+
+.sheet-table .run-button:disabled {
+  background-color: #6c757d;
+  cursor: not-allowed;
+}
+
+.sheet-table .copy-button {
+  padding: 4px 8px;
+  font-size: 0.8em;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+@keyframes blink-highlight {
+  0%,
+  50% {
+    background-color: rgba(0, 255, 0, 0.5);
+  }
+  100% {
+    background-color: transparent;
+  }
+}
+
+.value-blink {
+  animation: blink-highlight 2s ease-out;
+  border-radius: 4px;
+  padding: 0 4px;
+}

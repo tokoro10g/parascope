@@ -3,6 +3,7 @@ import { useEffect, useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import { ParascopeLogo } from './ParascopeLogo';
+import './Login.css';
 
 export const Login: React.FC = () => {
   const [name, setName] = useState('');

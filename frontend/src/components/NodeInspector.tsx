@@ -7,6 +7,7 @@ import rehypeKatex from 'rehype-katex';
 import remarkMath from 'remark-math';
 import { API_BASE, api } from '../api';
 import type { ParascopeNode } from '../rete';
+import './Modal.css';
 
 export interface NodeUpdates {
   type?: string;

@@ -93,7 +93,7 @@ Generated from `SPECIFICATIONS.tsv`.
     - [ ] Visual validation for type errors (EH-03.0).
     - [x] Duplicate name error messages (EH-10.0).
     - [ ] Success toasts (e.g., "Saved") (UI-05.0).
-    - [x] Implement Evaluator Bar (Function Signature) (UI-09.0).
+    - [x] Remove Evaluator Bar and move Run button to Table View (UI-09.0).
     - [x] Implement Sheet Deletion with confirmation (UI-11.0).
     - [x] Implement Sheet Duplication action (UI-12.0).
     - [ ] Implement "Copy Link" action on Dashboard (UI-13.0).

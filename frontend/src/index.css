@@ -133,3 +133,17 @@ button:focus-visible {
   max-width: 100%;
   height: auto;
 }
+
+button.danger {
+  background-color: var(--danger-color);
+  color: white;
+  border: none;
+}
+
+button.danger:hover {
+  background-color: var(--danger-hover);
+}
+
+.breadcrumbs button {
+  min-width: unset;
+}

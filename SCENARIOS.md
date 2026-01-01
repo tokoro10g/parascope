@@ -33,7 +33,7 @@ This document outlines typical user journeys to validate system requirements and
     *   **System**: Automatically creates an output node for `calc_force`.
     *   **Feedback**: Output node displays `98.0`.
     *   **Feedback**: The `force` Output Node displays `98.0`.
-    *   **Evaluator Bar**: Top bar displays `Sheet1() = [ 98.0 ]`.
+    *   **Table View**: The calculated result is also visible in the Table View.
 6.  **Persistence**:
     *   **Action**: User presses `Ctrl+S` (or clicks "Save").
     *   **System**: Generates Sheet UUID `a1b2...`. Updates URL to `/sheet/a1b2...`.
@@ -137,7 +137,7 @@ This document outlines typical user journeys to validate system requirements and
     *   **Override**: Injects `5` into `radius` Input Node and `10` into `height` Input Node.
     *   **Calc**: Automatically recalculates.
     *   **UI**: Displays the result for these specific inputs. The sheet is NOT saved with these values (they are transient).
-    *   **Evaluator Bar**: Displays `Cylinder Volume([ 5 ], [ 10 ]) = [ 785.39... ]`.
+    *   **Table View**: Displays the overridden input values and the calculated result.
     *   **UI**: The graph reflects these values. The sheet is NOT saved with these values (they are transient).
 
 ## Scenario 6: Drill-down Editing (Debugging Nested Sheets)

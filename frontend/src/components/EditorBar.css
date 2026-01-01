@@ -1,0 +1,59 @@
+.toolbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px;
+  background-color: var(--panel-bg);
+  border-bottom: 1px solid var(--border-color);
+}
+
+.toolbar-group {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.toolbar button {
+  padding: 6px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  line-height: 1;
+  min-width: 32px;
+  height: 32px;
+}
+
+.editor-bar {
+  background-color: var(--panel-bg-secondary);
+}
+
+.sheet-name-input {
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: var(--text-color);
+  background: transparent;
+  border: 1px solid transparent;
+  border-radius: 4px;
+  padding: 4px 8px;
+  margin-right: 8px;
+  min-width: 300px;
+  transition: all 0.2s ease;
+}
+
+.sheet-name-input:hover {
+  border-color: var(--border-color);
+  background-color: var(--panel-bg-translucent);
+}
+
+.sheet-name-input:focus {
+  border-color: var(--primary-color);
+  background-color: var(--input-bg);
+  color: var(--text-color);
+  outline: none;
+  box-shadow: 0 0 0 2px rgba(100, 108, 255, 0.2);
+}
+
+.sheet-name {
+  font-weight: bold;
+  color: var(--text-color);
+}

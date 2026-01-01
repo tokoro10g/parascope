@@ -1,0 +1,187 @@
+.sheet-editor {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  width: 100%;
+}
+
+.nav-bar {
+  padding: 5px 10px;
+  background: #333;
+  color: white;
+}
+
+.nav-bar a {
+  color: white;
+  text-decoration: none;
+  font-size: 0.9em;
+}
+
+.nav-bar a:hover {
+  text-decoration: underline;
+}
+
+.nav-bar button.nav-link {
+  background: none;
+  border: none;
+  padding: 0;
+  color: white;
+  font-size: 0.9em;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-family: inherit;
+  min-width: auto;
+}
+
+.nav-bar button.nav-link:hover {
+  text-decoration: underline;
+  border-color: transparent;
+}
+
+.link-button {
+  background: none;
+  border: none;
+  padding: 0;
+  color: inherit;
+  font-size: inherit;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-family: inherit;
+  min-width: auto;
+}
+
+.link-button:hover {
+  text-decoration: underline;
+}
+
+.paren,
+.comma,
+.arrow {
+  color: var(--text-secondary);
+  font-weight: bold;
+}
+
+.input-param,
+.output-param {
+  display: inline-flex;
+  align-items: center;
+  background: var(--item-bg);
+  padding: 2px 6px;
+  border-radius: 4px;
+  border: 1px solid var(--border-light);
+}
+
+.input-param label,
+.output-param .label {
+  margin-right: 4px;
+  color: var(--text-secondary);
+}
+
+.output-param .value {
+  font-weight: bold;
+  color: #007bff;
+}
+
+.input-param input {
+  border: 1px solid var(--border-color);
+  border-radius: 2px;
+  padding: 2px 4px;
+  font-family: inherit;
+  font-size: inherit;
+  width: 80px;
+  background: var(--input-bg);
+  color: var(--text-color);
+}
+
+.rete {
+  flex-grow: 1;
+  width: 100%;
+  height: 100%;
+  position: absolute;
+  top: 0;
+  left: 0;
+}
+
+.loading-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: var(--bg-color);
+  z-index: 20;
+  color: var(--text-secondary);
+  font-size: 1.2em;
+}
+
+/* Floating Editor Bar Overrides for Rete Container */
+.rete-container .editor-bar {
+  position: absolute;
+  top: 10px;
+  left: 10px;
+  right: auto;
+  width: auto;
+  max-width: calc(100% - 20px);
+  z-index: 10;
+  background-color: var(--panel-bg-translucent);
+  border: 1px solid var(--border-light);
+  border-radius: 8px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  padding: 8px;
+  gap: 8px;
+  flex-wrap: wrap;
+  color: var(--text-color);
+}
+
+.rete-container .editor-bar .toolbar-group {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.rete-container .editor-bar .sheet-name-group {
+  width: 100%;
+  flex-basis: 100%;
+}
+
+.rete-container .editor-bar .node-actions-group {
+  flex-wrap: nowrap;
+  flex-grow: 1;
+}
+
+.rete-container .editor-bar .save-group {
+  margin-left: auto;
+}
+
+.rete-container .editor-bar .sheet-name-input {
+  width: 100%;
+  min-width: 100px;
+  background-color: var(--input-bg);
+  color: var(--text-color);
+  margin-right: 0;
+  border-color: transparent;
+}
+
+.rete-container .editor-bar .sheet-name-input:focus {
+  border-color: var(--primary-color);
+}
+
+.rete-container .editor-bar button {
+  background-color: var(--button-bg);
+  border: 1px solid var(--border-light);
+  color: var(--text-color);
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.rete-container .editor-bar button:hover {
+  background-color: var(--item-hover);
+  border-color: var(--primary-color);
+}

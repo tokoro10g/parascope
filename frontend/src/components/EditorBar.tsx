@@ -10,6 +10,7 @@ import {
 } from 'lucide-react';
 import type React from 'react';
 import { useEffect, useState } from 'react';
+import './EditorBar.css';
 
 interface EditorBarProps {
   sheetName?: string;

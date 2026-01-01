@@ -14,6 +14,7 @@ import { api, type Folder, type SheetSummary } from '../api';
 import { useAuth } from '../contexts/AuthContext';
 import { FolderPickerModal } from './FolderPickerModal';
 import { ParascopeLogo } from './ParascopeLogo';
+import './Dashboard.css';
 
 export const Dashboard: React.FC = () => {
   const { folderId } = useParams<{ folderId: string }>();

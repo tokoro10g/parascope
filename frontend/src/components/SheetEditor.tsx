@@ -18,16 +18,18 @@ import {
   syncNestedSheets,
 } from '../utils';
 import { EditorBar } from './EditorBar';
-import {
-  EvaluatorBar,
-  type EvaluatorInput,
-  type EvaluatorOutput,
-} from './EvaluatorBar';
 import { NavBar } from './NavBar';
 import { NodeInspector } from './NodeInspector';
 import { SheetPickerModal } from './SheetPickerModal';
 import { SheetTable } from './SheetTable';
 import { TooltipLayer } from './TooltipLayer';
+import './SheetEditor.css';
+
+export interface EvaluatorInput {
+  id: string;
+  label: string;
+  value: string | number;
+}
 
 export const SheetEditor: React.FC = () => {
   const { sheetId } = useParams<{ sheetId: string }>();
@@ -580,16 +582,8 @@ export const SheetEditor: React.FC = () => {
           evaluatorInputs[n.id!] !== undefined ? evaluatorInputs[n.id!] : '',
       }));
 
-    const outputs: EvaluatorOutput[] = sortedNodes
-      .filter((n) => n.type === 'output' && n.id)
-      .map((n) => ({
-        id: n.id!,
-        label: n.label,
-        value: lastResult ? lastResult[n.id!]?.value : undefined,
-      }));
-
-    return { inputs, outputs };
-  }, [currentSheet, nodes, evaluatorInputs, lastResult]);
+    return { inputs };
+  }, [currentSheet, nodes, evaluatorInputs]);
 
   useEffect(() => {
     if (editor) {
@@ -698,15 +692,6 @@ export const SheetEditor: React.FC = () => {
                 style={{ opacity: isLoading ? 0 : 1 }}
               />
               <TooltipLayer editor={editor} />
-              <EvaluatorBar
-                sheetName={currentSheet?.name}
-                inputs={evaluatorProps.inputs}
-                outputs={evaluatorProps.outputs}
-                onInputChange={handleEvaluatorInputChange}
-                onCalculate={handleCalculate}
-                isCalculating={isCalculating}
-                errorNodeId={errorNodeId}
-              />
             </div>
           </Panel>
           <Separator
@@ -717,6 +702,8 @@ export const SheetEditor: React.FC = () => {
               nodes={nodes}
               onUpdateValue={handleUpdateNodeValue}
               onSelectNode={handleSelectNode}
+              onCalculate={handleCalculate}
+              isCalculating={isCalculating}
             />
           </Panel>
         </Group>

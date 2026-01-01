@@ -1,21 +1,26 @@
-import { Copy } from 'lucide-react';
+import { Copy, Play } from 'lucide-react';
 import type React from 'react';
 import ReactMarkdown from 'react-markdown';
 import rehypeKatex from 'rehype-katex';
 import remarkMath from 'remark-math';
 import { API_BASE } from '../api';
 import type { ParascopeNode } from '../rete';
+import './SheetTable.css';
 
 interface SheetTableProps {
   nodes: ParascopeNode[];
   onUpdateValue: (nodeId: string, value: string) => void;
   onSelectNode: (nodeId: string) => void;
+  onCalculate: () => void;
+  isCalculating: boolean;
 }
 
 export const SheetTable: React.FC<SheetTableProps> = ({
   nodes,
   onUpdateValue,
   onSelectNode,
+  onCalculate,
+  isCalculating,
 }) => {
   const transformUrl = (url: string) => {
     if (url.startsWith('/attachments/')) {
@@ -145,30 +150,28 @@ export const SheetTable: React.FC<SheetTableProps> = ({
           marginBottom: '10px',
         }}
       >
-        <div
-          style={{
-            display: 'flex',
-            justifyContent: 'space-between',
-            alignItems: 'center',
-            marginBottom: '10px',
-            padding: '0 10px',
-          }}
-        >
-          <h3 style={{ margin: 0 }}>Parameters & I/O</h3>
-          <button
-            type="button"
-            onClick={handleCopyTable}
-            style={{
-              padding: '4px 8px',
-              fontSize: '0.8em',
-              display: 'flex',
-              alignItems: 'center',
-              gap: '4px',
-            }}
-          >
-            <Copy size={14} />
-            Copy Table
-          </button>
+        <div className="sheet-table-header">
+          <h3>Parameters & I/O</h3>
+          <div className="sheet-table-actions">
+            <button
+              type="button"
+              onClick={onCalculate}
+              disabled={isCalculating}
+              className="run-button"
+              title="Run Calculation"
+            >
+              {isCalculating ? '...' : <Play size={14} fill="currentColor" />}
+              Run
+            </button>
+            <button
+              type="button"
+              onClick={handleCopyTable}
+              className="copy-button"
+            >
+              <Copy size={14} />
+              Copy Table
+            </button>
+          </div>
         </div>
         <div style={{ overflowY: 'auto', padding: '0 10px' }}>
           <table style={{ width: '100%', borderCollapse: 'collapse' }}>
@@ -212,8 +215,19 @@ export const SheetTable: React.FC<SheetTableProps> = ({
                 const name = nameControl?.value || node.label;
                 let value = valueControl?.value;
                 const valueAsNumber = Number.parseFloat(value);
-                if (!isEditable && !Number.isNaN(valueAsNumber)) {
-                  value = numberFormat.format(valueAsNumber);
+                let displayValue = value;
+
+                if (!isEditable) {
+                  if (
+                    isCalculating ||
+                    value === undefined ||
+                    value === null ||
+                    value === ''
+                  ) {
+                    displayValue = '?';
+                  } else if (!Number.isNaN(valueAsNumber)) {
+                    displayValue = numberFormat.format(valueAsNumber);
+                  }
                 }
 
                 return (
@@ -225,6 +239,9 @@ export const SheetTable: React.FC<SheetTableProps> = ({
                     <td>{name}</td>
                     <td>{node.type}</td>
                     <td
+                      className={
+                        !isEditable && displayValue !== '?' ? 'value-blink' : ''
+                      }
                       style={{
                         textAlign: 'right',
                         fontFamily: 'monospace',
@@ -264,7 +281,7 @@ export const SheetTable: React.FC<SheetTableProps> = ({
                           }}
                         />
                       ) : (
-                        <span>{value}</span>
+                        <span>{displayValue}</span>
                       )}
                     </td>
                   </tr>

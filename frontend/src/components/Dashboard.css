@@ -1,0 +1,82 @@
+.dashboard {
+  padding: 20px;
+  max-width: 800px;
+  width: 100%;
+  margin: 0 auto;
+  box-sizing: border-box;
+}
+
+.dashboard h1 {
+  margin-bottom: 20px;
+}
+
+.dashboard .actions {
+  margin-bottom: 20px;
+}
+
+.sheet-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.sheet-item {
+  border: 1px solid var(--border-light);
+  border-radius: 4px;
+  padding: 10px;
+  background: var(--item-bg);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.sheet-item .sheet-link {
+  text-decoration: none;
+  flex-grow: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+.sheet-item .sheet-info {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 10px;
+}
+
+.sheet-item .sheet-actions {
+  display: flex;
+  gap: 8px;
+  margin-left: 16px;
+}
+
+.sheet-item .sheet-actions button {
+  padding: 4px;
+  font-size: 0.8em;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  line-height: 1;
+  width: 28px;
+  height: 28px;
+  min-width: unset;
+}
+
+.sheet-item:hover {
+  background: var(--item-hover);
+}
+
+.folder-item {
+  cursor: pointer;
+  background-color: var(--panel-bg);
+}
+
+.folder-item:hover {
+  background-color: var(--item-hover);
+}
+
+.sheet-id {
+  color: var(--text-muted);
+  font-size: 0.7em;
+  font-family: monospace;
+}

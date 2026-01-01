@@ -1,0 +1,100 @@
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+}
+
+.modal-content {
+  background: var(--item-bg);
+  padding: 20px;
+  border-radius: 8px;
+  width: 50%;
+  max-width: 90%;
+  max-height: 90vh;
+  overflow-y: auto;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  color: var(--text-color);
+}
+
+.form-group {
+  margin-bottom: 15px;
+}
+
+.form-group label {
+  display: block;
+  margin-bottom: 5px;
+  font-weight: bold;
+}
+
+.w-tc-editor,
+.form-group input,
+.form-group textarea {
+  width: 100%;
+  padding: 8px;
+  border: 1px solid var(--border-color);
+  border-radius: 4px;
+  background: var(--input-bg);
+  color: var(--text-color);
+}
+
+.io-section {
+  display: flex;
+  gap: 20px;
+  margin-bottom: 15px;
+}
+
+.io-column {
+  flex: 1;
+}
+
+.io-column ul {
+  list-style: none;
+  padding: 0;
+}
+
+.io-column li {
+  display: flex;
+  justify-content: space-between;
+  padding: 4px 0;
+  border-bottom: 1px solid var(--border-light);
+}
+
+.io-column li button {
+  padding: 4px;
+  width: 28px;
+  height: 28px;
+  min-width: unset;
+}
+
+.modal-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  margin-top: 20px;
+}
+
+.modal-actions button.primary {
+  background-color: #007bff;
+  color: white;
+  border: none;
+}
+
+.input-error {
+  /* biome-ignore lint/complexity/noImportantStyles: Needed to override Rete styles */
+  border: 2px solid var(--danger-color) !important;
+  background-color: #ffebee;
+  outline: none;
+}
+
+@media (prefers-color-scheme: dark) {
+  .input-error {
+    background-color: #5c1e1e;
+  }
+}
