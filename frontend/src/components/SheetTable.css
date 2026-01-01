@@ -27,6 +27,7 @@
   text-align: left;
   padding: 4px;
   border-bottom: 1px solid var(--border-light);
+  position: relative;
 }
 
 .sheet-table th {
@@ -131,4 +132,26 @@
   border-radius: 4px;
   padding: 0 4px;
   color: var(--danger-color);
+}
+
+/* Tooltip for errors in table */
+.value-error[data-error]:hover::after {
+  content: attr(data-error);
+  position: absolute;
+  bottom: 100%;
+  right: 0;
+  background: #333;
+  color: white;
+  padding: 8px;
+  border-radius: 4px;
+  white-space: pre-wrap;
+  z-index: 1000;
+  min-width: 200px;
+  max-width: 400px;
+  box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+  font-weight: normal;
+  text-align: left;
+  font-size: 0.85rem;
+  line-height: 1.4;
+  pointer-events: none;
 }

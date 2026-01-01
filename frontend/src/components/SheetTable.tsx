@@ -248,7 +248,7 @@ export const SheetTable: React.FC<SheetTableProps> = ({
                             ? 'value-blink'
                             : ''
                       }
-                      title={hasError ? node.error : undefined}
+                      data-error={hasError ? node.error : undefined}
                       style={{
                         textAlign: 'right',
                         fontFamily: 'monospace',
