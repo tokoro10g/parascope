@@ -458,7 +458,7 @@ export const SheetEditor: React.FC = () => {
   );
 
   const handleNodeUpdate = useCallback(
-    (nodeId: string, updates: NodeUpdates) => {
+    async (nodeId: string, updates: NodeUpdates) => {
       if (!editor) return;
 
       const node = editor.editor.getNode(nodeId);
@@ -533,11 +533,20 @@ export const SheetEditor: React.FC = () => {
 
       if (updates.inputs) {
         const newKeys = new Set(updates.inputs.map((i) => i.key));
-        Object.keys(node.inputs).forEach((key) => {
-          if (!newKeys.has(key)) {
-            node.removeInput(key);
+        const keysToRemove = Object.keys(node.inputs).filter(
+          (key) => !newKeys.has(key),
+        );
+
+        for (const key of keysToRemove) {
+          const connections = editor.editor
+            .getConnections()
+            .filter((c) => c.target === nodeId && c.targetInput === key);
+          for (const c of connections) {
+            await editor.editor.removeConnection(c.id);
           }
-        });
+          node.removeInput(key);
+        }
+
         updates.inputs.forEach((i) => {
           if (!node.inputs[i.key]) {
             node.addInput(i.key, new Classic.Input(socket, i.key));
@@ -555,11 +564,20 @@ export const SheetEditor: React.FC = () => {
 
       if (updates.outputs) {
         const newKeys = new Set(updates.outputs.map((o) => o.key));
-        Object.keys(node.outputs).forEach((key) => {
-          if (!newKeys.has(key)) {
-            node.removeOutput(key);
+        const keysToRemove = Object.keys(node.outputs).filter(
+          (key) => !newKeys.has(key),
+        );
+
+        for (const key of keysToRemove) {
+          const connections = editor.editor
+            .getConnections()
+            .filter((c) => c.source === nodeId && c.sourceOutput === key);
+          for (const c of connections) {
+            await editor.editor.removeConnection(c.id);
           }
-        });
+          node.removeOutput(key);
+        }
+
         updates.outputs.forEach((o) => {
           if (!node.outputs[o.key]) {
             node.addOutput(o.key, new Classic.Output(socket, o.key));
@@ -575,7 +593,7 @@ export const SheetEditor: React.FC = () => {
         node.outputs = orderedOutputs;
       }
 
-      editor.area.update('node', nodeId);
+      await editor.area.update('node', nodeId);
 
       setIsDirty(true);
 
