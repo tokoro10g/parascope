@@ -37,6 +37,7 @@ import { NodeInspector, type NodeUpdates } from './NodeInspector';
 import { ParascopeLogo } from './ParascopeLogo';
 import { SheetPickerModal } from './SheetPickerModal';
 import { SheetTable } from './SheetTable';
+import { TooltipLayer } from './TooltipLayer';
 
 export const SheetEditor: React.FC = () => {
   const { sheetId } = useParams<{ sheetId: string }>();
@@ -100,6 +101,36 @@ export const SheetEditor: React.FC = () => {
       navigate(target);
     }
   };
+
+  const applyCalculationResult = useCallback(
+    (result: Record<string, NodeResult>) => {
+      console.log('Calculation result:', result);
+      setLastResult(result);
+
+      if (editor) {
+        editor.editor.getNodes().forEach((node) => {
+          const nodeRes = result[node.id];
+          if (nodeRes && (nodeRes.valid === false || nodeRes.error)) {
+            node.error = nodeRes.error || 'Invalid';
+          } else {
+            node.error = undefined;
+          }
+          editor.area.update('node', node.id);
+        });
+      }
+
+      let firstErrorNodeId: string | null = null;
+      for (const [nodeId, nodeRes] of Object.entries(result)) {
+        if (nodeRes.valid === false || nodeRes.error) {
+          if (!firstErrorNodeId) {
+            firstErrorNodeId = nodeId;
+          }
+        }
+      }
+      setErrorNodeId(firstErrorNodeId);
+    },
+    [editor],
+  );
 
   const handleLoadSheet = useCallback(
     async (id: string) => {
@@ -237,17 +268,7 @@ export const SheetEditor: React.FC = () => {
             });
 
             const result = await api.calculate(sheet.id, apiInputs);
-            setLastResult(result);
-
-            let firstErrorNodeId: string | null = null;
-            for (const [nodeId, nodeRes] of Object.entries(result)) {
-              if (nodeRes.valid === false || nodeRes.error) {
-                if (!firstErrorNodeId) {
-                  firstErrorNodeId = nodeId;
-                }
-              }
-            }
-            setErrorNodeId(firstErrorNodeId);
+            applyCalculationResult(result);
 
             editor.updateNodeValues(
               inputsFromParams,
@@ -265,7 +286,7 @@ export const SheetEditor: React.FC = () => {
         alert(`Error loading sheet: ${e}`);
       }
     },
-    [editor],
+    [editor, applyCalculationResult],
   );
 
   // Load the specific sheet when sheetId changes
@@ -311,24 +332,6 @@ export const SheetEditor: React.FC = () => {
       editor.zoomToNode(nodeId);
     }
   }, [editor, location.hash]);
-
-  useEffect(() => {
-    if (editor && errorNodeId) {
-      const view = editor.area.nodeViews.get(errorNodeId);
-      if (view) {
-        view.element.classList.add('node-error');
-      }
-    }
-    // Cleanup
-    return () => {
-      if (editor && errorNodeId) {
-        const view = editor.area.nodeViews.get(errorNodeId);
-        if (view) {
-          view.element.classList.remove('node-error');
-        }
-      }
-    };
-  }, [editor, errorNodeId]);
 
   const handleEvaluatorInputChange = useCallback(
     (id: string, value: string) => {
@@ -1012,18 +1015,7 @@ export const SheetEditor: React.FC = () => {
       });
 
       const result = await api.calculate(currentSheet.id, apiInputs);
-      console.log('Calculation result:', result);
-      setLastResult(result);
-
-      let firstErrorNodeId: string | null = null;
-      for (const [nodeId, nodeRes] of Object.entries(result)) {
-        if (nodeRes.valid === false || nodeRes.error) {
-          if (!firstErrorNodeId) {
-            firstErrorNodeId = nodeId;
-          }
-        }
-      }
-      setErrorNodeId(firstErrorNodeId);
+      applyCalculationResult(result);
 
       if (editor) {
         editor.updateNodeValues(
@@ -1150,6 +1142,7 @@ export const SheetEditor: React.FC = () => {
                 className="rete"
                 style={{ opacity: isLoading ? 0 : 1 }}
               />
+              <TooltipLayer editor={editor} />
               <EvaluatorBar
                 sheetName={currentSheet?.name}
                 inputs={evaluatorProps.inputs}

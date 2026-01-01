@@ -73,6 +73,7 @@ export class ParascopeNode extends Classic.Node {
   public y = 0;
   public initialData: Record<string, any>;
   public onChange?: (value: any) => void;
+  public error?: string;
 
   constructor(
     type: string,

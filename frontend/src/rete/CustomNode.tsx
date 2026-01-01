@@ -45,6 +45,12 @@ export function CustomNode(props: any) {
           nodeEl.classList.remove('node-selected');
         }
 
+        if (data.error) {
+          nodeEl.classList.add('node-error');
+        } else {
+          nodeEl.classList.remove('node-error');
+        }
+
         const bg = styles[type]?.background;
         const bc = styles[type]?.borderColor;
 
