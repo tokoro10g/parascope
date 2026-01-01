@@ -12,7 +12,7 @@ import { v4 as uuidv4 } from 'uuid';
 import { api, type NodeResult, type Sheet } from '../api';
 import { useAuth } from '../contexts/AuthContext';
 import { createEditor, ParascopeNode, socket } from '../rete';
-import { extractValuesFromResult } from '../utils';
+import { createSocket, extractValuesFromResult } from '../utils';
 import { EditorBar } from './EditorBar';
 import {
   EvaluatorBar,
@@ -144,12 +144,12 @@ export const SheetEditor: React.FC = () => {
                 // Update Inputs (from child's Input nodes)
                 const newInputs = childSheet.nodes
                   .filter((n) => n.type === 'input')
-                  .map((n) => ({ key: n.label, socket_type: 'any' }));
+                  .map((n) => createSocket(n.label));
 
                 // Update Outputs (from child's Output nodes)
                 const newOutputs = childSheet.nodes
                   .filter((n) => n.type === 'output')
-                  .map((n) => ({ key: n.label, socket_type: 'any' }));
+                  .map((n) => createSocket(n.label));
 
                 // Find the node in the array and update it
                 const nodeIndex = updatedNodes.findIndex(
@@ -437,14 +437,8 @@ export const SheetEditor: React.FC = () => {
       const type = originalNode.type;
       const label = `${originalNode.label} (copy)`;
 
-      const inputs = Object.keys(originalNode.inputs).map((key) => ({
-        key,
-        socket_type: 'any',
-      }));
-      const outputs = Object.keys(originalNode.outputs).map((key) => ({
-        key,
-        socket_type: 'any',
-      }));
+      const inputs = Object.keys(originalNode.inputs).map(createSocket);
+      const outputs = Object.keys(originalNode.outputs).map(createSocket);
 
       const data = JSON.parse(JSON.stringify(originalNode.initialData));
 
@@ -828,23 +822,23 @@ export const SheetEditor: React.FC = () => {
     switch (type) {
       case 'parameter':
         label = 'Parameter';
-        outputs = [{ key: 'value', socket_type: 'any' }];
+        outputs = [createSocket('value')];
         data = { value: 0 };
         break;
       case 'function':
         label = 'Function';
-        inputs = [{ key: 'x', socket_type: 'any' }];
-        outputs = [{ key: 'result', socket_type: 'any' }];
+        inputs = [createSocket('x')];
+        outputs = [createSocket('result')];
         data = { code: 'result = x' };
         break;
       case 'input':
         label = 'Input';
-        outputs = [{ key: 'value', socket_type: 'any' }];
+        outputs = [createSocket('value')];
         data = {};
         break;
       case 'output':
         label = 'Output';
-        inputs = [{ key: 'value', socket_type: 'any' }];
+        inputs = [createSocket('value')];
         break;
     }
 
@@ -862,11 +856,11 @@ export const SheetEditor: React.FC = () => {
 
       const inputs = fullSheet.nodes
         .filter((n) => n.type === 'input')
-        .map((n) => ({ key: n.label, socket_type: 'any' }));
+        .map((n) => createSocket(n.label));
 
       const outputs = fullSheet.nodes
         .filter((n) => n.type === 'output')
-        .map((n) => ({ key: n.label, socket_type: 'any' }));
+        .map((n) => createSocket(n.label));
 
       const type = 'sheet';
       const label = sheet.name;

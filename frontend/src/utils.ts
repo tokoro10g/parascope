@@ -11,3 +11,5 @@ export const extractValuesFromResult = (
   });
   return values;
 };
+
+export const createSocket = (key: string) => ({ key, socket_type: 'any' });
