@@ -1,0 +1,112 @@
+import { ClassicPreset as Classic } from 'rete';
+import { DropdownControl } from './DropdownControl';
+import { NumberControl } from './NumberControl';
+
+export const socket = new Classic.Socket('socket');
+
+export class ParascopeNode extends Classic.Node {
+  width = 180;
+  height = 150;
+  public dbId?: string; // ID from the database
+  public type: string;
+  public x = 0;
+  public y = 0;
+  public initialData: Record<string, any>;
+  public onChange?: (value: any) => void;
+  public error?: string;
+
+  constructor(
+    type: string,
+    label: string,
+    inputs: { key: string; socket_type: string }[],
+    outputs: { key: string; socket_type: string }[],
+    data: Record<string, any> = {},
+    onChange?: (value: any) => void,
+  ) {
+    super(label);
+    this.type = type;
+    this.initialData = data;
+    this.onChange = onChange;
+
+    inputs.forEach((inp) => {
+      this.addInput(inp.key, new Classic.Input(socket, inp.key));
+    });
+
+    outputs.forEach((out) => {
+      this.addOutput(out.key, new Classic.Output(socket, out.key));
+    });
+
+    this.setupControl();
+  }
+
+  setupControl() {
+    const data = this.initialData;
+    const onChange = this.onChange;
+
+    if (this.controls.value) {
+      this.removeControl('value');
+    }
+
+    const isOption = data.dataType === 'option';
+    const isInputOrParam = this.type === 'input' || this.type === 'parameter';
+
+    if (isInputOrParam && isOption && data.options) {
+      this.addControl(
+        'value',
+        new DropdownControl(
+          data.options,
+          String(data.value ?? data.options[0] ?? ''),
+          (val) => onChange?.(val),
+        ),
+      );
+      return;
+    }
+
+    if (this.type === 'output' && isOption) {
+      this.addControl(
+        'value',
+        new Classic.InputControl('text', {
+          initial: String(data.value ?? ''),
+          readonly: true,
+        }),
+      );
+      return;
+    }
+
+    const min =
+      data.min !== undefined && data.min !== '' ? Number(data.min) : undefined;
+    const max =
+      data.max !== undefined && data.max !== '' ? Number(data.max) : undefined;
+    const value = data.value ?? '';
+
+    if (isInputOrParam) {
+      this.addControl(
+        'value',
+        new NumberControl(value, {
+          readonly: false,
+          change: onChange,
+          min,
+          max,
+        }),
+      );
+    } else if (this.type === 'output') {
+      this.addControl(
+        'value',
+        new NumberControl(value, {
+          readonly: true,
+          min,
+          max,
+        }),
+      );
+    } else if (data.value !== undefined) {
+      this.addControl(
+        'value',
+        new Classic.InputControl('text', {
+          initial: String(value),
+          readonly: false,
+          change: onChange,
+        }),
+      );
+    }
+  }
+}

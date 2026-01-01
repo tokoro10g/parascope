@@ -550,71 +550,73 @@ export const SheetEditor: React.FC = () => {
         }
       };
       editor.setNodeDoubleClickListener(handleEdit);
-      editor.setNodeEditListener(handleEdit);
-      editor.setNodeDuplicateListener(handleDuplicateNode);
-      editor.setNodeTypeChangeListener((nodeId, type) => {
-        handleNodeUpdate(nodeId, { type });
-      });
-      editor.setNodeRemoveListener(async (nodeId) => {
-        const node = editor.editor.getNode(nodeId);
-        if (node && (node.type === 'input' || node.type === 'output')) {
-          return window.confirm(
-            `Deleting this ${node.type} node may break sheets that use this sheet as a function. Are you sure?`,
-          );
-        }
-        return true;
-      });
-      editor.setEditNestedSheetListener((nodeId) => {
-        const node = editor.editor.getNode(nodeId);
-        if (node?.initialData?.sheetId) {
-          const connections = editor.editor
-            .getConnections()
-            .filter((c) => c.target === nodeId);
-          const queryParams = new URLSearchParams();
+      editor.setContextMenuCallbacks({
+        onNodeEdit: handleEdit,
+        onNodeDuplicate: handleDuplicateNode,
+        onNodeTypeChange: (nodeId, type) => {
+          handleNodeUpdate(nodeId, { type });
+        },
+        onNodeRemove: async (nodeId) => {
+          const node = editor.editor.getNode(nodeId);
+          if (node && (node.type === 'input' || node.type === 'output')) {
+            return window.confirm(
+              `Deleting this ${node.type} node may break sheets that use this sheet as a function. Are you sure?`,
+            );
+          }
+          return true;
+        },
+        onEditNestedSheet: (nodeId) => {
+          const node = editor.editor.getNode(nodeId);
+          if (node?.initialData?.sheetId) {
+            const connections = editor.editor
+              .getConnections()
+              .filter((c) => c.target === nodeId);
+            const queryParams = new URLSearchParams();
 
-          connections.forEach((c) => {
-            const sourceId = c.source;
-            const inputKey = c.targetInput;
-            let value: any;
+            connections.forEach((c) => {
+              const sourceId = c.source;
+              const inputKey = c.targetInput;
+              let value: any;
 
-            // 1. Check lastResult (calculated values)
-            if (lastResultRef.current && sourceId in lastResultRef.current) {
-              const nodeResult = lastResultRef.current[sourceId];
-              value = nodeResult?.outputs?.[c.sourceOutput];
-            }
-            // 2. Check evaluatorInputs (if source is an input node)
-            else if (
-              evaluatorInputsRef.current &&
-              sourceId in evaluatorInputsRef.current
-            ) {
-              value = evaluatorInputsRef.current[sourceId];
-            }
-            // 3. Check node control value (fallback for constants/inputs)
-            else {
-              const sourceNode = editor.editor.getNode(sourceId);
-              if (sourceNode?.controls?.value) {
-                const control = sourceNode.controls.value as any;
-                if (control && control.value !== undefined) {
-                  value = control.value;
+              // 1. Check lastResult (calculated values)
+              if (lastResultRef.current && sourceId in lastResultRef.current) {
+                const nodeResult = lastResultRef.current[sourceId];
+                value = nodeResult?.outputs?.[c.sourceOutput];
+              }
+              // 2. Check evaluatorInputs (if source is an input node)
+              else if (
+                evaluatorInputsRef.current &&
+                sourceId in evaluatorInputsRef.current
+              ) {
+                value = evaluatorInputsRef.current[sourceId];
+              }
+              // 3. Check node control value (fallback for constants/inputs)
+              else {
+                const sourceNode = editor.editor.getNode(sourceId);
+                if (sourceNode?.controls?.value) {
+                  const control = sourceNode.controls.value as any;
+                  if (control && control.value !== undefined) {
+                    value = control.value;
+                  }
                 }
               }
-            }
 
-            if (value !== undefined) {
-              const stringValue =
-                typeof value === 'object'
-                  ? JSON.stringify(value)
-                  : String(value);
-              queryParams.set(inputKey, stringValue);
-            }
-          });
+              if (value !== undefined) {
+                const stringValue =
+                  typeof value === 'object'
+                    ? JSON.stringify(value)
+                    : String(value);
+                queryParams.set(inputKey, stringValue);
+              }
+            });
 
-          const queryString = queryParams.toString();
-          const url = `/sheet/${node.initialData.sheetId}${
-            queryString ? `?${queryString}` : ''
-          }`;
-          window.open(url, '_blank');
-        }
+            const queryString = queryParams.toString();
+            const url = `/sheet/${node.initialData.sheetId}${
+              queryString ? `?${queryString}` : ''
+            }`;
+            window.open(url, '_blank');
+          }
+        },
       });
       editor.setGraphChangeListener(() => {
         setIsDirty(true);

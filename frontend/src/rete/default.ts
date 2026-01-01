@@ -1,188 +1,32 @@
 import { createRoot } from 'react-dom/client';
-import { ClassicPreset as Classic, type GetSchemes, NodeEditor } from 'rete';
+import { ClassicPreset as Classic, NodeEditor } from 'rete';
 import { type Area2D, AreaExtensions, AreaPlugin } from 'rete-area-plugin';
 import { ConnectionPathPlugin } from 'rete-connection-path-plugin';
 import {
   ConnectionPlugin,
   Presets as ConnectionPresets,
 } from 'rete-connection-plugin';
-import {
-  type ContextMenuExtra,
-  ContextMenuPlugin,
-} from 'rete-context-menu-plugin';
+import { type ContextMenuExtra } from 'rete-context-menu-plugin';
 import { HistoryPlugin, Presets as HistoryPresets } from 'rete-history-plugin';
 import {
   type ReactArea2D,
   ReactPlugin,
   Presets as ReactPresets,
 } from 'rete-react-plugin';
-import styled from 'styled-components';
 import type { Sheet } from '../api';
 import { createSocket } from '../utils';
 
+import { CustomMenu, CustomItem, CustomSearch } from './ContextMenuStyles';
+import { createContextMenuPlugin, type ContextMenuCallbacks } from './contextMenu';
 import { CustomNode } from './CustomNode';
 import { DropdownControl, DropdownControlComponent } from './DropdownControl';
 import { NumberControl, NumberControlComponent } from './NumberControl';
-
-// --- Styled Components for Context Menu ---
-const { Menu, Item, Search, Common, Subitems } = ReactPresets.contextMenu;
-
-const CustomMenu = styled(Menu)`
-  font-family: system-ui, Avenir, Helvetica, Arial, sans-serif !important;
-  font-size: 0.9em !important;
-  background-color: var(--item-bg) !important;
-  border: 1px solid var(--border-color) !important;
-  box-shadow: 0 4px 6px rgba(0,0,0,0.1) !important;
-  border-radius: 4px !important;
-  padding: 4px !important;
-  width: 150px !important;
-`;
-
-const CustomItem = styled(Item)`
-  color: var(--text-color) !important;
-  padding: 6px 12px !important;
-  border-bottom: none !important;
-  cursor: pointer !important;
-  transition: background-color 0.2s !important;
-  border-radius: 2px !important;
-  background-color: transparent !important;
-
-  &:hover {
-    background-color: var(--item-hover) !important;
-    color: var(--text-color) !important;
-  }
-`;
-
-const CustomSearch = styled(Search)`
-    background-color: var(--input-bg) !important;
-    color: var(--text-color) !important;
-    border-bottom: 1px solid var(--border-color) !important;
-    font-family: inherit !important;
-    border-radius: 4px 4px 0 0 !important;
-`;
+import { ParascopeNode } from './ParascopeNode';
+import { Connection, type Schemes } from './types';
 
 // --- Types ---
 
-export const socket = new Classic.Socket('socket');
-
-export class ParascopeNode extends Classic.Node {
-  width = 180;
-  height = 150;
-  public dbId?: string; // ID from the database
-  public type: string;
-  public x = 0;
-  public y = 0;
-  public initialData: Record<string, any>;
-  public onChange?: (value: any) => void;
-  public error?: string;
-
-  constructor(
-    type: string,
-    label: string,
-    inputs: { key: string; socket_type: string }[],
-    outputs: { key: string; socket_type: string }[],
-    data: Record<string, any> = {},
-    onChange?: (value: any) => void,
-  ) {
-    super(label);
-    this.type = type;
-    this.initialData = data;
-    this.onChange = onChange;
-
-    inputs.forEach((inp) => {
-      this.addInput(inp.key, new Classic.Input(socket, inp.key));
-    });
-
-    outputs.forEach((out) => {
-      this.addOutput(out.key, new Classic.Output(socket, out.key));
-    });
-
-    this.setupControl();
-  }
-
-  setupControl() {
-    const data = this.initialData;
-    const onChange = this.onChange;
-
-    if (this.controls.value) {
-      this.removeControl('value');
-    }
-
-    const isOption = data.dataType === 'option';
-    const isInputOrParam = this.type === 'input' || this.type === 'parameter';
-
-    if (isInputOrParam && isOption && data.options) {
-      this.addControl(
-        'value',
-        new DropdownControl(
-          data.options,
-          String(data.value ?? data.options[0] ?? ''),
-          (val) => onChange?.(val),
-        ),
-      );
-      return;
-    }
-
-    if (this.type === 'output' && isOption) {
-      this.addControl(
-        'value',
-        new Classic.InputControl('text', {
-          initial: String(data.value ?? ''),
-          readonly: true,
-        }),
-      );
-      return;
-    }
-
-    const min =
-      data.min !== undefined && data.min !== '' ? Number(data.min) : undefined;
-    const max =
-      data.max !== undefined && data.max !== '' ? Number(data.max) : undefined;
-    const value = data.value ?? '';
-
-    if (isInputOrParam) {
-      this.addControl(
-        'value',
-        new NumberControl(value, {
-          readonly: false,
-          change: onChange,
-          min,
-          max,
-        }),
-      );
-    } else if (this.type === 'output') {
-      this.addControl(
-        'value',
-        new NumberControl(value, {
-          readonly: true,
-          min,
-          max,
-        }),
-      );
-    } else if (data.value !== undefined) {
-      this.addControl(
-        'value',
-        new Classic.InputControl('text', {
-          initial: String(value),
-          readonly: false,
-          change: onChange,
-        }),
-      );
-    }
-  }
-}
-
-class Connection<
-  A extends ParascopeNode,
-  B extends ParascopeNode,
-> extends Classic.Connection<A, B> {
-  public dbId?: string;
-}
-
-type Schemes = GetSchemes<
-  ParascopeNode,
-  Connection<ParascopeNode, ParascopeNode>
->;
+const { Common, Subitems } = ReactPresets.contextMenu;
 
 type AreaExtra = Area2D<Schemes> | ReactArea2D<Schemes> | ContextMenuExtra;
 
@@ -194,121 +38,14 @@ export async function createEditor(container: HTMLElement) {
   const history = new HistoryPlugin<Schemes>();
   history.addPreset(HistoryPresets.classic.setup());
 
-  const contextMenu = new ContextMenuPlugin<Schemes>({
-    items: (context) => {
-      if (context === 'root') {
-        return { searchBar: false, list: [] };
-      }
-
-      // Check for connection (has source/target)
-      if ('source' in context && 'target' in context) {
-        return {
-          searchBar: false,
-          list: [
-            {
-              label: 'Delete',
-              key: 'delete',
-              handler: async () => {
-                await editor.removeConnection(context.id);
-              },
-            },
-          ],
-        };
-      }
-
-      // Node
-      const items = [
-        {
-          label: 'Edit',
-          key: 'edit',
-          handler: () => {
-            if (onNodeEdit) onNodeEdit(context.id);
-          },
-        },
-      ];
-
-      if (context.type === 'sheet') {
-        items.push({
-          label: 'Edit Sheet',
-          key: 'edit-sheet',
-          handler: () => {
-            if (onEditNestedSheet) onEditNestedSheet(context.id);
-          },
-        });
-      } else if (context.type === 'input') {
-        items.push({
-          label: 'Switch to Parameter',
-          key: 'switch-to-parameter',
-          handler: () => {
-            if (onNodeTypeChange) onNodeTypeChange(context.id, 'parameter');
-          },
-        });
-      } else if (context.type === 'parameter') {
-        items.push({
-          label: 'Switch to Input',
-          key: 'switch-to-input',
-          handler: () => {
-            if (onNodeTypeChange) onNodeTypeChange(context.id, 'input');
-          },
-        });
-      }
-
-      items.push(
-        {
-          label: 'Duplicate',
-          key: 'duplicate',
-          handler: () => {
-            if (onNodeDuplicate) onNodeDuplicate(context.id);
-          },
-        },
-        {
-          label: 'Copy URL',
-          key: 'copy-url',
-          handler: () => {
-            const url = `${window.location.origin}${window.location.pathname}${window.location.search}#${context.id}`;
-            if (navigator.clipboard?.writeText) {
-              navigator.clipboard
-                .writeText(url)
-                .catch((err) => console.error('Failed to copy URL:', err));
-            }
-          },
-        },
-        {
-          label: 'Delete',
-          key: 'delete',
-          handler: async () => {
-            if (onNodeRemove) {
-              const shouldRemove = await onNodeRemove(context.id);
-              if (!shouldRemove) return;
-            }
-            const connections = editor.getConnections().filter((c) => {
-              return c.source === context.id || c.target === context.id;
-            });
-            for (const c of connections) {
-              await editor.removeConnection(c.id);
-            }
-            await editor.removeNode(context.id);
-          },
-        },
-      );
-
-      return {
-        searchBar: false,
-        list: items,
-      };
-    },
-  });
+  const contextMenuCallbacks: ContextMenuCallbacks = {};
+  const contextMenu = createContextMenuPlugin(editor, contextMenuCallbacks);
 
   // We need to expose a way to set the callback later, or pass it in.
   // Since useRete calls this, we can attach it to the returned object.
   let onNodeDoubleClick: ((nodeId: string) => void) | undefined;
   let onGraphChange: (() => void) | undefined;
-  let onNodeEdit: ((nodeId: string) => void) | undefined;
-  let onNodeDuplicate: ((nodeId: string) => void) | undefined;
-  let onNodeTypeChange: ((nodeId: string, type: string) => void) | undefined;
   let onInputValueChange: ((nodeId: string, value: string) => void) | undefined;
-  let onEditNestedSheet: ((nodeId: string) => void) | undefined;
-  let onNodeRemove: ((nodeId: string) => Promise<boolean>) | undefined;
 
   AreaExtensions.selectableNodes(area, AreaExtensions.selector(), {
     accumulating: AreaExtensions.accumulateOnCtrl(),
@@ -404,20 +141,8 @@ export async function createEditor(container: HTMLElement) {
     setNodeDoubleClickListener: (cb: (nodeId: string) => void) => {
       onNodeDoubleClick = cb;
     },
-    setNodeEditListener: (cb: (nodeId: string) => void) => {
-      onNodeEdit = cb;
-    },
-    setNodeDuplicateListener: (cb: (nodeId: string) => void) => {
-      onNodeDuplicate = cb;
-    },
-    setNodeTypeChangeListener: (cb: (nodeId: string, type: string) => void) => {
-      onNodeTypeChange = cb;
-    },
-    setEditNestedSheetListener: (cb: (nodeId: string) => void) => {
-      onEditNestedSheet = cb;
-    },
-    setNodeRemoveListener: (cb: (nodeId: string) => Promise<boolean>) => {
-      onNodeRemove = cb;
+    setContextMenuCallbacks: (callbacks: ContextMenuCallbacks) => {
+      Object.assign(contextMenuCallbacks, callbacks);
     },
     setGraphChangeListener: (cb: () => void) => {
       onGraphChange = cb;
