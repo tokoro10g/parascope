@@ -234,9 +234,9 @@ export const SheetTable: React.FC<SheetTableProps> = ({
                       {isDropdown ? (
                         <select
                           value={value}
-                          onChange={(e) =>{
-                            onUpdateValue(node.id, e.target.value);}
-                          }
+                          onChange={(e) => {
+                            onUpdateValue(node.id, e.target.value);
+                          }}
                           onClick={(e) => e.stopPropagation()} // Prevent row selection when editing
                           style={{
                             textAlign: 'right',

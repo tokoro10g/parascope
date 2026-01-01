@@ -104,7 +104,6 @@ export const NumberControlComponent: React.FC<{ data: NumberControl }> = ({
         fontFamily: 'monospace',
         color: isValid ? undefined : 'red',
         borderColor: isValid ? undefined : 'red',
-        backgroundColor: isValid ? undefined : 'rgba(255, 0, 0, 0.1)',
       }}
       title={
         !isValid
