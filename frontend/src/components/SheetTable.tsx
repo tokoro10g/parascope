@@ -6,6 +6,7 @@ import remarkMath from 'remark-math';
 import { API_BASE } from '../api';
 import type { ParascopeNode } from '../rete';
 import './SheetTable.css';
+import { formatHumanReadableValue } from '../utils';
 
 interface SheetTableProps {
   nodes: ParascopeNode[];
@@ -28,10 +29,6 @@ export const SheetTable: React.FC<SheetTableProps> = ({
     }
     return url;
   };
-  const numberFormat = new Intl.NumberFormat('en-US', {
-    maximumSignificantDigits: 6,
-    useGrouping: false,
-  });
 
   // Filter for Parameters, Inputs, and Outputs
   const tableNodes = nodes
@@ -217,7 +214,6 @@ export const SheetTable: React.FC<SheetTableProps> = ({
 
                 const name = nameControl?.value || node.label;
                 const value = valueControl?.value;
-                const valueAsNumber = Number.parseFloat(value);
                 let displayValue = value;
 
                 if (!isEditable) {
@@ -228,8 +224,8 @@ export const SheetTable: React.FC<SheetTableProps> = ({
                     value === ''
                   ) {
                     displayValue = '?';
-                  } else if (!Number.isNaN(valueAsNumber)) {
-                    displayValue = numberFormat.format(valueAsNumber);
+                  } else {
+                    displayValue = formatHumanReadableValue(value);
                   }
                 }
 

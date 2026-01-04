@@ -1,5 +1,19 @@
 import { api, type NodeResult, type Sheet } from './api';
 
+export const formatHumanReadableValue = (value: string): string => {
+  const valueAsNumber = Number.parseFloat(value);
+  if (Number.isNaN(valueAsNumber)) {
+    return value;
+  }
+  const isTooLong = valueAsNumber >= 1e6 || valueAsNumber < 1e-3;
+  const numberFormat = new Intl.NumberFormat('en-US', {
+    maximumSignificantDigits: 6,
+    notation: isTooLong ? 'scientific' : 'standard',
+    useGrouping: false,
+  });
+  return numberFormat.format(valueAsNumber);
+}
+
 export const extractValuesFromResult = (
   result: Record<string, NodeResult>,
 ): Record<string, any> => {
