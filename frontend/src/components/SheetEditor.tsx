@@ -111,7 +111,7 @@ export const SheetEditor: React.FC = () => {
         setErrorNodeId(null);
       }
 
-      const node = nodes.find((n) => n.id === id);
+      const node = editor?.editor.getNode(id);
       const label = node?.label;
 
       if (!label) return;
@@ -130,7 +130,7 @@ export const SheetEditor: React.FC = () => {
         { replace: true },
       );
     },
-    [errorNodeId, setSearchParams, nodes, setErrorNodeId],
+    [errorNodeId, setSearchParams, editor, setErrorNodeId],
   );
 
   const { addNode, handleDuplicateNode, handleNodeUpdate, calcCenterPosition } =
@@ -526,7 +526,16 @@ export const SheetEditor: React.FC = () => {
     }
 
     const centerPos = calcCenterPosition();
-    await addNode(type, label, inputs, outputs, data, centerPos, true);
+    await addNode(
+      type,
+      label,
+      inputs,
+      outputs,
+      data,
+      centerPos,
+      true,
+      setEditingNode,
+    );
   };
 
   const handleImportSheet = async (sheet: Sheet) => {
