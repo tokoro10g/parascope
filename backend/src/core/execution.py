@@ -23,7 +23,7 @@ def _worker(code: str, inputs: Dict[str, Any], outputs: List[str], queue: multip
     redirected_output = io.StringIO()
     sys.stdout = redirected_output
 
-    result = None
+    raw_result = None
     error = None
     success = False
 
@@ -50,7 +50,7 @@ def _worker(code: str, inputs: Dict[str, Any], outputs: List[str], queue: multip
 
         # Call the function
         user_func = local_vars["user_func"]
-        result = user_func(**inputs)
+        raw_result = user_func(**inputs)
         success = True
 
     except Exception:
@@ -61,11 +61,12 @@ def _worker(code: str, inputs: Dict[str, Any], outputs: List[str], queue: multip
         sys.stdout = old_stdout
 
     # Put result in queue
-    if result is not None:
+    result = {}
+    if raw_result is not None:
         if len(outputs) == 1:
-            result = {outputs[0]: result}
+            result = {outputs[0]: raw_result}
         else:
-            result = dict(zip(outputs, result, strict=True))
+            result = dict(zip(outputs, raw_result, strict=True))
     queue.put(ExecutionResult(result=result, stdout=redirected_output.getvalue(), error=error, success=success))
 
 

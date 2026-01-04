@@ -152,6 +152,9 @@ async def update_sheet(sheet_id: UUID, sheet_in: SheetUpdate, db: AsyncSession =
 
         # Re-create Nodes
         for node_in in sheet_in.nodes:
+            if node_in.type in ('input', 'function', 'sheet'):
+                if 'value' in node_in.data:
+                    node_in.data.pop('value')
             db_node = Node(
                 sheet_id=db_sheet.id,
                 type=node_in.type,

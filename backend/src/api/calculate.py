@@ -8,7 +8,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
 
 from ..core.database import get_db
-from ..core.exceptions import NodeExecutionError
+from ..core.exceptions import GraphExecutionError
 from ..core.graph import GraphProcessor
 from ..models.sheet import Sheet
 
@@ -101,25 +101,11 @@ async def calculate_sheet(
                     node_resp["inputs"][target_port] = val
 
         # Populate outputs and value
-        if node.type == "input":
-            node_resp["value"] = result_val.get("value") if isinstance(result_val, dict) else result_val
+        if node.type in ["function", "sheet"]:
+            node_resp["outputs"] = result_val
+        else:
+            node_resp["value"] = result_val.get("value")
             node_resp["outputs"] = {"value": node_resp["value"]}
-        elif node.type == "parameter":
-            node_resp["value"] = result_val.get("value") if isinstance(result_val, dict) else result_val
-            node_resp["outputs"] = {"value": node_resp["value"]}
-        elif node.type == "output":
-            if isinstance(result_val, dict) and "error" in result_val:
-                node_resp["value"] = result_val.get("value")
-            else:
-                node_resp["value"] = result_val
-        elif node.type in ["function", "sheet"]:
-            if isinstance(result_val, dict) and "error" not in result_val:
-                node_resp["outputs"] = result_val
-            elif isinstance(result_val, dict) and "error" in result_val:
-                node_resp["outputs"] = {}
-            else:
-                # Should not happen for function/sheet based on current logic, but fallback
-                node_resp["outputs"] = {"result": result_val}
 
         detailed_results[str(node_id)] = serialize_result(node_resp)
 

@@ -7,7 +7,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
 
 from ..models.sheet import Node, Sheet
-from .exceptions import NodeExecutionError
+from .exceptions import GraphExecutionError, ValueRangeValidationError
 from .execution import execute_python_code
 
 
@@ -57,7 +57,7 @@ class GraphProcessor:
             # Options are strictly strings
             str_value = str(value)
             if str_value not in options:
-                raise NodeExecutionError(
+                raise ValueRangeValidationError(
                     str(node.id), node.label, f"Value '{value}' is not a valid option. Allowed: {options}", value
                 )
 
@@ -76,7 +76,7 @@ class GraphProcessor:
             try:
                 min_val = float(min_val)
                 if value < min_val:
-                    raise NodeExecutionError(
+                    raise ValueRangeValidationError(
                         str(node.id), node.label, f"Value {value} is less than minimum {min_val}", value
                     )
             except ValueError:
@@ -86,7 +86,7 @@ class GraphProcessor:
             try:
                 max_val = float(max_val)
                 if value > max_val:
-                    raise NodeExecutionError(
+                    raise ValueRangeValidationError(
                         str(node.id), node.label, f"Value {value} is greater than maximum {max_val}", value
                     )
             except ValueError:
@@ -102,10 +102,12 @@ class GraphProcessor:
             node = self.node_map[node_id]
             try:
                 await self._execute_node(node, input_overrides)
-            except NodeExecutionError as e:
+            except ValueRangeValidationError as e:
                 self.results[node_id] = {"error": e.error_message, "value": e.value, "valid": False}
-                # Stop execution on first error
-                break
+                # Continue running
+            except GraphExecutionError as e:
+                self.results[node_id] = {"error": e.error_message, "value": e.value, "valid": False}
+                break  # Stop execution on first error
             except Exception as e:
                 self.results[node_id] = {"error": str(e), "value": None, "valid": False}
                 break
@@ -146,7 +148,7 @@ class GraphProcessor:
                 val = node.data.get("value")
 
             if val is None or val == "":
-                raise NodeExecutionError(str(node.id), node.label, "Input requires a value")
+                raise ValueRangeValidationError(str(node.id), node.label, "Input requires a value")
 
             if node.data.get("dataType") == "option":
                 self._validate_option(node, val)
@@ -167,7 +169,7 @@ class GraphProcessor:
                 arg_name = data["target_port"]
                 
                 if u in self.results and isinstance(self.results[u], dict) and "error" in self.results[u]:
-                     raise NodeExecutionError(str(node.id), node.label, f"Dependency '{self.node_map[u].label}' failed")
+                     raise GraphExecutionError(str(node.id), node.label, f"Dependency '{self.node_map[u].label}' failed")
 
                 inputs[arg_name] = self.results[u][data["source_port"]]
 
@@ -184,15 +186,15 @@ class GraphProcessor:
             if exec_result.success:
                 self.results[node.id] = exec_result.result
             else:
-                raise NodeExecutionError(str(node.id), node.label, exec_result.error)
+                raise GraphExecutionError(str(node.id), node.label, exec_result.error)
 
         elif node_type == "sheet":
             if not self.db:
-                raise NodeExecutionError(str(node.id), node.label, "Database session required for nested sheets")
+                raise GraphExecutionError(str(node.id), node.label, "Database session required for nested sheets")
 
             nested_sheet_id = node.data.get("sheetId")
             if not nested_sheet_id:
-                raise NodeExecutionError(str(node.id), node.label, "No sheet selected")
+                raise GraphExecutionError(str(node.id), node.label, "No sheet selected")
 
             # Fetch nested sheet
             try:
@@ -204,10 +206,10 @@ class GraphProcessor:
                 result = await self.db.execute(stmt)
                 nested_sheet = result.scalar_one_or_none()
             except Exception as e:
-                raise NodeExecutionError(str(node.id), node.label, f"Invalid sheet ID: {e}") from e
+                raise GraphExecutionError(str(node.id), node.label, f"Invalid sheet ID: {e}") from e
 
             if not nested_sheet:
-                raise NodeExecutionError(str(node.id), node.label, f"Nested sheet {nested_sheet_id} not found")
+                raise GraphExecutionError(str(node.id), node.label, f"Nested sheet {nested_sheet_id} not found")
 
             # Prepare inputs
             nested_inputs = {}
@@ -217,7 +219,7 @@ class GraphProcessor:
                 input_label = data["target_port"]
                 
                 if u in self.results and isinstance(self.results[u], dict) and "error" in self.results[u]:
-                     raise NodeExecutionError(str(node.id), node.label, f"Dependency '{self.node_map[u].label}' failed")
+                     raise GraphExecutionError(str(node.id), node.label, f"Dependency '{self.node_map[u].label}' failed")
 
                 if u in self.results and data["source_port"] in self.results[u]:
                     nested_inputs[input_label] = self.results[u][data["source_port"]]
@@ -236,7 +238,7 @@ class GraphProcessor:
                 if n.type == "output":
                     # The value of the output node
                     if n.id in nested_results:
-                        node_outputs[n.label] = nested_results[n.id]
+                        node_outputs[n.label] = nested_results[n.id]["value"]
 
             self.results[node.id] = node_outputs
 
@@ -248,7 +250,7 @@ class GraphProcessor:
                 source_port = in_edges[0][2]["source_port"]
                 
                 if source_id in self.results and isinstance(self.results[source_id], dict) and "error" in self.results[source_id]:
-                     raise NodeExecutionError(str(node.id), node.label, f"Dependency '{self.node_map[source_id].label}' failed")
+                     raise GraphExecutionError(str(node.id), node.label, f"Dependency '{self.node_map[source_id].label}' failed")
 
                 val = self.results[source_id][source_port]
                 
@@ -256,10 +258,7 @@ class GraphProcessor:
                     self._validate_option(node, val)
                 else:
                     self._validate_range(node, val)
-                
-                self.results[node.id] = val
+                    
+                self.results[node.id] = {"value": val}
             else:
                 self.results[node.id] = None
-
-        elif node_type == "option":
-            self.results[node.id] = node.data.get("value")

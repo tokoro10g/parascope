@@ -1,4 +1,4 @@
-class NodeExecutionError(Exception):
+class GraphExecutionError(Exception):
     """Raised when a node execution fails."""
 
     def __init__(self, node_id: str, node_label: str, error_message: str, value: any = None):
@@ -7,3 +7,6 @@ class NodeExecutionError(Exception):
         self.error_message = error_message
         self.value = value
         super().__init__(f"Error executing node '{node_label}': {error_message}")
+
+class ValueRangeValidationError(GraphExecutionError):
+    pass
