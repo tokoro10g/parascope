@@ -58,10 +58,15 @@ export const Login: React.FC = () => {
           Welcome to Parascope
         </h1>
         <p style={{ marginBottom: '30px', color: 'var(--text-secondary)' }}>
-          Please enter your name to continue
+          Please enter your user name to continue
         </p>
 
         <form onSubmit={handleSubmit}>
+          {usernameDescription && (
+            <p style={{ color: 'var(--text-muted)', fontSize: '0.9em' }}>
+              {usernameDescription}
+            </p>
+          )}
           <input
             type="text"
             value={name}
@@ -69,11 +74,6 @@ export const Login: React.FC = () => {
             placeholder="Your Name"
             className="login-input"
           />
-          {usernameDescription && (
-            <p style={{ color: 'var(--text-muted)', fontSize: '0.9em' }}>
-              {usernameDescription}
-            </p>
-          )}
           <button
             type="submit"
             disabled={!isValid(name)}
