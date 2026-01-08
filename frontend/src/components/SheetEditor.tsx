@@ -70,10 +70,6 @@ export const SheetEditor: React.FC = () => {
   const calculateTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(
     null,
   );
-  const searchParamsTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(
-    null,
-  );
-  const pendingUrlUpdates = useRef<Record<string, string>>({});
 
   // Warn on exit if dirty
   useEffect(() => {
@@ -192,31 +188,18 @@ export const SheetEditor: React.FC = () => {
       activeTypingNodeId.current = id;
       lastTypingTimestamp.current = Date.now();
 
-      pendingUrlUpdates.current[label] = value;
-
-      if (searchParamsTimeoutRef.current) {
-        clearTimeout(searchParamsTimeoutRef.current);
-      }
-
-      searchParamsTimeoutRef.current = setTimeout(() => {
-        const updates = { ...pendingUrlUpdates.current };
-        pendingUrlUpdates.current = {};
-
-        setSearchParams(
-          (prev) => {
-            const newParams = new URLSearchParams(prev);
-            Object.entries(updates).forEach(([key, val]) => {
-              if (val) {
-                newParams.set(key, val);
-              } else {
-                newParams.delete(key);
-              }
-            });
-            return newParams;
-          },
-          { replace: true },
-        );
-      }, 300);
+      setSearchParams(
+        (prev) => {
+          const newParams = new URLSearchParams(prev);
+          if (value) {
+            newParams.set(label, value);
+          } else {
+            newParams.delete(label);
+          }
+          return newParams;
+        },
+        { replace: true },
+      );
     },
     [
       errorNodeId,
