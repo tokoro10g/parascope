@@ -19,8 +19,8 @@ export const extractValuesFromResult = (
 ): Record<string, any> => {
   const values: Record<string, any> = {};
   Object.entries(result).forEach(([id, nodeRes]) => {
-    if (nodeRes.value !== undefined) {
-      values[id] = nodeRes.value;
+    if (nodeRes.outputs?.value !== undefined) {
+      values[id] = nodeRes.outputs.value;
     }
   });
   return values;
