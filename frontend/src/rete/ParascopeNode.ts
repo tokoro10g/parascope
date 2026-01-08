@@ -1,6 +1,6 @@
 import { ClassicPreset as Classic } from 'rete';
 import { DropdownControl } from './DropdownControl';
-import { NumberControl } from './NumberControl';
+import { InputControl } from './InputControl';
 
 export const socket = new Classic.Socket('socket');
 
@@ -65,7 +65,7 @@ export class ParascopeNode extends Classic.Node {
     if (this.type === 'output' && isOption) {
       this.addControl(
         'value',
-        new NumberControl(data.value, {
+        new InputControl(data.value, {
           readonly: true,
         }),
       );
@@ -81,7 +81,7 @@ export class ParascopeNode extends Classic.Node {
     if (isInputOrParam) {
       this.addControl(
         'value',
-        new NumberControl(value, {
+        new InputControl(value, {
           readonly: false,
           change: onChange,
           min,
@@ -91,7 +91,7 @@ export class ParascopeNode extends Classic.Node {
     } else if (this.type === 'output') {
       this.addControl(
         'value',
-        new NumberControl(value, {
+        new InputControl(value, {
           readonly: true,
           min,
           max,

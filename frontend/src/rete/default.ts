@@ -23,7 +23,7 @@ import {
   createContextMenuPlugin,
 } from './contextMenu';
 import { DropdownControl, DropdownControlComponent } from './DropdownControl';
-import { NumberControl, NumberControlComponent } from './NumberControl';
+import { InputControl, InputControlComponent } from './InputControl';
 import { ParascopeNode } from './ParascopeNode';
 import { Connection, type Schemes } from './types';
 
@@ -69,8 +69,8 @@ export async function createEditor(container: HTMLElement) {
           if (data.payload instanceof DropdownControl) {
             return DropdownControlComponent as any;
           }
-          if (data.payload instanceof NumberControl) {
-            return NumberControlComponent as any;
+          if (data.payload instanceof InputControl) {
+            return InputControlComponent as any;
           }
           return ReactPresets.classic.Control;
         },
@@ -266,7 +266,7 @@ export async function createEditor(container: HTMLElement) {
           if (
             control instanceof Classic.InputControl ||
             control instanceof DropdownControl ||
-            control instanceof NumberControl
+            control instanceof InputControl
           ) {
             // Don't save values for input/output nodes as they are transient
             if (n.type !== 'input' && n.type !== 'output') {

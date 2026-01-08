@@ -2,7 +2,7 @@ import type React from 'react';
 import { useCallback, useEffect, useState } from 'react';
 import { ClassicPreset } from 'rete';
 
-export class NumberControl extends ClassicPreset.Control {
+export class InputControl extends ClassicPreset.Control {
   private listeners: (() => void)[] = [];
   public value: string | number;
   public onChange?: (value: any) => void;
@@ -27,6 +27,7 @@ export class NumberControl extends ClassicPreset.Control {
     this.max = options.max;
   }
 
+
   setValue(val: string | number) {
     this.value = val;
     this.listeners.forEach((l) => {
@@ -42,7 +43,7 @@ export class NumberControl extends ClassicPreset.Control {
   }
 }
 
-export const NumberControlComponent: React.FC<{ data: NumberControl }> = ({
+export const InputControlComponent: React.FC<{ data: InputControl }> = ({
   data,
 }) => {
   const [value, setValue] = useState(data.value);
