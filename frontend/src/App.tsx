@@ -11,7 +11,16 @@ import './rete.css';
 function App() {
   return (
     <AuthProvider>
-      <Toaster position="top-right" />
+      <Toaster
+        position="top-right"
+        toastOptions={{
+          style: {
+            background: 'var(--panel-bg)',
+            color: 'var(--text-color)',
+            border: '1px solid var(--border-color)',
+          },
+        }}
+      />
       <Router>
         <div className="App">
           <Routes>
