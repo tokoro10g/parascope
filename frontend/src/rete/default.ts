@@ -157,6 +157,9 @@ export async function createEditor(container: HTMLElement) {
     },
     undo: () => history.undo(),
     redo: () => history.redo(),
+    addHistoryAction: (action: { redo: () => Promise<void> | void; undo: () => Promise<void> | void }) => {
+      history.add(action);
+    },
 
     // Helper to load a sheet from the API
     loadSheet: async (sheet: Sheet, focusNodeId?: string) => {

@@ -25,6 +25,7 @@ export function useNodeOperations(
   setCurrentSheet: React.Dispatch<React.SetStateAction<Sheet | null>>,
   currentSheet: Sheet | null,
   handleEvaluatorInputChange: (id: string, value: string) => void,
+  addHistoryAction?: (action: { redo: () => Promise<void> | void; undo: () => Promise<void> | void }) => void,
 ) {
   const calcCenterPosition = useCallback(() => {
     if (!editor || !area) return { x: 0, y: 0 };
@@ -143,6 +144,21 @@ export function useNodeOperations(
       const node = editor.getNode(nodeId);
       if (!node) return;
 
+      // Capture old state for Undo
+      const oldState: NodeUpdates = {
+        label: node.label,
+        type: node.type,
+        initialData: JSON.parse(JSON.stringify(node.initialData)),
+        inputs: Object.keys(node.inputs).map((key) => ({
+          key,
+          socket_type: 'socket',
+        })),
+        outputs: Object.keys(node.outputs).map((key) => ({
+          key,
+          socket_type: 'socket',
+        })),
+      };
+
       if (updates.label && updates.label !== node.label) {
         // Check for duplicate input/output names
         if (node.type === 'input' || node.type === 'output') {
@@ -175,7 +191,6 @@ export function useNodeOperations(
             }
           }
         }
-        node.label = updates.label;
       }
 
       if (updates.type && updates.type !== node.type) {
@@ -201,96 +216,107 @@ export function useNodeOperations(
             return;
           }
         }
-        node.type = updates.type;
-        node.setupControl();
       }
 
-      if (updates.initialData) {
-        node.initialData = { ...node.initialData, ...updates.initialData };
-        node.setupControl();
-      }
-
-      const syncSockets = async (
-        updates: { key: string }[],
-        isInput: boolean,
+      const applyUpdates = async (
+        n: ParascopeNode,
+        u: NodeUpdates,
+        replaceData = false,
       ) => {
-        const currentSockets = isInput ? node.inputs : node.outputs;
-        const newKeys = new Set(updates.map((i) => i.key));
-        const keysToRemove = Object.keys(currentSockets).filter(
-          (key) => !newKeys.has(key),
-        );
-
-        for (const key of keysToRemove) {
-          const connections = editor
-            .getConnections()
-            .filter((c) =>
-              isInput
-                ? c.target === nodeId && c.targetInput === key
-                : c.source === nodeId && c.sourceOutput === key,
-            );
-          for (const c of connections) {
-            await editor.removeConnection(c.id);
+        if (u.label !== undefined) n.label = u.label;
+        if (u.type !== undefined) {
+          n.type = u.type;
+          n.setupControl();
+        }
+        if (u.initialData) {
+          if (replaceData) {
+            n.initialData = { ...u.initialData };
+          } else {
+            n.initialData = { ...n.initialData, ...u.initialData };
           }
-          if (isInput) node.removeInput(key);
-          else node.removeOutput(key);
+          n.setupControl();
         }
 
-        updates.forEach((item) => {
-          const sockets = isInput ? node.inputs : node.outputs;
-          if (!sockets[item.key]) {
-            if (isInput)
-              node.addInput(item.key, new Classic.Input(socket, item.key));
-            else node.addOutput(item.key, new Classic.Output(socket, item.key));
-          }
-        });
+        const syncSockets = async (
+          socketUpdates: { key: string }[],
+          isInput: boolean,
+        ) => {
+          const currentSockets = isInput ? n.inputs : n.outputs;
+          const newKeys = new Set(socketUpdates.map((i) => i.key));
+          const keysToRemove = Object.keys(currentSockets).filter(
+            (key) => !newKeys.has(key),
+          );
 
-        const orderedSockets: Record<string, any> = {};
-        updates.forEach((item) => {
-          const sockets = isInput ? node.inputs : node.outputs;
-          if (sockets[item.key]) {
-            orderedSockets[item.key] = sockets[item.key];
+          for (const key of keysToRemove) {
+            const connections = editor
+              .getConnections()
+              .filter((c) =>
+                isInput
+                  ? c.target === n.id && c.targetInput === key
+                  : c.source === n.id && c.sourceOutput === key,
+              );
+            for (const c of connections) {
+              await editor.removeConnection(c.id);
+            }
+            if (isInput) n.removeInput(key);
+            else n.removeOutput(key);
           }
-        });
 
-        if (isInput) node.inputs = orderedSockets;
-        else node.outputs = orderedSockets;
+          socketUpdates.forEach((item) => {
+            const sockets = isInput ? n.inputs : n.outputs;
+            if (!sockets[item.key]) {
+              if (isInput)
+                n.addInput(item.key, new Classic.Input(socket, item.key));
+              else n.addOutput(item.key, new Classic.Output(socket, item.key));
+            }
+          });
+
+          const orderedSockets: Record<string, any> = {};
+          socketUpdates.forEach((item) => {
+            const sockets = isInput ? n.inputs : n.outputs;
+            if (sockets[item.key]) {
+              orderedSockets[item.key] = sockets[item.key];
+            }
+          });
+
+          if (isInput) n.inputs = orderedSockets;
+          else n.outputs = orderedSockets;
+        };
+
+        if (u.inputs) {
+          await syncSockets(u.inputs, true);
+        }
+
+        if (u.outputs) {
+          await syncSockets(u.outputs, false);
+        }
+
+        await area.update('node', n.id);
       };
 
-      if (updates.inputs) {
-        await syncSockets(updates.inputs, true);
-      }
-
-      if (updates.outputs) {
-        await syncSockets(updates.outputs, false);
-      }
-
-      await area.update('node', nodeId);
+      await applyUpdates(node, updates);
 
       setIsDirty(true);
-
-      // We need to get graph data to update currentSheet, but getGraphData is on the 'editor' object returned by useRete,
-      // which is a wrapper. The 'editor' passed here is the Rete NodeEditor instance.
-      // The wrapper has getGraphData helper.
-      // But we can reconstruct it or pass the wrapper.
-      // For now, let's just update nodes list.
-      // The original code used editor.getGraphData() which was the helper.
-      // We might need to pass that helper or replicate it.
-      // Replicating it is safer for decoupling.
-
-      // Actually, let's just update the nodes state for now, and let save handle the full graph data.
-      // But currentSheet.nodes needs to be updated for persistence if we save immediately?
-      // No, handleSaveSheet calls getGraphData.
-      // So we just need to update currentSheet.nodes to keep it in sync for other things?
-      // The original code did:
-      // const graphData = editor.getGraphData();
-      // setCurrentSheet((prev) => prev ? { ...prev, nodes: graphData.nodes } : null);
-
-      // We can skip updating currentSheet.nodes here if we trust editor.getNodes() is the source of truth for the visual graph.
-      // But let's try to keep it consistent.
-
       setNodes([...editor.getNodes()]);
+
+      if (addHistoryAction) {
+        addHistoryAction({
+          undo: async () => {
+            const n = editor.getNode(nodeId);
+            if (!n) return;
+            await applyUpdates(n, oldState, true);
+            setNodes([...editor.getNodes()]);
+          },
+          redo: async () => {
+            const n = editor.getNode(nodeId);
+            if (!n) return;
+            await applyUpdates(n, updates, false);
+            setNodes([...editor.getNodes()]);
+          },
+        });
+      }
     },
-    [editor, area, nodes, setIsDirty, setNodes],
+    [editor, area, nodes, setIsDirty, setNodes, addHistoryAction],
   );
 
   return {

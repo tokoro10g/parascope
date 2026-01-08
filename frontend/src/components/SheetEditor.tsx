@@ -143,6 +143,7 @@ export const SheetEditor: React.FC = () => {
       setCurrentSheet,
       currentSheet,
       handleEvaluatorInputChange,
+      editor?.addHistoryAction,
     );
 
   const handleLoadSheet = useCallback(
