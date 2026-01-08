@@ -48,6 +48,7 @@ export const SheetEditor: React.FC = () => {
     errorNodeId,
     setErrorNodeId,
     calculate,
+    calculatePreview,
   } = useSheetCalculation(editor);
   const [evaluatorInputs, setEvaluatorInputs] = useState<
     Record<string, string>
@@ -65,6 +66,7 @@ export const SheetEditor: React.FC = () => {
   searchParamsRef.current = searchParams;
 
   const ignoreNextSearchParamsChange = useRef(false);
+  const calculateTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
   // Warn on exit if dirty
   useEffect(() => {
@@ -77,6 +79,61 @@ export const SheetEditor: React.FC = () => {
     window.addEventListener('beforeunload', handleBeforeUnload);
     return () => window.removeEventListener('beforeunload', handleBeforeUnload);
   }, [isDirty]);
+
+  const getExportData = useCallback(() => {
+    if (!editor) return null;
+    const graphData = editor.getGraphData();
+
+    const nodes = graphData.nodes.map((n) => ({
+      id: n.id,
+      type: n.type,
+      label: n.label,
+      position_x: n.position_x,
+      position_y: n.position_y,
+      inputs: n.inputs,
+      outputs: n.outputs,
+      data: n.data,
+    }));
+
+    const connections = graphData.connections.map((c) => ({
+      id: c.id,
+      source_id: c.source_id,
+      target_id: c.target_id,
+      source_port: c.source_port,
+      target_port: c.target_port,
+    }));
+
+    return {
+      name: currentSheet?.name || 'Untitled',
+      nodes,
+      connections,
+    };
+  }, [editor, currentSheet]);
+
+  const triggerAutoCalculation = useCallback(() => {
+    if (calculateTimeoutRef.current) {
+      clearTimeout(calculateTimeoutRef.current);
+    }
+
+    calculateTimeoutRef.current = setTimeout(async () => {
+      const graph = getExportData();
+      if (!graph) return;
+
+      const apiInputs: Record<string, { value: any }> = {};
+      // Use latest evaluator inputs
+      const currentEvaluatorInputs = evaluatorInputsRef.current;
+      const nodes = editor?.editor.getNodes() || [];
+
+      Object.entries(currentEvaluatorInputs).forEach(([id, value]) => {
+        const node = nodes.find((n) => n.id === id);
+        if (node) {
+          apiInputs[node.label] = { value };
+        }
+      });
+
+      await calculatePreview(apiInputs, graph as any);
+    }, 50); // 500ms debounce
+  }, [getExportData, calculatePreview, editor]);
 
   const handleBackClick = (e: React.MouseEvent) => {
     e.preventDefault();
@@ -107,6 +164,7 @@ export const SheetEditor: React.FC = () => {
       }
 
       setEvaluatorInputs((prev) => ({ ...prev, [id]: value }));
+      triggerAutoCalculation();
 
       if (errorNodeId === id) {
         setErrorNodeId(null);
@@ -131,21 +189,30 @@ export const SheetEditor: React.FC = () => {
         { replace: true },
       );
     },
-    [errorNodeId, setSearchParams, editor, setErrorNodeId],
+    [errorNodeId, setSearchParams, editor, setErrorNodeId, triggerAutoCalculation],
   );
 
-  const { addNode, handleDuplicateNode, handleNodeUpdate, calcCenterPosition } =
-    useNodeOperations(
-      editor?.editor,
-      editor?.area,
-      nodes,
-      setNodes,
-      setIsDirty,
-      setCurrentSheet,
-      currentSheet,
-      handleEvaluatorInputChange,
-      editor?.addHistoryAction,
-    );
+  const {
+    addNode,
+    handleDuplicateNode,
+    handleNodeUpdate: originalHandleNodeUpdate,
+    calcCenterPosition,
+  } = useNodeOperations(
+    editor?.editor,
+    editor?.area,
+    nodes,
+    setNodes,
+    setIsDirty,
+    setCurrentSheet,
+    currentSheet,
+    handleEvaluatorInputChange,
+    editor?.addHistoryAction,
+  );
+
+  const handleNodeUpdate = async (nodeId: string, updates: any) => {
+    await originalHandleNodeUpdate(nodeId, updates);
+    triggerAutoCalculation();
+  };
 
   const handleLoadSheet = useCallback(
     async (id: string) => {
@@ -369,6 +436,7 @@ export const SheetEditor: React.FC = () => {
           }
         });
         setNodes(nodes);
+        triggerAutoCalculation();
       });
       editor.setInputValueChangeListener((nodeId, value) => {
         handleEvaluatorInputChange(nodeId, value);
@@ -656,6 +724,7 @@ export const SheetEditor: React.FC = () => {
         editor.area.update('control', nodeId);
         setIsDirty(true);
         setNodes([...editor.editor.getNodes()]);
+        triggerAutoCalculation();
       }
     }
   };

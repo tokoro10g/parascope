@@ -112,7 +112,7 @@ Generated from `SPECIFICATIONS.tsv`.
     - [x] Support light and dark themes (UI-23.0).
 
 ## 4. Integration & Logic (Initial Release)
-- [ ] **Real-time Recalculation**: Trigger backend calc on input change (UI-01.0).
+- [x] **Real-time Recalculation**: Trigger backend calc on input change (UI-01.0).
 - [ ] **Sheet Nesting**:
     - [x] Implement linking mechanism for nested sheets (BB-S-02.0, BB-S-03.0).
     - [x] Implement logic to expose Input/Output Nodes as sockets (BB-S-04.0).

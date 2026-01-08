@@ -157,6 +157,27 @@ export const api = {
     return res.json();
   },
 
+  async calculatePreview(
+    inputs: Record<string, { value: any }>,
+    graph: Partial<Sheet>,
+  ): Promise<{ results: Record<string, NodeResult>; script: string }> {
+    const res = await fetch(`${API_BASE}/calculate/`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ inputs, graph }),
+    });
+    if (!res.ok) {
+      const err = await res.json();
+      if (typeof err.detail === 'object' && err.detail.node_id) {
+        const error = new Error(err.detail.message);
+        (error as any).nodeId = err.detail.node_id;
+        throw error;
+      }
+      throw new Error(err.detail || 'Calculation failed');
+    }
+    return res.json();
+  },
+
   async uploadAttachment(
     file: File,
   ): Promise<{ filename: string; url: string }> {

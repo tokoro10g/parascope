@@ -78,6 +78,32 @@ export const useSheetCalculation = (editor: Editor | null | undefined) => {
     [applyCalculationResult],
   );
 
+  const calculatePreview = useCallback(
+    async (inputs: Record<string, { value: any }>, graph: any) => {
+      setIsCalculating(true);
+      try {
+        const response = await api.calculatePreview(inputs, graph);
+
+        // Log the script to the console
+        console.groupCollapsed('Preview Python Script');
+        console.log(response.script);
+        console.groupEnd();
+
+        applyCalculationResult(response.results);
+        return response.results;
+      } catch (e: any) {
+        console.error(e);
+        if (e.nodeId) {
+          setErrorNodeId(e.nodeId);
+        }
+        // Don't throw, just log/display error (preview shouldn't block UI)
+      } finally {
+        setIsCalculating(false);
+      }
+    },
+    [applyCalculationResult],
+  );
+
   return {
     isCalculating,
     lastResult,
@@ -85,6 +111,7 @@ export const useSheetCalculation = (editor: Editor | null | undefined) => {
     errorNodeId,
     setErrorNodeId,
     calculate,
+    calculatePreview,
     applyCalculationResult,
   };
 };
