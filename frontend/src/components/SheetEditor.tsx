@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import toast from 'react-hot-toast';
 import { Group, Panel, Separator } from 'react-resizable-panels';
 import {
   useLocation,
@@ -430,6 +431,7 @@ export const SheetEditor: React.FC = () => {
 
       setCurrentSheet(updatedSheet);
       setIsDirty(false);
+      toast.success('Sheet saved successfully');
     } catch (e) {
       console.error(e);
       alert(`Error saving sheet: ${e}`);
@@ -476,6 +478,7 @@ export const SheetEditor: React.FC = () => {
     try {
       const updatedSheet = await api.updateSheet(currentSheet.id, { name });
       setCurrentSheet(updatedSheet);
+      toast.success('Sheet renamed successfully');
       // Renaming saves immediately, so we can clear dirty if it was only dirty due to name?
       // But usually renaming is separate. If we treat renaming as a save, we might want to keep dirty if graph changed.
       // However, the API call updates the sheet. If we don't send nodes, they aren't touched.

@@ -4,11 +4,13 @@ import {
   Folder as FolderIcon,
   FolderInput,
   FolderPlus,
+  Link as LinkIcon,
   LogOut,
   Trash2,
   Workflow,
 } from 'lucide-react';
 import React, { useCallback, useEffect, useState } from 'react';
+import toast from 'react-hot-toast';
 import { Link, useNavigate, useParams } from 'react-router-dom';
 import { api, type Folder, type SheetSummary } from '../api';
 import { useAuth } from '../contexts/AuthContext';
@@ -57,6 +59,7 @@ export const Dashboard: React.FC = () => {
         `Untitled Sheet ${Date.now()}`,
         currentFolderId,
       );
+      toast.success('Sheet created successfully');
       navigate(`/sheet/${sheet.id}`);
     } catch (e) {
       console.error(e);
@@ -69,6 +72,7 @@ export const Dashboard: React.FC = () => {
     if (name) {
       try {
         await api.createFolder(name, currentFolderId);
+        toast.success('Folder created successfully');
         loadData();
       } catch (_e) {
         alert('Failed to create folder');
@@ -81,11 +85,20 @@ export const Dashboard: React.FC = () => {
     e.stopPropagation();
     try {
       await api.duplicateSheet(id);
+      toast.success('Sheet duplicated successfully');
       loadData();
     } catch (e: any) {
       console.error(e);
       alert(`Error duplicating sheet: ${e.message || e}`);
     }
+  };
+
+  const handleCopyLink = (e: React.MouseEvent, id: string) => {
+    e.preventDefault();
+    e.stopPropagation();
+    const url = `${window.location.origin}/sheet/${id}`;
+    navigator.clipboard.writeText(url);
+    toast.success('Link copied to clipboard');
   };
 
   const handleDelete = async (e: React.MouseEvent, id: string) => {
@@ -95,6 +108,7 @@ export const Dashboard: React.FC = () => {
 
     try {
       await api.deleteSheet(id);
+      toast.success('Sheet deleted successfully');
       loadData();
     } catch (e: any) {
       console.error(e);
@@ -114,6 +128,7 @@ export const Dashboard: React.FC = () => {
 
     try {
       await api.deleteFolder(id);
+      toast.success('Folder deleted successfully');
       loadData();
     } catch (e: any) {
       console.error(e);
@@ -132,6 +147,7 @@ export const Dashboard: React.FC = () => {
     if (sheetToMove) {
       try {
         await api.updateSheet(sheetToMove, { folder_id: folderId || null });
+        toast.success('Sheet moved successfully');
         loadData();
       } catch (e) {
         console.error(e);
@@ -334,6 +350,13 @@ export const Dashboard: React.FC = () => {
             </Link>
             <span className="sheet-id">{sheet.id}</span>
             <div className="sheet-actions">
+              <button
+                type="button"
+                onClick={(e) => handleCopyLink(e, sheet.id)}
+                title="Copy Sharable Link"
+              >
+                <LinkIcon size={16} />
+              </button>
               <button
                 type="button"
                 onClick={(e) => handleMoveClick(e, sheet.id)}

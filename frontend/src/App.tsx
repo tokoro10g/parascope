@@ -1,3 +1,4 @@
+import { Toaster } from 'react-hot-toast';
 import { Route, BrowserRouter as Router, Routes } from 'react-router-dom';
 import { Dashboard } from './components/Dashboard';
 import { Login } from './components/Login';
@@ -10,6 +11,7 @@ import './rete.css';
 function App() {
   return (
     <AuthProvider>
+      <Toaster position="top-right" />
       <Router>
         <div className="App">
           <Routes>
