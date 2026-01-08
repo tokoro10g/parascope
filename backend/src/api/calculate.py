@@ -52,11 +52,20 @@ async def calculate_sheet(
             input_overrides[key] = val
 
     processor = GraphProcessor(sheet, db)
-    results = await processor.execute(input_overrides=input_overrides)
+    
+    # Generate script first (for both inspection and execution)
+    script = await processor.generate_script(input_overrides=input_overrides)
+    
+    # Execute script
+    results = await processor.execute_script(script)
 
     # Build detailed response
     detailed_results = {}
     for node_id, result_val in results.items():
+        if node_id not in processor.node_map:
+             # Skip results that are not nodes (e.g. internal variables if any leaked, though we filter keys by UUID in execute_script)
+             continue
+             
         node = processor.node_map[node_id]
 
         node_resp = {
@@ -108,4 +117,5 @@ async def calculate_sheet(
 
         detailed_results[str(node_id)] = serialize_result(node_resp)
 
-    return detailed_results
+    return {"results": detailed_results, "script": script}
+

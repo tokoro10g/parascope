@@ -1,0 +1,12 @@
+{% for node in nodes if node.type == 'function' %}
+def {{ node.func_name }}({{ node.args|join(', ') }}):
+
+{{ node.user_code | indent(4, True) }}
+
+    return {
+        {% for out in node.outputs %}
+        '{{ out }}': {{ out }},
+        {% endfor %}
+    }
+
+{% endfor %}

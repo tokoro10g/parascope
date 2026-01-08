@@ -1,0 +1,10 @@
+{{ base_script }}
+
+input_overrides = {{ input_overrides }}
+
+try:
+{% filter indent(4, True) %}
+{% include 'body.jinja2' %}
+{% endfilter %}
+except StopExecution:
+    pass

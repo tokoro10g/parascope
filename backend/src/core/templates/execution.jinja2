@@ -1,0 +1,117 @@
+{% for node in nodes %}
+# --- Node: {{ node.label }} ({{ node.id }}) ---
+{% if node.type in ['parameter', 'input'] %}
+try:
+    {% if node.type == 'parameter' %}
+    val = {{ node.value }}
+    {% if node.is_option %}
+    _validate_option('{{ node.id }}', '{{ node.label }}', {{ node.data }}, val)
+    val = str(val)
+    {% else %}
+    val = _parse_value(val)
+    {% if node.has_range %}
+    _validate_range('{{ node.id }}', '{{ node.label }}', {{ node.data }}, val)
+    {% endif %}
+    {% endif %}
+    results['{{ node.id }}'] = {'value': val}
+
+    {% elif node.type == 'input' %}
+    val = None
+    if input_overrides and '{{ node.id }}' in input_overrides:
+        val = input_overrides['{{ node.id }}']
+    elif input_overrides and '{{ node.label }}' in input_overrides:
+        val = input_overrides['{{ node.label }}']
+    
+    if val is None or val == '':
+        val = {{ node.default_value }}
+    
+    if val is None or val == '':
+        raise ValueError('Input requires a value')
+    
+    {% if node.is_option %}
+    _validate_option('{{ node.id }}', '{{ node.label }}', {{ node.data }}, val)
+    val = str(val)
+    {% else %}
+    val = _parse_value(val)
+    {% if node.has_range %}
+    _validate_range('{{ node.id }}', '{{ node.label }}', {{ node.data }}, val)
+    {% endif %}
+    {% endif %}
+    results['{{ node.id }}'] = {'value': val}
+    {% endif %}
+except ValueRangeValidationError as e:
+    results['{{ node.id }}'] = {'error': str(e), 'valid': False}
+except Exception as e:
+    results['{{ node.id }}'] = {'error': str(e), 'valid': False}
+    raise StopExecution()
+
+{% else %}
+try:
+    {% if node.type == 'output' %}
+    {% if node.has_source %}
+    source_res = results['{{ node.source_id }}']
+    if 'error' in source_res:
+        raise Exception(f'Dependency failed: {source_res["error"]}')
+    val = source_res['{{ node.source_port }}']
+    
+    {% if node.is_option %}
+    _validate_option('{{ node.id }}', '{{ node.label }}', {{ node.data }}, val)
+    {% else %}
+    {% if node.has_range %}
+    _validate_range('{{ node.id }}', '{{ node.label }}', {{ node.data }}, val)
+    {% endif %}
+    {% endif %}
+    results['{{ node.id }}'] = {'value': val}
+    {% else %}
+    results['{{ node.id }}'] = {'value': None}
+    {% endif %}
+
+    {% elif node.type == 'function' %}
+    # Check dependencies
+    {% for arg, val in node.inputs.items() %}
+    {# val is (source_id, source_port) #}
+    if 'error' in results['{{ val[0] }}']:
+        # Upstream error, propagate efficiently
+        raise Exception(f'Dependency failed')
+    {% endfor %}
+
+    func_args = {
+        {% for arg, val in node.inputs.items() %}
+        '{{ arg }}': results['{{ val[0] }}']['{{ val[1] }}'],
+        {% endfor %}
+    }
+    
+    results['{{ node.id }}'] = {{ node.func_name }}(**func_args)
+
+    {% elif node.type == 'sheet' %}
+    def {{ node.func_name }}(inputs):
+        input_overrides = inputs
+        try:
+            results = {}
+{{ node.nested_code | indent(12, True) }}
+            outputs = {}
+            {% for out_id, out_label in node.sheet_outputs %}
+            if '{{ out_id }}' in results and 'value' in results['{{ out_id }}']:
+                outputs['{{ out_label }}'] = results['{{ out_id }}']['value']
+            {% endfor %}
+            return outputs
+        except StopExecution:
+            raise Exception("Nested sheet execution failed")
+
+    nested_inputs = {}
+    {% for label, val in node.inputs.items() %}
+    {# val is (source_id, source_port) #}
+    if 'error' in results['{{ val[0] }}']:
+        raise Exception(f'Dependency failed')
+    nested_inputs['{{ label }}'] = results['{{ val[0] }}']['{{ val[1] }}']
+    {% endfor %}
+
+    results['{{ node.id }}'] = {{ node.func_name }}(nested_inputs)
+    {% endif %}
+
+except Exception as e:
+    results['{{ node.id }}'] = {'error': str(e), 'valid': False}
+    raise StopExecution()
+{% endif %}
+
+{% endfor %}

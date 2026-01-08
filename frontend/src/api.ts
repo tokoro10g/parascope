@@ -139,7 +139,7 @@ export const api = {
   async calculate(
     sheetId: string,
     inputs: Record<string, { value: any }>,
-  ): Promise<Record<string, NodeResult>> {
+  ): Promise<{ results: Record<string, NodeResult>; script: string }> {
     const res = await fetch(`${API_BASE}/calculate/${sheetId}`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },

@@ -56,9 +56,15 @@ export const useSheetCalculation = (editor: Editor | null | undefined) => {
     async (sheetId: string, inputs: Record<string, { value: any }>) => {
       setIsCalculating(true);
       try {
-        const result = await api.calculate(sheetId, inputs);
-        applyCalculationResult(result);
-        return result;
+        const response = await api.calculate(sheetId, inputs);
+        
+        // Log the script to the console so the user can see it
+        console.groupCollapsed('Generated Python Script');
+        console.log(response.script);
+        console.groupEnd();
+
+        applyCalculationResult(response.results);
+        return response.results;
       } catch (e: any) {
         console.error(e);
         if (e.nodeId) {
