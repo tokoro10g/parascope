@@ -278,49 +278,12 @@ export const SheetEditor: React.FC = () => {
         setIsDirty(false);
         setIsLoading(false);
         document.title = `Parascope - ${sheet.name}`;
-
-        // Auto-calculate (UI-27.0)
-        const inputNodes = sheet.nodes.filter((n) => n.type === 'input');
-        const inputsFromParams: Record<string, string> = {};
-        searchParamsRef.current.forEach((value, key) => {
-          // Map Name -> ID
-          const node = inputNodes.find((n) => n.label === key);
-          if (node?.id) {
-            inputsFromParams[node.id] = value;
-          }
-        });
-
-        const allInputsProvided = inputNodes.every(
-          (n) => n.id && inputsFromParams[n.id],
-        );
-
-        if (inputNodes.length === 0 || allInputsProvided) {
-          try {
-            const apiInputs: Record<string, { value: any }> = {};
-            Object.entries(inputsFromParams).forEach(([id, value]) => {
-              const node = inputNodes.find((n) => n.id === id);
-              if (node) {
-                apiInputs[node.label] = { value };
-              }
-            });
-
-            const result = await calculate(sheet.id, apiInputs);
-
-            editor.updateNodeValues(
-              inputsFromParams,
-              extractValuesFromResult(result),
-            );
-            setNodes([...editor.editor.getNodes()]);
-          } catch (e) {
-            console.error('Auto-calculation failed', e);
-          }
-        }
       } catch (e) {
         console.error(e);
         alert(`Error loading sheet: ${e}`);
       }
     },
-    [editor, calculate, setLastResult],
+    [editor, setLastResult],
   );
 
   // Load the specific sheet when sheetId changes
