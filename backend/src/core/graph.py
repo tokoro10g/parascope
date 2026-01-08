@@ -1,3 +1,4 @@
+import asyncio
 import os
 from typing import Any, Dict, Optional
 from uuid import UUID
@@ -10,6 +11,7 @@ from sqlalchemy.orm import selectinload
 
 from ..models.sheet import Node, Sheet
 from .exceptions import GraphExecutionError
+from .execution import execute_full_script
 
 
 class GraphProcessor:
@@ -169,10 +171,15 @@ class GraphProcessor:
         """
         Executes the generated script and returns the results.
         """
-        global_vars = {}
-        exec(script, global_vars)
-        
-        results = global_vars.get("results", {})
+        loop = asyncio.get_running_loop()
+        # Use execute_full_script in a separate thread to handle the blocking process call
+        # This satisfies EE-01.0 (Background Worker) and EH-11.0 (Timeout)
+        result_data = await loop.run_in_executor(None, execute_full_script, script)
+
+        if not result_data.get("success"):
+            raise Exception(result_data.get("error", "Execution failed"))
+
+        results = result_data.get("results", {})
         parsed_results = {}
         for k, v in results.items():
             try:
