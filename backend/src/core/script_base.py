@@ -49,24 +49,25 @@ def _validate_range(node_id, label, data, value):
     min_val = data.get("min")
     max_val = data.get("max")
 
+    v_min = None
+    v_max = None
+
     if min_val is not None and min_val != "":
         try:
-            min_val = float(min_val)
-            if value < min_val:
-                raise ValueRangeValidationError(
-                    str(node_id), label, f"Value {value} is less than minimum {min_val}", value
-                )
+            v_min = float(min_val)
         except ValueError:
             pass
 
     if max_val is not None and max_val != "":
         try:
-            max_val = float(max_val)
-            if value > max_val:
-                raise ValueRangeValidationError(
-                    str(node_id), label, f"Value {value} is greater than maximum {max_val}", value
-                )
+            v_max = float(max_val)
         except ValueError:
             pass
+
+    if (v_min is not None and value < v_min) or (v_max is not None and value > v_max):
+        range_str = f"[{v_min if v_min is not None else '-inf'}, {v_max if v_max is not None else 'inf'}]"
+        raise ValueRangeValidationError(
+            str(node_id), label, f"Value {value} is out of the range {range_str}", value
+        )
 
 results = {}

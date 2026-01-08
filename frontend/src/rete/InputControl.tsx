@@ -107,7 +107,7 @@ export const InputControlComponent: React.FC<{ data: InputControl }> = ({
       }}
       title={
         !isValid
-          ? `Value must be between ${data.min ?? '-Inf'} and ${data.max ?? '+Inf'}`
+          ? `Value is out of the range [${data.min ?? '-inf'}, ${data.max ?? 'inf'}]`
           : ''
       }
     />
