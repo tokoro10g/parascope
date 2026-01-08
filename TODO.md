@@ -35,10 +35,11 @@ Generated from `SPECIFICATIONS.tsv`.
         - [x] Implement Python Code Generator to transpile DAG to single script (EE-02.0).
         - [x] Refactor `calculate` endpoint to execute generated script (EE-02.0).
         - [x] Map execution errors back to original nodes (EH-01.0).
-- [ ] **Error Handling**:
+- [x] **Error Handling**:
     - [x] Catch user code exceptions and return stack traces (EH-01.0).
     - [x] Fail calculation if Input Node values are missing (EH-12.0).
-    - [ ] Handle persistence failures with retry logic (EH-06.0).
+    - [x] The system MUST warn the user when deleting or renaming an Input or Output node (EH-13.0).
+    - [x] Handle persistence failures with retry logic (EH-06.0).
 - [x] **Folders**:
     - [x] Implement Folder data model and nesting logic (BB-FOL-01.0, BB-FOL-02.0, BB-FOL-04.0).
 

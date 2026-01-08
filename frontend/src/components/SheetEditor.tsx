@@ -1,3 +1,4 @@
+import pRetry from 'p-retry';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import toast from 'react-hot-toast';
 import { Group, Panel, Separator } from 'react-resizable-panels';
@@ -489,7 +490,8 @@ export const SheetEditor: React.FC = () => {
 
   const handleSaveSheet = useCallback(async () => {
     if (!currentSheet || !editor) return;
-    try {
+
+    const performSave = async () => {
       const graphData = editor.getGraphData();
 
       const nodes = graphData.nodes.map((n) => ({
@@ -511,17 +513,28 @@ export const SheetEditor: React.FC = () => {
         target_port: c.target_port,
       }));
 
-      const updatedSheet = await api.updateSheet(currentSheet.id, {
+      return await api.updateSheet(currentSheet.id, {
         nodes,
         connections,
+      });
+    };
+
+    try {
+      const updatedSheet = await pRetry(performSave, {
+        retries: 3,
+        onFailedAttempt: (error) => {
+          console.warn(
+            `Save attempt ${error.attemptNumber} failed. There are ${error.retriesLeft} retries left.`,
+          );
+        },
       });
 
       setCurrentSheet(updatedSheet);
       setIsDirty(false);
       toast.success('Sheet saved successfully');
     } catch (e) {
-      console.error(e);
-      alert(`Error saving sheet: ${e}`);
+      console.error('Final save attempt failed:', e);
+      toast.error('Error saving sheet after 3 attempts.');
     }
   }, [currentSheet, editor]);
 
