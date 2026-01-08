@@ -1,6 +1,6 @@
 import traceback
 import uuid
-from typing import Any, Dict
+from typing import Any, Dict, Tuple
 from uuid import UUID
 
 from fastapi import APIRouter, Depends, HTTPException
@@ -31,9 +31,9 @@ def serialize_result(val: Any) -> Any:
     return val
 
 
-async def _run_calculation(
+def _prepare_processor(
     sheet: Sheet, inputs: Dict[str, Dict[str, Any]], db: AsyncSession
-):
+) -> Tuple[GraphProcessor, Dict[str, Any]]:
     # Map input labels/IDs to IDs
     input_overrides = {}
     input_nodes_by_label = {n.label: n for n in sheet.nodes if n.type == "input"}
@@ -46,7 +46,13 @@ async def _run_calculation(
         elif key in input_nodes_by_id:
             input_overrides[key] = val
 
-    processor = GraphProcessor(sheet, db)
+    return GraphProcessor(sheet, db), input_overrides
+
+
+async def _run_calculation(
+    sheet: Sheet, inputs: Dict[str, Dict[str, Any]], db: AsyncSession
+):
+    processor, input_overrides = _prepare_processor(sheet, inputs, db)
 
     # Generate script first (for both inspection and execution)
     script = await processor.generate_script(input_overrides=input_overrides)
@@ -58,7 +64,7 @@ async def _run_calculation(
     detailed_results = {}
     for node_id, result_val in results.items():
         if node_id not in processor.node_map:
-            # Skip results that are not nodes (e.g. internal variables if any leaked, though we filter keys by UUID in execute_script)
+            # Skip results that are not nodes
             continue
 
         node = processor.node_map[node_id]
@@ -112,26 +118,16 @@ async def _run_calculation(
 
         detailed_results[str(node_id)] = serialize_result(node_resp)
 
-    return {"results": detailed_results, "script": script}
+    return {"results": detailed_results}
 
 
-@router.post("/")
-async def calculate_preview(
-    body: PreviewRequest,
-    db: AsyncSession = Depends(get_db),
-):
-    # Use a fixed ID or generate one.
-    # Since we don't save this sheet, the ID is only used for in-memory mapping.
+def _construct_sheet(body: PreviewRequest) -> Sheet:
     sheet_id = uuid.uuid4()
-
     nodes = []
     for n in body.graph.nodes:
         node_data = n.model_dump()
-        # If ID is missing, we must generate it.
-        # Ideally frontend provides it.
         if not node_data.get("id"):
             node_data["id"] = uuid.uuid4()
-
         nodes.append(Node(**node_data, sheet_id=sheet_id))
 
     connections = []
@@ -139,7 +135,7 @@ async def calculate_preview(
         conn_data = c.model_dump()
         connections.append(Connection(**conn_data, sheet_id=sheet_id))
 
-    sheet = Sheet(
+    return Sheet(
         id=sheet_id,
         name=body.graph.name,
         owner_name=body.graph.owner_name,
@@ -148,7 +144,49 @@ async def calculate_preview(
         connections=connections,
     )
 
+
+@router.post("/")
+async def calculate_preview(
+    body: PreviewRequest,
+    db: AsyncSession = Depends(get_db),
+):
+    sheet = _construct_sheet(body)
     return await _run_calculation(sheet, body.inputs, db)
+
+
+@router.post("/script")
+async def generate_script_preview(
+    body: PreviewRequest,
+    db: AsyncSession = Depends(get_db),
+):
+    sheet = _construct_sheet(body)
+    processor, input_overrides = _prepare_processor(sheet, body.inputs, db)
+    script = await processor.generate_script(input_overrides=input_overrides)
+    return {"script": script}
+
+
+@router.post("/{sheet_id}/script")
+async def generate_script_sheet(
+    sheet_id: UUID,
+    inputs: Dict[str, Dict[str, Any]] = None,
+    db: AsyncSession = Depends(get_db),
+):
+    if inputs is None:
+        inputs = {}
+    query = (
+        select(Sheet)
+        .where(Sheet.id == sheet_id)
+        .options(selectinload(Sheet.nodes), selectinload(Sheet.connections))
+    )
+    result = await db.execute(query)
+    sheet = result.scalar_one_or_none()
+
+    if not sheet:
+        raise HTTPException(status_code=404, detail="Sheet not found")
+
+    processor, input_overrides = _prepare_processor(sheet, inputs, db)
+    script = await processor.generate_script(input_overrides=input_overrides)
+    return {"script": script}
 
 
 @router.post("/{sheet_id}")
@@ -159,7 +197,6 @@ async def calculate_sheet(
 ):
     if inputs is None:
         inputs = {}
-    # Load sheet with all relations
     query = (
         select(Sheet)
         .where(Sheet.id == sheet_id)

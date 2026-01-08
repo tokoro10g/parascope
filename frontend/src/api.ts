@@ -139,7 +139,7 @@ export const api = {
   async calculate(
     sheetId: string,
     inputs: Record<string, { value: any }>,
-  ): Promise<{ results: Record<string, NodeResult>; script: string }> {
+  ): Promise<{ results: Record<string, NodeResult> }> {
     const res = await fetch(`${API_BASE}/calculate/${sheetId}`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -160,7 +160,7 @@ export const api = {
   async calculatePreview(
     inputs: Record<string, { value: any }>,
     graph: Partial<Sheet>,
-  ): Promise<{ results: Record<string, NodeResult>; script: string }> {
+  ): Promise<{ results: Record<string, NodeResult> }> {
     const res = await fetch(`${API_BASE}/calculate/`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -174,6 +174,36 @@ export const api = {
         throw error;
       }
       throw new Error(err.detail || 'Calculation failed');
+    }
+    return res.json();
+  },
+
+  async generateScript(
+    sheetId: string,
+    inputs: Record<string, { value: any }>,
+  ): Promise<{ script: string }> {
+    const res = await fetch(`${API_BASE}/calculate/${sheetId}/script`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(inputs),
+    });
+    if (!res.ok) {
+      throw new Error('Failed to generate script');
+    }
+    return res.json();
+  },
+
+  async generateScriptPreview(
+    inputs: Record<string, { value: any }>,
+    graph: Partial<Sheet>,
+  ): Promise<{ script: string }> {
+    const res = await fetch(`${API_BASE}/calculate/script`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ inputs, graph }),
+    });
+    if (!res.ok) {
+      throw new Error('Failed to generate script');
     }
     return res.json();
   },

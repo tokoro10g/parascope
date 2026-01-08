@@ -57,12 +57,6 @@ export const useSheetCalculation = (editor: Editor | null | undefined) => {
       setIsCalculating(true);
       try {
         const response = await api.calculate(sheetId, inputs);
-
-        // Log the script to the console so the user can see it
-        console.groupCollapsed('Generated Python Script');
-        console.log(response.script);
-        console.groupEnd();
-
         applyCalculationResult(response.results);
         return response.results;
       } catch (e: any) {
@@ -83,12 +77,6 @@ export const useSheetCalculation = (editor: Editor | null | undefined) => {
       setIsCalculating(true);
       try {
         const response = await api.calculatePreview(inputs, graph);
-
-        // Log the script to the console
-        console.groupCollapsed('Preview Python Script');
-        console.log(response.script);
-        console.groupEnd();
-
         applyCalculationResult(response.results);
         return response.results;
       } catch (e: any) {
