@@ -65,10 +65,15 @@ export const SheetEditor: React.FC = () => {
   const searchParamsRef = useRef(searchParams);
   searchParamsRef.current = searchParams;
 
-  const ignoreNextSearchParamsChange = useRef(false);
+  const activeTypingNodeId = useRef<string | null>(null);
+  const lastTypingTimestamp = useRef<number>(0);
   const calculateTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(
     null,
   );
+  const searchParamsTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(
+    null,
+  );
+  const pendingUrlUpdates = useRef<Record<string, string>>({});
 
   // Warn on exit if dirty
   useEffect(() => {
@@ -136,7 +141,7 @@ export const SheetEditor: React.FC = () => {
       const result = await calculatePreview(apiInputs, graph);
       if (editor && result) {
         editor.updateNodeValues(
-          currentEvaluatorInputs,
+          {}, // Do not update inputs from calculation result (they are controlled locally)
           extractValuesFromResult(result),
         );
         setNodes([...editor.editor.getNodes()]);
@@ -184,19 +189,34 @@ export const SheetEditor: React.FC = () => {
 
       if (!label) return;
 
-      ignoreNextSearchParamsChange.current = true;
-      setSearchParams(
-        (prev) => {
-          const newParams = new URLSearchParams(prev);
-          if (value) {
-            newParams.set(label, value);
-          } else {
-            newParams.delete(label);
-          }
-          return newParams;
-        },
-        { replace: true },
-      );
+      activeTypingNodeId.current = id;
+      lastTypingTimestamp.current = Date.now();
+
+      pendingUrlUpdates.current[label] = value;
+
+      if (searchParamsTimeoutRef.current) {
+        clearTimeout(searchParamsTimeoutRef.current);
+      }
+
+      searchParamsTimeoutRef.current = setTimeout(() => {
+        const updates = { ...pendingUrlUpdates.current };
+        pendingUrlUpdates.current = {};
+
+        setSearchParams(
+          (prev) => {
+            const newParams = new URLSearchParams(prev);
+            Object.entries(updates).forEach(([key, val]) => {
+              if (val) {
+                newParams.set(key, val);
+              } else {
+                newParams.delete(key);
+              }
+            });
+            return newParams;
+          },
+          { replace: true },
+        );
+      }, 300);
     },
     [
       errorNodeId,
@@ -294,17 +314,23 @@ export const SheetEditor: React.FC = () => {
 
   // Sync URL Query Params to Evaluator Inputs
   useEffect(() => {
-    if (ignoreNextSearchParamsChange.current) {
-      ignoreNextSearchParamsChange.current = false;
-      return;
-    }
-
     if (nodes.length === 0) return;
 
     const overrides: Record<string, string> = {};
     searchParams.forEach((value, key) => {
       const node = nodes.find((n) => n.type === 'input' && n.label === key);
       if (node?.id) {
+        // Skip update if this node is being typed into (within 1s threshold)
+        if (
+          node.id === activeTypingNodeId.current &&
+          Date.now() - lastTypingTimestamp.current < 1000
+        ) {
+          // Keep current local value
+          if (evaluatorInputsRef.current?.[node.id]) {
+            overrides[node.id] = evaluatorInputsRef.current[node.id];
+          }
+          return;
+        }
         overrides[node.id] = value;
       }
     });
@@ -691,7 +717,7 @@ export const SheetEditor: React.FC = () => {
 
       if (editor && result) {
         editor.updateNodeValues(
-          evaluatorInputs,
+          {}, // Do not update inputs from calculation result
           extractValuesFromResult(result),
         );
         setNodes([...editor.editor.getNodes()]);

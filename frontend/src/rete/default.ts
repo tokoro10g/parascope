@@ -309,18 +309,22 @@ export async function createEditor(container: HTMLElement) {
         if (!valueControl) return;
 
         if (node.type === 'input') {
-          const val = inputs[node.id];
-          const newVal = String(val !== undefined && val !== null ? val : '');
-          if (valueControl.value !== newVal) {
-            valueControl.setValue(newVal);
-            area.update('node', node.id);
+          if (Object.hasOwn(inputs, node.id)) {
+            const val = inputs[node.id];
+            const newVal = String(val !== undefined && val !== null ? val : '');
+            if (valueControl.value !== newVal) {
+              valueControl.setValue(newVal);
+              area.update('node', node.id);
+            }
           }
         } else if (node.type === 'output') {
-          const val = outputs[node.id];
-          const newVal = String(val !== undefined && val !== null ? val : '');
-          if (valueControl.value !== newVal) {
-            valueControl.setValue(newVal);
-            area.update('node', node.id);
+          if (Object.hasOwn(outputs, node.id)) {
+            const val = outputs[node.id];
+            const newVal = String(val !== undefined && val !== null ? val : '');
+            if (valueControl.value !== newVal) {
+              valueControl.setValue(newVal);
+              area.update('node', node.id);
+            }
           }
         }
       });
