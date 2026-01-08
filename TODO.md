@@ -32,8 +32,8 @@ Generated from `SPECIFICATIONS.tsv`.
     - [x] Implement `stdout` capture for user functions (UI-18.0).
     - [ ] **Optimization (Graph Compilation)**:
         - [x] Implement Topological Sort for execution order (EE-02.0).
-        - [ ] Implement Python Code Generator to transpile DAG to single script (EE-02.0).
-        - [ ] Refactor `calculate` endpoint to execute generated script (EE-02.0).
+        - [x] Implement Python Code Generator to transpile DAG to single script (EE-02.0).
+        - [x] Refactor `calculate` endpoint to execute generated script (EE-02.0).
         - [x] Map execution errors back to original nodes (EH-01.0).
 - [ ] **Error Handling**:
     - [x] Catch user code exceptions and return stack traces (EH-01.0).
@@ -68,7 +68,7 @@ Generated from `SPECIFICATIONS.tsv`.
 - [x] **Input Node**:
     - [x] Distinct visual style from Parameters (BB-I-01.0).
     - [x] Name (BB-I-01.0).
-    - [ ] Range (BB-I-03.0).
+    - [x] Range (BB-I-03.0).
     - [x] Description (BB-I-04.0).
     - [x] Type Selection (Number/Option) (BB-I-01.0).
     - [x] Options List Definition (BB-I-05.0).
@@ -76,10 +76,10 @@ Generated from `SPECIFICATIONS.tsv`.
     - [x] Distinct visual style (BB-O-01.0).
     - [x] Name (BB-O-01.0).
     - [x] Description (BB-O-03.0).
-    - [ ] Range (BB-O-02.0).
-- [ ] **Parameter Node**:
+    - [x] Range (BB-O-02.0).
+- [x] **Parameter Node**:
     - [x] Name, Value (BB-P-01.0).
-    - [ ] Range, Description (BB-P-02.0, BB-P-05.0).
+    - [x] Range, Description (BB-P-02.0, BB-P-05.0).
     - [x] Validation: Python variable name constraints (BB-P-02.0) [REMOVED].
     - [x] Markdown rendering for description (BB-P-03.0).
     - [x] Type Selection (Number/Option) (BB-P-01.0).
