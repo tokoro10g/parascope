@@ -1,5 +1,6 @@
-import { Copy, Play } from 'lucide-react';
+import { ChevronDown, Copy, Play } from 'lucide-react';
 import type React from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import ReactMarkdown from 'react-markdown';
 import rehypeKatex from 'rehype-katex';
 import remarkMath from 'remark-math';
@@ -23,6 +24,43 @@ export const SheetTable: React.FC<SheetTableProps> = ({
   onCalculate,
   isCalculating,
 }) => {
+  const tableContainerRef = useRef<HTMLDivElement>(null);
+  const [showScrollIndicator, setShowScrollIndicator] = useState(false);
+
+  const checkScroll = useCallback(() => {
+    const el = tableContainerRef.current;
+    if (el) {
+      const canScroll = el.scrollHeight > el.clientHeight;
+      const isAtBottom = el.scrollHeight - el.scrollTop <= el.clientHeight + 5;
+      setShowScrollIndicator(canScroll && !isAtBottom);
+    }
+  }, []);
+
+  useEffect(() => {
+    checkScroll();
+    window.addEventListener('resize', checkScroll);
+    return () => window.removeEventListener('resize', checkScroll);
+  }, [checkScroll]);
+
+  // biome-ignore lint/correctness/useExhaustiveDependencies: Re-check scroll when nodes change
+  useEffect(() => {
+    checkScroll();
+  }, [nodes]);
+
+  const handleScroll = () => {
+    checkScroll();
+  };
+
+  const scrollToBottom = () => {
+    const el = tableContainerRef.current;
+    if (el) {
+      el.scrollTo({
+        top: el.scrollHeight,
+        behavior: 'smooth',
+      });
+    }
+  };
+
   const transformUrl = (url: string) => {
     if (url.startsWith('/attachments/')) {
       return `${API_BASE}${url}`;
@@ -173,128 +211,165 @@ export const SheetTable: React.FC<SheetTableProps> = ({
             </button>
           </div>
         </div>
-        <div style={{ overflowY: 'auto', padding: '0 10px' }}>
-          <table style={{ width: '100%', borderCollapse: 'collapse' }}>
-            <thead>
-              <tr>
-                <th
-                  style={{
-                    textAlign: 'left',
-                    borderBottom: '1px solid var(--border-color)',
-                  }}
-                >
-                  Name
-                </th>
-                <th
-                  style={{
-                    textAlign: 'left',
-                    borderBottom: '1px solid var(--border-color)',
-                  }}
-                >
-                  Type
-                </th>
-                <th
-                  style={{
-                    textAlign: 'left',
-                    borderBottom: '1px solid var(--border-color)',
-                  }}
-                >
-                  Value
-                </th>
-              </tr>
-            </thead>
-            <tbody>
-              {tableNodes.map((node) => {
-                const isEditable =
-                  node.type === 'parameter' || node.type === 'input';
-                const isDropdown =
-                  isEditable && node.initialData.dataType === 'option';
-                const nameControl = node.controls.name as any;
-                const valueControl = node.controls.value as any;
-
-                const name = nameControl?.value || node.label;
-                const value = valueControl?.value;
-                let displayValue = value;
-
-                if (!isEditable) {
-                  if (
-                    isCalculating ||
-                    value === undefined ||
-                    value === null ||
-                    value === ''
-                  ) {
-                    displayValue = '?';
-                  } else {
-                    displayValue = formatHumanReadableValue(value);
-                  }
-                }
-
-                const hasError = !!node.error;
-
-                return (
-                  <tr
-                    key={node.id}
-                    onClick={() => onSelectNode(node.id)}
-                    style={{ cursor: 'pointer' }}
+        <div style={{ position: 'relative', overflow: 'hidden', flex: 1 }}>
+          <div
+            ref={tableContainerRef}
+            onScroll={handleScroll}
+            style={{ overflowY: 'auto', padding: '0 10px', height: '100%' }}
+          >
+            <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+              <thead>
+                <tr>
+                  <th
+                    style={{
+                      textAlign: 'left',
+                      borderBottom: '1px solid var(--border-color)',
+                    }}
                   >
-                    <td>{name}</td>
-                    <td>{node.type}</td>
-                    <td
-                      className={
-                        hasError && !isCalculating
-                          ? 'value-error'
-                          : !isEditable && displayValue !== '?'
-                            ? 'value-blink'
-                            : ''
-                      }
-                      data-error={hasError ? node.error : undefined}
-                      style={{
-                        textAlign: 'right',
-                        fontFamily: 'monospace',
-                        fontSize: '.8rem',
-                      }}
+                    Name
+                  </th>
+                  <th
+                    style={{
+                      textAlign: 'left',
+                      borderBottom: '1px solid var(--border-color)',
+                    }}
+                  >
+                    Type
+                  </th>
+                  <th
+                    style={{
+                      textAlign: 'left',
+                      borderBottom: '1px solid var(--border-color)',
+                    }}
+                  >
+                    Value
+                  </th>
+                </tr>
+              </thead>
+              <tbody>
+                {tableNodes.map((node) => {
+                  const isEditable =
+                    node.type === 'parameter' || node.type === 'input';
+                  const isDropdown =
+                    isEditable && node.initialData.dataType === 'option';
+                  const nameControl = node.controls.name as any;
+                  const valueControl = node.controls.value as any;
+
+                  const name = nameControl?.value || node.label;
+                  const value = valueControl?.value;
+                  let displayValue = value;
+
+                  if (!isEditable) {
+                    if (
+                      isCalculating ||
+                      value === undefined ||
+                      value === null ||
+                      value === ''
+                    ) {
+                      displayValue = '?';
+                    } else {
+                      displayValue = formatHumanReadableValue(value);
+                    }
+                  }
+
+                  const hasError = !!node.error;
+
+                  return (
+                    <tr
+                      key={node.id}
+                      onClick={() => onSelectNode(node.id)}
+                      style={{ cursor: 'pointer' }}
                     >
-                      {isDropdown ? (
-                        <select
-                          value={value}
-                          onChange={(e) => {
-                            onUpdateValue(node.id, e.target.value);
-                          }}
-                          onClick={(e) => e.stopPropagation()} // Prevent row selection when editing
-                          style={{
-                            textAlign: 'right',
-                            fontFamily: 'monospace',
-                          }}
-                        >
-                          <option key="" value=""></option>
-                          {node.initialData.options.map((opt: string) => (
-                            <option key={opt} value={opt}>
-                              {opt}
-                            </option>
-                          ))}
-                        </select>
-                      ) : isEditable ? (
-                        <input
-                          size={9}
-                          value={value}
-                          onChange={(e) =>
-                            onUpdateValue(node.id, e.target.value)
-                          }
-                          onClick={(e) => e.stopPropagation()} // Prevent row selection when editing
-                          style={{
-                            textAlign: 'right',
-                            fontFamily: 'monospace',
-                          }}
-                        />
-                      ) : (
-                        <span>{displayValue}</span>
-                      )}
-                    </td>
-                  </tr>
-                );
-              })}
-            </tbody>
-          </table>
+                      <td>{name}</td>
+                      <td>{node.type}</td>
+                      <td
+                        className={
+                          hasError && !isCalculating
+                            ? 'value-error'
+                            : !isEditable && displayValue !== '?'
+                              ? 'value-blink'
+                              : ''
+                        }
+                        data-error={hasError ? node.error : undefined}
+                        style={{
+                          textAlign: 'right',
+                          fontFamily: 'monospace',
+                          fontSize: '.8rem',
+                        }}
+                      >
+                        {isDropdown ? (
+                          <select
+                            value={value}
+                            onChange={(e) => {
+                              onUpdateValue(node.id, e.target.value);
+                            }}
+                            onClick={(e) => e.stopPropagation()} // Prevent row selection when editing
+                            style={{
+                              textAlign: 'right',
+                              fontFamily: 'monospace',
+                            }}
+                          >
+                            <option key="" value=""></option>
+                            {node.initialData.options.map((opt: string) => (
+                              <option key={opt} value={opt}>
+                                {opt}
+                              </option>
+                            ))}
+                          </select>
+                        ) : isEditable ? (
+                          <input
+                            size={9}
+                            value={value}
+                            onChange={(e) =>
+                              onUpdateValue(node.id, e.target.value)
+                            }
+                            onClick={(e) => e.stopPropagation()} // Prevent row selection when editing
+                            style={{
+                              textAlign: 'right',
+                              fontFamily: 'monospace',
+                            }}
+                          />
+                        ) : (
+                          <span>{displayValue}</span>
+                        )}
+                      </td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          </div>
+          {showScrollIndicator && (
+            <button
+              type="button"
+              onClick={scrollToBottom}
+              className="scroll-indicator-button"
+              title="Scroll to bottom"
+              style={{
+                position: 'absolute',
+                bottom: '10px',
+                left: '50%',
+                transform: 'translateX(-50%)',
+                width: '32px',
+                height: '32px',
+                borderRadius: '50%',
+                backgroundColor: 'var(--primary-color)',
+                color: 'white',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                boxShadow: '0 2px 10px rgba(0,0,0,0.2)',
+                border: 'none',
+                opacity: 0.8,
+                zIndex: 10,
+                padding: 0,
+                minWidth: '32px',
+                flexShrink: 0,
+              }}
+            >
+              <ChevronDown size={20} />
+            </button>
+          )}
         </div>
       </div>
 
