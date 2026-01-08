@@ -40,7 +40,7 @@ try:
     results['{{ node.id }}'] = {'value': val}
     {% endif %}
 except ValueRangeValidationError as e:
-    results['{{ node.id }}'] = {'error': str(e), 'valid': False}
+    results['{{ node.id }}'] = {'error': str(e), 'valid': False, 'value': e.value}
 except Exception as e:
     results['{{ node.id }}'] = {'error': str(e), 'valid': False}
     raise StopExecution()
@@ -110,7 +110,7 @@ try:
     {% endif %}
 
 except ValueRangeValidationError as e:
-    results['{{ node.id }}'] = {'error': str(e), 'valid': False}
+    results['{{ node.id }}'] = {'error': str(e), 'valid': False, 'value': e.value}
 except Exception as e:
     results['{{ node.id }}'] = {'error': str(e), 'valid': False}
     raise StopExecution()
