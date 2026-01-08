@@ -20,6 +20,13 @@ from ..schemas.sheet import (
 router = APIRouter(prefix="/sheets", tags=["sheets"])
 
 
+def _sort_nodes(sheet: Sheet) -> Sheet:
+    if sheet.nodes:
+        # Sort by X then Y to match frontend table view
+        sheet.nodes.sort(key=lambda n: (n.position_x, n.position_y))
+    return sheet
+
+
 @router.post("/folders", response_model=FolderRead)
 async def create_folder(folder_in: FolderCreate, db: AsyncSession = Depends(get_db)):
     db_folder = Folder(name=folder_in.name, parent_id=folder_in.parent_id)
@@ -109,7 +116,7 @@ async def create_sheet(
 
     await db.commit()
     await db.refresh(db_sheet, attribute_names=["nodes", "connections"])
-    return db_sheet
+    return _sort_nodes(db_sheet)
 
 
 @router.get("/{sheet_id}", response_model=SheetRead)
@@ -121,7 +128,7 @@ async def read_sheet(sheet_id: UUID, db: AsyncSession = Depends(get_db)):
     sheet = result.scalar_one_or_none()
     if not sheet:
         raise HTTPException(status_code=404, detail="Sheet not found")
-    return sheet
+    return _sort_nodes(sheet)
 
 
 @router.put("/{sheet_id}", response_model=SheetRead)
@@ -192,7 +199,7 @@ async def update_sheet(sheet_id: UUID, sheet_in: SheetUpdate, db: AsyncSession =
             db.add(db_conn)
     await db.commit()
     await db.refresh(db_sheet, attribute_names=["nodes", "connections"])
-    return db_sheet
+    return _sort_nodes(db_sheet)
 
 
 @router.post("/{sheet_id}/duplicate", response_model=SheetRead)
@@ -253,7 +260,7 @@ async def duplicate_sheet(sheet_id: UUID, db: AsyncSession = Depends(get_db)):
 
     await db.commit()
     await db.refresh(new_sheet, attribute_names=["nodes", "connections"])
-    return new_sheet
+    return _sort_nodes(new_sheet)
 
 
 @router.delete("/{sheet_id}", status_code=204)
