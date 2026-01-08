@@ -63,6 +63,29 @@ export const EditorBar: React.FC<EditorBarProps> = ({
           className="sheet-name-input"
           placeholder="Sheet Name"
         />
+        <span
+          className="unsaved-indicator-badge"
+          title="Unsaved changes"
+          style={{
+            color: 'orange',
+            fontSize: '0.8em',
+            fontWeight: '600',
+            display: 'flex',
+            alignItems: 'center',
+            gap: '4px',
+            backgroundColor: isDirty ? 'rgba(255, 165, 0, 0.1)' : 'transparent',
+            padding: '2px 8px',
+            borderRadius: '12px',
+            border: isDirty
+              ? '1px solid rgba(255, 165, 0, 0.3)'
+              : '1px solid transparent',
+            visibility: isDirty ? 'visible' : 'hidden',
+            userSelect: 'none',
+          }}
+        >
+          <span style={{ fontSize: '1.2em' }}>●</span>
+          Unsaved
+        </span>
       </div>
       <div className="toolbar-group node-actions-group">
         <button
@@ -112,18 +135,6 @@ export const EditorBar: React.FC<EditorBarProps> = ({
       </div>
 
       <div className="toolbar-group save-group">
-        <span
-          className="unsaved-indicator"
-          title="Unsaved changes"
-          style={{
-            color: 'orange',
-            marginRight: '4px',
-            fontWeight: 'bold',
-            visibility: isDirty ? 'visible' : 'hidden',
-          }}
-        >
-          ●
-        </span>
         <button
           type="button"
           onClick={onSaveSheet}
