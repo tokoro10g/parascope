@@ -62,7 +62,6 @@ async def calculate_sheet(
         node_resp = {
             "type": node.type,
             "label": node.label,
-            "value": None,
             "inputs": {},
             "outputs": {},
             "valid": True,
@@ -100,12 +99,12 @@ async def calculate_sheet(
 
                     node_resp["inputs"][target_port] = val
 
-        # Populate outputs and value
+        # Populate outputs
         if node.type in ["function", "sheet"]:
             node_resp["outputs"] = result_val
         else:
-            node_resp["value"] = result_val.get("value")
-            node_resp["outputs"] = {"value": node_resp["value"]}
+            val = result_val.get("value")
+            node_resp["outputs"] = {"value": val}
 
         detailed_results[str(node_id)] = serialize_result(node_resp)
 
