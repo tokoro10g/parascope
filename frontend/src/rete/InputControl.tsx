@@ -27,7 +27,6 @@ export class InputControl extends ClassicPreset.Control {
     this.max = options.max;
   }
 
-
   setValue(val: string | number) {
     this.value = val;
     this.listeners.forEach((l) => {

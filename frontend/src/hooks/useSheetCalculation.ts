@@ -57,7 +57,7 @@ export const useSheetCalculation = (editor: Editor | null | undefined) => {
       setIsCalculating(true);
       try {
         const response = await api.calculate(sheetId, inputs);
-        
+
         // Log the script to the console so the user can see it
         console.groupCollapsed('Generated Python Script');
         console.log(response.script);
