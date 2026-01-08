@@ -1,8 +1,10 @@
 import io
 import multiprocessing
+import queue as pyqueue
 import sys
+import threading
 import traceback
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, Optional
 
 from pydantic import BaseModel
 
@@ -14,78 +16,113 @@ class ExecutionResult(BaseModel):
     success: bool = False
 
 
-def _worker(code: str, inputs: Dict[str, Any], outputs: List[str], queue: multiprocessing.Queue):
-    """
-    Worker function to execute user code in a separate process.
-    """
-    # Capture stdout
-    old_stdout = sys.stdout
-    redirected_output = io.StringIO()
-    sys.stdout = redirected_output
+# --- Persistent Worker Implementation ---
 
-    raw_result = None
-    error = None
-    success = False
+_worker_process: Optional[multiprocessing.Process] = None
+_task_queue: Optional[multiprocessing.Queue] = None
+_result_queue: Optional[multiprocessing.Queue] = None
+_worker_lock = threading.Lock()
 
+
+def _persistent_worker_loop(task_queue, result_queue):
+    """
+    Long-running worker loop.
+    Pre-imports heavy libraries to save time on subsequent runs.
+    """
+    # Pre-import common scientific libraries
     try:
-        # Prepare the environment
-        # We pass inputs as local variables
-        local_vars = inputs.copy()
-        global_vars = {
-            "__builtins__": __builtins__,
-            "math": __import__("math"),
-            "np": __import__("numpy"),
-            # TODO: feature to customize the list of global modules
-        }
+        import math
+        import numpy
+    except ImportError:
+        pass
 
-        # Execute the code
-        # The output variables should be assigned in the code.
-        wrapped_code = f"def user_func({', '.join(inputs.keys())}):\n"
-        for line in code.split("\n"):
-            wrapped_code += f"    {line}\n"
-        wrapped_code += f"    return {', '.join(outputs) if outputs else 'None'}\n"
+    while True:
+        try:
+            script = task_queue.get()
+            if script is None:  # Sentinel to exit
+                break
 
-        # Execute the definition
-        exec(wrapped_code, global_vars, local_vars)
+            # Capture stdout
+            old_stdout = sys.stdout
+            redirected_output = io.StringIO()
+            sys.stdout = redirected_output
 
-        # Call the function
-        user_func = local_vars["user_func"]
-        raw_result = user_func(**inputs)
-        success = True
+            global_vars = {}
+            success = False
+            error = None
+            results = {}
 
-    except Exception:
-        error = traceback.format_exc()
-        print("Error during code execution:", error, flush=True)
-    finally:
-        # Restore stdout
-        sys.stdout = old_stdout
+            try:
+                # Execute the script
+                exec(script, global_vars)
+                results = global_vars.get("results", {})
+                success = True
+            except Exception:
+                error = traceback.format_exc()
+            finally:
+                sys.stdout = old_stdout
 
-    # Put result in queue
-    result = {}
-    if raw_result is not None:
-        if len(outputs) == 1:
-            result = {outputs[0]: raw_result}
-        else:
-            result = dict(zip(outputs, raw_result, strict=True))
-    queue.put(ExecutionResult(result=result, stdout=redirected_output.getvalue(), error=error, success=success))
+            result_queue.put({
+                "success": success,
+                "results": results,
+                "error": error,
+                "stdout": redirected_output.getvalue()
+            })
+
+        except Exception as e:
+            # Critical failure in the loop (e.g. queue error)
+            try:
+                result_queue.put({"success": False, "error": f"Worker internal error: {e}"})
+            except:
+                pass
 
 
-def execute_python_code(code: str, inputs: Dict[str, Any], outputs: List[str], timeout: float = 5.0) -> ExecutionResult:
+def _ensure_worker():
+    global _worker_process, _task_queue, _result_queue
+    if _worker_process is None or not _worker_process.is_alive():
+        _task_queue = multiprocessing.Queue()
+        _result_queue = multiprocessing.Queue()
+        _worker_process = multiprocessing.Process(
+            target=_persistent_worker_loop,
+            args=(_task_queue, _result_queue),
+            daemon=True
+        )
+        _worker_process.start()
+
+
+def execute_full_script(script: str, timeout: float = 5.0) -> Dict[str, Any]:
     """
-    Executes Python code in a separate process with a timeout.
+    Executes the script using the persistent worker.
+    Restarts the worker if it times out.
+    Thread-safe (serialized execution).
     """
-    queue = multiprocessing.Queue()
-    process = multiprocessing.Process(target=_worker, args=(code, inputs, outputs, queue))
-    process.start()
+    global _worker_process, _task_queue, _result_queue
 
-    process.join(timeout)
+    with _worker_lock:
+        _ensure_worker()
+        
+        # Send task
+        try:
+            _task_queue.put(script)
+        except Exception:
+            # Queue might be broken/closed
+            if _worker_process:
+                _worker_process.terminate()
+            _worker_process = None
+            _ensure_worker()
+            _task_queue.put(script)
 
-    if process.is_alive():
-        process.terminate()
-        process.join()
-        return ExecutionResult(error="Execution timed out", success=False)
-
-    if not queue.empty():
-        return queue.get()
-    else:
-        return ExecutionResult(error="Process crashed or returned no result", success=False)
+        # Wait for result
+        try:
+            result = _result_queue.get(timeout=timeout)
+            return result
+        except pyqueue.Empty:
+            # Timeout: Kill the worker to stop the infinite loop/long task
+            if _worker_process:
+                _worker_process.terminate()
+                _worker_process.join()
+                _worker_process = None # Force restart
+                _task_queue = None
+                _result_queue = None
+            
+            return {"success": False, "error": "Execution timed out"}
