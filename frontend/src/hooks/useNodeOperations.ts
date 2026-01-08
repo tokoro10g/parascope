@@ -25,7 +25,10 @@ export function useNodeOperations(
   setCurrentSheet: React.Dispatch<React.SetStateAction<Sheet | null>>,
   currentSheet: Sheet | null,
   handleEvaluatorInputChange: (id: string, value: string) => void,
-  addHistoryAction?: (action: { redo: () => Promise<void> | void; undo: () => Promise<void> | void }) => void,
+  addHistoryAction?: (action: {
+    redo: () => Promise<void> | void;
+    undo: () => Promise<void> | void;
+  }) => void,
 ) {
   const calcCenterPosition = useCallback(() => {
     if (!editor || !area) return { x: 0, y: 0 };

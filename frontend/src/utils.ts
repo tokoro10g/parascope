@@ -12,7 +12,7 @@ export const formatHumanReadableValue = (value: string): string => {
     useGrouping: false,
   });
   return numberFormat.format(valueAsNumber);
-}
+};
 
 export const extractValuesFromResult = (
   result: Record<string, NodeResult>,

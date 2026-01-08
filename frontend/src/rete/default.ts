@@ -157,7 +157,10 @@ export async function createEditor(container: HTMLElement) {
     },
     undo: () => history.undo(),
     redo: () => history.redo(),
-    addHistoryAction: (action: { redo: () => Promise<void> | void; undo: () => Promise<void> | void }) => {
+    addHistoryAction: (action: {
+      redo: () => Promise<void> | void;
+      undo: () => Promise<void> | void;
+    }) => {
       history.add(action);
     },
 
