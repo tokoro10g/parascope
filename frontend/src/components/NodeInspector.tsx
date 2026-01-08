@@ -51,7 +51,7 @@ export const NodeInspector: React.FC<NodeInspectorProps> = ({
       const currentData = { ...(node.initialData || {}) };
 
       // Initialize defaults for new fields
-      if (!currentData.dataType) currentData.dataType = 'number';
+      if (!currentData.dataType) currentData.dataType = 'any';
       if (!currentData.options) currentData.options = [];
 
       // Sync value from control if it exists, as it might be newer than initialData
@@ -60,8 +60,8 @@ export const NodeInspector: React.FC<NodeInspectorProps> = ({
         // Check if control has a value property (it should for InputControl)
         if (control && control.value !== undefined) {
           // Try to parse as number if it looks like one, since we store value as number in data
-          // Only parse as float if dataType is number (or not set, assuming number)
-          if (currentData.dataType === 'number') {
+          // Only parse as float if dataType is any (or not set, assuming any)
+          if (currentData.dataType === 'any') {
             const val = parseFloat(control.value);
             if (!Number.isNaN(val)) {
               currentData.value = val;
@@ -358,16 +358,16 @@ export const NodeInspector: React.FC<NodeInspectorProps> = ({
               <label htmlFor="node-type">Type:</label>
               <select
                 id="node-type"
-                value={data.dataType || 'number'}
+                value={data.dataType || 'any'}
                 onChange={(e) => setData({ ...data, dataType: e.target.value })}
                 style={{ width: '100%', padding: '8px', marginBottom: '10px' }}
               >
-                <option value="number">Number</option>
+                <option value="any">Number</option>
                 <option value="option">Option (Enum)</option>
               </select>
             </div>
 
-            {(data.dataType === 'number' || !data.dataType) && (
+            {(data.dataType === 'any' || !data.dataType) && (
               <div className="form-group">
                 <label
                   htmlFor="node-min"
