@@ -65,8 +65,7 @@ export class ParascopeNode extends Classic.Node {
     if (this.type === 'output' && isOption) {
       this.addControl(
         'value',
-        new Classic.InputControl('text', {
-          initial: String(data.value ?? ''),
+        new NumberControl(data.value, {
           readonly: true,
         }),
       );
@@ -96,15 +95,6 @@ export class ParascopeNode extends Classic.Node {
           readonly: true,
           min,
           max,
-        }),
-      );
-    } else if (data.value !== undefined) {
-      this.addControl(
-        'value',
-        new Classic.InputControl('text', {
-          initial: String(value),
-          readonly: false,
-          change: onChange,
         }),
       );
     }
