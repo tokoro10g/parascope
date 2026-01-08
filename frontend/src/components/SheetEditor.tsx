@@ -66,7 +66,9 @@ export const SheetEditor: React.FC = () => {
   searchParamsRef.current = searchParams;
 
   const ignoreNextSearchParamsChange = useRef(false);
-  const calculateTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const calculateTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(
+    null,
+  );
 
   // Warn on exit if dirty
   useEffect(() => {
@@ -131,8 +133,15 @@ export const SheetEditor: React.FC = () => {
         }
       });
 
-      await calculatePreview(apiInputs, graph as any);
-    }, 50); // 500ms debounce
+      const result = await calculatePreview(apiInputs, graph);
+      if (editor && result) {
+        editor.updateNodeValues(
+          currentEvaluatorInputs,
+          extractValuesFromResult(result),
+        );
+        setNodes([...editor.editor.getNodes()]);
+      }
+    }, 50); // 50ms debounce
   }, [getExportData, calculatePreview, editor]);
 
   const handleBackClick = (e: React.MouseEvent) => {
@@ -189,7 +198,13 @@ export const SheetEditor: React.FC = () => {
         { replace: true },
       );
     },
-    [errorNodeId, setSearchParams, editor, setErrorNodeId, triggerAutoCalculation],
+    [
+      errorNodeId,
+      setSearchParams,
+      editor,
+      setErrorNodeId,
+      triggerAutoCalculation,
+    ],
   );
 
   const {
@@ -209,10 +224,13 @@ export const SheetEditor: React.FC = () => {
     editor?.addHistoryAction,
   );
 
-  const handleNodeUpdate = async (nodeId: string, updates: any) => {
-    await originalHandleNodeUpdate(nodeId, updates);
-    triggerAutoCalculation();
-  };
+  const handleNodeUpdate = useCallback(
+    async (nodeId: string, updates: any) => {
+      await originalHandleNodeUpdate(nodeId, updates);
+      triggerAutoCalculation();
+    },
+    [originalHandleNodeUpdate, triggerAutoCalculation],
+  );
 
   const handleLoadSheet = useCallback(
     async (id: string) => {
@@ -450,6 +468,7 @@ export const SheetEditor: React.FC = () => {
     handleEvaluatorInputChange,
     handleNodeUpdate,
     handleDuplicateNode,
+    triggerAutoCalculation,
   ]);
 
   // Sync Evaluator Inputs back to Graph Nodes and Table View
@@ -681,9 +700,10 @@ export const SheetEditor: React.FC = () => {
 
   const handleCalculate = async () => {
     if (!currentSheet) return;
-    try {
-      await handleSaveSheet();
+    const graph = getExportData();
+    if (!graph) return;
 
+    try {
       const apiInputs: Record<string, { value: any }> = {};
       Object.entries(evaluatorInputs).forEach(([id, value]) => {
         const node = nodes.find((n) => n.id === id);
@@ -692,9 +712,9 @@ export const SheetEditor: React.FC = () => {
         }
       });
 
-      const result = await calculate(currentSheet.id, apiInputs);
+      const result = await calculatePreview(apiInputs, graph);
 
-      if (editor) {
+      if (editor && result) {
         editor.updateNodeValues(
           evaluatorInputs,
           extractValuesFromResult(result),
