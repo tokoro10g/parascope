@@ -75,10 +75,15 @@ async def sweep_sheet(
         last_val = start_val + (num_steps - 1) * increment_val
         input_values = np.linspace(start_val, last_val, num_steps)
 
+    # If inputs are integers, cast the result to integers for cleaner output
+    if start_val.is_integer() and end_val.is_integer() and increment_val.is_integer():
+        input_values = np.round(input_values).astype(int)
+
     for val in input_values:
         # Merge static overrides with current sweep value
         input_overrides = {str(k): v for k, v in body.input_overrides.items()}
-        input_overrides[str(body.input_node_id)] = val
+        # Ensure we pass a native Python type (int or float), not numpy type
+        input_overrides[str(body.input_node_id)] = val.item() if isinstance(val, (np.integer, np.floating)) else val
         
         step_result = SweepResultStep(input_value=val, outputs={})
 
