@@ -56,3 +56,54 @@
 .sheet-name {
   font-weight: bold;
 }
+
+/* Node Add Buttons - High Specificity to beat SheetEditor.css overrides */
+.editor-bar .toolbar-group .btn-add-parameter {
+  background-color: #4caf50;
+  color: white;
+  border: 1px solid #388e3c;
+}
+.editor-bar .toolbar-group .btn-add-parameter:hover {
+  background-color: #43a047;
+  border-color: #2e7d32;
+}
+
+.editor-bar .toolbar-group .btn-add-input {
+  background-color: #ff9800;
+  color: white;
+  border: 1px solid #f57c00;
+}
+.editor-bar .toolbar-group .btn-add-input:hover {
+  background-color: #fb8c00;
+  border-color: #ef6c00;
+}
+
+.editor-bar .toolbar-group .btn-add-output {
+  background-color: #9c27b0;
+  color: white;
+  border: 1px solid #7b1fa2;
+}
+.editor-bar .toolbar-group .btn-add-output:hover {
+  background-color: #8e24aa;
+  border-color: #6a1b9a;
+}
+
+.editor-bar .toolbar-group .btn-add-function {
+  background-color: #2196f3;
+  color: white;
+  border: 1px solid #1976d2;
+}
+.editor-bar .toolbar-group .btn-add-function:hover {
+  background-color: #1e88e5;
+  border-color: #1565c0;
+}
+
+.editor-bar .toolbar-group .btn-add-sheet {
+  background-color: #00bcd4;
+  color: white;
+  border: 1px solid #0097a7;
+}
+.editor-bar .toolbar-group .btn-add-sheet:hover {
+  background-color: #00acc1;
+  border-color: #00838f;
+}

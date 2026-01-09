@@ -92,6 +92,7 @@ export const EditorBar: React.FC<EditorBarProps> = ({
           type="button"
           onClick={() => onAddNode('parameter')}
           title="Add Parameter"
+          className="btn-add-parameter"
         >
           <CaseLower size={18} />
         </button>
@@ -99,6 +100,7 @@ export const EditorBar: React.FC<EditorBarProps> = ({
           type="button"
           onClick={() => onAddNode('input')}
           title="Add Input Node"
+          className="btn-add-input"
         >
           <LogIn size={18} />
         </button>
@@ -106,6 +108,7 @@ export const EditorBar: React.FC<EditorBarProps> = ({
           type="button"
           onClick={() => onAddNode('output')}
           title="Add Output Node"
+          className="btn-add-output"
         >
           <LogOut size={18} />
         </button>
@@ -113,6 +116,7 @@ export const EditorBar: React.FC<EditorBarProps> = ({
           type="button"
           onClick={() => onAddNode('function')}
           title="Add Function"
+          className="btn-add-function"
         >
           <Sigma size={18} />
         </button>
@@ -120,6 +124,7 @@ export const EditorBar: React.FC<EditorBarProps> = ({
           type="button"
           onClick={() => onAddNode('sheet')}
           title="Import Sheet"
+          className="btn-add-sheet"
         >
           <Import size={18} />
         </button>
