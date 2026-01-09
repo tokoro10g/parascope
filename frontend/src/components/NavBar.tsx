@@ -42,7 +42,7 @@ export const NavBar: React.FC<NavBarProps> = ({ user, onBack, onLogout }) => {
           paddingRight: '10px',
         }}
       >
-        <span style={{ fontSize: '0.9em', color: 'white' }}>{user}</span>
+        <span style={{ fontSize: '0.9em' }}>{user}</span>
         <button
           type="button"
           onClick={onLogout}

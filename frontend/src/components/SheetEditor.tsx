@@ -554,6 +554,7 @@ export const SheetEditor: React.FC = () => {
                 onAddNode={handleAddNode}
                 onUndo={() => editor?.undo()}
                 onRedo={() => editor?.redo()}
+                onSweep={() => navigate(`/sheet/${sheetId}/sweep`)}
               />
               <div
                 ref={ref}

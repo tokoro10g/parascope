@@ -7,12 +7,13 @@
 
 .nav-bar {
   padding: 5px 10px;
-  background: #333;
-  color: white;
+  background: var(--panel-bg);
+  color: var(--text-color);
+  border-bottom: 1px solid var(--border-color);
 }
 
 .nav-bar a {
-  color: white;
+  color: var(--text-color);
   text-decoration: none;
   font-size: 0.9em;
 }
@@ -25,7 +26,7 @@
   background: none;
   border: none;
   padding: 0;
-  color: white;
+  color: var(--text-color);
   font-size: 0.9em;
   cursor: pointer;
   display: flex;

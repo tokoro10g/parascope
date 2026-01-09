@@ -1,6 +1,7 @@
 import {
   CaseLower,
   Import,
+  LineChart,
   LogIn,
   LogOut,
   Redo,
@@ -22,6 +23,7 @@ interface EditorBarProps {
   ) => void;
   onUndo: () => void;
   onRedo: () => void;
+  onSweep: () => void;
 }
 
 export const EditorBar: React.FC<EditorBarProps> = ({
@@ -32,6 +34,7 @@ export const EditorBar: React.FC<EditorBarProps> = ({
   onAddNode,
   onUndo,
   onRedo,
+  onSweep,
 }) => {
   const [name, setName] = useState(sheetName || '');
 
@@ -127,6 +130,14 @@ export const EditorBar: React.FC<EditorBarProps> = ({
           className="btn-add-sheet"
         >
           <Import size={18} />
+        </button>
+        <button
+          type="button"
+          onClick={onSweep}
+          title="Parameter Sweep"
+          className="btn-sweep"
+        >
+          <LineChart size={18} />
         </button>
       </div>
 

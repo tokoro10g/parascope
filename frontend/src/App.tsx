@@ -8,6 +8,7 @@ import { Dashboard } from './components/Dashboard';
 import { Login } from './components/Login';
 import { RequireAuth } from './components/RequireAuth';
 import { SheetEditor } from './components/SheetEditor';
+import { SweepPage } from './components/SweepPage';
 import { AuthProvider } from './contexts/AuthContext';
 import './App.css';
 import './rete.css';
@@ -44,6 +45,14 @@ const router = createBrowserRouter([
         element: (
           <RequireAuth>
             <SheetEditor />
+          </RequireAuth>
+        ),
+      },
+      {
+        path: '/sheet/:sheetId/sweep',
+        element: (
+          <RequireAuth>
+            <SweepPage />
           </RequireAuth>
         ),
       },
