@@ -46,8 +46,6 @@ export const SheetEditor: React.FC = () => {
     isCalculating,
     lastResult,
     setLastResult,
-    errorNodeId,
-    setErrorNodeId,
     calculatePreview,
   } = useSheetCalculation(editor);
   const [evaluatorInputs, setEvaluatorInputs] = useState<

@@ -104,7 +104,10 @@ export async function createEditor(container: HTMLElement) {
 
   area.addPipe((context) => {
     if (context.type === 'nodetranslated') {
-      if (onGraphChange) onGraphChange();
+      const { previous, position } = context.data;
+      if (previous.x !== position.x || previous.y !== position.y) {
+        if (onGraphChange) onGraphChange();
+      }
     }
     return context;
   });
