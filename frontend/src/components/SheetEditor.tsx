@@ -65,8 +65,6 @@ export const SheetEditor: React.FC = () => {
   const searchParamsRef = useRef(searchParams);
   searchParamsRef.current = searchParams;
 
-  const activeTypingNodeId = useRef<string | null>(null);
-  const lastTypingTimestamp = useRef<number>(0);
   const calculateTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(
     null,
   );
@@ -173,20 +171,10 @@ export const SheetEditor: React.FC = () => {
         return;
       }
 
-      setEvaluatorInputs((prev) => ({ ...prev, [id]: value }));
-      triggerAutoCalculation();
-
-      if (errorNodeId === id) {
-        setErrorNodeId(null);
-      }
-
       const node = editor?.editor.getNode(id);
       const label = node?.label;
 
       if (!label) return;
-
-      activeTypingNodeId.current = id;
-      lastTypingTimestamp.current = Date.now();
 
       setSearchParams(
         (prev) => {
@@ -200,12 +188,12 @@ export const SheetEditor: React.FC = () => {
         },
         { replace: true },
       );
+
+      triggerAutoCalculation();
     },
     [
-      errorNodeId,
       setSearchParams,
       editor,
-      setErrorNodeId,
       triggerAutoCalculation,
     ],
   );
@@ -262,7 +250,6 @@ export const SheetEditor: React.FC = () => {
 
         setCurrentSheet(sheet);
         setLastResult(null);
-        // Note: evaluatorInputs are handled by the useEffect on searchParams
 
         const focusNodeId = window.location.hash
           ? window.location.hash.substring(1)
@@ -303,17 +290,6 @@ export const SheetEditor: React.FC = () => {
     searchParams.forEach((value, key) => {
       const node = nodes.find((n) => n.type === 'input' && n.label === key);
       if (node?.id) {
-        // Skip update if this node is being typed into (within 1s threshold)
-        if (
-          node.id === activeTypingNodeId.current &&
-          Date.now() - lastTypingTimestamp.current < 1000
-        ) {
-          // Keep current local value
-          if (evaluatorInputsRef.current?.[node.id]) {
-            overrides[node.id] = evaluatorInputsRef.current[node.id];
-          }
-          return;
-        }
         overrides[node.id] = value;
       }
     });
