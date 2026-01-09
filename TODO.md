@@ -125,7 +125,15 @@ Generated from `SPECIFICATIONS.tsv`.
     - [ ] Validate function dependencies before saving (EH-05.0).
     - [x] Enforce unique input names per sheet (EH-09.0).
 
-## 5. Future Scope (Post-Initial)
+## 5. GenAI Integration (Use Gemini)
+- [ ] **Backend**:
+    - [ ] Create `POST /api/genai/generate_function` endpoint (AI-02.0).
+    - [ ] Integrate Google Gemini SDK (AI-02.0).
+- [ ] **Frontend**:
+    - [ ] Add AI Prompt UI to Function Inspector (AI-03.0).
+    - [ ] Implement function update logic from AI response (AI-01.0).
+
+## 6. Future Scope (Post-Initial)
 - [ ] **Concurrency**: Sheet-level mutex (FS-C-01.0, EH-08.0).
 - [ ] **Attachments**: Image uploads for Parameters, Functions, Sheets (FS-A-01.0 - FS-A-03.0).
 - [ ] **Notifications**: Owner-based change notifications (FS-N-01.0 - FS-N-04.0).
