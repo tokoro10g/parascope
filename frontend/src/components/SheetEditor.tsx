@@ -3,6 +3,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import toast from 'react-hot-toast';
 import { Group, Panel, Separator } from 'react-resizable-panels';
 import {
+  useBlocker,
   useLocation,
   useNavigate,
   useParams,
@@ -79,6 +80,25 @@ export const SheetEditor: React.FC = () => {
     return () => window.removeEventListener('beforeunload', handleBeforeUnload);
   }, [isDirty]);
 
+  // Warn on navigation if dirty
+  const blocker = useBlocker(
+    ({ currentLocation, nextLocation }) =>
+      isDirty && currentLocation.pathname !== nextLocation.pathname,
+  );
+
+  useEffect(() => {
+    if (blocker.state === 'blocked') {
+      const confirm = window.confirm(
+        'You have unsaved changes. Are you sure you want to leave?',
+      );
+      if (confirm) {
+        blocker.proceed();
+      } else {
+        blocker.reset();
+      }
+    }
+  }, [blocker]);
+
   const getExportData = useCallback(() => {
     if (!editor) return null;
     const graphData = editor.getGraphData();
@@ -147,17 +167,8 @@ export const SheetEditor: React.FC = () => {
       ? `/folder/${currentSheet.folder_id}`
       : '/';
 
-    if (isDirty) {
-      if (
-        window.confirm(
-          'You have unsaved changes. Are you sure you want to leave?',
-        )
-      ) {
-        navigate(target);
-      }
-    } else {
-      navigate(target);
-    }
+    // Navigation is handled by useBlocker
+    navigate(target);
   };
 
   const handleEvaluatorInputChange = useCallback(

@@ -1,5 +1,9 @@
 import { Toaster } from 'react-hot-toast';
-import { Route, BrowserRouter as Router, Routes } from 'react-router-dom';
+import {
+  Outlet,
+  RouterProvider,
+  createBrowserRouter,
+} from 'react-router-dom';
 import { Dashboard } from './components/Dashboard';
 import { Login } from './components/Login';
 import { RequireAuth } from './components/RequireAuth';
@@ -7,6 +11,45 @@ import { SheetEditor } from './components/SheetEditor';
 import { AuthProvider } from './contexts/AuthContext';
 import './App.css';
 import './rete.css';
+
+const Layout = () => (
+  <div className="App">
+    <Outlet />
+  </div>
+);
+
+const router = createBrowserRouter([
+  {
+    element: <Layout />,
+    children: [
+      { path: '/login', element: <Login /> },
+      {
+        path: '/',
+        element: (
+          <RequireAuth>
+            <Dashboard />
+          </RequireAuth>
+        ),
+      },
+      {
+        path: '/folder/:folderId',
+        element: (
+          <RequireAuth>
+            <Dashboard />
+          </RequireAuth>
+        ),
+      },
+      {
+        path: '/sheet/:sheetId',
+        element: (
+          <RequireAuth>
+            <SheetEditor />
+          </RequireAuth>
+        ),
+      },
+    ],
+  },
+]);
 
 function App() {
   return (
@@ -21,37 +64,7 @@ function App() {
           },
         }}
       />
-      <Router>
-        <div className="App">
-          <Routes>
-            <Route path="/login" element={<Login />} />
-            <Route
-              path="/"
-              element={
-                <RequireAuth>
-                  <Dashboard />
-                </RequireAuth>
-              }
-            />
-            <Route
-              path="/folder/:folderId"
-              element={
-                <RequireAuth>
-                  <Dashboard />
-                </RequireAuth>
-              }
-            />
-            <Route
-              path="/sheet/:sheetId"
-              element={
-                <RequireAuth>
-                  <SheetEditor />
-                </RequireAuth>
-              }
-            />
-          </Routes>
-        </div>
-      </Router>
+      <RouterProvider router={router} />
     </AuthProvider>
   );
 }

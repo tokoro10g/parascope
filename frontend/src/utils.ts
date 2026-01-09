@@ -11,7 +11,7 @@ export const formatHumanReadableValue = (value: string): string => {
     notation: isTooLong ? 'scientific' : 'standard',
     useGrouping: false,
   });
-  return numberFormat.format(valueAsNumber);
+  return numberFormat.format(valueAsNumber).toLowerCase();
 };
 
 export const extractValuesFromResult = (
