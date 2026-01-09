@@ -9,7 +9,7 @@ class SweepRequest(BaseModel):
     end_value: str
     increment: str
     output_node_ids: List[UUID]
-    input_overrides: Dict[UUID, Any] = {}
+    input_overrides: Dict[UUID, str] = {}
 
 
 class SweepResultStep(BaseModel):

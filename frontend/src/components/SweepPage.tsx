@@ -137,13 +137,10 @@ export const SweepPage: React.FC = () => {
       }
 
       // Construct overrides, excluding the swept node
-      const currentOverrides: Record<string, any> = {};
+      const currentOverrides: Record<string, string> = {};
       Object.entries(inputOverrides).forEach(([id, val]) => {
           if (id !== inputNodeId) {
-              const num = parseFloat(val);
-              if (!isNaN(num)) {
-                  currentOverrides[id] = num;
-              }
+              currentOverrides[id] = val;
           }
       });
 

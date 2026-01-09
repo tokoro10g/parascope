@@ -77,14 +77,7 @@ async def sweep_sheet(
 
     for val in input_values:
         # Merge static overrides with current sweep value
-        # We assume values in input_overrides are either already numeric or strings that float() can handle
-        input_overrides = {}
-        for k, v in body.input_overrides.items():
-            try:
-                input_overrides[str(k)] = float(v) if isinstance(v, str) else v
-            except ValueError:
-                input_overrides[str(k)] = v # Pass through if it fails, let execution handle it
-        
+        input_overrides = {str(k): v for k, v in body.input_overrides.items()}
         input_overrides[str(body.input_node_id)] = val
         
         step_result = SweepResultStep(input_value=val, outputs={})
