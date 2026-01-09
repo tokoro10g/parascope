@@ -5,7 +5,7 @@ export const formatHumanReadableValue = (value: string): string => {
   if (Number.isNaN(valueAsNumber)) {
     return value;
   }
-  const isTooLong = valueAsNumber >= 1e6 || valueAsNumber < 1e-3;
+  const isTooLong = Math.abs(valueAsNumber) >= 1e6 || Math.abs(valueAsNumber) < 1e-3;
   const numberFormat = new Intl.NumberFormat('en-US', {
     maximumSignificantDigits: 6,
     notation: isTooLong ? 'scientific' : 'standard',
