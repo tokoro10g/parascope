@@ -33,9 +33,11 @@ The project is a **Monorepo**.
 -   **Containerization**: Docker Compose (orchestrates Backend, Frontend, DB).
 
 ## 4. Development Workflow
--   Check `TODO.md` for the next task.
--   Verify changes against `SPECIFICATIONS.tsv`.
--   Ensure `ruff` and `biome` checks pass.
+-   Verify changes against `SPECIFICATIONS.tsv`. Update it if necessary.
 -   Use absolute path for shell commands
--   Make a commit once in a while
+-   Check `TODO.md` for the next task
+-   Ask the user for feedback before starting working on a task
+-   Make it clear if you are waiting for the user's feedback
+-   Make a commit once in a while. Use Conventional Commits.
 -   Do not leave any intermediate code or workaround before making a commit
+-   Frontend: Before making a commit, run `pnpm build` and `pnpm format` commands inside the `frontend` folder to ensure the code quality
