@@ -52,6 +52,7 @@ export interface ConnectionData {
 }
 
 export interface GenerateFunctionResponse {
+  title: string;
   code: string;
   inputs: string[];
   outputs: string[];

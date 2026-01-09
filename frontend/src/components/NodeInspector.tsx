@@ -241,6 +241,7 @@ export const NodeInspector: React.FC<NodeInspectorProps> = ({
         code: result.code,
         description: result.description,
       }));
+      setLabel(result.title);
       setInputs(result.inputs.map((k) => ({ key: k, socket_type: 'any' })));
       setOutputs(result.outputs.map((k) => ({ key: k, socket_type: 'any' })));
     } catch (e: any) {
@@ -256,12 +257,65 @@ export const NodeInspector: React.FC<NodeInspectorProps> = ({
       <div className="modal-content">
         <h2>Edit Node: {node.type}</h2>
 
+        {node.type === 'function' && aiEnabled && (
+          <div
+            className="form-group"
+            style={{
+              border: '1px solid #6b7280',
+              padding: '10px',
+              borderRadius: '4px',
+              background: 'rgba(55, 65, 81, 0.3)',
+              marginBottom: '15px',
+            }}
+          >
+            <label
+              htmlFor="ai-prompt"
+              style={{
+                display: 'flex',
+                justifyContent: 'space-between',
+                alignItems: 'center',
+              }}
+            >
+              <span>Generate with Gemini AI</span>
+              {isGenerating && (
+                <span style={{ fontSize: '0.8em', color: '#9c27b0' }}>
+                  Generating...
+                </span>
+              )}
+            </label>
+            <div style={{ display: 'flex', gap: '8px' }}>
+              <input
+                id="ai-prompt"
+                value={aiPrompt}
+                onChange={(e) => setAiPrompt(e.target.value)}
+                placeholder="e.g. Calculate the hypotenuse of a right angle triangle"
+                style={{ flex: 1 }}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter' && !isGenerating) {
+                    e.preventDefault();
+                    handleGenerate();
+                  }
+                }}
+              />
+              <button
+                type="button"
+                onClick={handleGenerate}
+                disabled={isGenerating || !aiPrompt.trim()}
+                style={{ whiteSpace: 'nowrap' }}
+              >
+                Generate
+              </button>
+            </div>
+          </div>
+        )}
+
         <div className="form-group">
           <label htmlFor="node-label">Label:</label>
           <input
             id="node-label"
             value={label}
             onChange={(e) => setLabel(e.target.value)}
+            disabled={isGenerating}
           />
         </div>
 
@@ -282,6 +336,7 @@ export const NodeInspector: React.FC<NodeInspectorProps> = ({
                 <button
                   type="button"
                   onClick={() => setShowPreview(!showPreview)}
+                  disabled={isGenerating}
                   style={{
                     fontSize: '0.8em',
                     padding: '2px 8px',
@@ -322,6 +377,7 @@ export const NodeInspector: React.FC<NodeInspectorProps> = ({
                     onChange={(e: any) =>
                       setData({ ...data, description: e.target.value })
                     }
+                    readOnly={isGenerating}
                     padding={15}
                     indentWidth={2}
                     style={{ minWidth: 'max-content', fontFamily: 'monospace' }}
@@ -366,16 +422,28 @@ export const NodeInspector: React.FC<NodeInspectorProps> = ({
                     >
                       Open Original
                     </a>
-                    <button type="button" onClick={handleInsertToDescription}>
+                    <button
+                      type="button"
+                      onClick={handleInsertToDescription}
+                      disabled={isGenerating}
+                    >
                       Insert into Description
                     </button>
-                    <button type="button" onClick={handleRemoveAttachment}>
+                    <button
+                      type="button"
+                      onClick={handleRemoveAttachment}
+                      disabled={isGenerating}
+                    >
                       Remove
                     </button>
                   </div>
                 </div>
               ) : (
-                <input type="file" onChange={handleFileUpload} />
+                <input
+                  type="file"
+                  onChange={handleFileUpload}
+                  disabled={isGenerating}
+                />
               )}
             </div>
           </>
@@ -537,56 +605,6 @@ export const NodeInspector: React.FC<NodeInspectorProps> = ({
 
         {node.type === 'function' && (
           <>
-            {aiEnabled && (
-              <div
-                className="form-group"
-                style={{
-                  border: '1px solid #6b7280',
-                  padding: '10px',
-                  borderRadius: '4px',
-                  background: 'rgba(55, 65, 81, 0.3)',
-                }}
-              >
-                <label
-                  htmlFor="ai-prompt"
-                  style={{
-                    display: 'flex',
-                    justifyContent: 'space-between',
-                    alignItems: 'center',
-                  }}
-                >
-                  <span>Generate with Gemini AI</span>
-                  {isGenerating && (
-                    <span style={{ fontSize: '0.8em', color: '#9c27b0' }}>
-                      Generating...
-                    </span>
-                  )}
-                </label>
-                <div style={{ display: 'flex', gap: '8px' }}>
-                  <input
-                    id="ai-prompt"
-                    value={aiPrompt}
-                    onChange={(e) => setAiPrompt(e.target.value)}
-                    placeholder="e.g. Calculate the hypotenuse of a right angle triangle"
-                    style={{ flex: 1 }}
-                    onKeyDown={(e) => {
-                      if (e.key === 'Enter' && !isGenerating) {
-                        e.preventDefault();
-                        handleGenerate();
-                      }
-                    }}
-                  />
-                  <button
-                    type="button"
-                    onClick={handleGenerate}
-                    disabled={isGenerating || !aiPrompt.trim()}
-                    style={{ whiteSpace: 'nowrap' }}
-                  >
-                    Generate
-                  </button>
-                </div>
-              </div>
-            )}
 
             <div className="form-group">
               <label htmlFor="node-code">Python Code:</label>
@@ -599,6 +617,7 @@ export const NodeInspector: React.FC<NodeInspectorProps> = ({
                   onChange={(e: any) =>
                     setData({ ...data, code: e.target.value })
                   }
+                  readOnly={isGenerating}
                   padding={15}
                   rows={30}
                   indentWidth={4}
@@ -642,11 +661,12 @@ export const NodeInspector: React.FC<NodeInspectorProps> = ({
                             ? ''
                             : 'Invalid Python identifier'
                         }
+                        disabled={isGenerating}
                       />
                       <button
                         type="button"
                         onClick={() => handleMoveInput(idx, 'up')}
-                        disabled={idx === 0}
+                        disabled={isGenerating || idx === 0}
                         style={{ padding: '2px' }}
                       >
                         <ArrowUp size={12} />
@@ -654,7 +674,7 @@ export const NodeInspector: React.FC<NodeInspectorProps> = ({
                       <button
                         type="button"
                         onClick={() => handleMoveInput(idx, 'down')}
-                        disabled={idx === inputs.length - 1}
+                        disabled={isGenerating || idx === inputs.length - 1}
                         style={{ padding: '2px' }}
                       >
                         <ArrowDown size={12} />
@@ -664,13 +684,18 @@ export const NodeInspector: React.FC<NodeInspectorProps> = ({
                         onClick={() => handleRemoveInput(idx)}
                         className="danger"
                         style={{ padding: '2px' }}
+                        disabled={isGenerating}
                       >
                         <Trash2 size={12} />
                       </button>
                     </li>
                   ))}
                 </ul>
-                <button type="button" onClick={handleAddInput}>
+                <button
+                  type="button"
+                  onClick={handleAddInput}
+                  disabled={isGenerating}
+                >
                   + Add Input
                 </button>
               </div>
@@ -706,11 +731,12 @@ export const NodeInspector: React.FC<NodeInspectorProps> = ({
                             ? ''
                             : 'Invalid Python identifier'
                         }
+                        disabled={isGenerating}
                       />
                       <button
                         type="button"
                         onClick={() => handleMoveOutput(idx, 'up')}
-                        disabled={idx === 0}
+                        disabled={isGenerating || idx === 0}
                         style={{ padding: '2px' }}
                       >
                         <ArrowUp size={12} />
@@ -718,7 +744,7 @@ export const NodeInspector: React.FC<NodeInspectorProps> = ({
                       <button
                         type="button"
                         onClick={() => handleMoveOutput(idx, 'down')}
-                        disabled={idx === outputs.length - 1}
+                        disabled={isGenerating || idx === outputs.length - 1}
                         style={{ padding: '2px' }}
                       >
                         <ArrowDown size={12} />
@@ -728,13 +754,18 @@ export const NodeInspector: React.FC<NodeInspectorProps> = ({
                         onClick={() => handleRemoveOutput(idx)}
                         className="danger"
                         style={{ padding: '2px' }}
+                        disabled={isGenerating}
                       >
                         <Trash2 size={12} />
                       </button>
                     </li>
                   ))}
                 </ul>
-                <button type="button" onClick={handleAddOutput}>
+                <button
+                  type="button"
+                  onClick={handleAddOutput}
+                  disabled={isGenerating}
+                >
                   + Add Output
                 </button>
               </div>

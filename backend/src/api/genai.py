@@ -15,6 +15,7 @@ class GenerateFunctionRequest(BaseModel):
     existing_code: str = ""
 
 class GenerateFunctionResponse(BaseModel):
+    title: str
     code: str
     inputs: list[str]
     outputs: list[str]
@@ -26,7 +27,7 @@ def get_gemini_model():
         raise HTTPException(status_code=500, detail="GEMINI_API_KEY not configured")
     
     genai.configure(api_key=api_key)
-    model = genai.GenerativeModel('gemini-1.5-flash')
+    model = genai.GenerativeModel('gemini-3-flash-preview')
     return model
 
 @router.get("/config")
@@ -43,10 +44,11 @@ async def generate_function(request: GenerateFunctionRequest):
         The user will provide a prompt describing what they want the function to do.
         You must return a JSON object with the following structure:
         {
-            "code": "The python code. Do not include def function_name(): wrapper. Just write lines of code that use variable names as inputs and assign results to variable names as outputs.",
+            "title": "A short, descriptive title for the node (e.g. 'Calculate Area', 'Fetch Data'). Max 3-4 words.",
+            "code": "docstrings for the inputs and outputs explaining units. Then python code body. Do not include def function_name(): wrapper. Just write lines of code that use variable names as inputs and assign results to variable names as outputs. math and np are already imported.",
             "inputs": ["list", "of", "input", "variable", "names"],
             "outputs": ["list", "of", "output", "variable", "names"],
-            "description": "A markdown description of what the function does."
+            "description": "A markdown description of what the function does. Use KaTeX for any formulas."
         }
         
         Rules:
@@ -54,13 +56,14 @@ async def generate_function(request: GenerateFunctionRequest):
            No function definitions unless helper functions are absolutely needed (but prefer avoiding them).
         2. Input variables will be injected into the local scope.
         3. Output variables must be assigned values by the code.
-        4. Use standard libraries like numpy (as np) and scipy.
-        5. Be concise.
+        4. Be concise.
+        5. For KaTeX block math, add empty lines before and after both inside and outside `$$`.
         
         Example:
         User Prompt: "Calculate the area of a circle"
         Response:
         {
+            "title": "Circle Area",
             "code": "area = np.pi * radius**2",
             "inputs": ["radius"],
             "outputs": ["area"],
@@ -84,6 +87,7 @@ async def generate_function(request: GenerateFunctionRequest):
         try:
             parsed = json.loads(result_text)
             return GenerateFunctionResponse(
+                title=parsed.get("title", ""),
                 code=parsed.get("code", ""),
                 inputs=parsed.get("inputs", []),
                 outputs=parsed.get("outputs", []),
