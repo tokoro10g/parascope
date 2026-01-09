@@ -1,7 +1,7 @@
 /* Override default node styles if necessary */
 
-/* Parameter Node - Green */
-.node-parameter .title {
+/* Constant Node - Green */
+.node-constant .title {
   background: #4caf50;
   border-radius: 8px 8px 0px 0px;
   color: white;
@@ -52,7 +52,7 @@
 }
 
 /* Auto-size nodes */
-.node-parameter,
+.node-constant,
 .node-function,
 .node-input,
 .node-output,

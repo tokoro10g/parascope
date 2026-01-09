@@ -133,7 +133,7 @@ export const SweepPage: React.FC = () => {
     setError(null);
     setResults(null);
     try {
-      if (!inputNodeId) throw new Error('Please select an input parameter.');
+      if (!inputNodeId) throw new Error('Please select an input or constant.');
       if (outputNodeIds.length === 0)
         throw new Error('Please select at least one output.');
 

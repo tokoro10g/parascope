@@ -493,7 +493,7 @@ export const SheetEditor: React.FC = () => {
       // We update that, and let the useEffect sync it back to the node.
       handleEvaluatorInputChange(nodeId, value);
     } else {
-      // For parameter nodes, the source of truth is the node itself.
+      // For constant nodes, the source of truth is the node itself.
       const control = node.controls.value as any;
       if (control) {
         control.setValue(value);

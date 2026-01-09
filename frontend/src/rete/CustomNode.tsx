@@ -4,7 +4,7 @@ import { Presets } from 'rete-react-plugin';
 import './custom-node.css';
 
 const styles: Record<string, { background: string; borderColor: string }> = {
-  parameter: { background: 'rgba(110, 218, 110, 0.8)', borderColor: '#4caf50' },
+  constant: { background: 'rgba(110, 218, 110, 0.8)', borderColor: '#4caf50' },
   function: { background: 'rgba(100, 181, 246, 0.8)', borderColor: '#2196f3' },
   input: { background: 'rgba(255, 183, 77, 0.8)', borderColor: '#ff9800' },
   output: { background: 'rgba(186, 104, 200, 0.8)', borderColor: '#9c27b0' },
@@ -12,7 +12,7 @@ const styles: Record<string, { background: string; borderColor: string }> = {
 };
 
 const icons: Record<string, any> = {
-  parameter: CaseLower,
+  constant: CaseLower,
   function: Sigma,
   input: LogIn,
   output: LogOut,

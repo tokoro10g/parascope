@@ -58,12 +58,12 @@
 }
 
 /* Node Add Buttons - High Specificity to beat SheetEditor.css overrides */
-.editor-bar .toolbar-group .btn-add-parameter {
+.editor-bar .toolbar-group .btn-add-constant {
   background-color: #4caf50;
   color: white;
   border: 1px solid #388e3c;
 }
-.editor-bar .toolbar-group .btn-add-parameter:hover {
+.editor-bar .toolbar-group .btn-add-constant:hover {
   background-color: #43a047;
   border-color: #2e7d32;
 }

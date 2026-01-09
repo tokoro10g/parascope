@@ -94,8 +94,8 @@ export const EditorBar: React.FC<EditorBarProps> = ({
         <button
           type="button"
           onClick={() => onAddNode('constant')}
-          title="Add Parameter"
-          className="btn-add-parameter"
+          title="Add Constant"
+          className="btn-add-constant"
         >
           <CaseLower size={18} />
         </button>
@@ -134,7 +134,7 @@ export const EditorBar: React.FC<EditorBarProps> = ({
         <button
           type="button"
           onClick={onSweep}
-          title="Parameter Sweep"
+          title="Sweep"
           className="btn-sweep"
         >
           <LineChart size={18} />

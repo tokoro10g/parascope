@@ -210,7 +210,7 @@ export function useNodeOperations(
           return;
         }
         if (node.type === 'input') {
-          // An input node is going to be switched to a parameter node. Warn the user.
+          // An input node is going to be switched to a constant node. Warn the user.
           if (
             !window.confirm(
               `Switching this ${node.type} node to ${updates.type} node may break sheets that use this sheet as a function. Are you sure?`,

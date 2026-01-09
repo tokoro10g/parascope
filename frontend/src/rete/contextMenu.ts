@@ -58,8 +58,8 @@ export function createContextMenuPlugin(
         });
       } else if (context.type === 'input') {
         items.push({
-          label: 'Switch to Parameter',
-          key: 'switch-to-parameter',
+          label: 'Switch to Constant',
+          key: 'switch-to-constant',
           handler: () => {
             if (callbacks.onNodeTypeChange)
               callbacks.onNodeTypeChange(context.id, 'constant');

@@ -68,7 +68,7 @@ export const SheetTable: React.FC<SheetTableProps> = ({
     return url;
   };
 
-  // Filter for Parameters, Inputs, and Outputs
+  // Filter for Constants, Inputs, and Outputs
   const tableNodes = nodes
     .filter(
       (node) =>
@@ -79,7 +79,7 @@ export const SheetTable: React.FC<SheetTableProps> = ({
     .sort((a, b) => {
       const typeOrder: Record<string, number> = {
         input: 0,
-        parameter: 1,
+        constant: 1,
         output: 2,
       };
       const typeDiff = (typeOrder[a.type] ?? 99) - (typeOrder[b.type] ?? 99);
@@ -90,14 +90,14 @@ export const SheetTable: React.FC<SheetTableProps> = ({
       return (a.y || 0) - (b.y || 0);
     });
 
-  // Filter for Descriptions (Parameters, Inputs, Functions, Outputs, Sheets)
+  // Filter for Descriptions (Constants, Inputs, Functions, Outputs, Sheets)
   const descriptionNodes = nodes
     .filter((node) =>
       ['constant', 'input', 'function', 'output', 'sheet'].includes(node.type),
     )
     .sort((a, b) => {
       const typeOrder: Record<string, number> = {
-        parameter: 0,
+        constant: 0,
         input: 1,
         function: 2,
         sheet: 3,
@@ -199,7 +199,7 @@ export const SheetTable: React.FC<SheetTableProps> = ({
           </button>
         </div>
         <div className="sheet-table-header">
-          <h3>Parameters & I/O</h3>
+          <h3>Constants & I/O</h3>
           <div className="sheet-table-actions">
             <button
               type="button"
