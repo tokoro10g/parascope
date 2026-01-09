@@ -262,9 +262,9 @@ export const api = {
   async sweepSheet(
     sheetId: string,
     inputNodeId: string,
-    startValue: number,
-    endValue: number,
-    steps: number,
+    startValue: string,
+    endValue: string,
+    increment: string,
     outputNodeIds: string[],
     inputOverrides?: Record<string, any>,
   ): Promise<SweepResponse> {
@@ -275,7 +275,7 @@ export const api = {
         input_node_id: inputNodeId,
         start_value: startValue,
         end_value: endValue,
-        steps,
+        increment: increment,
         output_node_ids: outputNodeIds,
         input_overrides: inputOverrides,
       }),

@@ -43,10 +43,48 @@ async def sweep_sheet(
     processor = GraphProcessor(sheet, db)
     sweep_results: List[SweepResultStep] = []
     
-    input_values = np.linspace(body.start_value, body.end_value, body.steps)
+    try:
+        start_val = float(body.start_value)
+        end_val = float(body.end_value)
+        increment_val = float(body.increment)
+    except ValueError:
+        raise HTTPException(status_code=400, detail="Start, End, and Increment values must be numeric strings.")
+
+    if increment_val == 0:
+        raise HTTPException(status_code=400, detail="Increment cannot be zero.")
+
+    # Determine direction
+    if end_val < start_val:
+        increment_val = -abs(increment_val)
+    else:
+        increment_val = abs(increment_val)
+
+    # Calculate number of steps: floor((end - start) / inc) + 1
+    # Add epsilon to handle floating point inaccuracies
+    num_steps = int(np.floor((end_val - start_val) / increment_val + 1e-10)) + 1
+    
+    if num_steps > 1000:
+         raise HTTPException(status_code=400, detail=f"Sweep generates too many steps ({num_steps}). Limit is 1000.")
+         
+    if num_steps <= 0:
+         # Should not happen if logic is correct, but safe fallback
+         input_values = np.array([start_val])
+    else:
+        # Generate values with fixed increment
+        # We calculate the exact last value that fits in the range
+        last_val = start_val + (num_steps - 1) * increment_val
+        input_values = np.linspace(start_val, last_val, num_steps)
 
     for val in input_values:
-        input_overrides = {str(k): v for k, v in body.input_overrides.items()}
+        # Merge static overrides with current sweep value
+        # We assume values in input_overrides are either already numeric or strings that float() can handle
+        input_overrides = {}
+        for k, v in body.input_overrides.items():
+            try:
+                input_overrides[str(k)] = float(v) if isinstance(v, str) else v
+            except ValueError:
+                input_overrides[str(k)] = v # Pass through if it fails, let execution handle it
+        
         input_overrides[str(body.input_node_id)] = val
         
         step_result = SweepResultStep(input_value=val, outputs={})

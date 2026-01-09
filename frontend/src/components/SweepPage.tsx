@@ -136,16 +136,6 @@ export const SweepPage: React.FC = () => {
         throw new Error('Invalid numeric inputs. Increment must be non-zero.');
       }
 
-      // Calculate steps count
-      const stepsCount = Math.floor(Math.abs((end - start) / step)) + 1;
-      
-      if (stepsCount <= 1) {
-          throw new Error('Increment is too large or range is zero.');
-      }
-      if (stepsCount > 500) {
-          throw new Error(`Too many steps (${stepsCount}). Please increase increment.`);
-      }
-
       // Construct overrides, excluding the swept node
       const currentOverrides: Record<string, any> = {};
       Object.entries(inputOverrides).forEach(([id, val]) => {
@@ -160,9 +150,9 @@ export const SweepPage: React.FC = () => {
       const res = await api.sweepSheet(
         sheetId,
         inputNodeId,
-        start,
-        end,
-        stepsCount,
+        startValue,
+        endValue,
+        increment,
         outputNodeIds,
         currentOverrides
       );

@@ -5,9 +5,9 @@ from pydantic import BaseModel
 
 class SweepRequest(BaseModel):
     input_node_id: UUID
-    start_value: float
-    end_value: float
-    steps: int
+    start_value: str
+    end_value: str
+    increment: str
     output_node_ids: List[UUID]
     input_overrides: Dict[UUID, Any] = {}
 
