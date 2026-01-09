@@ -3,7 +3,13 @@
 {% if node.type in ['parameter', 'input'] %}
 try:
     {% if node.type == 'parameter' %}
-    val = {{ node.value }}
+    val = None
+    if input_overrides and '{{ node.id }}' in input_overrides:
+        val = input_overrides['{{ node.id }}']
+    
+    if val is None:
+        val = {{ node.value }}
+
     {% if node.is_option %}
     _validate_option('{{ node.id }}', '{{ node.label }}', {{ node.data }}, val)
     val = str(val)
