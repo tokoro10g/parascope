@@ -261,10 +261,10 @@ export const NodeInspector: React.FC<NodeInspectorProps> = ({
           <div
             className="form-group"
             style={{
-              border: '1px solid #6b7280',
+              border: '1px solid var(--border-color)',
               padding: '10px',
               borderRadius: '4px',
-              background: 'rgba(55, 65, 81, 0.3)',
+              background: 'var(--panel-bg-secondary)',
               marginBottom: '15px',
             }}
           >
