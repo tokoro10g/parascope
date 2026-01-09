@@ -97,7 +97,7 @@ class GraphProcessor:
             "has_range": has_range
         }
         
-        if node.type == "parameter":
+        if node.type == "constant":
             ctx["value"] = repr(node.data.get("value", 0))
             
         elif node.type == "input":

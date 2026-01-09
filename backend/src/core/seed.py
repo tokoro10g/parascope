@@ -363,7 +363,7 @@ async def seed_database(session: AsyncSession):
     node_pay = Node(
         id=uuid.uuid4(),
         sheet_id=sheet4_id,
-        type="parameter",
+        type="constant",
         label="Payload Mass [kg]",
         inputs=[],
         outputs=[{"key": "value", "socket_type": "any"}],
@@ -374,7 +374,7 @@ async def seed_database(session: AsyncSession):
     node_prop = Node(
         id=uuid.uuid4(),
         sheet_id=sheet4_id,
-        type="parameter",
+        type="constant",
         label="Propellant Mass [kg]",
         inputs=[],
         outputs=[{"key": "value", "socket_type": "any"}],
@@ -385,7 +385,7 @@ async def seed_database(session: AsyncSession):
     node_struc = Node(
         id=uuid.uuid4(),
         sheet_id=sheet4_id,
-        type="parameter",
+        type="constant",
         label="Structure Mass [kg]",
         inputs=[],
         outputs=[{"key": "value", "socket_type": "any"}],
@@ -396,7 +396,7 @@ async def seed_database(session: AsyncSession):
     node_ssto_isp = Node(
         id=uuid.uuid4(),
         sheet_id=sheet4_id,
-        type="parameter",
+        type="constant",
         label="Engine Isp [s]",
         inputs=[],
         outputs=[{"key": "value", "socket_type": "any"}],
@@ -407,7 +407,7 @@ async def seed_database(session: AsyncSession):
     node_target_dv = Node(
         id=uuid.uuid4(),
         sheet_id=sheet4_id,
-        type="parameter",
+        type="constant",
         label="Target Delta-V [m/s]",
         inputs=[],
         outputs=[{"key": "value", "socket_type": "any"}],
@@ -621,7 +621,7 @@ async def seed_database(session: AsyncSession):
     node_material = Node(
         id=uuid.uuid4(),
         sheet_id=sheet5_id,
-        type="parameter",
+        type="constant",
         label="Material",
         inputs=[],
         outputs=[{"key": "value", "socket_type": "any"}],
@@ -638,7 +638,7 @@ async def seed_database(session: AsyncSession):
     node_volume = Node(
         id=uuid.uuid4(),
         sheet_id=sheet5_id,
-        type="parameter",
+        type="constant",
         label="Volume [m^3]",
         inputs=[],
         outputs=[{"key": "value", "socket_type": "any"}],

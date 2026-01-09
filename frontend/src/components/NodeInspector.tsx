@@ -449,7 +449,7 @@ export const NodeInspector: React.FC<NodeInspectorProps> = ({
           </>
         )}
 
-        {(node.type === 'parameter' ||
+        {(node.type === 'constant' ||
           node.type === 'input' ||
           node.type === 'output') && (
           <>
@@ -570,7 +570,7 @@ export const NodeInspector: React.FC<NodeInspectorProps> = ({
               </div>
             )}
 
-            {node.type === 'parameter' && (
+            {node.type === 'constant' && (
               <div className="form-group">
                 <label htmlFor="node-value">Value:</label>
                 {data.dataType === 'option' ? (

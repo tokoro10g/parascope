@@ -24,7 +24,7 @@ async def test_sheet_crud_and_dependencies():
             "nodes": [
                 {
                     "id": node1_id,
-                    "type": "parameter",
+                    "type": "constant",
                     "label": "Param 1",
                     "position_x": 0,
                     "position_y": 0,
@@ -89,7 +89,7 @@ async def test_sheet_crud_and_dependencies():
             "nodes": [
                 {
                     "id": node1_id,
-                    "type": "parameter",
+                    "type": "constant",
                     "label": "Param 1",
                     "position_x": 0,
                     "position_y": 0,

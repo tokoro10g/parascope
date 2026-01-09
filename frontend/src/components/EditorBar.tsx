@@ -19,7 +19,7 @@ interface EditorBarProps {
   onRenameSheet: (name: string) => void;
   onSaveSheet: () => void;
   onAddNode: (
-    type: 'parameter' | 'function' | 'input' | 'output' | 'sheet',
+    type: 'constant' | 'function' | 'input' | 'output' | 'sheet',
   ) => void;
   onUndo: () => void;
   onRedo: () => void;
@@ -93,7 +93,7 @@ export const EditorBar: React.FC<EditorBarProps> = ({
       <div className="toolbar-group node-actions-group">
         <button
           type="button"
-          onClick={() => onAddNode('parameter')}
+          onClick={() => onAddNode('constant')}
           title="Add Parameter"
           className="btn-add-parameter"
         >

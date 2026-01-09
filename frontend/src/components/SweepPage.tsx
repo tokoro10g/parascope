@@ -44,7 +44,7 @@ export const SweepPage: React.FC = () => {
           // Initialize overrides with default values
           const defaults: Record<string, string> = {};
           loadedSheet.nodes.forEach((n) => {
-            if (['parameter', 'input'].includes(n.type)) {
+            if (['constant', 'input'].includes(n.type)) {
               if (n.data && n.data.value !== undefined) {
                 defaults[n.id!] = String(n.data.value);
               } else {
@@ -96,7 +96,7 @@ export const SweepPage: React.FC = () => {
 
   const nodes = sheet?.nodes || [];
   const inputOptions = nodes.filter((n) =>
-    ['parameter', 'input'].includes(n.type),
+    ['constant', 'input'].includes(n.type),
   );
   const outputOptions = nodes.filter((n) => n.type === 'output');
 

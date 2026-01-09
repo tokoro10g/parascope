@@ -62,10 +62,10 @@ export function createContextMenuPlugin(
           key: 'switch-to-parameter',
           handler: () => {
             if (callbacks.onNodeTypeChange)
-              callbacks.onNodeTypeChange(context.id, 'parameter');
+              callbacks.onNodeTypeChange(context.id, 'constant');
           },
         });
-      } else if (context.type === 'parameter') {
+      } else if (context.type === 'constant') {
         items.push({
           label: 'Switch to Input',
           key: 'switch-to-input',

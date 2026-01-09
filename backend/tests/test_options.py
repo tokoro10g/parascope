@@ -29,7 +29,7 @@ async def test_option_validation():
         nodes = [
             {
                 "id": param_id,
-                "type": "parameter",
+                "type": "constant",
                 "label": "Material",
                 "position_x": 0,
                 "position_y": 0,

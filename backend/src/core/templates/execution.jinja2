@@ -1,8 +1,8 @@
 {% for node in nodes %}
 # --- Node: {{ node.label }} ({{ node.id }}) ---
-{% if node.type in ['parameter', 'input'] %}
+{% if node.type in ['constant', 'input'] %}
 try:
-    {% if node.type == 'parameter' %}
+    {% if node.type == 'constant' %}
     val = None
     if input_overrides and '{{ node.id }}' in input_overrides:
         val = input_overrides['{{ node.id }}']

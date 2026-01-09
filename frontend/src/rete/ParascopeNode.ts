@@ -48,7 +48,7 @@ export class ParascopeNode extends Classic.Node {
     }
 
     const isOption = data.dataType === 'option';
-    const isInputOrParam = this.type === 'input' || this.type === 'parameter';
+    const isInputOrParam = this.type === 'input' || this.type === 'constant';
 
     if (isInputOrParam && isOption && data.options) {
       this.addControl(

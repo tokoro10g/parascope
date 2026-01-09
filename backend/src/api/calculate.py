@@ -85,7 +85,7 @@ async def _run_calculation(
                 node_resp["valid"] = result_val["valid"]
 
         # Populate inputs
-        if node.type not in ["input", "parameter"]:
+        if node.type not in ["input", "constant"]:
             in_edges = processor.graph.in_edges(node.id, data=True)
             for u, _v, data in in_edges:
                 target_port = data["target_port"]
@@ -98,7 +98,7 @@ async def _run_calculation(
                     # Handle source result being an error dict
                     if isinstance(source_res, dict) and "error" in source_res:
                         val = source_res.get("value")
-                    elif source_node.type in ["input", "parameter"]:
+                    elif source_node.type in ["input", "constant"]:
                         val = source_res.get("value")
                     elif source_node.type in ["function", "sheet"]:
                         val = source_res.get(source_port)

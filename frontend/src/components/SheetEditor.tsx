@@ -335,7 +335,7 @@ export const SheetEditor: React.FC = () => {
   }, [editor, onSave]);
 
   const handleAddNode = async (
-    type: 'parameter' | 'function' | 'input' | 'output' | 'sheet',
+    type: 'constant' | 'function' | 'input' | 'output' | 'sheet',
   ) => {
     if (!editor || !currentSheet) return;
 
@@ -350,8 +350,8 @@ export const SheetEditor: React.FC = () => {
     let data: Record<string, any> = {};
 
     switch (type) {
-      case 'parameter':
-        label = 'Parameter';
+      case 'constant':
+        label = 'Constant';
         outputs = [createSocket('value')];
         data = { value: 0 };
         break;

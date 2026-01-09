@@ -31,7 +31,7 @@ async def test_physics_calculation_scenario():
         nodes = [
             {
                 "id": mass_id,
-                "type": "parameter",
+                "type": "constant",
                 "label": "Mass",
                 "position_x": 0,
                 "position_y": 0,
@@ -40,7 +40,7 @@ async def test_physics_calculation_scenario():
             },
             {
                 "id": accel_id,
-                "type": "parameter",
+                "type": "constant",
                 "label": "Acceleration",
                 "position_x": 0,
                 "position_y": 100,

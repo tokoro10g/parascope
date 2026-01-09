@@ -72,7 +72,7 @@ export const SheetTable: React.FC<SheetTableProps> = ({
   const tableNodes = nodes
     .filter(
       (node) =>
-        node.type === 'parameter' ||
+        node.type === 'constant' ||
         node.type === 'output' ||
         node.type === 'input',
     )
@@ -93,7 +93,7 @@ export const SheetTable: React.FC<SheetTableProps> = ({
   // Filter for Descriptions (Parameters, Inputs, Functions, Outputs, Sheets)
   const descriptionNodes = nodes
     .filter((node) =>
-      ['parameter', 'input', 'function', 'output', 'sheet'].includes(node.type),
+      ['constant', 'input', 'function', 'output', 'sheet'].includes(node.type),
     )
     .sort((a, b) => {
       const typeOrder: Record<string, number> = {
@@ -249,7 +249,7 @@ export const SheetTable: React.FC<SheetTableProps> = ({
               <tbody>
                 {tableNodes.map((node) => {
                   const isEditable =
-                    node.type === 'parameter' || node.type === 'input';
+                    node.type === 'constant' || node.type === 'input';
                   const isDropdown =
                     isEditable && node.initialData.dataType === 'option';
                   const nameControl = node.controls.name as any;
