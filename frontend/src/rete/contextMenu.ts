@@ -49,7 +49,7 @@ export function createContextMenuPlugin(
 
       if (context.type === 'sheet') {
         items.push({
-          label: 'Edit Sheet',
+          label: 'Open in New Tab',
           key: 'edit-sheet',
           handler: () => {
             if (callbacks.onEditNestedSheet)
