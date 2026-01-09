@@ -39,6 +39,17 @@ export const NodeInspector: React.FC<NodeInspectorProps> = ({
     { key: string; socket_type: string }[]
   >([]);
   const [showPreview, setShowPreview] = useState(false);
+  
+  // AI State
+  const [aiPrompt, setAiPrompt] = useState('');
+  const [isGenerating, setIsGenerating] = useState(false);
+  const [aiEnabled, setAiEnabled] = useState(false);
+
+  useEffect(() => {
+    api.getGenAIConfig().then((config) => {
+      setAiEnabled(config.enabled);
+    });
+  }, []);
 
   const isValidPythonIdentifier = (name: string) => {
     return /^[a-zA-Z_][a-zA-Z0-9_]*$/.test(name);
@@ -218,6 +229,26 @@ export const NodeInspector: React.FC<NodeInspectorProps> = ({
         ? `${prev.description}\n\n${markdownImage}`
         : markdownImage,
     }));
+  };
+
+  const handleGenerate = async () => {
+    if (!aiPrompt.trim()) return;
+    setIsGenerating(true);
+    try {
+      const result = await api.generateFunction(aiPrompt, data.code);
+      setData((prev) => ({
+        ...prev,
+        code: result.code,
+        description: result.description,
+      }));
+      setInputs(result.inputs.map((k) => ({ key: k, socket_type: 'any' })));
+      setOutputs(result.outputs.map((k) => ({ key: k, socket_type: 'any' })));
+    } catch (e: any) {
+      console.error(e);
+      alert(`AI Generation failed: ${e.message}`);
+    } finally {
+      setIsGenerating(false);
+    }
   };
 
   return (
@@ -506,6 +537,57 @@ export const NodeInspector: React.FC<NodeInspectorProps> = ({
 
         {node.type === 'function' && (
           <>
+            {aiEnabled && (
+              <div
+                className="form-group"
+                style={{
+                  border: '1px solid #6b7280',
+                  padding: '10px',
+                  borderRadius: '4px',
+                  background: 'rgba(55, 65, 81, 0.3)',
+                }}
+              >
+                <label
+                  htmlFor="ai-prompt"
+                  style={{
+                    display: 'flex',
+                    justifyContent: 'space-between',
+                    alignItems: 'center',
+                  }}
+                >
+                  <span>Generate with Gemini AI</span>
+                  {isGenerating && (
+                    <span style={{ fontSize: '0.8em', color: '#9c27b0' }}>
+                      Generating...
+                    </span>
+                  )}
+                </label>
+                <div style={{ display: 'flex', gap: '8px' }}>
+                  <input
+                    id="ai-prompt"
+                    value={aiPrompt}
+                    onChange={(e) => setAiPrompt(e.target.value)}
+                    placeholder="e.g. Calculate the hypotenuse of a right angle triangle"
+                    style={{ flex: 1 }}
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter' && !isGenerating) {
+                        e.preventDefault();
+                        handleGenerate();
+                      }
+                    }}
+                  />
+                  <button
+                    type="button"
+                    onClick={handleGenerate}
+                    disabled={isGenerating || !aiPrompt.trim()}
+                    style={{ whiteSpace: 'nowrap' }}
+                  >
+                    Generate
+                  </button>
+                </div>
+              </div>
+            )}
+
             <div className="form-group">
               <label htmlFor="node-code">Python Code:</label>
               <div style={{ overflow: 'auto' }}>

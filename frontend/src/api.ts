@@ -51,7 +51,41 @@ export interface ConnectionData {
   target_port: string;
 }
 
+export interface GenerateFunctionResponse {
+  code: string;
+  inputs: string[];
+  outputs: string[];
+  description: string;
+}
+
 export const api = {
+  // GENAI
+  async getGenAIConfig(): Promise<{ enabled: boolean }> {
+    try {
+      const res = await fetch(`${API_BASE}/api/genai/config`, {
+        headers: getHeaders(),
+      });
+      if (!res.ok) return { enabled: false };
+      return res.json();
+    } catch (e) {
+      console.error('Failed to fetch GenAI config', e);
+      return { enabled: false };
+    }
+  },
+
+  async generateFunction(
+    prompt: string,
+    existingCode: string = '',
+  ): Promise<GenerateFunctionResponse> {
+    const res = await fetch(`${API_BASE}/api/genai/generate_function`, {
+      method: 'POST',
+      headers: getHeaders({ 'Content-Type': 'application/json' }),
+      body: JSON.stringify({ prompt, existing_code: existingCode }),
+    });
+    if (!res.ok) throw new Error('Failed to generate function');
+    return res.json();
+  },
+
   async listSheets(): Promise<SheetSummary[]> {
     const res = await fetch(`${API_BASE}/sheets/`, {
       headers: getHeaders(),
