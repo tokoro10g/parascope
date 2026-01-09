@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import toast from 'react-hot-toast';
 import { Group, Panel, Separator } from 'react-resizable-panels';
 import {
   useLocation,
@@ -15,10 +16,7 @@ import { useSheetCalculation } from '../hooks/useSheetCalculation';
 import { useSheetManager } from '../hooks/useSheetManager';
 import { useUnsavedChanges } from '../hooks/useUnsavedChanges';
 import { createEditor, type ParascopeNode } from '../rete';
-import {
-  createSocket,
-  extractValuesFromResult,
-} from '../utils';
+import { createSocket, extractValuesFromResult } from '../utils';
 import { EditorBar } from './EditorBar';
 import { NavBar } from './NavBar';
 import { NodeInspector } from './NodeInspector';
@@ -41,12 +39,8 @@ export const SheetEditor: React.FC = () => {
   const [searchParams, setSearchParams] = useSearchParams();
   const [ref, editor] = useRete(createEditor);
   const [nodes, setNodes] = useState<ParascopeNode[]>([]);
-  const {
-    isCalculating,
-    lastResult,
-    setLastResult,
-    calculatePreview,
-  } = useSheetCalculation(editor);
+  const { isCalculating, lastResult, setLastResult, calculatePreview } =
+    useSheetCalculation(editor);
   const [evaluatorInputs, setEvaluatorInputs] = useState<
     Record<string, string>
   >({});
@@ -204,11 +198,7 @@ export const SheetEditor: React.FC = () => {
 
       triggerAutoCalculation();
     },
-    [
-      setSearchParams,
-      editor,
-      triggerAutoCalculation,
-    ],
+    [setSearchParams, editor, triggerAutoCalculation],
   );
 
   const {
@@ -306,8 +296,8 @@ export const SheetEditor: React.FC = () => {
   }, [editor, evaluatorInputs, lastResult]);
 
   const onSave = useCallback(() => {
-      handleSaveSheet(getExportData());
-  }, [handleSaveSheet, getExportData])
+    handleSaveSheet(getExportData());
+  }, [handleSaveSheet, getExportData]);
 
   // Keyboard Shortcuts for Undo/Redo
   useEffect(() => {
@@ -343,7 +333,6 @@ export const SheetEditor: React.FC = () => {
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, [editor, onSave]);
-
 
   const handleAddNode = async (
     type: 'parameter' | 'function' | 'input' | 'output' | 'sheet',
@@ -420,7 +409,7 @@ export const SheetEditor: React.FC = () => {
       await addNode(type, label, inputs, outputs, data, centerPos);
     } catch (e) {
       console.error(e);
-      alert(`Error importing sheet: ${e}`);
+      toast.error(`Error importing sheet: ${e}`);
     }
   };
 
@@ -490,7 +479,7 @@ export const SheetEditor: React.FC = () => {
       }
     } catch (e: any) {
       console.error(e);
-      alert(`Error calculating: ${e.message}`);
+      toast.error(`Error calculating: ${e.message}`);
     }
   };
 

@@ -7,7 +7,8 @@ export const formatHumanReadableValue = (value: string): string => {
   if (Number.isNaN(valueAsNumber)) {
     return value;
   }
-  const isTooLong = Math.abs(valueAsNumber) >= 1e6 || Math.abs(valueAsNumber) < 1e-3;
+  const isTooLong =
+    Math.abs(valueAsNumber) >= 1e6 || Math.abs(valueAsNumber) < 1e-3;
   const numberFormat = new Intl.NumberFormat('en-US', {
     maximumSignificantDigits: 6,
     notation: isTooLong ? 'scientific' : 'standard',
@@ -119,7 +120,9 @@ export const resolveNestedSheetParams = (
   const node = editor.getNode(nodeId);
   if (!node?.initialData?.sheetId) return '';
 
-  const connections = editor.getConnections().filter((c) => c.target === nodeId);
+  const connections = editor
+    .getConnections()
+    .filter((c) => c.target === nodeId);
   const queryParams = new URLSearchParams();
 
   connections.forEach((c) => {

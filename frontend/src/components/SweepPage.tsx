@@ -1,7 +1,9 @@
-import React, { useEffect, useMemo, useState } from 'react';
-import { useNavigate, useParams } from 'react-router-dom';
-import ReactECharts from 'echarts-for-react';
 import type { EChartsOption } from 'echarts';
+import ReactECharts from 'echarts-for-react';
+import type React from 'react';
+import { useEffect, useMemo, useState } from 'react';
+import toast from 'react-hot-toast';
+import { useNavigate, useParams } from 'react-router-dom';
 import { api, type Sheet, type SweepResultStep } from '../api';
 import { useAuth } from '../contexts/AuthContext';
 import { NavBar } from './NavBar';
@@ -18,8 +20,10 @@ export const SweepPage: React.FC = () => {
   const [endValue, setEndValue] = useState<string>('10');
   const [increment, setIncrement] = useState<string>('1');
   const [outputNodeIds, setOutputNodeIds] = useState<string[]>([]);
-  const [inputOverrides, setInputOverrides] = useState<Record<string, string>>({});
-  
+  const [inputOverrides, setInputOverrides] = useState<Record<string, string>>(
+    {},
+  );
+
   const [results, setResults] = useState<SweepResultStep[] | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -33,24 +37,29 @@ export const SweepPage: React.FC = () => {
 
   useEffect(() => {
     if (sheetId) {
-      api.getSheet(sheetId).then((loadedSheet) => {
-        setSheet(loadedSheet);
-        // Initialize overrides with default values
-        const defaults: Record<string, string> = {};
-        loadedSheet.nodes.forEach(n => {
+      api
+        .getSheet(sheetId)
+        .then((loadedSheet) => {
+          setSheet(loadedSheet);
+          // Initialize overrides with default values
+          const defaults: Record<string, string> = {};
+          loadedSheet.nodes.forEach((n) => {
             if (['parameter', 'input'].includes(n.type)) {
-                if (n.data && n.data.value !== undefined) {
-                    defaults[n.id!] = String(n.data.value);
-                } else {
-                    defaults[n.id!] = '0';
-                }
+              if (n.data && n.data.value !== undefined) {
+                defaults[n.id!] = String(n.data.value);
+              } else {
+                defaults[n.id!] = '0';
+              }
             }
+          });
+          setInputOverrides(defaults);
+        })
+        .catch((err) => {
+          console.error(err);
+          const msg = 'Failed to load sheet.';
+          setError(msg);
+          toast.error(msg);
         });
-        setInputOverrides(defaults);
-      }).catch((err) => {
-        console.error(err);
-        setError('Failed to load sheet.');
-      });
     }
   }, [sheetId]);
 
@@ -75,7 +84,7 @@ export const SweepPage: React.FC = () => {
 
     const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
     mediaQuery.addEventListener('change', updateTheme);
-    
+
     // Slight delay to ensure CSS is applied
     const timer = setTimeout(updateTheme, 100);
 
@@ -101,7 +110,7 @@ export const SweepPage: React.FC = () => {
   const handleSweepInputChange = (id: string) => {
     setInputNodeId(id);
     const currentVal = parseFloat(inputOverrides[id] || '0');
-    if (!isNaN(currentVal)) {
+    if (!Number.isNaN(currentVal)) {
       if (currentVal === 0) {
         setStartValue('0');
         setEndValue('10');
@@ -122,7 +131,7 @@ export const SweepPage: React.FC = () => {
     if (!sheetId) return;
     setLoading(true);
     setError(null);
-    setResults(null); 
+    setResults(null);
     try {
       if (!inputNodeId) throw new Error('Please select an input parameter.');
       if (outputNodeIds.length === 0)
@@ -132,16 +141,21 @@ export const SweepPage: React.FC = () => {
       const end = parseFloat(endValue);
       const step = parseFloat(increment);
 
-      if (isNaN(start) || isNaN(end) || isNaN(step) || step === 0) {
+      if (
+        Number.isNaN(start) ||
+        Number.isNaN(end) ||
+        Number.isNaN(step) ||
+        step === 0
+      ) {
         throw new Error('Invalid numeric inputs. Increment must be non-zero.');
       }
 
       // Construct overrides, excluding the swept node
       const currentOverrides: Record<string, string> = {};
       Object.entries(inputOverrides).forEach(([id, val]) => {
-          if (id !== inputNodeId) {
-              currentOverrides[id] = val;
-          }
+        if (id !== inputNodeId) {
+          currentOverrides[id] = val;
+        }
       });
 
       const res = await api.sweepSheet(
@@ -151,11 +165,13 @@ export const SweepPage: React.FC = () => {
         endValue,
         increment,
         outputNodeIds,
-        currentOverrides
+        currentOverrides,
       );
       setResults(res.results);
     } catch (e: any) {
-      setError(e.message || 'An error occurred during sweep.');
+      const msg = e.message || 'An error occurred during sweep.';
+      setError(msg);
+      toast.error(msg);
     } finally {
       setLoading(false);
     }
@@ -185,9 +201,9 @@ export const SweepPage: React.FC = () => {
     const series = plottedIds.map((id) => {
       const node = nodes.find((n) => n.id === id);
       const label = node ? node.label : id;
-      
-      const data = results.map(r => [r.input_value, r.outputs[id]]);
-      
+
+      const data = results.map((r) => [r.input_value, r.outputs[id]]);
+
       return {
         name: label,
         type: 'line',
@@ -210,7 +226,7 @@ export const SweepPage: React.FC = () => {
         },
         backgroundColor: theme.grid,
         textStyle: {
-          color: theme.text
+          color: theme.text,
         },
         borderColor: theme.text,
       },
@@ -272,7 +288,7 @@ export const SweepPage: React.FC = () => {
       },
       series: series as any,
     };
-  }, [results, outputNodeIds, nodes, theme, selectedInputLabel]);
+  }, [results, nodes, theme, selectedInputLabel]);
 
   return (
     <div className="sweep-page">
@@ -282,75 +298,181 @@ export const SweepPage: React.FC = () => {
         <aside className="sweep-sidebar">
           <h3>Inputs</h3>
           <div className="sweep-table-container">
-              <table className="sweep-table">
-                  <thead>
-                      <tr>
-                          <th style={{width: '60px', textAlign: 'center'}}>Sweep</th>
-                          <th style={{width: '200px'}}>Name</th>
-                          <th>Value / Range</th>
-                      </tr>
-                  </thead>
-                  <tbody>
-                      {inputOptions.map(n => {
-                          const isSweeping = inputNodeId === n.id;
-                          return (
-                              <tr key={n.id}>
-                                  <td style={{textAlign: 'center', verticalAlign: 'middle'}}>
-                                      <input 
-                                        type="radio" 
-                                        name="sweep-input" 
-                                        checked={isSweeping} 
-                                        onChange={() => handleSweepInputChange(n.id!)}
-                                      />
-                                  </td>
-                                  <td style={{verticalAlign: 'middle'}}>
-                                      {n.label}
-                                  </td>
-                                  <td>
-                                      {isSweeping ? (
-                                          <div style={{display: 'flex', flexDirection: 'column', gap: '4px'}}>
-                                              <div style={{display: 'flex', alignItems: 'center', gap: '8px'}}>
-                                                  <label style={{minWidth: '75px', fontSize: '0.8em', color: 'var(--text-secondary)'}}>Start</label>
-                                                  <input type="text" value={startValue} onChange={e => setStartValue(e.target.value)} style={{flex: 1}} />
-                                              </div>
-                                              <div style={{display: 'flex', alignItems: 'center', gap: '8px'}}>
-                                                  <label style={{minWidth: '75px', fontSize: '0.8em', color: 'var(--text-secondary)'}}>End</label>
-                                                  <input type="text" value={endValue} onChange={e => setEndValue(e.target.value)} style={{flex: 1}} />
-                                              </div>
-                                              <div style={{display: 'flex', alignItems: 'center', gap: '8px'}}>
-                                                  <label style={{minWidth: '75px', fontSize: '0.8em', color: 'var(--text-secondary)'}}>Increment</label>
-                                                  <input type="text" value={increment} onChange={e => setIncrement(e.target.value)} style={{flex: 1}} />
-                                              </div>
-                                          </div>
-                                      ) : (
-                                          <input 
-                                            type="text" 
-                                            value={inputOverrides[n.id!] || ''} 
-                                            onChange={(e) => setInputOverrides(prev => ({...prev, [n.id!]: e.target.value}))}
-                                            style={{width: '100%'}}
-                                          />
-                                      )}
-                                  </td>
-                              </tr>
-                          );
-                      })}
-                  </tbody>
-              </table>
-          </div>
-
-          <h3>Outputs</h3>
-          <div className="sweep-table-container" style={{ flex: 1, overflowY: 'auto' }}>
             <table className="sweep-table">
               <thead>
                 <tr>
-                  <th style={{width: '60px', textAlign: 'center'}}>Plot</th>
+                  <th style={{ width: '60px', textAlign: 'center' }}>Sweep</th>
+                  <th style={{ width: '200px' }}>Name</th>
+                  <th>Value / Range</th>
+                </tr>
+              </thead>
+              <tbody>
+                {inputOptions.map((n) => {
+                  const isSweeping = inputNodeId === n.id;
+                  return (
+                    <tr key={n.id}>
+                      <td
+                        style={{ textAlign: 'center', verticalAlign: 'middle' }}
+                      >
+                        <input
+                          type="radio"
+                          name="sweep-input"
+                          checked={isSweeping}
+                          onChange={() => handleSweepInputChange(n.id!)}
+                        />
+                      </td>
+                      <td style={{ verticalAlign: 'middle' }}>{n.label}</td>
+                      <td>
+                        {isSweeping ? (
+                          <div
+                            style={{
+                              display: 'flex',
+                              flexDirection: 'column',
+                              gap: '4px',
+                            }}
+                          >
+                            <div
+                              style={{
+                                display: 'flex',
+                                alignItems: 'center',
+                                gap: '8px',
+                              }}
+                            >
+                              <label
+                                style={{
+                                  display: 'flex',
+                                  alignItems: 'center',
+                                  gap: '8px',
+                                  width: '100%',
+                                }}
+                              >
+                                <span
+                                  style={{
+                                    minWidth: '75px',
+                                    fontSize: '0.8em',
+                                    color: 'var(--text-secondary)',
+                                  }}
+                                >
+                                  Start
+                                </span>
+                                <input
+                                  type="text"
+                                  value={startValue}
+                                  onChange={(e) =>
+                                    setStartValue(e.target.value)
+                                  }
+                                  style={{ flex: 1 }}
+                                />
+                              </label>
+                            </div>
+                            <div
+                              style={{
+                                display: 'flex',
+                                alignItems: 'center',
+                                gap: '8px',
+                              }}
+                            >
+                              <label
+                                style={{
+                                  display: 'flex',
+                                  alignItems: 'center',
+                                  gap: '8px',
+                                  width: '100%',
+                                }}
+                              >
+                                <span
+                                  style={{
+                                    minWidth: '75px',
+                                    fontSize: '0.8em',
+                                    color: 'var(--text-secondary)',
+                                  }}
+                                >
+                                  End
+                                </span>
+                                <input
+                                  type="text"
+                                  value={endValue}
+                                  onChange={(e) => setEndValue(e.target.value)}
+                                  style={{ flex: 1 }}
+                                />
+                              </label>
+                            </div>
+                            <div
+                              style={{
+                                display: 'flex',
+                                alignItems: 'center',
+                                gap: '8px',
+                              }}
+                            >
+                              <label
+                                style={{
+                                  display: 'flex',
+                                  alignItems: 'center',
+                                  gap: '8px',
+                                  width: '100%',
+                                }}
+                              >
+                                <span
+                                  style={{
+                                    minWidth: '75px',
+                                    fontSize: '0.8em',
+                                    color: 'var(--text-secondary)',
+                                  }}
+                                >
+                                  Increment
+                                </span>
+                                <input
+                                  type="text"
+                                  value={increment}
+                                  onChange={(e) => setIncrement(e.target.value)}
+                                  style={{ flex: 1 }}
+                                />
+                              </label>
+                            </div>
+                          </div>
+                        ) : (
+                          <input
+                            type="text"
+                            value={inputOverrides[n.id!] || ''}
+                            onChange={(e) =>
+                              setInputOverrides((prev) => ({
+                                ...prev,
+                                [n.id!]: e.target.value,
+                              }))
+                            }
+                            style={{ width: '100%' }}
+                          />
+                        )}
+                      </td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          </div>
+
+          <h3>Outputs</h3>
+          <div
+            className="sweep-table-container"
+            style={{ flex: 1, overflowY: 'auto' }}
+          >
+            <table className="sweep-table">
+              <thead>
+                <tr>
+                  <th style={{ width: '60px', textAlign: 'center' }}>Plot</th>
                   <th>Name</th>
                 </tr>
               </thead>
               <tbody>
                 {outputOptions.map((n) => (
-                  <tr key={n.id} onClick={() => toggleOutput(n.id!)} style={{cursor: 'pointer'}}>
-                    <td style={{textAlign: 'center', verticalAlign: 'middle'}}>
+                  <tr
+                    key={n.id}
+                    onClick={() => toggleOutput(n.id!)}
+                    style={{ cursor: 'pointer' }}
+                  >
+                    <td
+                      style={{ textAlign: 'center', verticalAlign: 'middle' }}
+                    >
                       <input
                         type="checkbox"
                         checked={outputNodeIds.includes(n.id!)}
@@ -368,20 +490,31 @@ export const SweepPage: React.FC = () => {
           {error && <div className="error-message">{error}</div>}
 
           <button
+            type="button"
             className="btn-primary"
             onClick={handleRun}
             disabled={loading}
-            style={{marginTop: 'auto'}}
+            style={{ marginTop: 'auto' }}
           >
             {loading ? 'Running...' : 'Run Sweep'}
           </button>
         </aside>
 
         <main className="sweep-main">
-          <h2 style={{ margin: '0 0 20px 0', fontSize: '1.5em' }}>{sheet?.name || 'Loading...'}</h2>
-          
+          <h2 style={{ margin: '0 0 20px 0', fontSize: '1.5em' }}>
+            {sheet?.name || 'Loading...'}
+          </h2>
+
           {results ? (
-            <div className="chart-container" style={{ position: 'relative', flex: 1, width: '100%', minHeight: 0 }}>
+            <div
+              className="chart-container"
+              style={{
+                position: 'relative',
+                flex: 1,
+                width: '100%',
+                minHeight: 0,
+              }}
+            >
               <ReactECharts
                 option={echartsOption}
                 style={{ height: '100%', width: '100%' }}
@@ -399,7 +532,7 @@ export const SweepPage: React.FC = () => {
                 color: '#888',
                 border: '2px dashed var(--border-color)',
                 borderRadius: '8px',
-                minHeight: '200px'
+                minHeight: '200px',
               }}
             >
               <p>Configure inputs and run the sweep to see results.</p>

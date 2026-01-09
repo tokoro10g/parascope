@@ -41,7 +41,7 @@ export function useSheetManager(
         document.title = `Parascope - ${sheet.name}`;
       } catch (e) {
         console.error(e);
-        alert(`Error loading sheet: ${e}`);
+        toast.error(`Error loading sheet: ${e}`);
       } finally {
         setIsLoading(false);
       }
@@ -49,39 +49,42 @@ export function useSheetManager(
     [onLoadSuccess, setIsDirty],
   );
 
-  const handleSaveSheet = useCallback(async (graphData: { nodes: any[], connections: any[] }) => {
-    if (!currentSheet) return;
+  const handleSaveSheet = useCallback(
+    async (graphData: { nodes: any[]; connections: any[] }) => {
+      if (!currentSheet) return;
 
-    const performSave = async () => {
-      // graphData is passed in
-      const { nodes, connections } = graphData;
-      
-      return await api.updateSheet(currentSheet.id, {
-        nodes,
-        connections,
-      });
-    };
+      const performSave = async () => {
+        // graphData is passed in
+        const { nodes, connections } = graphData;
 
-    try {
-      const updatedSheet = await pRetry(performSave, {
-        retries: 3,
-        onFailedAttempt: (error) => {
-          console.warn(
-            `Save attempt ${error.attemptNumber} failed. There are ${error.retriesLeft} retries left.`,
-          );
-        },
-      });
+        return await api.updateSheet(currentSheet.id, {
+          nodes,
+          connections,
+        });
+      };
 
-      if (updatedSheet) {
-        setCurrentSheet(updatedSheet);
-        setIsDirty(false);
-        toast.success('Sheet saved successfully');
+      try {
+        const updatedSheet = await pRetry(performSave, {
+          retries: 3,
+          onFailedAttempt: (error) => {
+            console.warn(
+              `Save attempt ${error.attemptNumber} failed. There are ${error.retriesLeft} retries left.`,
+            );
+          },
+        });
+
+        if (updatedSheet) {
+          setCurrentSheet(updatedSheet);
+          setIsDirty(false);
+          toast.success('Sheet saved successfully');
+        }
+      } catch (e) {
+        console.error('Final save attempt failed:', e);
+        toast.error('Error saving sheet after 3 attempts.');
       }
-    } catch (e) {
-      console.error('Final save attempt failed:', e);
-      toast.error('Error saving sheet after 3 attempts.');
-    }
-  }, [currentSheet, setIsDirty]);
+    },
+    [currentSheet, setIsDirty],
+  );
 
   const handleRenameSheet = useCallback(
     async (name: string) => {
@@ -92,7 +95,7 @@ export function useSheetManager(
         toast.success('Sheet renamed successfully');
       } catch (e) {
         console.error(e);
-        alert(`Error renaming sheet: ${e}`);
+        toast.error(`Error renaming sheet: ${e}`);
       }
     },
     [currentSheet],

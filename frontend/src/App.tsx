@@ -1,9 +1,5 @@
 import { Toaster } from 'react-hot-toast';
-import {
-  Outlet,
-  RouterProvider,
-  createBrowserRouter,
-} from 'react-router-dom';
+import { createBrowserRouter, Outlet, RouterProvider } from 'react-router-dom';
 import { Dashboard } from './components/Dashboard';
 import { Login } from './components/Login';
 import { RequireAuth } from './components/RequireAuth';

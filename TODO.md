@@ -99,7 +99,6 @@ Generated from `SPECIFICATIONS.tsv`.
     - [x] Implement Sheet Duplication action (UI-12.0).
     - [x] Implement "Copy Link" action on Dashboard (UI-13.0).
     - [x] Implement Sheet Name editor (UI-14.0).
-    - [ ] Implement Console/Log viewer for selected node (UI-18.0).
     - [x] Implement "Unsaved Changes" indicator (UI-20.0).
     - [x] Trigger unsaved state on Parameter value/Function code changes (UI-25.0).
     - [x] Implement distinct visual style for Nested Sheet nodes (UI-21.0).
@@ -135,8 +134,9 @@ Generated from `SPECIFICATIONS.tsv`.
 
 ## 6. Future Scope (Post-Initial)
 - [ ] **Concurrency**: Sheet-level mutex (FS-C-01.0, EH-08.0).
-- [ ] **Attachments**: Image uploads for Parameters, Functions, Sheets (FS-A-01.0 - FS-A-03.0).
+- [x] **Attachments**: Image uploads for Parameters, Functions, Sheets (FS-A-01.0 - FS-A-03.0).
 - [ ] **Notifications**: Owner-based change notifications (FS-N-01.0 - FS-N-04.0).
 - [ ] **Advanced Math**: Numerical optimization (FS-O-01.0), Overflow handling (EH-07.0).
 - [ ] **Versioning**: Audit logs, History querying, Rollbacks (FS-V-01.0 - FS-V-03.0).
 - [ ] **IDE**: Python code completion (FS-IDE-01.0).
+- [ ] **Feedback**: Implement Console/Log viewer for selected node (UI-18.0).

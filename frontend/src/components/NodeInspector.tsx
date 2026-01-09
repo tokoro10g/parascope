@@ -39,7 +39,7 @@ export const NodeInspector: React.FC<NodeInspectorProps> = ({
     { key: string; socket_type: string }[]
   >([]);
   const [showPreview, setShowPreview] = useState(false);
-  
+
   // AI State
   const [aiPrompt, setAiPrompt] = useState('');
   const [isGenerating, setIsGenerating] = useState(false);
@@ -605,7 +605,6 @@ export const NodeInspector: React.FC<NodeInspectorProps> = ({
 
         {node.type === 'function' && (
           <>
-
             <div className="form-group">
               <label htmlFor="node-code">Python Code:</label>
               <div style={{ overflow: 'auto' }}>

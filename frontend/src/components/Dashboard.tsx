@@ -40,6 +40,7 @@ export const Dashboard: React.FC = () => {
       setFolders(foldersData);
     } catch (e) {
       console.error('Failed to load data', e);
+      toast.error('Failed to load dashboard data');
     }
   }, []);
 
@@ -63,7 +64,7 @@ export const Dashboard: React.FC = () => {
       navigate(`/sheet/${sheet.id}`);
     } catch (e) {
       console.error(e);
-      alert(`Error creating sheet: ${e}`);
+      toast.error(`Error creating sheet: ${e}`);
     }
   };
 
@@ -74,8 +75,9 @@ export const Dashboard: React.FC = () => {
         await api.createFolder(name, currentFolderId);
         toast.success('Folder created successfully');
         loadData();
-      } catch (_e) {
-        alert('Failed to create folder');
+      } catch (e) {
+        console.error(e);
+        toast.error('Failed to create folder');
       }
     }
   };
@@ -89,7 +91,7 @@ export const Dashboard: React.FC = () => {
       loadData();
     } catch (e: any) {
       console.error(e);
-      alert(`Error duplicating sheet: ${e.message || e}`);
+      toast.error(`Error duplicating sheet: ${e.message || e}`);
     }
   };
 
@@ -112,7 +114,7 @@ export const Dashboard: React.FC = () => {
       loadData();
     } catch (e: any) {
       console.error(e);
-      alert(`Error deleting sheet: ${e.message || e}`);
+      toast.error(`Error deleting sheet: ${e.message || e}`);
     }
   };
 
@@ -132,7 +134,7 @@ export const Dashboard: React.FC = () => {
       loadData();
     } catch (e: any) {
       console.error(e);
-      alert(`Error deleting folder: ${e.message || e}`);
+      toast.error(`Error deleting folder: ${e.message || e}`);
     }
   };
 
@@ -151,7 +153,7 @@ export const Dashboard: React.FC = () => {
         loadData();
       } catch (e) {
         console.error(e);
-        alert('Failed to move sheet');
+        toast.error('Failed to move sheet');
       }
     }
     setMoveModalOpen(false);
