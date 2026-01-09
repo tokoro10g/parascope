@@ -258,6 +258,34 @@ export const api = {
     }
     return res.json();
   },
+
+  async sweepSheet(
+    sheetId: string,
+    inputNodeId: string,
+    startValue: number,
+    endValue: number,
+    steps: number,
+    outputNodeIds: string[],
+    inputOverrides?: Record<string, any>,
+  ): Promise<SweepResponse> {
+    const res = await fetch(`${API_BASE}/sheets/${sheetId}/sweep`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        input_node_id: inputNodeId,
+        start_value: startValue,
+        end_value: endValue,
+        steps,
+        output_node_ids: outputNodeIds,
+        input_overrides: inputOverrides,
+      }),
+    });
+    if (!res.ok) {
+      const err = await res.json();
+      throw new Error(err.detail || 'Sweep failed');
+    }
+    return res.json();
+  },
 };
 
 export interface NodeResult {
@@ -268,4 +296,14 @@ export interface NodeResult {
   outputs: Record<string, any>;
   valid?: boolean;
   error?: string;
+}
+
+export interface SweepResultStep {
+  input_value: number;
+  outputs: Record<string, any>;
+  error?: string | null;
+}
+
+export interface SweepResponse {
+  results: SweepResultStep[];
 }

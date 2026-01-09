@@ -16,6 +16,8 @@
     "@types/three": "^0.156.0",
     "@uiw/react-textarea-code-editor": "^3.1.1",
     "d3-shape": "^3.2.0",
+    "echarts": "^6.0.0",
+    "echarts-for-react": "^3.0.5",
     "elkjs": "^0.8.2",
     "js-cookie": "^3.0.5",
     "katex": "^0.16.27",
