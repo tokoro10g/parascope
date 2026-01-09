@@ -33,6 +33,8 @@ const { Common, Subitems } = ReactPresets.contextMenu;
 
 type AreaExtra = Area2D<Schemes> | ReactArea2D<Schemes> | ContextMenuExtra;
 
+export type NodeEditorWrapper = Awaited<ReturnType<typeof createEditor>>;
+
 export async function createEditor(container: HTMLElement) {
   const editor = new NodeEditor<Schemes>();
   const area = new AreaPlugin<Schemes, AreaExtra>(container);

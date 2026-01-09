@@ -1,4 +1,6 @@
+import type { NodeEditor } from 'rete';
 import { api, type NodeResult, type Sheet } from './api';
+import type { Schemes } from './rete/types';
 
 export const formatHumanReadableValue = (value: string): string => {
   const valueAsNumber = Number.parseFloat(value);
@@ -106,4 +108,51 @@ export const syncNestedSheets = async (
   );
 
   return { updatedNodes, connectionsChanged, validConnectionIds };
+};
+
+export const resolveNestedSheetParams = (
+  editor: NodeEditor<Schemes>,
+  nodeId: string,
+  lastResult: any,
+  evaluatorInputs: any,
+): string => {
+  const node = editor.getNode(nodeId);
+  if (!node?.initialData?.sheetId) return '';
+
+  const connections = editor.getConnections().filter((c) => c.target === nodeId);
+  const queryParams = new URLSearchParams();
+
+  connections.forEach((c) => {
+    const sourceId = c.source;
+    const inputKey = c.targetInput;
+    let value: any;
+
+    // 1. Check lastResult (calculated values)
+    if (lastResult && sourceId in lastResult) {
+      const nodeResult = lastResult[sourceId];
+      value = nodeResult?.outputs?.[c.sourceOutput];
+    }
+    // 2. Check evaluatorInputs (if source is an input node)
+    else if (evaluatorInputs && sourceId in evaluatorInputs) {
+      value = evaluatorInputs[sourceId];
+    }
+    // 3. Check node control value (fallback for constants/inputs)
+    else {
+      const sourceNode = editor.getNode(sourceId);
+      if (sourceNode?.controls?.value) {
+        const control = sourceNode.controls.value as any;
+        if (control && control.value !== undefined) {
+          value = control.value;
+        }
+      }
+    }
+
+    if (value !== undefined) {
+      const stringValue =
+        typeof value === 'object' ? JSON.stringify(value) : String(value);
+      queryParams.set(inputKey, stringValue);
+    }
+  });
+
+  return queryParams.toString();
 };
