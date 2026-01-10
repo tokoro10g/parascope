@@ -1,8 +1,8 @@
 /* Override default node styles if necessary */
 
-/* Constant Node - Green */
+/* Constant Node - Pink */
 .node-constant .title {
-  background: #4caf50;
+  background: #ec407a;
   border-radius: 8px 8px 0px 0px;
   color: white;
   padding-right: 30px;
@@ -24,9 +24,9 @@
   padding-right: 30px;
 }
 
-/* Output Node - Purple */
+/* Output Node - Green */
 .node-output .title {
-  background: #9c27b0;
+  background: #4caf50;
   border-radius: 8px 8px 0px 0px;
   color: white;
   padding-right: 30px;

@@ -4,10 +4,10 @@ import { Presets } from 'rete-react-plugin';
 import './custom-node.css';
 
 const styles: Record<string, { background: string; borderColor: string }> = {
-  constant: { background: 'rgba(110, 218, 110, 0.8)', borderColor: '#4caf50' },
+  constant: { background: 'rgba(236, 64, 122, 0.8)', borderColor: '#ec407a' },
   function: { background: 'rgba(100, 181, 246, 0.8)', borderColor: '#2196f3' },
   input: { background: 'rgba(255, 183, 77, 0.8)', borderColor: '#ff9800' },
-  output: { background: 'rgba(186, 104, 200, 0.8)', borderColor: '#9c27b0' },
+  output: { background: 'rgba(110, 218, 110, 0.8)', borderColor: '#4caf50' },
   sheet: { background: 'rgba(77, 208, 225, 0.8)', borderColor: '#00bcd4' },
 };
 
