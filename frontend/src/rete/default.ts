@@ -132,11 +132,20 @@ export async function createEditor(container: HTMLElement) {
       const now = Date.now();
       if (lastNodePicked === nodeId && now - lastNodePickedTime < 300) {
         if (onNodeDoubleClick) {
-          onNodeDoubleClick(nodeId);
+          const callback = onNodeDoubleClick;
+          // Wait for mouse release to avoid sticky drag state
+          window.addEventListener(
+            'pointerup',
+            () => {
+              callback(nodeId);
+            },
+            { once: true }
+          );
         }
+      } else {
+        lastNodePicked = nodeId;
+        lastNodePickedTime = now;
       }
-      lastNodePicked = nodeId;
-      lastNodePickedTime = now;
     }
     if (context.type === 'zoom' && context.data.source === 'dblclick') return;
     return context;
