@@ -9,6 +9,21 @@ import type { ParascopeNode } from '../rete';
 import './SheetTable.css';
 import { formatHumanReadableValue } from '../utils';
 
+interface ScrollButtonProps {
+  onClick: () => void;
+}
+
+const ScrollButton: React.FC<ScrollButtonProps> = ({ onClick }) => (
+  <button
+    type="button"
+    onClick={onClick}
+    className="scroll-indicator-button"
+    title="Scroll to bottom"
+  >
+    <ChevronDown size={20} />
+  </button>
+);
+
 interface SheetTableProps {
   nodes: ParascopeNode[];
   onUpdateValue: (nodeId: string, value: string) => void;
@@ -199,33 +214,14 @@ export const SheetTable: React.FC<SheetTableProps> = ({
   };
 
   return (
-    <div
-      className="sheet-table"
-      style={{
-        display: 'flex',
-        flexDirection: 'column',
-        height: '100%',
-        overflow: 'hidden',
-      }}
-    >
-      <div
-        style={{
-          flex: '0 0 auto',
-          maxHeight: '50%',
-          display: 'flex',
-          flexDirection: 'column',
-          borderBottom: '1px solid var(--border-color)',
-          paddingBottom: '10px',
-          marginBottom: '10px',
-        }}
-      >
-        <div style={{ marginBottom: '10px' }}>
+    <div className="sheet-table">
+      <div className="sheet-table-constants-section">
+        <div className="sheet-table-controls">
           <button
             type="button"
             onClick={onCalculate}
             disabled={isCalculating}
             className="run-button"
-            style={{ width: '100%' }}
             title="Run Calculation"
           >
             {isCalculating ? '...' : <Play size={14} fill="currentColor" />}
@@ -235,7 +231,6 @@ export const SheetTable: React.FC<SheetTableProps> = ({
             type="button"
             onClick={onSweep}
             className="sweep-button"
-            style={{ width: '100%', marginTop: '5px' }}
             title="Sweep"
           >
             <LineChart size={14} />
@@ -255,41 +250,21 @@ export const SheetTable: React.FC<SheetTableProps> = ({
             </button>
           </div>
         </div>
-        <div style={{ position: 'relative', overflow: 'hidden', flex: 1 }}>
+        <div className="sheet-table-list-container">
           <div
             ref={tableContainerRef}
             onScroll={handleScroll}
-            style={{ overflowY: 'auto', padding: '0 10px', height: '100%' }}
+            className="sheet-table-scroll-area"
           >
             <table style={{ width: '100%', borderCollapse: 'collapse' }}>
               <thead>
                 <tr>
-                  <th
-                    style={{
-                      textAlign: 'left',
-                      borderBottom: '1px solid var(--border-color)',
-                    }}
-                  >
-                    Name
-                  </th>
-                  <th
-                    style={{
-                      textAlign: 'left',
-                      borderBottom: '1px solid var(--border-color)',
-                    }}
-                  >
-                    Type
-                  </th>
-                  <th
-                    style={{
-                      textAlign: 'left',
-                      borderBottom: '1px solid var(--border-color)',
-                    }}
-                  >
-                    Value
-                  </th>
+                  <th>Name</th>
+                  <th>Type</th>
+                  <th>Value</th>
                 </tr>
               </thead>
+
               <tbody>
                 {tableNodes.map((node) => {
                   const isEditable =
@@ -319,27 +294,18 @@ export const SheetTable: React.FC<SheetTableProps> = ({
                   const hasError = !!node.error;
 
                   return (
-                    <tr
-                      key={node.id}
-                      onClick={() => onSelectNode(node.id)}
-                      style={{ cursor: 'pointer' }}
-                    >
+                    <tr key={node.id} onClick={() => onSelectNode(node.id)}>
                       <td>{name}</td>
                       <td>{node.type}</td>
                       <td
-                        className={
+                        className={`sheet-table-cell-value ${
                           hasError && !isCalculating
                             ? 'value-error'
                             : !isEditable && displayValue !== '?'
                               ? 'value-blink'
                               : ''
-                        }
+                        }`}
                         data-error={hasError ? node.error : undefined}
-                        style={{
-                          textAlign: 'right',
-                          fontFamily: 'monospace',
-                          fontSize: '.8rem',
-                        }}
                       >
                         {isDropdown ? (
                           <select
@@ -348,10 +314,7 @@ export const SheetTable: React.FC<SheetTableProps> = ({
                               onUpdateValue(node.id, e.target.value);
                             }}
                             onClick={(e) => e.stopPropagation()} // Prevent row selection when editing
-                            style={{
-                              textAlign: 'right',
-                              fontFamily: 'monospace',
-                            }}
+                            className="sheet-table-input"
                           >
                             <option key="" value=""></option>
                             {node.initialData.options.map((opt: string) => (
@@ -368,10 +331,7 @@ export const SheetTable: React.FC<SheetTableProps> = ({
                               onUpdateValue(node.id, e.target.value)
                             }
                             onClick={(e) => e.stopPropagation()} // Prevent row selection when editing
-                            style={{
-                              textAlign: 'right',
-                              fontFamily: 'monospace',
-                            }}
+                            className="sheet-table-input"
                           />
                         ) : (
                           <span>{displayValue}</span>
@@ -383,57 +343,18 @@ export const SheetTable: React.FC<SheetTableProps> = ({
               </tbody>
             </table>
           </div>
-          {showScrollIndicator && (
-            <button
-              type="button"
-              onClick={scrollToBottom}
-              className="scroll-indicator-button"
-              title="Scroll to bottom"
-              style={{
-                position: 'absolute',
-                bottom: '10px',
-                left: '50%',
-                transform: 'translateX(-50%)',
-                width: '32px',
-                height: '32px',
-                borderRadius: '50%',
-                backgroundColor: 'var(--primary-color)',
-                color: 'white',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                boxShadow: '0 2px 10px rgba(0,0,0,0.2)',
-                border: 'none',
-                opacity: 0.8,
-                zIndex: 10,
-                padding: 0,
-                minWidth: '32px',
-                flexShrink: 0,
-              }}
-            >
-              <ChevronDown size={20} />
-            </button>
-          )}
+          {showScrollIndicator && <ScrollButton onClick={scrollToBottom} />}
         </div>
       </div>
 
-      <div
-        className="description-panel"
-        style={{
-          flex: 1,
-          overflow: 'hidden',
-          display: 'flex',
-          flexDirection: 'column',
-          position: 'relative',
-        }}
-      >
-        <div style={{ padding: '0 10px', flex: '0 0 auto' }}>
-          <h3 style={{ marginTop: 0 }}>Descriptions</h3>
+      <div className="description-panel">
+        <div className="description-panel-header">
+          <h3>Descriptions</h3>
         </div>
         <div
           ref={descriptionContainerRef}
           onScroll={handleDescriptionScroll}
-          style={{ flex: 1, overflowY: 'auto', padding: '0 10px' }}
+          className="description-list"
         >
           {descriptionNodes.map((node) => {
             const nameControl = node.controls.name as any;
@@ -444,50 +365,23 @@ export const SheetTable: React.FC<SheetTableProps> = ({
             if (!description && node.type !== 'sheet') return null;
 
             return (
-              <div
-                key={node.id}
-                style={{
-                  marginBottom: '8px',
-                  borderBottom: '1px solid var(--border-light)',
-                  paddingBottom: '8px',
-                }}
-              >
-                <h4
-                  style={{
-                    margin: '0 0 2px 0',
-                    fontSize: '0.85em',
-                    color: 'var(--text-secondary)',
-                    display: 'flex',
-                    justifyContent: 'space-between',
-                  }}
-                >
+              <div key={node.id} className="description-item">
+                <h4 className="description-item-header">
                   <span>{name}</span>
-                  <span
-                    style={{
-                      fontSize: '0.8em',
-                      fontWeight: 'normal',
-                      opacity: 0.7,
-                    }}
-                  >
-                    {node.type}
-                  </span>
+                  <span className="description-item-type">{node.type}</span>
                 </h4>
                 {node.type === 'sheet' && sheetId ? (
-                  <div style={{ fontSize: '0.85em' }}>
+                  <div className="description-item-sheet-link">
                     <a
                       href={`/sheet/${sheetId}`}
                       target="_blank"
                       rel="noreferrer"
-                      style={{ color: 'var(--link-color, #007bff)' }}
                     >
                       Open Referenced Sheet
                     </a>
                   </div>
                 ) : (
-                  <div
-                    className="markdown-body compact-markdown"
-                    style={{ fontSize: '0.85em', lineHeight: '1.3' }}
-                  >
+                  <div className="markdown-body compact-markdown description-markdown">
                     <ReactMarkdown
                       remarkPlugins={[remarkMath]}
                       rehypePlugins={[rehypeKatex]}
@@ -503,49 +397,11 @@ export const SheetTable: React.FC<SheetTableProps> = ({
           {descriptionNodes.every(
             (n) => !n.initialData?.description && n.type !== 'sheet',
           ) && (
-            <div
-              style={{
-                color: 'var(--text-muted)',
-                fontStyle: 'italic',
-                fontSize: '0.9em',
-                padding: '10px 0',
-                textAlign: 'center',
-              }}
-            >
-              No descriptions available
-            </div>
+            <div className="description-empty">No descriptions available</div>
           )}
         </div>
         {showDescriptionScrollIndicator && (
-          <button
-            type="button"
-            onClick={scrollToDescriptionBottom}
-            className="scroll-indicator-button"
-            title="Scroll to bottom"
-            style={{
-              position: 'absolute',
-              bottom: '10px',
-              left: '50%',
-              transform: 'translateX(-50%)',
-              width: '32px',
-              height: '32px',
-              borderRadius: '50%',
-              backgroundColor: 'var(--primary-color)',
-              color: 'white',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              boxShadow: '0 2px 10px rgba(0,0,0,0.2)',
-              border: 'none',
-              opacity: 0.8,
-              zIndex: 10,
-              padding: 0,
-              minWidth: '32px',
-              flexShrink: 0,
-            }}
-          >
-            <ChevronDown size={20} />
-          </button>
+          <ScrollButton onClick={scrollToDescriptionBottom} />
         )}
       </div>
     </div>

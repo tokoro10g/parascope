@@ -173,3 +173,152 @@
   line-height: 1.4;
   pointer-events: none;
 }
+
+.scroll-indicator-button {
+  position: absolute;
+  bottom: 10px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background-color: var(--primary-color);
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+  border: none;
+  opacity: 0.8;
+  z-index: 10;
+  padding: 0;
+  min-width: 32px;
+  flex-shrink: 0;
+  cursor: pointer;
+}
+
+.scroll-indicator-button:hover {
+  opacity: 1;
+}
+
+/* Extracted styles from SheetTable.tsx */
+
+.sheet-table {
+  overflow: hidden; /* Override overflow-y: auto from previous rule */
+}
+
+.sheet-table-constants-section {
+  flex: 0 0 auto;
+  max-height: 50%;
+  display: flex;
+  flex-direction: column;
+  border-bottom: 1px solid var(--border-color);
+  padding-bottom: 10px;
+  margin-bottom: 10px;
+}
+
+.sheet-table-controls {
+  margin-bottom: 10px;
+}
+
+.sheet-table .run-button {
+  width: 100%;
+}
+
+.sheet-table .sweep-button {
+  width: 100%;
+  margin-top: 5px;
+}
+
+.sheet-table-list-container {
+  position: relative;
+  overflow: hidden;
+  flex: 1;
+}
+
+.sheet-table-scroll-area {
+  overflow-y: auto;
+  padding: 0 10px;
+  height: 100%;
+}
+
+.sheet-table-cell-value {
+  text-align: right;
+  font-family: monospace;
+  font-size: 0.8rem;
+  cursor: pointer;
+}
+
+.sheet-table-input {
+  text-align: right;
+  font-family: monospace;
+}
+
+/* Description Panel */
+.description-panel {
+  flex: 1;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  position: relative;
+}
+
+.description-panel-header {
+  padding: 0 10px;
+  flex: 0 0 auto;
+}
+
+.description-panel-header h3 {
+  margin-top: 0;
+}
+
+.description-list {
+  flex: 1;
+  overflow-y: auto;
+  padding: 0 10px;
+}
+
+.description-item {
+  margin-bottom: 8px;
+  border-bottom: 1px solid var(--border-light);
+  padding-bottom: 8px;
+}
+
+.description-item-header {
+  margin: 0 0 2px 0;
+  font-size: 0.85em;
+  color: var(--text-secondary);
+  display: flex;
+  justify-content: space-between;
+}
+
+.description-item-type {
+  font-size: 0.8em;
+  font-weight: normal;
+  opacity: 0.7;
+}
+
+.description-item-sheet-link {
+  font-size: 0.85em;
+}
+
+.description-item-sheet-link a {
+  color: var(--link-color, #007bff);
+}
+
+.description-markdown {
+  font-size: 0.85em;
+  line-height: 1.3;
+}
+
+.description-empty {
+  color: var(--text-muted);
+  font-style: italic;
+  font-size: 0.9em;
+  padding: 10px 0;
+  text-align: center;
+}
+
+.sheet-table tbody tr {
+  cursor: pointer;
+}
