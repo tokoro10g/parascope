@@ -53,6 +53,7 @@ export async function createEditor(container: HTMLElement) {
   let onNodeDoubleClick: ((nodeId: string) => void) | undefined;
   let onGraphChange: (() => void) | undefined;
   let onLayoutChange: (() => void) | undefined;
+  let onViewportChange: (() => void) | undefined;
   let onInputValueChange: ((nodeId: string, value: string) => void) | undefined;
 
   AreaExtensions.selectableNodes(area, selector, {
@@ -118,6 +119,9 @@ export async function createEditor(container: HTMLElement) {
         }
       }
     }
+    if (context.type === 'translated' || context.type === 'zoomed') {
+      if (onViewportChange) onViewportChange();
+    }
     return context;
   });
 
@@ -173,6 +177,9 @@ export async function createEditor(container: HTMLElement) {
     },
     setLayoutChangeListener: (cb: () => void) => {
       onLayoutChange = cb;
+    },
+    setViewportChangeListener: (cb: () => void) => {
+      onViewportChange = cb;
     },
     setInputValueChangeListener: (
       cb: (nodeId: string, value: string) => void,

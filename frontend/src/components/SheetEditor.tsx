@@ -293,6 +293,18 @@ export const SheetEditor: React.FC = () => {
     [editor, removeNode],
   );
 
+  const handleViewportChange = useCallback(() => {
+    if (window.location.hash) {
+      navigate(
+        {
+          pathname: location.pathname,
+          search: location.search,
+        },
+        { replace: true },
+      );
+    }
+  }, [location.pathname, location.search, navigate]);
+
   useReteEvents(
     editor || undefined,
     {
@@ -305,6 +317,7 @@ export const SheetEditor: React.FC = () => {
       handleCalculationInputChange,
       onPaste: handlePaste,
       onDelete: handleDelete,
+      onViewportChange: handleViewportChange,
     },
     { lastResultRef, calculationInputsRef },
   );

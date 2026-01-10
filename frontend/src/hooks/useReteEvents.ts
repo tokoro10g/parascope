@@ -14,6 +14,7 @@ export function useReteEvents(
     handleCalculationInputChange: (id: string, value: string) => void;
     onPaste: (data: any) => void;
     onDelete: (nodeIds: string[]) => void;
+    onViewportChange?: () => void;
   },
   refs: {
     lastResultRef: React.MutableRefObject<any>;
@@ -30,6 +31,7 @@ export function useReteEvents(
     handleCalculationInputChange,
     onPaste,
     onDelete,
+    onViewportChange,
   } = callbacks;
 
   const { lastResultRef, calculationInputsRef } = refs;
@@ -162,6 +164,9 @@ export function useReteEvents(
       editor.setLayoutChangeListener(() => {
         updateNodesState();
       });
+      if (onViewportChange) {
+        editor.setViewportChangeListener(onViewportChange);
+      }
       editor.setInputValueChangeListener((nodeId: string, value: string) => {
         handleCalculationInputChange(nodeId, value);
       });
@@ -181,5 +186,8 @@ export function useReteEvents(
     setNodes,
     lastResultRef,
     calculationInputsRef,
+    onPaste,
+    onDelete,
+    onViewportChange,
   ]);
 }
