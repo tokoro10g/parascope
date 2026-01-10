@@ -1,5 +1,5 @@
 import pRetry from 'p-retry';
-import { useCallback, useState } from 'react';
+import { useCallback, useRef, useState } from 'react';
 import toast from 'react-hot-toast';
 import { api, type Sheet } from '../api';
 import { syncNestedSheets } from '../utils';
@@ -10,9 +10,11 @@ export function useSheetManager(
 ) {
   const [currentSheet, setCurrentSheet] = useState<Sheet | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const loadRequestId = useRef(0);
 
   const handleLoadSheet = useCallback(
     async (id: string) => {
+      const myId = ++loadRequestId.current;
       setIsLoading(true);
       try {
         const sheet = await api.getSheet(id);
@@ -43,7 +45,9 @@ export function useSheetManager(
         console.error(e);
         toast.error(`Error loading sheet: ${e}`);
       } finally {
-        setIsLoading(false);
+        if (loadRequestId.current === myId) {
+          setIsLoading(false);
+        }
       }
     },
     [onLoadSuccess, setIsDirty],
