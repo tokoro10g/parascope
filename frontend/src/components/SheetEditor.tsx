@@ -195,10 +195,8 @@ export const SheetEditor: React.FC = () => {
         },
         { replace: true },
       );
-
-      triggerAutoCalculation();
     },
-    [setSearchParams, editor, triggerAutoCalculation],
+    [setSearchParams, editor],
   );
 
   const {
@@ -225,6 +223,11 @@ export const SheetEditor: React.FC = () => {
     },
     [originalHandleNodeUpdate, triggerAutoCalculation],
   );
+
+  // Trigger auto-calculation when evaluator inputs change (e.g. from URL source)
+  useEffect(() => {
+    triggerAutoCalculation();
+  }, [evaluatorInputs, triggerAutoCalculation]);
 
   useReteEvents(
     editor || undefined,
