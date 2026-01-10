@@ -25,7 +25,7 @@ import { SheetTable } from './SheetTable';
 import { TooltipLayer } from './TooltipLayer';
 import './SheetEditor.css';
 
-export interface EvaluatorInput {
+export interface CalculationInputDefinition {
   id: string;
   label: string;
   value: string | number;
@@ -41,7 +41,7 @@ export const SheetEditor: React.FC = () => {
   const [nodes, setNodes] = useState<ParascopeNode[]>([]);
   const { isCalculating, lastResult, setLastResult, calculatePreview } =
     useSheetCalculation(editor);
-  const [evaluatorInputs, setEvaluatorInputs] = useState<
+  const [calculationInputs, setCalculationInputs] = useState<
     Record<string, string>
   >({});
   const [editingNode, setEditingNode] = useState<ParascopeNode | null>(null);
@@ -50,8 +50,8 @@ export const SheetEditor: React.FC = () => {
 
   const lastResultRef = useRef(lastResult);
   lastResultRef.current = lastResult;
-  const evaluatorInputsRef = useRef(evaluatorInputs);
-  evaluatorInputsRef.current = evaluatorInputs;
+  const calculationInputsRef = useRef(calculationInputs);
+  calculationInputsRef.current = calculationInputs;
   const searchParamsRef = useRef(searchParams);
   searchParamsRef.current = searchParams;
 
@@ -137,11 +137,11 @@ export const SheetEditor: React.FC = () => {
       };
 
       const apiInputs: Record<string, { value: any }> = {};
-      // Use latest evaluator inputs
-      const currentEvaluatorInputs = evaluatorInputsRef.current;
+      // Use latest calculation inputs
+      const currentCalculationInputs = calculationInputsRef.current;
       const nodes = editor?.editor.getNodes() || [];
 
-      Object.entries(currentEvaluatorInputs).forEach(([id, value]) => {
+      Object.entries(currentCalculationInputs).forEach(([id, value]) => {
         const node = nodes.find((n) => n.id === id);
         if (node) {
           apiInputs[node.label] = { value };
@@ -169,11 +169,11 @@ export const SheetEditor: React.FC = () => {
     navigate(target);
   };
 
-  const handleEvaluatorInputChange = useCallback(
+  const handleCalculationInputChange = useCallback(
     (id: string, value: string) => {
       if (
-        evaluatorInputsRef.current &&
-        evaluatorInputsRef.current[id] === value
+        calculationInputsRef.current &&
+        calculationInputsRef.current[id] === value
       ) {
         return;
       }
@@ -212,7 +212,7 @@ export const SheetEditor: React.FC = () => {
     setIsDirty,
     setCurrentSheet,
     currentSheet,
-    handleEvaluatorInputChange,
+    handleCalculationInputChange,
     editor?.addHistoryAction,
   );
 
@@ -224,11 +224,11 @@ export const SheetEditor: React.FC = () => {
     [originalHandleNodeUpdate, triggerAutoCalculation],
   );
 
-  // Trigger auto-calculation when evaluator inputs change (e.g. from URL source)
-  // biome-ignore lint/correctness/useExhaustiveDependencies: Calculation should be triggered by evaluatorInputs
+  // Trigger auto-calculation when calculation inputs change (e.g. from URL source)
+  // biome-ignore lint/correctness/useExhaustiveDependencies: Calculation should be triggered by calculationInputs
   useEffect(() => {
     triggerAutoCalculation();
-  }, [evaluatorInputs, triggerAutoCalculation]);
+  }, [calculationInputs, triggerAutoCalculation]);
 
   useReteEvents(
     editor || undefined,
@@ -239,9 +239,9 @@ export const SheetEditor: React.FC = () => {
       setIsDirty,
       setNodes,
       triggerAutoCalculation,
-      handleEvaluatorInputChange,
+      handleCalculationInputChange,
     },
-    { lastResultRef, evaluatorInputsRef },
+    { lastResultRef, calculationInputsRef },
   );
 
   // Load the specific sheet when sheetId changes
@@ -251,7 +251,7 @@ export const SheetEditor: React.FC = () => {
     }
   }, [sheetId, handleLoadSheet]);
 
-  // Sync URL Query Params to Evaluator Inputs
+  // Sync URL Query Params to Calculation Inputs
   useEffect(() => {
     if (nodes.length === 0) return;
 
@@ -262,7 +262,7 @@ export const SheetEditor: React.FC = () => {
         overrides[node.id] = value;
       }
     });
-    setEvaluatorInputs((prev) => {
+    setCalculationInputs((prev) => {
       const prevKeys = Object.keys(prev);
       const newKeys = Object.keys(overrides);
       if (prevKeys.length !== newKeys.length) return overrides;
@@ -283,10 +283,10 @@ export const SheetEditor: React.FC = () => {
     }
   }, [editor, location.hash]);
 
-  // Sync Evaluator Inputs back to Graph Nodes and Table View
+  // Sync Calculation Inputs back to Graph Nodes and Table View
   useEffect(() => {
     if (editor) {
-      editor.updateNodeValues(evaluatorInputs, lastResult || {});
+      editor.updateNodeValues(calculationInputs, lastResult || {});
       const nodes = [...editor.editor.getNodes()];
       nodes.forEach((n) => {
         const pos = editor.area.nodeViews.get(n.id)?.position;
@@ -297,7 +297,7 @@ export const SheetEditor: React.FC = () => {
       });
       setNodes(nodes);
     }
-  }, [editor, evaluatorInputs, lastResult]);
+  }, [editor, calculationInputs, lastResult]);
 
   const onSave = useCallback(() => {
     handleSaveSheet(getExportData());
@@ -418,7 +418,7 @@ export const SheetEditor: React.FC = () => {
   };
 
   // Derive Evaluator Props
-  const evaluatorProps = useMemo(() => {
+  const inputProps = useMemo(() => {
     if (!currentSheet) return { inputs: [], outputs: [] };
 
     // Use nodes state if available (for live position updates), otherwise fallback to currentSheet
@@ -433,22 +433,24 @@ export const SheetEditor: React.FC = () => {
       return a.y - b.y;
     });
 
-    const inputs: EvaluatorInput[] = sortedNodes
+    const inputs: CalculationInputDefinition[] = sortedNodes
       .filter((n) => n.type === 'input' && n.id)
       .map((n) => ({
         id: n.id!,
         label: n.label,
         value:
-          evaluatorInputs[n.id!] !== undefined ? evaluatorInputs[n.id!] : '',
+          calculationInputs[n.id!] !== undefined
+            ? calculationInputs[n.id!]
+            : '',
       }));
 
     return { inputs };
-  }, [currentSheet, nodes, evaluatorInputs]);
+  }, [currentSheet, nodes, calculationInputs]);
 
   useEffect(() => {
     if (editor) {
       const inputValues: Record<string, any> = {};
-      evaluatorProps.inputs.forEach((i) => {
+      inputProps.inputs.forEach((i) => {
         inputValues[i.id] = i.value;
       });
       editor.updateNodeValues(
@@ -456,7 +458,7 @@ export const SheetEditor: React.FC = () => {
         lastResult ? extractValuesFromResult(lastResult) : {},
       );
     }
-  }, [editor, evaluatorProps, lastResult]);
+  }, [editor, inputProps, lastResult]);
 
   const handleCalculate = async () => {
     if (!currentSheet) return;
@@ -465,7 +467,7 @@ export const SheetEditor: React.FC = () => {
 
     try {
       const apiInputs: Record<string, { value: any }> = {};
-      Object.entries(evaluatorInputs).forEach(([id, value]) => {
+      Object.entries(calculationInputs).forEach(([id, value]) => {
         const node = nodes.find((n) => n.id === id);
         if (node) {
           apiInputs[node.label] = { value };
@@ -493,9 +495,9 @@ export const SheetEditor: React.FC = () => {
     if (!node) return;
 
     if (node.type === 'input') {
-      // For input nodes, the source of truth is the Evaluator/URL.
+      // For input nodes, the source of truth is the Calculation Inputs/URL.
       // We update that, and let the useEffect sync it back to the node.
-      handleEvaluatorInputChange(nodeId, value);
+      handleCalculationInputChange(nodeId, value);
     } else {
       // For constant nodes, the source of truth is the node itself.
       const control = node.controls.value as any;

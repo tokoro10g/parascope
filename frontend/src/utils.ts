@@ -115,7 +115,7 @@ export const resolveNestedSheetParams = (
   editor: NodeEditor<Schemes>,
   nodeId: string,
   lastResult: any,
-  evaluatorInputs: any,
+  calculationInputs: any,
 ): string => {
   const node = editor.getNode(nodeId);
   if (!node?.initialData?.sheetId) return '';
@@ -135,9 +135,9 @@ export const resolveNestedSheetParams = (
       const nodeResult = lastResult[sourceId];
       value = nodeResult?.outputs?.[c.sourceOutput];
     }
-    // 2. Check evaluatorInputs (if source is an input node)
-    else if (evaluatorInputs && sourceId in evaluatorInputs) {
-      value = evaluatorInputs[sourceId];
+    // 2. Check calculationInputs (if source is an input node)
+    else if (calculationInputs && sourceId in calculationInputs) {
+      value = calculationInputs[sourceId];
     }
     // 3. Check node control value (fallback for constants/inputs)
     else {

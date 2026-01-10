@@ -11,11 +11,11 @@ export function useReteEvents(
     setIsDirty: (isDirty: boolean) => void;
     setNodes: (nodes: ParascopeNode[]) => void;
     triggerAutoCalculation: () => void;
-    handleEvaluatorInputChange: (id: string, value: string) => void;
+    handleCalculationInputChange: (id: string, value: string) => void;
   },
   refs: {
     lastResultRef: React.MutableRefObject<any>;
-    evaluatorInputsRef: React.MutableRefObject<any>;
+    calculationInputsRef: React.MutableRefObject<any>;
   },
 ) {
   const {
@@ -25,10 +25,10 @@ export function useReteEvents(
     setIsDirty,
     setNodes,
     triggerAutoCalculation,
-    handleEvaluatorInputChange,
+    handleCalculationInputChange,
   } = callbacks;
 
-  const { lastResultRef, evaluatorInputsRef } = refs;
+  const { lastResultRef, calculationInputsRef } = refs;
 
   useEffect(() => {
     if (editor) {
@@ -61,7 +61,7 @@ export function useReteEvents(
               editor.editor,
               nodeId,
               lastResultRef.current,
-              evaluatorInputsRef.current,
+              calculationInputsRef.current,
             );
             const url = `/sheet/${node.initialData.sheetId}${
               queryString ? `?${queryString}` : ''
@@ -84,7 +84,7 @@ export function useReteEvents(
         triggerAutoCalculation();
       });
       editor.setInputValueChangeListener((nodeId: string, value: string) => {
-        handleEvaluatorInputChange(nodeId, value);
+        handleCalculationInputChange(nodeId, value);
       });
       // This second call seems redundant in original code, but keeping for safety if it attaches specifics
       editor.setContextMenuCallbacks({
@@ -93,7 +93,7 @@ export function useReteEvents(
     }
   }, [
     editor,
-    handleEvaluatorInputChange,
+    handleCalculationInputChange,
     handleNodeUpdate,
     handleDuplicateNode,
     triggerAutoCalculation,
@@ -101,6 +101,6 @@ export function useReteEvents(
     setIsDirty,
     setNodes,
     lastResultRef,
-    evaluatorInputsRef,
+    calculationInputsRef,
   ]);
 }

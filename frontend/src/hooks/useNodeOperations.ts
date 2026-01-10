@@ -24,7 +24,7 @@ export function useNodeOperations(
   setIsDirty: (isDirty: boolean) => void,
   setCurrentSheet: React.Dispatch<React.SetStateAction<Sheet | null>>,
   currentSheet: Sheet | null,
-  handleEvaluatorInputChange: (id: string, value: string) => void,
+  handleCalculationInputChange: (id: string, value: string) => void,
   addHistoryAction?: (action: {
     redo: () => Promise<void> | void;
     undo: () => Promise<void> | void;
@@ -61,7 +61,7 @@ export function useNodeOperations(
         data,
         (val) => {
           if (type === 'input') {
-            handleEvaluatorInputChange(id, String(val));
+            handleCalculationInputChange(id, String(val));
           } else {
             setIsDirty(true);
           }
@@ -102,7 +102,7 @@ export function useNodeOperations(
     [
       editor,
       area,
-      handleEvaluatorInputChange,
+      handleCalculationInputChange,
       setCurrentSheet,
       setNodes,
       setIsDirty,
