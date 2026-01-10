@@ -20,7 +20,7 @@ The project is a **Monorepo**.
 -   **Language**: Python
 -   **Manager**: `uv`
 -   **Linting**: `ruff`
--   **Libraries**: `networkx` (DAG), `numpy`/`scipy` (Calc), `pint` (Units).
+-   **Libraries**: `networkx` (DAG), `numpy`/`scipy` (Calc), `google-genai` (AI)
 -   **Database**: PostgreSQL.
 
 ### Frontend

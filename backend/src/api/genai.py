@@ -2,7 +2,7 @@ import json
 import logging
 import os
 
-import google.generativeai as genai
+from google import genai
 from fastapi import APIRouter, HTTPException
 from pydantic import BaseModel
 
@@ -21,14 +21,11 @@ class GenerateFunctionResponse(BaseModel):
     outputs: list[str]
     description: str
 
-def get_gemini_model():
+def get_gemini_client():
     api_key = os.getenv("GEMINI_API_KEY")
     if not api_key:
         raise HTTPException(status_code=500, detail="GEMINI_API_KEY not configured")
-    
-    genai.configure(api_key=api_key)
-    model = genai.GenerativeModel('gemini-3-flash-preview')
-    return model
+    return genai.Client(api_key=api_key)
 
 @router.get("/config")
 async def get_genai_config():
@@ -37,7 +34,7 @@ async def get_genai_config():
 @router.post("/generate_function", response_model=GenerateFunctionResponse)
 async def generate_function(request: GenerateFunctionRequest):
     try:
-        model = get_gemini_model()
+        client = get_gemini_client()
         
         system_prompt = """
         You are an expert Python engineer helping a user write a function for an engineering calculation tool.
@@ -58,6 +55,7 @@ async def generate_function(request: GenerateFunctionRequest):
         3. Output variables must be assigned values by the code.
         4. Be concise.
         5. For KaTeX block math, add empty lines before and after both inside and outside `$$`.
+        6. The user may provide URLs for context, use them to inform your code if relevant.
         
         Example:
         User Prompt: "Calculate the area of a circle"
@@ -76,10 +74,12 @@ async def generate_function(request: GenerateFunctionRequest):
             user_prompt += f"Existing Code:\n{request.existing_code}\n"
             user_prompt += "Update the existing code based on the prompt, or rewrite it if requested."
 
-        response = model.generate_content(
+        response = client.models.generate_content(
+            model="gemini-3-flash-preview",
             contents=[system_prompt, user_prompt],
-            generation_config=genai.types.GenerationConfig(
-                response_mime_type="application/json"
+            config=genai.types.GenerateContentConfig(
+                response_mime_type="application/json",
+                tools=[genai.types.Tool(url_context=genai.types.UrlContext())]
             )
         )
         
