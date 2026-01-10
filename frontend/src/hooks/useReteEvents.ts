@@ -82,7 +82,7 @@ export function useReteEvents(
         },
         onEditNestedSheet: handleEditNestedSheet,
       });
-      editor.setGraphChangeListener(() => {
+      const updateNodesState = () => {
         setIsDirty(true);
         const nodes = [...editor.editor.getNodes()];
         nodes.forEach((n) => {
@@ -93,7 +93,14 @@ export function useReteEvents(
           }
         });
         setNodes(nodes);
+      };
+
+      editor.setGraphChangeListener(() => {
+        updateNodesState();
         triggerAutoCalculation();
+      });
+      editor.setLayoutChangeListener(() => {
+        updateNodesState();
       });
       editor.setInputValueChangeListener((nodeId: string, value: string) => {
         handleCalculationInputChange(nodeId, value);

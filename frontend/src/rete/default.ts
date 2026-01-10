@@ -50,6 +50,7 @@ export async function createEditor(container: HTMLElement) {
   // Since useRete calls this, we can attach it to the returned object.
   let onNodeDoubleClick: ((nodeId: string) => void) | undefined;
   let onGraphChange: (() => void) | undefined;
+  let onLayoutChange: (() => void) | undefined;
   let onInputValueChange: ((nodeId: string, value: string) => void) | undefined;
 
   AreaExtensions.selectableNodes(area, AreaExtensions.selector(), {
@@ -108,7 +109,11 @@ export async function createEditor(container: HTMLElement) {
     if (context.type === 'nodetranslated') {
       const { previous, position } = context.data;
       if (previous.x !== position.x || previous.y !== position.y) {
-        if (onGraphChange) onGraphChange();
+        if (onLayoutChange) {
+          onLayoutChange();
+        } else if (onGraphChange) {
+          onGraphChange();
+        }
       }
     }
     return context;
@@ -163,6 +168,9 @@ export async function createEditor(container: HTMLElement) {
     },
     setGraphChangeListener: (cb: () => void) => {
       onGraphChange = cb;
+    },
+    setLayoutChangeListener: (cb: () => void) => {
+      onLayoutChange = cb;
     },
     setInputValueChangeListener: (
       cb: (nodeId: string, value: string) => void,
