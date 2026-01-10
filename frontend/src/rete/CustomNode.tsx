@@ -1,5 +1,5 @@
 import { CaseLower, Import, LogIn, LogOut, Sigma } from 'lucide-react';
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { Presets } from 'rete-react-plugin';
 import './custom-node.css';
 
@@ -24,6 +24,50 @@ export function CustomNode(props: any) {
   const type = data.type;
   const typeClass = `node-${type}`;
   const ref = useRef<HTMLDivElement>(null);
+  const [isEditing, setIsEditing] = useState(false);
+  const [tempLabel, setTempLabel] = useState(data.label);
+  const lastClickRef = useRef(0);
+
+  useEffect(() => {
+    setTempLabel(data.label);
+  }, [data.label]);
+
+  const commitEdit = () => {
+    setIsEditing(false);
+    if (tempLabel !== data.label) {
+      window.dispatchEvent(
+        new CustomEvent('parascope-node-update', {
+          detail: { id: data.id, label: tempLabel },
+        }),
+      );
+    }
+  };
+
+  useEffect(() => {
+    const wrapper = ref.current;
+    if (wrapper && !isEditing) {
+      const handlePointerDown = (e: PointerEvent) => {
+        const target = e.target as HTMLElement;
+        // Check if the click is on the title element or its children
+        if (target.closest('.title')) {
+          const now = Date.now();
+          if (now - lastClickRef.current < 300) {
+            // Double click detected on title
+            e.stopPropagation(); // Stop bubbling to Rete (shuts down drag/global handlers)
+            setIsEditing(true);
+          }
+          lastClickRef.current = now;
+        }
+      };
+
+      // We attach to the wrapper DIV. Since 'pointerdown' bubbles from Title -> Wrapper -> Container,
+      // catching it here allows us to stop it before Rete's AreaPlugin (on Container) sees it.
+      wrapper.addEventListener('pointerdown', handlePointerDown);
+      return () => {
+        wrapper.removeEventListener('pointerdown', handlePointerDown);
+      };
+    }
+  }, [isEditing]);
 
   // Apply styles on every render to ensure they persist over Rete's updates
   useEffect(() => {
@@ -112,6 +156,23 @@ export function CustomNode(props: any) {
         >
           <Icon size={16} />
         </div>
+      )}
+      {isEditing && (
+        <input
+          value={tempLabel}
+          onChange={(e) => setTempLabel(e.target.value)}
+          onBlur={commitEdit}
+          onKeyDown={(e) => {
+            if (e.key === 'Enter') commitEdit();
+            if (e.key === 'Escape') {
+              setTempLabel(data.label);
+              setIsEditing(false); // Stop prop?
+            }
+            e.stopPropagation(); // Prevent Rete shortcuts while typing
+          }}
+          onPointerDown={(e) => e.stopPropagation()}
+          className="node-title-input"
+        />
       )}
     </div>
   );

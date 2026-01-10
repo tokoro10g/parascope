@@ -61,3 +61,28 @@
   height: auto;
   min-width: 180px;
 }
+
+/* Make titles show text cursor to indicate editability */
+.node-constant .title,
+.node-function .title,
+.node-input .title,
+.node-output .title,
+.node-sheet .title {
+  cursor: text;
+}
+
+/* Title Input during editing */
+.node-title-input {
+  position: absolute;
+  top: 4px;
+  left: 4px;
+  width: calc(100% - 40px); /* Leave room for icon */
+  z-index: 10;
+  background-color: var(--bg-color);
+  color: var(--text-color);
+  border: 1px solid var(--border-color);
+  border-radius: 4px;
+  padding: 2px 4px;
+  font-size: 1rem;
+  box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+}
