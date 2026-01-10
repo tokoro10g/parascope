@@ -56,6 +56,7 @@ async def generate_function(request: GenerateFunctionRequest):
         4. Be concise.
         5. For KaTeX block math, add empty lines before and after both inside and outside `$$`.
         6. The user may provide URLs for context, use them to inform your code if relevant.
+        7. The user may use other languages than English. Try to understand and respond in the same language unless otherwise instructed.
         
         Example:
         User Prompt: "Calculate the area of a circle"
