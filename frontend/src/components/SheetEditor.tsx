@@ -225,6 +225,7 @@ export const SheetEditor: React.FC = () => {
   );
 
   // Trigger auto-calculation when evaluator inputs change (e.g. from URL source)
+  // biome-ignore lint/correctness/useExhaustiveDependencies: Calculation should be triggered by evaluatorInputs
   useEffect(() => {
     triggerAutoCalculation();
   }, [evaluatorInputs, triggerAutoCalculation]);

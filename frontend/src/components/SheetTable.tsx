@@ -27,7 +27,10 @@ export const SheetTable: React.FC<SheetTableProps> = ({
   isCalculating,
 }) => {
   const tableContainerRef = useRef<HTMLDivElement>(null);
+  const descriptionContainerRef = useRef<HTMLDivElement>(null);
   const [showScrollIndicator, setShowScrollIndicator] = useState(false);
+  const [showDescriptionScrollIndicator, setShowDescriptionScrollIndicator] =
+    useState(false);
 
   const checkScroll = useCallback(() => {
     const el = tableContainerRef.current;
@@ -38,23 +41,52 @@ export const SheetTable: React.FC<SheetTableProps> = ({
     }
   }, []);
 
+  const checkDescriptionScroll = useCallback(() => {
+    const el = descriptionContainerRef.current;
+    if (el) {
+      const canScroll = el.scrollHeight > el.clientHeight;
+      const isAtBottom = el.scrollHeight - el.scrollTop <= el.clientHeight + 5;
+      setShowDescriptionScrollIndicator(canScroll && !isAtBottom);
+    }
+  }, []);
+
   useEffect(() => {
     checkScroll();
+    checkDescriptionScroll();
     window.addEventListener('resize', checkScroll);
-    return () => window.removeEventListener('resize', checkScroll);
-  }, [checkScroll]);
+    window.addEventListener('resize', checkDescriptionScroll);
+    return () => {
+      window.removeEventListener('resize', checkScroll);
+      window.removeEventListener('resize', checkDescriptionScroll);
+    };
+  }, [checkScroll, checkDescriptionScroll]);
 
   // biome-ignore lint/correctness/useExhaustiveDependencies: Re-check scroll when nodes change
   useEffect(() => {
     checkScroll();
+    checkDescriptionScroll();
   }, [nodes]);
 
   const handleScroll = () => {
     checkScroll();
   };
 
+  const handleDescriptionScroll = () => {
+    checkDescriptionScroll();
+  };
+
   const scrollToBottom = () => {
     const el = tableContainerRef.current;
+    if (el) {
+      el.scrollTo({
+        top: el.scrollHeight,
+        behavior: 'smooth',
+      });
+    }
+  };
+
+  const scrollToDescriptionBottom = () => {
+    const el = descriptionContainerRef.current;
     if (el) {
       el.scrollTo({
         top: el.scrollHeight,
@@ -387,86 +419,133 @@ export const SheetTable: React.FC<SheetTableProps> = ({
 
       <div
         className="description-panel"
-        style={{ flex: 1, overflowY: 'auto', padding: '0 10px' }}
+        style={{
+          flex: 1,
+          overflow: 'hidden',
+          display: 'flex',
+          flexDirection: 'column',
+          position: 'relative',
+        }}
       >
-        <h3 style={{ marginTop: 0 }}>Descriptions</h3>
-        {descriptionNodes.map((node) => {
-          const nameControl = node.controls.name as any;
-          const name = nameControl?.value || node.label;
-          const description = node.initialData?.description;
-          const sheetId = node.initialData?.sheetId;
+        <div style={{ padding: '0 10px', flex: '0 0 auto' }}>
+          <h3 style={{ marginTop: 0 }}>Descriptions</h3>
+        </div>
+        <div
+          ref={descriptionContainerRef}
+          onScroll={handleDescriptionScroll}
+          style={{ flex: 1, overflowY: 'auto', padding: '0 10px' }}
+        >
+          {descriptionNodes.map((node) => {
+            const nameControl = node.controls.name as any;
+            const name = nameControl?.value || node.label;
+            const description = node.initialData?.description;
+            const sheetId = node.initialData?.sheetId;
 
-          if (!description && node.type !== 'sheet') return null;
+            if (!description && node.type !== 'sheet') return null;
 
-          return (
-            <div
-              key={node.id}
-              style={{
-                marginBottom: '8px',
-                borderBottom: '1px solid var(--border-light)',
-                paddingBottom: '8px',
-              }}
-            >
-              <h4
+            return (
+              <div
+                key={node.id}
                 style={{
-                  margin: '0 0 2px 0',
-                  fontSize: '0.85em',
-                  color: 'var(--text-secondary)',
-                  display: 'flex',
-                  justifyContent: 'space-between',
+                  marginBottom: '8px',
+                  borderBottom: '1px solid var(--border-light)',
+                  paddingBottom: '8px',
                 }}
               >
-                <span>{name}</span>
-                <span
+                <h4
                   style={{
-                    fontSize: '0.8em',
-                    fontWeight: 'normal',
-                    opacity: 0.7,
+                    margin: '0 0 2px 0',
+                    fontSize: '0.85em',
+                    color: 'var(--text-secondary)',
+                    display: 'flex',
+                    justifyContent: 'space-between',
                   }}
                 >
-                  {node.type}
-                </span>
-              </h4>
-              {node.type === 'sheet' && sheetId ? (
-                <div style={{ fontSize: '0.85em' }}>
-                  <a
-                    href={`/sheet/${sheetId}`}
-                    target="_blank"
-                    rel="noreferrer"
-                    style={{ color: 'var(--link-color, #007bff)' }}
+                  <span>{name}</span>
+                  <span
+                    style={{
+                      fontSize: '0.8em',
+                      fontWeight: 'normal',
+                      opacity: 0.7,
+                    }}
                   >
-                    Open Referenced Sheet
-                  </a>
-                </div>
-              ) : (
-                <div
-                  className="markdown-body compact-markdown"
-                  style={{ fontSize: '0.85em', lineHeight: '1.3' }}
-                >
-                  <ReactMarkdown
-                    remarkPlugins={[remarkMath]}
-                    rehypePlugins={[rehypeKatex]}
-                    urlTransform={transformUrl}
+                    {node.type}
+                  </span>
+                </h4>
+                {node.type === 'sheet' && sheetId ? (
+                  <div style={{ fontSize: '0.85em' }}>
+                    <a
+                      href={`/sheet/${sheetId}`}
+                      target="_blank"
+                      rel="noreferrer"
+                      style={{ color: 'var(--link-color, #007bff)' }}
+                    >
+                      Open Referenced Sheet
+                    </a>
+                  </div>
+                ) : (
+                  <div
+                    className="markdown-body compact-markdown"
+                    style={{ fontSize: '0.85em', lineHeight: '1.3' }}
                   >
-                    {description}
-                  </ReactMarkdown>
-                </div>
-              )}
+                    <ReactMarkdown
+                      remarkPlugins={[remarkMath]}
+                      rehypePlugins={[rehypeKatex]}
+                      urlTransform={transformUrl}
+                    >
+                      {description}
+                    </ReactMarkdown>
+                  </div>
+                )}
+              </div>
+            );
+          })}
+          {descriptionNodes.every(
+            (n) => !n.initialData?.description && n.type !== 'sheet',
+          ) && (
+            <div
+              style={{
+                color: 'var(--text-muted)',
+                fontStyle: 'italic',
+                fontSize: '0.9em',
+                padding: '10px 0',
+                textAlign: 'center',
+              }}
+            >
+              No descriptions available
             </div>
-          );
-        })}
-        {descriptionNodes.every(
-          (n) => !n.initialData?.description && n.type !== 'sheet',
-        ) && (
-          <div
+          )}
+        </div>
+        {showDescriptionScrollIndicator && (
+          <button
+            type="button"
+            onClick={scrollToDescriptionBottom}
+            className="scroll-indicator-button"
+            title="Scroll to bottom"
             style={{
-              color: 'var(--text-muted)',
-              fontStyle: 'italic',
-              fontSize: '0.9em',
+              position: 'absolute',
+              bottom: '10px',
+              left: '50%',
+              transform: 'translateX(-50%)',
+              width: '32px',
+              height: '32px',
+              borderRadius: '50%',
+              backgroundColor: 'var(--primary-color)',
+              color: 'white',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              boxShadow: '0 2px 10px rgba(0,0,0,0.2)',
+              border: 'none',
+              opacity: 0.8,
+              zIndex: 10,
+              padding: 0,
+              minWidth: '32px',
+              flexShrink: 0,
             }}
           >
-            No descriptions available.
-          </div>
+            <ChevronDown size={20} />
+          </button>
         )}
       </div>
     </div>
