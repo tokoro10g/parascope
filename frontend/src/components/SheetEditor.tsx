@@ -201,6 +201,7 @@ export const SheetEditor: React.FC = () => {
 
   const {
     addNode,
+    removeNode,
     handleDuplicateNode,
     handleNodeUpdate: originalHandleNodeUpdate,
     calcCenterPosition,
@@ -230,6 +231,68 @@ export const SheetEditor: React.FC = () => {
     triggerAutoCalculation();
   }, [calculationInputs, triggerAutoCalculation]);
 
+  const handlePaste = useCallback(
+    async (clipboardNodes: any[]) => {
+      if (!clipboardNodes.length) return;
+
+      // Calculate center of clipboard nodes
+      let minX = Infinity;
+      let minY = Infinity;
+      let maxX = -Infinity;
+      let maxY = -Infinity;
+      clipboardNodes.forEach((n) => {
+        minX = Math.min(minX, n.position.x);
+        minY = Math.min(minY, n.position.y);
+        maxX = Math.max(maxX, n.position.x);
+        maxY = Math.max(maxY, n.position.y);
+      });
+      const centerX = (minX + maxX) / 2;
+      const centerY = (minY + maxY) / 2;
+
+      const screenCenter = calcCenterPosition();
+      const offsetX = screenCenter.x - centerX;
+      const offsetY = screenCenter.y - centerY;
+
+      for (const nodeData of clipboardNodes) {
+        const inputs = nodeData.inputs.map(createSocket);
+        const outputs = nodeData.outputs.map(createSocket);
+        const data = nodeData.initialData;
+        if (nodeData.controls && nodeData.controls.value !== undefined) {
+          data.value = nodeData.controls.value;
+        }
+
+        const label = nodeData.label;
+
+        const position = {
+          x: nodeData.position.x + offsetX,
+          y: nodeData.position.y + offsetY,
+        };
+
+        await addNode(nodeData.type, label, inputs, outputs, data, position);
+      }
+    },
+    [addNode, calcCenterPosition],
+  );
+
+  const handleDelete = useCallback(
+    async (nodeIds: string[]) => {
+      for (const id of nodeIds) {
+        const node = editor?.editor.getNode(id);
+        if (node && (node.type === 'input' || node.type === 'output')) {
+          if (
+            !window.confirm(
+              `Deleting this ${node.type} node may break sheets that use this sheet as a function. Are you sure?`,
+            )
+          ) {
+            continue;
+          }
+        }
+        await removeNode(id);
+      }
+    },
+    [editor, removeNode],
+  );
+
   useReteEvents(
     editor || undefined,
     {
@@ -240,6 +303,8 @@ export const SheetEditor: React.FC = () => {
       setNodes,
       triggerAutoCalculation,
       handleCalculationInputChange,
+      onPaste: handlePaste,
+      onDelete: handleDelete,
     },
     { lastResultRef, calculationInputsRef },
   );

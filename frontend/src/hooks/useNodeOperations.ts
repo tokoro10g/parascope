@@ -140,6 +140,18 @@ export function useNodeOperations(
     [editor, area, currentSheet, calcCenterPosition, addNode],
   );
 
+  const removeNode = useCallback(
+    async (nodeId: string) => {
+      if (!editor) return;
+      const node = editor.getNode(nodeId);
+      if (!node) return;
+      await editor.removeNode(nodeId);
+      setNodes([...editor.getNodes()]);
+      setIsDirty(true);
+    },
+    [editor, setNodes, setIsDirty],
+  );
+
   const handleNodeUpdate = useCallback(
     async (nodeId: string, updates: NodeUpdates) => {
       if (!editor || !area) return;
@@ -324,6 +336,7 @@ export function useNodeOperations(
 
   return {
     addNode,
+    removeNode,
     handleDuplicateNode,
     handleNodeUpdate,
     calcCenterPosition,

@@ -46,6 +46,8 @@ export async function createEditor(container: HTMLElement) {
   const contextMenuCallbacks: ContextMenuCallbacks = {};
   const contextMenu = createContextMenuPlugin(editor, contextMenuCallbacks);
 
+  const selector = AreaExtensions.selector();
+
   // We need to expose a way to set the callback later, or pass it in.
   // Since useRete calls this, we can attach it to the returned object.
   let onNodeDoubleClick: ((nodeId: string) => void) | undefined;
@@ -53,7 +55,7 @@ export async function createEditor(container: HTMLElement) {
   let onLayoutChange: (() => void) | undefined;
   let onInputValueChange: ((nodeId: string, value: string) => void) | undefined;
 
-  AreaExtensions.selectableNodes(area, AreaExtensions.selector(), {
+  AreaExtensions.selectableNodes(area, selector, {
     accumulating: AreaExtensions.accumulateOnCtrl(),
   });
   const pathPlugin = new ConnectionPathPlugin<Schemes, Area2D<Schemes>>({
@@ -144,7 +146,7 @@ export async function createEditor(container: HTMLElement) {
             () => {
               callback(nodeId);
             },
-            { once: true }
+            { once: true },
           );
         }
       } else {
@@ -357,6 +359,17 @@ export async function createEditor(container: HTMLElement) {
       if (node) {
         AreaExtensions.zoomAt(area, [node]);
       }
+    },
+    getSelectedNodes: () => {
+      const selectedNodes: ParascopeNode[] = [];
+      const nodes = editor.getNodes();
+      for (const node of nodes) {
+        const view = area.nodeViews.get(node.id);
+        if (view?.element.classList.contains('selected')) {
+          selectedNodes.push(node);
+        }
+      }
+      return selectedNodes;
     },
   };
 }

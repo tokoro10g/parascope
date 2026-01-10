@@ -1,4 +1,4 @@
-import { useEffect } from 'react';
+import { useEffect, useRef } from 'react';
 import type { NodeEditorWrapper, ParascopeNode } from '../rete';
 import { resolveNestedSheetParams } from '../utils';
 
@@ -12,6 +12,8 @@ export function useReteEvents(
     setNodes: (nodes: ParascopeNode[]) => void;
     triggerAutoCalculation: () => void;
     handleCalculationInputChange: (id: string, value: string) => void;
+    onPaste: (data: any) => void;
+    onDelete: (nodeIds: string[]) => void;
   },
   refs: {
     lastResultRef: React.MutableRefObject<any>;
@@ -26,9 +28,67 @@ export function useReteEvents(
     setNodes,
     triggerAutoCalculation,
     handleCalculationInputChange,
+    onPaste,
+    onDelete,
   } = callbacks;
 
   const { lastResultRef, calculationInputsRef } = refs;
+  const clipboardRef = useRef<any[]>([]);
+
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      const target = e.target as HTMLElement;
+      if (
+        ['INPUT', 'TEXTAREA', 'SELECT'].includes(target.tagName) ||
+        target.isContentEditable
+      ) {
+        return;
+      }
+
+      if (e.key === 'Delete' || e.key === 'Backspace') {
+        if (editor?.getSelectedNodes) {
+          const selected = editor.getSelectedNodes();
+          if (selected.length > 0) {
+            onDelete(selected.map((n) => n.id));
+          }
+        }
+      }
+
+      if (e.ctrlKey || e.metaKey) {
+        if (e.key === 'c') {
+          if (editor?.getSelectedNodes) {
+            const selected = editor.getSelectedNodes();
+            if (selected.length > 0) {
+              clipboardRef.current = selected.map((n) => {
+                const view = editor.area.nodeViews.get(n.id);
+                return {
+                  type: n.type,
+                  label: n.label,
+                  inputs: Object.keys(n.inputs),
+                  outputs: Object.keys(n.outputs),
+                  initialData: JSON.parse(JSON.stringify(n.initialData)),
+                  controls: n.controls.value
+                    ? { value: (n.controls.value as any).value }
+                    : {},
+                  position: view
+                    ? { x: view.position.x, y: view.position.y }
+                    : { x: 0, y: 0 },
+                };
+              });
+            }
+          }
+        }
+        if (e.key === 'v') {
+          if (clipboardRef.current.length > 0) {
+            onPaste(clipboardRef.current);
+          }
+        }
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [editor, onPaste, onDelete]);
 
   useEffect(() => {
     if (editor) {
