@@ -361,15 +361,7 @@ export async function createEditor(container: HTMLElement) {
       }
     },
     getSelectedNodes: () => {
-      const selectedNodes: ParascopeNode[] = [];
-      const nodes = editor.getNodes();
-      for (const node of nodes) {
-        const view = area.nodeViews.get(node.id);
-        if (view?.element.classList.contains('selected')) {
-          selectedNodes.push(node);
-        }
-      }
-      return selectedNodes;
+      return editor.getNodes().filter((n) => selector.isSelected({id: n.id, label: 'node'}));
     },
   };
 }
