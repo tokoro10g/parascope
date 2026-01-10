@@ -136,13 +136,24 @@ export async function createEditor(container: HTMLElement) {
 
   let lastNodePicked: string | null = null;
   let lastNodePickedTime = 0;
+  let lastPointerDownTarget: EventTarget | null = null;
 
   area.addPipe((context) => {
+    if (context.type === 'pointerdown') {
+      lastPointerDownTarget = context.data.event.target;
+    }
     if (context.type === 'nodepicked') {
       const nodeId = context.data.id;
       const now = Date.now();
       if (lastNodePicked === nodeId && now - lastNodePickedTime < 300) {
-        if (onNodeDoubleClick) {
+        // Check if we clicked on an editable title
+        const isEditableTitle =
+          lastPointerDownTarget instanceof Element &&
+          (lastPointerDownTarget.classList.contains('node-title-editable') ||
+            lastPointerDownTarget.closest('.node-title-editable') ||
+            lastPointerDownTarget.classList.contains('node-title-input'));
+
+        if (onNodeDoubleClick && !isEditableTitle) {
           const callback = onNodeDoubleClick;
           // Wait for mouse release to avoid sticky drag state
           window.addEventListener(

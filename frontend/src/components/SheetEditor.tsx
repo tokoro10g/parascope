@@ -322,6 +322,25 @@ export const SheetEditor: React.FC = () => {
     { lastResultRef, calculationInputsRef },
   );
 
+  // Listen for custom node label updates from CustomNode
+  useEffect(() => {
+    const handleCustomUpdate = (e: CustomEvent<{ id: string; label: string }>) => {
+      const { id, label } = e.detail;
+      handleNodeUpdate(id, { label });
+    };
+
+    window.addEventListener(
+      'parascope-node-update',
+      handleCustomUpdate as EventListener,
+    );
+    return () => {
+      window.removeEventListener(
+        'parascope-node-update',
+        handleCustomUpdate as EventListener,
+      );
+    };
+  }, [handleNodeUpdate]);
+
   // Load the specific sheet when sheetId changes
   useEffect(() => {
     if (sheetId) {
