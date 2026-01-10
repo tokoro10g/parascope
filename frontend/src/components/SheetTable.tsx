@@ -261,7 +261,7 @@ export const SheetTable: React.FC<SheetTableProps> = ({
                 <tr>
                   <th>Name</th>
                   <th>Type</th>
-                  <th>Value</th>
+                  <th className="sheet-table-header-right">Value</th>
                 </tr>
               </thead>
 

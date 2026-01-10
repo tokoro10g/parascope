@@ -242,7 +242,7 @@
   height: 100%;
 }
 
-.sheet-table-cell-value {
+.sheet-table td.sheet-table-cell-value {
   text-align: right;
   font-family: monospace;
   font-size: 0.8rem;
@@ -321,4 +321,8 @@
 
 .sheet-table tbody tr {
   cursor: pointer;
+}
+
+.sheet-table th.sheet-table-header-right {
+  text-align: right;
 }
