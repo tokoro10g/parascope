@@ -93,6 +93,23 @@
   cursor: not-allowed;
 }
 
+.sheet-table .sweep-button {
+  background-color: #2196f3;
+  color: white;
+  border: none;
+  padding: 4px 8px;
+  font-size: 0.8em;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  justify-content: center;
+}
+
+.sheet-table .sweep-button:hover {
+  background-color: #1976d2;
+  border-color: transparent;
+}
+
 .sheet-table .copy-button {
   padding: 4px 8px;
   font-size: 0.8em;

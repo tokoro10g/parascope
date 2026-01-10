@@ -546,7 +546,6 @@ export const SheetEditor: React.FC = () => {
                 onAddNode={handleAddNode}
                 onUndo={() => editor?.undo()}
                 onRedo={() => editor?.redo()}
-                onSweep={() => navigate(`/sheet/${sheetId}/sweep`)}
               />
               <div
                 ref={ref}
@@ -565,6 +564,7 @@ export const SheetEditor: React.FC = () => {
               onUpdateValue={handleUpdateNodeValue}
               onSelectNode={handleSelectNode}
               onCalculate={handleCalculate}
+              onSweep={() => navigate(`/sheet/${sheetId}/sweep`)}
               isCalculating={isCalculating}
             />
           </Panel>

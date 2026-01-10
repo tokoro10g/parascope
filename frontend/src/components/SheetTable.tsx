@@ -1,4 +1,4 @@
-import { ChevronDown, Copy, Play } from 'lucide-react';
+import { ChevronDown, Copy, LineChart, Play } from 'lucide-react';
 import type React from 'react';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import ReactMarkdown from 'react-markdown';
@@ -14,6 +14,7 @@ interface SheetTableProps {
   onUpdateValue: (nodeId: string, value: string) => void;
   onSelectNode: (nodeId: string) => void;
   onCalculate: () => void;
+  onSweep: () => void;
   isCalculating: boolean;
 }
 
@@ -22,6 +23,7 @@ export const SheetTable: React.FC<SheetTableProps> = ({
   onUpdateValue,
   onSelectNode,
   onCalculate,
+  onSweep,
   isCalculating,
 }) => {
   const tableContainerRef = useRef<HTMLDivElement>(null);
@@ -196,6 +198,16 @@ export const SheetTable: React.FC<SheetTableProps> = ({
           >
             {isCalculating ? '...' : <Play size={14} fill="currentColor" />}
             Run Calculation
+          </button>
+          <button
+            type="button"
+            onClick={onSweep}
+            className="sweep-button"
+            style={{ width: '100%', marginTop: '5px' }}
+            title="Sweep"
+          >
+            <LineChart size={14} />
+            Sweep
           </button>
         </div>
         <div className="sheet-table-header">
