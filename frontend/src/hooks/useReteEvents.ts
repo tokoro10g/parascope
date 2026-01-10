@@ -38,7 +38,33 @@ export function useReteEvents(
           setEditingNode(node);
         }
       };
-      editor.setNodeDoubleClickListener(handleEdit);
+
+      const handleEditNestedSheet = (nodeId: string) => {
+        const node = editor.editor.getNode(nodeId);
+        if (node?.initialData?.sheetId) {
+          const queryString = resolveNestedSheetParams(
+            editor.editor,
+            nodeId,
+            lastResultRef.current,
+            calculationInputsRef.current,
+          );
+          const url = `/sheet/${node.initialData.sheetId}${
+            queryString ? `?${queryString}` : ''
+          }`;
+          window.open(url, '_blank');
+        }
+      };
+
+      const handleDoubleClick = (nodeId: string) => {
+        const node = editor.editor.getNode(nodeId);
+        if (node?.type === 'sheet') {
+          handleEditNestedSheet(nodeId);
+        } else {
+          handleEdit(nodeId);
+        }
+      };
+
+      editor.setNodeDoubleClickListener(handleDoubleClick);
       editor.setContextMenuCallbacks({
         onNodeEdit: handleEdit,
         onNodeDuplicate: handleDuplicateNode,
@@ -54,21 +80,7 @@ export function useReteEvents(
           }
           return true;
         },
-        onEditNestedSheet: (nodeId: string) => {
-          const node = editor.editor.getNode(nodeId);
-          if (node?.initialData?.sheetId) {
-            const queryString = resolveNestedSheetParams(
-              editor.editor,
-              nodeId,
-              lastResultRef.current,
-              calculationInputsRef.current,
-            );
-            const url = `/sheet/${node.initialData.sheetId}${
-              queryString ? `?${queryString}` : ''
-            }`;
-            window.open(url, '_blank');
-          }
-        },
+        onEditNestedSheet: handleEditNestedSheet,
       });
       editor.setGraphChangeListener(() => {
         setIsDirty(true);

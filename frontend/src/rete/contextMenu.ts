@@ -37,15 +37,7 @@ export function createContextMenuPlugin(
       }
 
       // Node
-      const items = [
-        {
-          label: 'Edit',
-          key: 'edit',
-          handler: () => {
-            if (callbacks.onNodeEdit) callbacks.onNodeEdit(context.id);
-          },
-        },
-      ];
+      const items = [];
 
       if (context.type === 'sheet') {
         items.push({
@@ -56,7 +48,17 @@ export function createContextMenuPlugin(
               callbacks.onEditNestedSheet(context.id);
           },
         });
-      } else if (context.type === 'input') {
+      }
+
+      items.push({
+        label: 'Edit',
+        key: 'edit',
+        handler: () => {
+          if (callbacks.onNodeEdit) callbacks.onNodeEdit(context.id);
+        },
+      });
+
+      if (context.type === 'input') {
         items.push({
           label: 'Switch to Constant',
           key: 'switch-to-constant',
