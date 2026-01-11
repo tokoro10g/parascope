@@ -348,7 +348,7 @@ def {method_name}(self, {args_str}):
 """
 
         elif node.type == 'constant':
-            val = node.data.get("value", 0)
+            val = node.data.get("value", None)
             is_option = node.data.get("dataType") == "option"
             
             params = []

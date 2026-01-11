@@ -212,10 +212,15 @@ class SheetBase:
     def parse_number(self, value: Any) -> Union[int, float, None]:
         if value is None or value == "":
             return None
+        if isinstance(value, (int, float)):
+            return value
         try:
             return int(value)
-        except ValueError:
-            return float(value)
+        except (ValueError, TypeError):
+            try:
+                return float(value)
+            except (ValueError, TypeError):
+                return None
 
     def get_public_outputs(self, raise_on_error: bool = False) -> Dict[str, Any]:
         """
