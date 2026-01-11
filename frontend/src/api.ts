@@ -296,7 +296,7 @@ export interface NodeResult {
 }
 
 export interface SweepResultStep {
-  input_value: number;
+  input_value: string | number;
   outputs: Record<string, any>;
   error?: string | null;
 }

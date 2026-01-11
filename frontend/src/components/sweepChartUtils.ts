@@ -94,8 +94,14 @@ export const getSweepChartOption = (
 
     // Determine if data is numeric
     const rawValues = results.map((r) => r.outputs[id]);
-    const isNumeric = rawValues.every(
-      (v) => v === null || v === undefined || typeof v === 'number',
+    const isNumeric = rawValues.every((v) => {
+        if (v === null || v === undefined) return true;
+        if (typeof v === 'number') return true;
+        if (typeof v === 'string') {
+          return !isNaN(parseFloat(v));
+        }
+        return false;
+      }
     );
 
     // Layout calculations
@@ -139,8 +145,8 @@ export const getSweepChartOption = (
       });
 
       const data = results.map((r) => [
-        r.input_value,
-        r.outputs[id],
+        parseFloat(String(r.input_value)),
+        parseFloat(String(r.outputs[id])),
       ]);
 
       const min =
@@ -206,12 +212,12 @@ export const getSweepChartOption = (
       // Compute Segments
       // [categoryIndex, start, end, value]
       const segments: any[] = [];
-      let currentStart = results[0].input_value;
+      let currentStart = parseFloat(String(results[0].input_value));
       let currentVal = String(results[0].outputs[id] ?? '');
 
       for (let i = 1; i < results.length; i++) {
         const nextVal = String(results[i].outputs[id] ?? '');
-        const nextInput = results[i].input_value;
+        const nextInput = parseFloat(String(results[i].input_value));
 
         if (nextVal !== currentVal) {
           segments.push([0, currentStart, nextInput, currentVal]);
@@ -222,10 +228,10 @@ export const getSweepChartOption = (
       // Last segment extension
       let finalEnd = currentStart;
       if (results.length > 1) {
-        const lastStep =
-          results[results.length - 1].input_value -
-          results[results.length - 2].input_value;
-          finalEnd = results[results.length - 1].input_value + lastStep;
+        const lastInput = parseFloat(String(results[results.length - 1].input_value));
+        const secondLastInput = parseFloat(String(results[results.length - 2].input_value));
+        const lastStep = lastInput - secondLastInput;
+          finalEnd = lastInput + lastStep;
         } else {
           finalEnd = currentStart + 1;
         }

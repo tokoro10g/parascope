@@ -31,6 +31,10 @@ def serialize_result(val: Any) -> Any:
         return {k: serialize_result(v) for k, v in val.items()}
     if isinstance(val, list):
         return [serialize_result(v) for v in val]
+    if isinstance(val, bool):
+        return val
+    if isinstance(val, (int, float)):
+        return str(val)
     return val
 
 

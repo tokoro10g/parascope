@@ -15,6 +15,18 @@ from ..models.sheet import Sheet
 from ..schemas.sweep import SweepRequest, SweepResponse, SweepResultStep
 
 
+def serialize_result(val: Any) -> Any:
+    if isinstance(val, dict):
+        return {k: serialize_result(v) for k, v in val.items()}
+    if isinstance(val, list):
+        return [serialize_result(v) for v in val]
+    if isinstance(val, bool):
+        return val
+    if isinstance(val, (int, float)):
+        return str(val)
+    return val
+
+
 router = APIRouter(prefix="/sheets", tags=["sweep"])
 
 
@@ -42,6 +54,7 @@ async def sweep_sheet(
     for out_id in body.output_node_ids:
         if str(out_id) not in all_node_ids:
             raise HTTPException(status_code=400, detail=f"Output node {out_id} not found in sheet.")
+
 
     sweep_results: List[SweepResultStep] = []
     
@@ -108,8 +121,8 @@ async def sweep_sheet(
              
         for item in results_list:
             step_result = SweepResultStep(
-                input_value=item.get("input_value"), 
-                outputs=item.get("outputs", {})
+                input_value=serialize_result(item.get("input_value")), 
+                outputs=serialize_result(item.get("outputs", {}))
             )
             if "error" in item:
                 step_result.error = item["error"]
