@@ -8,14 +8,17 @@ from typing import Any, Dict, Optional
 
 from pydantic import BaseModel
 
-try:
-    from .runtime import SheetBase, NodeError, node, sheet, function_node, constant_node, input_node, output_node, sheet_node
-except ImportError:
-    # Fallback for different execution contexts
-    try:
-        from src.core.runtime import SheetBase, NodeError, node, sheet, function_node, constant_node, input_node, output_node, sheet_node
-    except ImportError:
-        from backend.src.core.runtime import SheetBase, NodeError, node, sheet, function_node, constant_node, input_node, output_node, sheet_node
+from .runtime import (
+    SheetBase,
+    NodeError,
+    node,
+    sheet,
+    function_node,
+    constant_node,
+    input_node,
+    output_node,
+    sheet_node,
+)
 
 
 class ExecutionResult(BaseModel):

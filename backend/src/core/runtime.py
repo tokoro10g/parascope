@@ -243,9 +243,6 @@ class SheetBase:
                             # Use internal_error to get the root cause even if the output node was silenced
                             err = res.get('internal_error') or res.get('error')
                             raise NodeError(nid, f"Output '{lbl}' failed: {err}")
-                        elif 'error' in res:
-                             # Fallback for legacy
-                             raise NodeError(nid, f"Output '{lbl}' failed: {res.get('error')}")
 
                     # The value of an output node is what it 'passed through'
                     val = res.get('value')
