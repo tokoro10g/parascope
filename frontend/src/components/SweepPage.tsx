@@ -9,6 +9,60 @@ import { useAuth } from '../contexts/AuthContext';
 import { NavBar } from './NavBar';
 import './SweepPage.css';
 
+// Helpers to generate consistent colors for strings
+const strHash = (s: string) => {
+  let h = 0;
+  for (let i = 0; i < s.length; i++)
+    h = (Math.imul(31, h) + s.charCodeAt(i)) | 0;
+  return h;
+};
+
+const getColor = (s: string) => {
+  if (!s) return '#ccc';
+  const hue = Math.abs(strHash(s)) % 360;
+  return `hsl(${hue}, 70%, 50%)`;
+};
+
+const renderTimelineItem = (params: any, api: any) => {
+  const categoryIndex = api.value(0);
+  const start = api.coord([api.value(1), categoryIndex]);
+  const end = api.coord([api.value(2), categoryIndex]);
+  const height = api.size([0, 1])[1] * 0.6;
+
+  const rectShape = {
+    x: start[0],
+    y: start[1] - height / 2,
+    width: end[0] - start[0],
+    height: height,
+  };
+
+  return {
+    type: 'group',
+    children: [
+      {
+        type: 'rect',
+        shape: rectShape,
+        style: {
+          fill: getColor(api.value(3) as string),
+        },
+      },
+      {
+        type: 'text',
+        style: {
+          text: api.value(3),
+          fill: '#fff',
+          textAlign: 'center',
+          textVerticalAlign: 'middle',
+          x: rectShape.x + rectShape.width / 2,
+          y: rectShape.y + rectShape.height / 2,
+          width: rectShape.width - 4, // Padding
+          overflow: 'truncate',
+        },
+      },
+    ],
+  };
+};
+
 export const SweepPage: React.FC = () => {
   const { sheetId } = useParams<{ sheetId: string }>();
   const navigate = useNavigate();
@@ -263,74 +317,117 @@ export const SweepPage: React.FC = () => {
           axisLabel: { color: theme.text },
           splitLine: { show: true, lineStyle: { color: theme.grid } },
         });
+
+        const data = results.map((r) => [
+          r.input_value,
+          r.outputs[id],
+        ]);
+
+        const min =
+          node?.data?.min !== undefined && node.data.min !== ''
+            ? Number(node.data.min)
+            : undefined;
+        const max =
+          node?.data?.max !== undefined && node.data.max !== ''
+            ? Number(node.data.max)
+            : undefined;
+
+        const markArea =
+          min !== undefined || max !== undefined
+            ? {
+                silent: true,
+                itemStyle: {
+                  color: 'rgba(76, 175, 80, 0.1)',
+                },
+                label: {
+                  position: 'insideRight',
+                  color: theme.text,
+                },
+                data: [
+                  [
+                    {
+                      name: `${label} Range`,
+                      yAxis: min !== undefined ? min : -Infinity,
+                    },
+                    {
+                      yAxis: max !== undefined ? max : Infinity,
+                    },
+                  ],
+                ],
+              }
+            : undefined;
+
+        return {
+          name: label,
+          type: 'line',
+          data: data,
+          symbolSize: 6,
+          showSymbol: true,
+          xAxisIndex: index,
+          yAxisIndex: index,
+          markArea,
+        };
       } else {
-        // Categorical Axis
-        const uniqueValues = Array.from(
-          new Set(rawValues.map((v) => String(v ?? ''))),
-        ).sort();
+        // Timeline Chart equivalent using 'custom' series (Profile example)
         yAxes.push({
           type: 'category',
-          data: uniqueValues,
+          data: [label], // Single category represented by the label name
+          gridIndex: index,
           name: label,
           nameLocation: 'middle',
           nameGap: 40,
-          gridIndex: index,
-          axisLine: { lineStyle: { color: theme.text } },
-          axisLabel: { color: theme.text },
-          splitLine: { show: true, lineStyle: { color: theme.grid } },
+          axisLine: { show: false },
+          axisTick: { show: false },
+          axisLabel: {
+            show: false,
+          },
         });
+
+        // Compute Segments
+        // [categoryIndex, start, end, value]
+        const segments: any[] = [];
+        let currentStart = results[0].input_value;
+        let currentVal = String(results[0].outputs[id] ?? '');
+
+        for (let i = 1; i < results.length; i++) {
+          const nextVal = String(results[i].outputs[id] ?? '');
+          const nextInput = results[i].input_value;
+
+          if (nextVal !== currentVal) {
+            segments.push([0, currentStart, nextInput, currentVal]);
+            currentStart = nextInput;
+            currentVal = nextVal;
+          }
+        }
+        // Last segment extension
+        let finalEnd = currentStart;
+        if (results.length > 1) {
+          const lastStep =
+            results[results.length - 1].input_value -
+            results[results.length - 2].input_value;
+          finalEnd = results[results.length - 1].input_value + lastStep;
+        } else {
+          finalEnd = currentStart + 1;
+        }
+        segments.push([0, currentStart, finalEnd, currentVal]);
+
+        return {
+          type: 'custom',
+          name: label,
+          renderItem: renderTimelineItem,
+          tooltip: {
+            show: false,
+          },
+          encode: {
+              x: [1, 2], // Start, End
+              y: 0,      // Category
+              tooltip: [3, 1, 2] // Value, Start, End for tooltip
+          },
+          data: segments,
+          xAxisIndex: index,
+          yAxisIndex: index,
+        };
       }
-
-      const data = results.map((r) => [
-        r.input_value,
-        isNumeric ? r.outputs[id] : String(r.outputs[id] ?? ''),
-      ]);
-
-      const min =
-        node?.data?.min !== undefined && node.data.min !== ''
-          ? Number(node.data.min)
-          : undefined;
-      const max =
-        node?.data?.max !== undefined && node.data.max !== ''
-          ? Number(node.data.max)
-          : undefined;
-
-      const markArea =
-        isNumeric && (min !== undefined || max !== undefined)
-          ? {
-              silent: true,
-              itemStyle: {
-                color: 'rgba(76, 175, 80, 0.1)', // Light green to indicate valid range
-              },
-              label: {
-                position: 'insideRight',
-                color: theme.text,
-              },
-              data: [
-                [
-                  {
-                    name: `${label} Range`,
-                    yAxis: min !== undefined ? min : -Infinity,
-                  },
-                  {
-                    yAxis: max !== undefined ? max : Infinity,
-                  },
-                ],
-              ],
-            }
-          : undefined;
-
-      return {
-        name: label,
-        type: 'line',
-        step: isNumeric ? undefined : 'start', // Step chart for categorical
-        data: data,
-        symbolSize: 6,
-        showSymbol: true,
-        xAxisIndex: index,
-        yAxisIndex: index,
-        markArea,
-      };
     });
 
     return {
