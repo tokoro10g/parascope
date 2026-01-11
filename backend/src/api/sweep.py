@@ -43,7 +43,6 @@ async def sweep_sheet(
         if str(out_id) not in all_node_ids:
             raise HTTPException(status_code=400, detail=f"Output node {out_id} not found in sheet.")
 
-    processor = GraphProcessor(sheet, db)
     sweep_results: List[SweepResultStep] = []
     
     try:
@@ -82,40 +81,44 @@ async def sweep_sheet(
     if start_val.is_integer() and end_val.is_integer() and increment_val.is_integer():
         input_values = np.round(input_values).astype(int)
 
+    # Convert numpy array to generic python list for repr() serialization
+    input_values_list = input_values.tolist()
+
     generator = CodeGenerator(db)
+    
+    # Prepare static overrides
+    static_overrides = {str(k): v for k, v in body.input_overrides.items()}
+    output_ids_str = [str(oid) for oid in body.output_node_ids]
 
-    for val in input_values:
-        # Merge static overrides with current sweep value
-        input_overrides = {str(k): v for k, v in body.input_overrides.items()}
-        # Ensure we pass a native Python type (int or float), not numpy type
-        input_overrides[str(body.input_node_id)] = val.item() if isinstance(val, (np.integer, np.floating)) else val
+    try:
+        script = await generator.generate_sweep_script(
+            root_sheet=sheet,
+            input_values=input_values_list,
+            input_node_id=str(body.input_node_id),
+            static_overrides=static_overrides,
+            output_node_ids=output_ids_str
+        )
         
-        step_result = SweepResultStep(input_value=val, outputs={})
+        exec_result = execute_full_script(script, timeout=30.0) # Extend timeout for sweeps
+        
+        results_list = exec_result.get("results", [])
+        if not isinstance(results_list, list):
+             # Fallback if execution completely failed globally
+             results_list = []
+             
+        for item in results_list:
+            step_result = SweepResultStep(
+                input_value=item.get("input_value"), 
+                outputs=item.get("outputs", {})
+            )
+            if "error" in item:
+                step_result.error = item["error"]
+            sweep_results.append(step_result)
 
-        try:
-            script = await generator.generate_full_script(sheet, input_overrides)
-            exec_result = execute_full_script(script)
-            results = exec_result.get("results", {})
-
-            for out_id in body.output_node_ids:
-                node_result = results.get(str(out_id))
-                
-                if isinstance(node_result, dict):
-                    if 'value' in node_result:
-                         step_result.outputs[out_id] = node_result['value']
-                    else:
-                        found_val = None
-                        for v in node_result.values():
-                            if isinstance(v, (int, float)):
-                                found_val = v
-                                break
-                        step_result.outputs[out_id] = found_val
-                else:
-                    step_result.outputs[out_id] = node_result
-        except Exception as e:
-            step_result.error = str(e)
-
-        sweep_results.append(step_result)
+    except Exception as e:
+         # Global generation error
+         # In a real app we might want to panic better
+         print(f"Sweep generation failed: {e}")
 
     return SweepResponse(results=sweep_results)
 
