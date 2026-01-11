@@ -11,7 +11,9 @@ from sqlalchemy.orm import selectinload
 
 from ..core.database import get_db
 from ..core.exceptions import GraphExecutionError
-from ..core.graph import GraphProcessor
+# from ..core.graph import GraphProcessor # Deprecated
+from ..core.generator import CodeGenerator
+from ..core.execution import execute_full_script
 from ..models.sheet import Connection, Node, Sheet
 from ..schemas.sheet import SheetCreate
 
@@ -31,9 +33,9 @@ def serialize_result(val: Any) -> Any:
     return val
 
 
-def _prepare_processor(
-    sheet: Sheet, inputs: Dict[str, Dict[str, Any]], db: AsyncSession
-) -> Tuple[GraphProcessor, Dict[str, Any]]:
+def _get_input_overrides(
+    sheet: Sheet, inputs: Dict[str, Dict[str, Any]]
+) -> Dict[str, Any]:
     # Map input labels/IDs to IDs
     input_overrides = {}
     input_nodes_by_label = {n.label: n for n in sheet.nodes if n.type == "input"}
@@ -45,29 +47,37 @@ def _prepare_processor(
             input_overrides[str(input_nodes_by_label[key].id)] = val
         elif key in input_nodes_by_id:
             input_overrides[key] = val
-
-    return GraphProcessor(sheet, db), input_overrides
+    return input_overrides
 
 
 async def _run_calculation(
     sheet: Sheet, inputs: Dict[str, Dict[str, Any]], db: AsyncSession
 ):
-    processor, input_overrides = _prepare_processor(sheet, inputs, db)
+    input_overrides = _get_input_overrides(sheet, inputs)
 
-    # Generate script first (for both inspection and execution)
-    script = await processor.generate_script(input_overrides=input_overrides)
+    # Generate script
+    generator = CodeGenerator(db)
+    script = await generator.generate_full_script(sheet, input_overrides)
 
     # Execute script
-    results = await processor.execute_script(script)
+    exec_result = execute_full_script(script)
+    results = exec_result.get("results", {})
 
     # Build detailed response
     detailed_results = {}
-    for node_id, result_val in results.items():
-        if node_id not in processor.node_map:
-            # Skip results that are not nodes
-            continue
+    
+    # Build edge map: target_node_id -> { target_port: (source_node_id, source_port) }
+    edge_map = {}
+    for node in sheet.nodes:
+        edge_map[str(node.id)] = {}
+        
+    for conn in sheet.connections:
+        t_id = str(conn.target_id)
+        if t_id not in edge_map: edge_map[t_id] = {}
+        edge_map[t_id][conn.target_port] = (str(conn.source_id), conn.source_port)
 
-        node = processor.node_map[node_id]
+    for node in sheet.nodes:
+        node_id = str(node.id)
 
         node_resp = {
             "type": node.type,
@@ -77,46 +87,46 @@ async def _run_calculation(
             "valid": True,
         }
 
+        res_data = results.get(node_id, {})
+        
         # Check for error and validity
-        if isinstance(result_val, dict):
-            if "error" in result_val:
-                node_resp["error"] = result_val["error"]
-            if "valid" in result_val:
-                node_resp["valid"] = result_val["valid"]
+        if "error" in res_data and res_data["error"]:
+            node_resp["error"] = res_data["error"]
+            
+        if "valid" in res_data:
+            node_resp["valid"] = res_data["valid"]
+            
+        val = res_data.get("value")
 
         # Populate inputs
         if node.type not in ["input", "constant"]:
-            in_edges = processor.graph.in_edges(node.id, data=True)
-            for u, _v, data in in_edges:
-                target_port = data["target_port"]
-                source_port = data["source_port"]
-                if u in results:
-                    source_node = processor.node_map[u]
-                    source_res = results[u]
-                    val = None
-
-                    # Handle source result being an error dict
-                    if isinstance(source_res, dict) and "error" in source_res:
-                        val = source_res.get("value")
-                    elif source_node.type in ["input", "constant"]:
-                        val = source_res.get("value")
-                    elif source_node.type in ["function", "sheet"]:
-                        val = source_res.get(source_port)
-                    elif source_node.type == "output":
-                        val = source_res
-                    else:
-                        val = source_res
-
-                    node_resp["inputs"][target_port] = val
+            node_edges = edge_map.get(node_id, {})
+            for port, (src_id, src_port) in node_edges.items():
+                src_res = results.get(src_id, {})
+                src_val = src_res.get("value")
+                
+                actual_val = None
+                if isinstance(src_val, dict) and src_port:
+                    actual_val = src_val.get(src_port)
+                else:
+                    actual_val = src_val
+                
+                node_resp["inputs"][port] = actual_val
 
         # Populate outputs
         if node.type in ["function", "sheet"]:
-            node_resp["outputs"] = result_val
+            node_resp["outputs"] = val if val is not None else {}
         else:
-            val = result_val.get("value")
             node_resp["outputs"] = {"value": val}
 
-        detailed_results[str(node_id)] = serialize_result(node_resp)
+        detailed_results[node_id] = serialize_result(node_resp)
+        
+    # Global script error?
+    if not exec_result.get("success"):
+        # We can attach the global error to the response if needed, 
+        # or it appeared as node errors?
+        # If script failed to parse, results might be empty.
+        pass
 
     return {"results": detailed_results}
 
@@ -160,8 +170,10 @@ async def generate_script_preview(
     db: AsyncSession = Depends(get_db),
 ):
     sheet = _construct_sheet(body)
-    processor, input_overrides = _prepare_processor(sheet, body.inputs, db)
-    script = await processor.generate_script(input_overrides=input_overrides)
+    input_overrides = _get_input_overrides(sheet, body.inputs)
+    
+    generator = CodeGenerator(db)
+    script = await generator.generate_full_script(sheet, input_overrides)
     return {"script": script}
 
 
@@ -184,8 +196,9 @@ async def generate_script_sheet(
     if not sheet:
         raise HTTPException(status_code=404, detail="Sheet not found")
 
-    processor, input_overrides = _prepare_processor(sheet, inputs, db)
-    script = await processor.generate_script(input_overrides=input_overrides)
+    input_overrides = _get_input_overrides(sheet, inputs)
+    generator = CodeGenerator(db)
+    script = await generator.generate_full_script(sheet, input_overrides)
     return {"script": script}
 
 

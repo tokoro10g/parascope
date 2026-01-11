@@ -8,6 +8,15 @@ from typing import Any, Dict, Optional
 
 from pydantic import BaseModel
 
+try:
+    from .runtime import SheetBase, NodeError
+except ImportError:
+    # Fallback for different execution contexts
+    try:
+        from src.core.runtime import SheetBase, NodeError
+    except ImportError:
+        from backend.src.core.runtime import SheetBase, NodeError
+
 
 class ExecutionResult(BaseModel):
     result: Optional[Any] = None
@@ -24,11 +33,13 @@ _result_queue: Optional[multiprocessing.Queue] = None
 _worker_lock = threading.Lock()
 
 
-def _persistent_worker_loop(task_queue, result_queue):
+def _persistent_worker_loop(task_queue, result_queue, runtime_classes):
     """
     Long-running worker loop.
     Pre-imports heavy libraries to save time on subsequent runs.
     """
+    SheetBase, NodeError = runtime_classes
+
     # Pre-import common scientific libraries
     try:
         import math
@@ -47,7 +58,10 @@ def _persistent_worker_loop(task_queue, result_queue):
             redirected_output = io.StringIO()
             sys.stdout = redirected_output
 
-            global_vars = {}
+            global_vars = {
+                "SheetBase": SheetBase,
+                "NodeError": NodeError
+            }
             success = False
             error = None
             results = {}
@@ -84,7 +98,7 @@ def _ensure_worker():
         _result_queue = multiprocessing.Queue()
         _worker_process = multiprocessing.Process(
             target=_persistent_worker_loop,
-            args=(_task_queue, _result_queue),
+            args=(_task_queue, _result_queue, (SheetBase, NodeError)),
             daemon=True
         )
         _worker_process.start()

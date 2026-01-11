@@ -8,9 +8,12 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
 
 from ..core.database import get_db
-from ..core.graph import GraphProcessor
+# from ..core.graph import GraphProcessor
+from ..core.generator import CodeGenerator
+from ..core.execution import execute_full_script
 from ..models.sheet import Sheet
 from ..schemas.sweep import SweepRequest, SweepResponse, SweepResultStep
+
 
 router = APIRouter(prefix="/sheets", tags=["sweep"])
 
@@ -79,6 +82,8 @@ async def sweep_sheet(
     if start_val.is_integer() and end_val.is_integer() and increment_val.is_integer():
         input_values = np.round(input_values).astype(int)
 
+    generator = CodeGenerator(db)
+
     for val in input_values:
         # Merge static overrides with current sweep value
         input_overrides = {str(k): v for k, v in body.input_overrides.items()}
@@ -88,11 +93,12 @@ async def sweep_sheet(
         step_result = SweepResultStep(input_value=val, outputs={})
 
         try:
-            script = await processor.generate_script(input_overrides=input_overrides)
-            results = await processor.execute_script(script)
+            script = await generator.generate_full_script(sheet, input_overrides)
+            exec_result = execute_full_script(script)
+            results = exec_result.get("results", {})
 
             for out_id in body.output_node_ids:
-                node_result = results.get(out_id)
+                node_result = results.get(str(out_id))
                 
                 if isinstance(node_result, dict):
                     if 'value' in node_result:
