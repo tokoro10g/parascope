@@ -85,6 +85,7 @@ export const SheetEditor: React.FC = () => {
     }));
 
     return {
+      name: 'Preview',
       nodes,
       connections,
     };
