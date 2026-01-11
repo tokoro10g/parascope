@@ -257,7 +257,7 @@ export const getSweepChartOption = (
       color: theme.text,
     },
     axisPointer: {
-      link: { xAxisIndex: 'all' },
+      link: [{ xAxisIndex: 'all' }],
       label: {
         backgroundColor: '#777',
       },
