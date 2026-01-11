@@ -369,7 +369,7 @@ async def seed_database(session: AsyncSession):
         outputs=[{"key": "value", "socket_type": "any"}],
         position_x=100,
         position_y=100,
-        data={"value": 2000, "description": "Mass of the payload to be delivered to orbit."},
+        data={"value": "2000", "description": "Mass of the payload to be delivered to orbit."},
     )
     node_prop = Node(
         id=uuid.uuid4(),
@@ -380,7 +380,7 @@ async def seed_database(session: AsyncSession):
         outputs=[{"key": "value", "socket_type": "any"}],
         position_x=100,
         position_y=250,
-        data={"value": 93000, "description": "Mass of the propellant."},
+        data={"value": "93000", "description": "Mass of the propellant."},
     )
     node_struc = Node(
         id=uuid.uuid4(),
@@ -391,7 +391,7 @@ async def seed_database(session: AsyncSession):
         outputs=[{"key": "value", "socket_type": "any"}],
         position_x=100,
         position_y=400,
-        data={"value": 5000, "description": "Mass of the rocket structure (tanks, engines, etc.)."},
+        data={"value": "5000", "description": "Mass of the rocket structure (tanks, engines, etc.)."},
     )
     node_ssto_isp = Node(
         id=uuid.uuid4(),
@@ -402,7 +402,7 @@ async def seed_database(session: AsyncSession):
         outputs=[{"key": "value", "socket_type": "any"}],
         position_x=100,
         position_y=550,
-        data={"value": 380, "description": "Specific Impulse of the SSTO engine."},
+        data={"value": "380", "description": "Specific Impulse of the SSTO engine."},
     )
     node_target_dv = Node(
         id=uuid.uuid4(),
@@ -413,7 +413,7 @@ async def seed_database(session: AsyncSession):
         outputs=[{"key": "value", "socket_type": "any"}],
         position_x=100,
         position_y=700,
-        data={"value": 9000, "description": "Required Delta-V to reach the target orbit."},
+        data={"value": "9000", "description": "Required Delta-V to reach the target orbit."},
     )
 
     # Function: Mass Sums
@@ -644,7 +644,7 @@ async def seed_database(session: AsyncSession):
         outputs=[{"key": "value", "socket_type": "any"}],
         position_x=100,
         position_y=300,
-        data={"value": 1.0, "description": "Volume of the component."},
+        data={"value": "1.0", "description": "Volume of the component."},
     )
 
     node_density_func = Node(

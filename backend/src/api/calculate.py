@@ -4,6 +4,7 @@ from typing import Any, Dict, Tuple
 from uuid import UUID
 
 from fastapi import APIRouter, Depends, HTTPException
+from fastapi.responses import PlainTextResponse
 from pydantic import BaseModel
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -177,14 +178,11 @@ async def generate_script_preview(
     return {"script": script}
 
 
-@router.post("/{sheet_id}/script")
+@router.get("/{sheet_id}/script", response_class=PlainTextResponse)
 async def generate_script_sheet(
     sheet_id: UUID,
-    inputs: Dict[str, Dict[str, Any]] = None,
     db: AsyncSession = Depends(get_db),
 ):
-    if inputs is None:
-        inputs = {}
     query = (
         select(Sheet)
         .where(Sheet.id == sheet_id)
@@ -196,10 +194,10 @@ async def generate_script_sheet(
     if not sheet:
         raise HTTPException(status_code=404, detail="Sheet not found")
 
-    input_overrides = _get_input_overrides(sheet, inputs)
+    input_overrides = {}
     generator = CodeGenerator(db)
     script = await generator.generate_full_script(sheet, input_overrides)
-    return {"script": script}
+    return script
 
 
 @router.post("/{sheet_id}")
