@@ -275,19 +275,7 @@ except Exception as e:
             if method_code:
                 result_code.append(textwrap.indent(method_code, "    "))
         
-        # 4. Generate get_public_outputs helper (Optional but good for explicit API)
-        output_nodes = [n for n in sheet.nodes if n.type == 'output']
-        if output_nodes:
-            expose_body = ["return {"]
-            for n in output_nodes:
-                nid = str(n.id)
-                label = n.label
-                # Values are registered by node ID in results
-                expose_body.append(f"    '{label}': self.results.get('{nid}', {{}}).get('value'),")
-            expose_body.append("}")
-            
-            result_code.append("    def get_public_outputs(self):")
-            result_code.append(textwrap.indent("\n".join(expose_body), "        "))
+
 
         return "\n".join(result_code)
 

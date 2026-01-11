@@ -203,8 +203,25 @@ class SheetBase:
         except ValueError:
             return float(value)
 
+    def get_public_outputs(self) -> Dict[str, Any]:
+        """
+        Collect values from all output nodes.
+        """
+        outputs = {}
+        for name in dir(self):
+            attr = getattr(self, name)
+            if hasattr(attr, '_node_config'):
+                cfg = attr._node_config
+                if cfg.get('type') == 'output':
+                    lbl = cfg.get('label') or name
+                    nid = cfg['id']
+                    # The value of an output node is what it 'passed through'
+                    val = self.results.get(nid, {}).get('value')
+                    outputs[lbl] = val
+        return outputs
+
     # --- Execution ---
-    def run(self) -> Dict[str, Dict[str, Any]]:
+    def run(self) -> Dict[str, Any]:
         """
         Main execution method.
         Dynamically discovers decorated methods, builds dependency graph, and executes.
@@ -284,19 +301,4 @@ class SheetBase:
                 self.register_error(node_id, str(e))
         
         # 5. Collect Public Outputs
-        # Default behavior: use get_public_outputs if exists (generated helper), 
-        # or scan for type='output'
-        if hasattr(self, 'get_public_outputs'):
-            return self.get_public_outputs()
-        
-        # Fallback dynamic collection
-        outputs = {}
-        for name, method in methods.items():
-            cfg = method._node_config
-            if cfg.get('type') == 'output':
-                lbl = cfg.get('label') or name
-                nid = cfg['id']
-                # The value of an output node is what it 'passed through'
-                val = self.results.get(nid, {}).get('value')
-                outputs[lbl] = val
-        return outputs
+        return self.get_public_outputs()
