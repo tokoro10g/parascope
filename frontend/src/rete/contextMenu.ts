@@ -7,7 +7,7 @@ export interface ContextMenuCallbacks {
   onEditNestedSheet?: (nodeId: string) => void;
   onNodeTypeChange?: (nodeId: string, type: string) => void;
   onNodeDuplicate?: (nodeId: string) => void;
-  onNodeRemove?: (nodeId: string) => Promise<boolean>;
+  onNodeRemove?: (nodeId: string) => Promise<void>;
 }
 
 export function createContextMenuPlugin(
@@ -104,16 +104,8 @@ export function createContextMenuPlugin(
           key: 'delete',
           handler: async () => {
             if (callbacks.onNodeRemove) {
-              const shouldRemove = await callbacks.onNodeRemove(context.id);
-              if (!shouldRemove) return;
+              await callbacks.onNodeRemove(context.id);
             }
-            const connections = editor.getConnections().filter((c) => {
-              return c.source === context.id || c.target === context.id;
-            });
-            for (const c of connections) {
-              await editor.removeConnection(c.id);
-            }
-            await editor.removeNode(context.id);
           },
         },
       );

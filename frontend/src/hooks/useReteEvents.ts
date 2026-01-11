@@ -134,13 +134,7 @@ export function useReteEvents(
           handleNodeUpdate(nodeId, { type });
         },
         onNodeRemove: async (nodeId: string) => {
-          const node = editor.editor.getNode(nodeId);
-          if (node && (node.type === 'input' || node.type === 'output')) {
-            return window.confirm(
-              `Deleting this ${node.type} node may break sheets that use this sheet as a function. Are you sure?`,
-            );
-          }
-          return true;
+          onDelete([nodeId]);
         },
         onEditNestedSheet: handleEditNestedSheet,
       });
