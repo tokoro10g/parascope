@@ -197,8 +197,14 @@ export async function createEditor(container: HTMLElement) {
     ) => {
       onInputValueChange = cb;
     },
-    undo: () => history.undo(),
-    redo: () => history.redo(),
+    undo: async () => {
+      await history.undo();
+      if (onGraphChange) onGraphChange();
+    },
+    redo: async () => {
+      await history.redo();
+      if (onGraphChange) onGraphChange();
+    },
     addHistoryAction: (action: {
       redo: () => Promise<void> | void;
       undo: () => Promise<void> | void;
