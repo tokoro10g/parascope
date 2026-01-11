@@ -1,5 +1,6 @@
 import textwrap
 import uuid
+import ast
 import networkx as nx
 from typing import Any, Dict, List, Set, Tuple
 from sqlalchemy import select
@@ -160,6 +161,21 @@ except Exception as e:
             args_str = ", ".join(args_list)
 
             code = node.data.get("code", "pass")
+            
+            # Syntax Check
+            try:
+                # We wrap it in a function def to check context (e.g. return statement validity)
+                # But simple check is ast.parse
+                ast.parse(code)
+            except SyntaxError as e:
+                # Generate a method that raises this error at runtime
+                # We escape the error message
+                err_msg = str(e).replace('"', '\\"').replace("'", "\\'")
+                return f"""
+def node_{nid}(self, {args_str}):
+    raise SyntaxError("{err_msg}")
+"""
+
             indented_code = textwrap.indent(code, "    ")
             
             # Outputs
