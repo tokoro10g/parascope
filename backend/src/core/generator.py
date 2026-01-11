@@ -37,11 +37,13 @@ try:
     overrides = {repr(input_overrides)}
     sheet = {root_class_name}(input_overrides=overrides)
     sheet.run()
-    results = sheet.results
 except Exception as e:
     import traceback
     traceback.print_exc()
-    if 'results' not in locals():
+finally:
+    if 'sheet' in locals():
+        results = sheet.results
+    else:
         results = {{}}
 """
         return header + definitions_code + entry_point

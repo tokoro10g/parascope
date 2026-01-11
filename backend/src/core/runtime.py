@@ -13,6 +13,10 @@ class NodeError(ParascopeError):
         self.message = message
         super().__init__(f"Error in node {node_id}: {message}")
 
+class ValueValidationError(ParascopeError):
+    """Raised when a value validation fails (range, options, types)"""
+    pass
+
 class DependencyError(ParascopeError):
     """Raised when a node fails due to upstream dependency failure"""
     def __init__(self, message: str = None):
@@ -84,7 +88,7 @@ def input_node(node_id: str, label: str = None, value: Any = None, min: float = 
         def wrapper(self, *args, **kwargs):
             val = self.get_input_value(node_id, label, default=value)
             if val is None: 
-                raise ValueError(f"Input '{label}' required")
+                raise ValueValidationError(f"Input '{label}' required")
             
             if options:
                 val = self.validate_option(val, options)
@@ -194,7 +198,7 @@ class SheetBase:
         # Convert to string for comparison matches frontend behavior
         str_val = str(value)
         if str_val not in options:
-            raise ValueError(f"Value '{value}' is not in allowed options: {options}")
+            raise ValueValidationError(f"Value '{value}' is not in allowed options: {options}")
         return str_val
 
     def validate_range(self, value: Any, min_val: Optional[float], max_val: Optional[float]) -> Any:
@@ -204,13 +208,13 @@ class SheetBase:
             return value # Cannot range check non-numbers
         
         if min_val is not None and value < min_val:
-             raise ValueError(f"Value {value} is below minimum {min_val}")
+             raise ValueValidationError(f"Value {value} is below minimum {min_val}")
         if max_val is not None and value > max_val:
-             raise ValueError(f"Value {value} is above maximum {max_val}")
+             raise ValueValidationError(f"Value {value} is above maximum {max_val}")
         return value
 
-    def parse_number(self, value: Any) -> Union[int, float, None]:
-        if value is None or value == "":
+    def parse_number(self, value: Any) -> Union[int, float, str, None]:
+        if value is None:
             return None
         if isinstance(value, (int, float)):
             return value
@@ -220,7 +224,7 @@ class SheetBase:
             try:
                 return float(value)
             except (ValueError, TypeError):
-                return None
+                return value
 
     def get_public_outputs(self, raise_on_error: bool = False) -> Dict[str, Any]:
         """
@@ -325,22 +329,33 @@ class SheetBase:
                 # Register Result (Handle dicts vs usage)
                 self.register_result(node_id, res)
                 
-            except DependencyError as e:
-                # Upstream failure
+            except (DependencyError, ValueValidationError) as e:
+                # Upstream failure or Validation failure
+                is_validation = isinstance(e, ValueValidationError)
+                
                 # If this is an output node, we MUST show the error to escape the sheet boundary
                 # Otherwise, stay silent to reduce clutter
-                show_error = cfg.get('type') == 'output'
+                show_error = cfg.get('type') == 'output' or is_validation
                 
+                # For validation errors, we always want to show the message on the node itself
+                msg = str(e) if is_validation else e.message
+
                 self.register_error(
                     node_id, 
-                    error=e.message if show_error else None,
-                    internal_error=e.message
+                    error=msg if show_error else None,
+                    internal_error=msg
                 )
+                
+                # If it's a validation error (e.g. invalid input, missing field), stop the entire sheet
+                if is_validation:
+                    raise e
 
             except Exception as e:
                 # Capture method-level errors (these are always visible)
                 tb = traceback.format_exc()
                 self.register_error(node_id, f"{str(e)}\n\n{tb}")
+                # For unexpected errors, stop execution
+                raise e
         
         # 5. Collect Public Outputs
         return self.get_public_outputs()
