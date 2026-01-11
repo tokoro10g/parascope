@@ -204,12 +204,47 @@ export const SweepPage: React.FC = () => {
 
       const data = results.map((r) => [r.input_value, r.outputs[id]]);
 
+      const min =
+        node?.data?.min !== undefined && node.data.min !== ''
+          ? Number(node.data.min)
+          : undefined;
+      const max =
+        node?.data?.max !== undefined && node.data.max !== ''
+          ? Number(node.data.max)
+          : undefined;
+
+      const markArea =
+        min !== undefined || max !== undefined
+          ? {
+              silent: true,
+              itemStyle: {
+                color: 'rgba(76, 175, 80, 0.1)', // Light green to indicate valid range
+              },
+              label: {
+                position: 'insideRight',
+                color: theme.text,
+              },
+              data: [
+                [
+                  {
+                    name: `${label} Range`,
+                    yAxis: min !== undefined ? min : -Infinity,
+                  },
+                  {
+                    yAxis: max !== undefined ? max : Infinity,
+                  },
+                ],
+              ],
+            }
+          : undefined;
+
       return {
         name: label,
         type: 'line',
         data: data,
         symbolSize: 6,
         showSymbol: true,
+        markArea,
       };
     });
 
