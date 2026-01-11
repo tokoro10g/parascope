@@ -311,6 +311,12 @@ export const SweepPage: React.FC = () => {
         fontFamily: theme.font,
         color: theme.text,
       },
+      axisPointer: {
+        link: { xAxisIndex: 'all' },
+        label: {
+          backgroundColor: '#777',
+        },
+      },
       tooltip: {
         trigger: 'axis',
         axisPointer: {
