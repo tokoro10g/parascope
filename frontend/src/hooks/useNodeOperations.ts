@@ -145,6 +145,14 @@ export function useNodeOperations(
       if (!editor) return;
       const node = editor.getNode(nodeId);
       if (!node) return;
+
+      const connections = editor.getConnections().filter((c) => {
+        return c.source === nodeId || c.target === nodeId;
+      });
+      for (const c of connections) {
+        await editor.removeConnection(c.id);
+      }
+
       await editor.removeNode(nodeId);
       setNodes([...editor.getNodes()]);
       setIsDirty(true);
