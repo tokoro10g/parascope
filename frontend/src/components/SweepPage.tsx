@@ -197,10 +197,65 @@ export const SweepPage: React.FC = () => {
     if (!results || results.length === 0) return {};
 
     const plottedIds = Object.keys(results[0].outputs);
+    const count = plottedIds.length;
+    const gap = 5; // gap in percent
+    const topMargin = 10;
+    const bottomMargin = 10;
+    const availableHeight = 100 - topMargin - bottomMargin;
+    // Height for each grid
+    // h * count + gap * (count - 1) = availableHeight
+    // h * count = availableHeight - gap * (count - 1)
+    const gridHeight =
+      count > 1
+        ? (availableHeight - gap * (count - 1)) / count
+        : availableHeight;
 
-    const series = plottedIds.map((id) => {
+    const grids: any[] = [];
+    const xAxes: any[] = [];
+    const yAxes: any[] = [];
+
+    const series = plottedIds.map((id, index) => {
       const node = nodes.find((n) => n.id === id);
       const label = node ? node.label : id;
+
+      // Layout calculations
+      const top = topMargin + index * (gridHeight + gap);
+
+      grids.push({
+        top: `${top}%`,
+        height: `${gridHeight}%`,
+        left: 60,
+        right: 40,
+        containLabel: true,
+      });
+
+      xAxes.push({
+        type: 'value',
+        name: index === count - 1 ? selectedInputLabel : '', // Only last one gets x label
+        nameLocation: 'middle',
+        nameGap: 30,
+        scale: true,
+        gridIndex: index,
+        axisLine: { lineStyle: { color: theme.text } },
+        axisLabel: {
+          color: theme.text,
+          show: index === count - 1, // Optional: hide labels for upper plots if they align
+        },
+        splitLine: { show: true, lineStyle: { color: theme.grid } },
+      });
+
+      yAxes.push({
+        type: 'value',
+        name: label, // Y Axis named after the output
+        nameLocation: 'middle',
+        nameGap: 40,
+        scale: true,
+        gridIndex: index,
+        boundaryGap: ['5%', '5%'],
+        axisLine: { lineStyle: { color: theme.text } },
+        axisLabel: { color: theme.text },
+        splitLine: { show: true, lineStyle: { color: theme.grid } },
+      });
 
       const data = results.map((r) => [r.input_value, r.outputs[id]]);
 
@@ -244,6 +299,8 @@ export const SweepPage: React.FC = () => {
         data: data,
         symbolSize: 6,
         showSymbol: true,
+        xAxisIndex: index,
+        yAxisIndex: index,
         markArea,
       };
     });
@@ -271,56 +328,9 @@ export const SweepPage: React.FC = () => {
           color: theme.text,
         },
       },
-      grid: {
-        top: 60,
-        right: 40,
-        bottom: 60,
-        left: 60,
-        containLabel: true,
-      },
-      xAxis: {
-        type: 'value',
-        name: selectedInputLabel,
-        nameLocation: 'middle',
-        nameGap: 30,
-        scale: true,
-        axisLine: {
-          lineStyle: {
-            color: theme.text,
-          },
-        },
-        axisLabel: {
-          color: theme.text,
-        },
-        splitLine: {
-          show: true,
-          lineStyle: {
-            color: theme.grid,
-          },
-        },
-      },
-      yAxis: {
-        type: 'value',
-        name: 'Output Value',
-        nameLocation: 'middle',
-        nameGap: 40,
-        scale: true,
-        boundaryGap: ['5%', '5%'],
-        axisLine: {
-          lineStyle: {
-            color: theme.text,
-          },
-        },
-        axisLabel: {
-          color: theme.text,
-        },
-        splitLine: {
-          show: true,
-          lineStyle: {
-            color: theme.grid,
-          },
-        },
-      },
+      grid: grids,
+      xAxis: xAxes,
+      yAxis: yAxes,
       series: series as any,
     };
   }, [results, nodes, theme, selectedInputLabel]);
