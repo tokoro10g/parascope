@@ -42,6 +42,84 @@ except Exception as e:
 """
         return header + definitions_code + entry_point
 
+    async def generate_sweep_script(
+        self, 
+        root_sheet: Sheet, 
+        input_values: List[Any], 
+        input_node_id: str, 
+        static_overrides: Dict[str, Any],
+        output_node_ids: List[str]
+    ) -> str:
+        """
+        Generates a script that executes the sheet logic iteratively for a sweep.
+        """
+        # 1. Process dependencies and generate class definitions
+        root_class_name = await self._process_sheet_recursive(root_sheet)
+        
+        # 2. Build the final script
+        # We assume SheetBase, NodeError, math, np are injected into globals
+        header = "import math\nimport numpy as np\n\n"
+        
+        definitions_code = "\n\n".join(self.definitions)
+        
+        entry_point = f"""
+# --- Sweep Execution Entry Point ---
+try:
+    input_values = {repr(input_values)}
+    static_overrides = {repr(static_overrides)}
+    input_node_id = {repr(input_node_id)}
+    output_node_ids = {repr(output_node_ids)}
+    
+    sweep_results = []
+    
+    for val in input_values:
+        current_overrides = static_overrides.copy()
+        current_overrides[input_node_id] = val
+        
+        step_res = {{ "input_value": val, "outputs": {{}} }}
+        
+        try:
+            sheet = {root_class_name}(input_overrides=current_overrides)
+            # Run the sheet
+            raw_results = sheet.run()
+            
+            # Extract requested outputs
+            for out_id in output_node_ids:
+                node_res = raw_results.get(out_id)
+                # Handle different result formats
+                final_val = None
+                if isinstance(node_res, dict):
+                    if 'value' in node_res:
+                         final_val = node_res['value']
+                    elif 'valid' in node_res and not node_res['valid']:
+                         final_val = None # Error state, maybe capture error?
+                    else:
+                        # Try to find a numeric value if it's a multi-output but we want 'the' value
+                        # Default to None if complex
+                        for v in node_res.values():
+                            if isinstance(v, (int, float)):
+                                final_val = v
+                                break
+                else:
+                     final_val = node_res
+                
+                step_res["outputs"][out_id] = final_val
+
+        except Exception as e:
+            step_res["error"] = str(e)
+            
+        sweep_results.append(step_res)
+
+    results = sweep_results
+
+except Exception as e:
+    import traceback
+    traceback.print_exc()
+    if 'results' not in locals():
+        results = []
+"""
+        return header + definitions_code + entry_point
+
     async def _process_sheet_recursive(self, sheet: Sheet) -> str:
         sheet_id_str = str(sheet.id)
         if sheet_id_str in self.processed_sheets:
