@@ -1,9 +1,12 @@
+import logging
 import os
+import traceback
 from contextlib import asynccontextmanager
 from pathlib import Path
 
-from fastapi import FastAPI
+from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import JSONResponse
 
 from .api import attachments, calculate, genai, sheets, sweep
 from .core.config import settings
@@ -44,6 +47,26 @@ app.include_router(sweep.router)
 app.include_router(calculate.router)
 app.include_router(attachments.router)
 app.include_router(genai.router, prefix="/api/genai", tags=["genai"])
+
+
+@app.exception_handler(Exception)
+async def global_exception_handler(request: Request, exc: Exception):
+    error_msg = str(exc)
+    tb = traceback.format_exc()
+    
+    # Log the full error
+    logging.error(f"Global exception: {error_msg}\n{tb}")
+    
+    return JSONResponse(
+        status_code=500,
+        content={
+            "detail": {
+                "message": "Internal Server Error",
+                "error": error_msg,
+                "traceback": tb if settings.DEBUG else None
+            }
+        },
+    )
 
 
 @app.get("/")

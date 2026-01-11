@@ -1,4 +1,5 @@
 import Cookies from 'js-cookie';
+import toast from 'react-hot-toast';
 
 export const API_BASE =
   import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000';
@@ -10,6 +11,60 @@ const getHeaders = (headers: Record<string, string> = {}) => {
   }
   return headers;
 };
+
+async function request<T = any>(url: string, options: RequestInit = {}): Promise<T> {
+  let res: Response;
+  try {
+    res = await fetch(url, options);
+  } catch (e: any) {
+    // Network errors (e.g. offline)
+    const msg = e.message || 'Network error';
+    toast.error(msg);
+    throw e;
+  }
+
+  if (!res.ok) {
+    let message = `Request failed: ${res.status}`;
+    let errorDetails: any = null;
+
+    try {
+      const data = await res.json();
+      errorDetails = data;
+      if (data.detail) {
+        if (typeof data.detail === 'string') {
+          message = data.detail;
+        } else if (typeof data.detail === 'object') {
+          message = data.detail.message || JSON.stringify(data.detail);
+        }
+      }
+    } catch {
+      // If JSON parse fails, try text
+      try {
+        const text = await res.text();
+        if (text) message = text.slice(0, 300); // Truncate long HTML errors
+      } catch {}
+    }
+
+    toast.error(message);
+    
+    const error = new Error(message);
+    // Attach complex details (like node_id) to the error object
+    if (errorDetails?.detail && typeof errorDetails.detail === 'object') {
+      Object.assign(error, errorDetails.detail);
+      // Map node_id to nodeId for frontend consistency
+      if (errorDetails.detail.node_id) {
+        (error as any).nodeId = errorDetails.detail.node_id;
+      }
+    }
+    throw error;
+  }
+
+  if (res.status === 204) {
+    return {} as T;
+  }
+  
+  return res.json();
+}
 
 export interface Sheet {
   id: string;
@@ -78,169 +133,120 @@ export const api = {
     prompt: string,
     existingCode: string = '',
   ): Promise<GenerateFunctionResponse> {
-    const res = await fetch(`${API_BASE}/api/genai/generate_function`, {
+    return request(`${API_BASE}/api/genai/generate_function`, {
       method: 'POST',
       headers: getHeaders({ 'Content-Type': 'application/json' }),
       body: JSON.stringify({ prompt, existing_code: existingCode }),
     });
-    if (!res.ok) throw new Error('Failed to generate function');
-    return res.json();
   },
 
   async listSheets(): Promise<SheetSummary[]> {
-    const res = await fetch(`${API_BASE}/sheets/`, {
+    return request(`${API_BASE}/sheets/`, {
       headers: getHeaders(),
     });
-    return res.json();
   },
 
   async listFolders(): Promise<Folder[]> {
-    const res = await fetch(`${API_BASE}/sheets/folders`, {
+    return request(`${API_BASE}/sheets/folders`, {
       headers: getHeaders(),
     });
-    return res.json();
   },
 
   async deleteFolder(folderId: string): Promise<void> {
-    const res = await fetch(`${API_BASE}/sheets/folders/${folderId}`, {
+    return request(`${API_BASE}/sheets/folders/${folderId}`, {
       method: 'DELETE',
       headers: getHeaders(),
     });
-    if (!res.ok) {
-      const err = await res.json();
-      throw new Error(err.detail || 'Failed to delete folder');
-    }
   },
 
   async createFolder(name: string, parent_id?: string): Promise<Folder> {
-    const res = await fetch(`${API_BASE}/sheets/folders`, {
+    return request(`${API_BASE}/sheets/folders`, {
       method: 'POST',
       headers: getHeaders({ 'Content-Type': 'application/json' }),
       body: JSON.stringify({ name, parent_id }),
     });
-    return res.json();
   },
 
   async createSheet(
     name: string = 'Untitled',
     folder_id?: string,
   ): Promise<Sheet> {
-    const res = await fetch(`${API_BASE}/sheets/`, {
+    return request(`${API_BASE}/sheets/`, {
       method: 'POST',
       headers: getHeaders({ 'Content-Type': 'application/json' }),
       body: JSON.stringify({ name, folder_id }),
     });
-    return res.json();
   },
 
   async getSheet(id: string): Promise<Sheet> {
-    const res = await fetch(`${API_BASE}/sheets/${id}`, {
+    return request(`${API_BASE}/sheets/${id}`, {
       headers: getHeaders(),
     });
-    return res.json();
   },
 
   async updateSheet(id: string, sheet: Partial<Sheet>): Promise<Sheet> {
-    const res = await fetch(`${API_BASE}/sheets/${id}`, {
+    return request(`${API_BASE}/sheets/${id}`, {
       method: 'PUT',
       headers: getHeaders({ 'Content-Type': 'application/json' }),
       body: JSON.stringify(sheet),
     });
-    return res.json();
   },
 
   async duplicateSheet(id: string): Promise<Sheet> {
-    const res = await fetch(`${API_BASE}/sheets/${id}/duplicate`, {
+    return request(`${API_BASE}/sheets/${id}/duplicate`, {
       method: 'POST',
       headers: getHeaders(),
     });
-    if (!res.ok) {
-      const err = await res.json();
-      throw new Error(err.detail || 'Failed to duplicate sheet');
-    }
-    return res.json();
   },
 
   async deleteSheet(id: string): Promise<void> {
-    const res = await fetch(`${API_BASE}/sheets/${id}`, {
+    return request(`${API_BASE}/sheets/${id}`, {
       method: 'DELETE',
     });
-    if (!res.ok) {
-      const err = await res.json();
-      throw new Error(err.detail || 'Failed to delete sheet');
-    }
   },
 
   async calculate(
     sheetId: string,
     inputs: Record<string, { value: any }>,
   ): Promise<{ results: Record<string, NodeResult> }> {
-    const res = await fetch(`${API_BASE}/calculate/${sheetId}`, {
+    return request(`${API_BASE}/calculate/${sheetId}`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(inputs),
     });
-    if (!res.ok) {
-      const err = await res.json();
-      if (typeof err.detail === 'object' && err.detail.node_id) {
-        const error = new Error(err.detail.message);
-        (error as any).nodeId = err.detail.node_id;
-        throw error;
-      }
-      throw new Error(err.detail || 'Calculation failed');
-    }
-    return res.json();
   },
 
   async calculatePreview(
     inputs: Record<string, { value: any }>,
     graph: Partial<Sheet>,
   ): Promise<{ results: Record<string, NodeResult> }> {
-    const res = await fetch(`${API_BASE}/calculate/`, {
+    return request(`${API_BASE}/calculate/`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ inputs, graph }),
     });
-    if (!res.ok) {
-      const err = await res.json();
-      if (typeof err.detail === 'object' && err.detail.node_id) {
-        const error = new Error(err.detail.message);
-        (error as any).nodeId = err.detail.node_id;
-        throw error;
-      }
-      throw new Error(err.detail || 'Calculation failed');
-    }
-    return res.json();
   },
 
   async generateScript(
     sheetId: string,
     inputs: Record<string, { value: any }>,
   ): Promise<{ script: string }> {
-    const res = await fetch(`${API_BASE}/calculate/${sheetId}/script`, {
+    return request(`${API_BASE}/calculate/${sheetId}/script`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(inputs),
     });
-    if (!res.ok) {
-      throw new Error('Failed to generate script');
-    }
-    return res.json();
   },
 
   async generateScriptPreview(
     inputs: Record<string, { value: any }>,
     graph: Partial<Sheet>,
   ): Promise<{ script: string }> {
-    const res = await fetch(`${API_BASE}/calculate/script`, {
+    return request(`${API_BASE}/calculate/script`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ inputs, graph }),
     });
-    if (!res.ok) {
-      throw new Error('Failed to generate script');
-    }
-    return res.json();
   },
 
   async uploadAttachment(
@@ -248,15 +254,11 @@ export const api = {
   ): Promise<{ filename: string; url: string }> {
     const formData = new FormData();
     formData.append('file', file);
-    const res = await fetch(`${API_BASE}/attachments/upload`, {
+    return request(`${API_BASE}/attachments/upload`, {
       method: 'POST',
       headers: getHeaders(),
       body: formData,
     });
-    if (!res.ok) {
-      throw new Error('Failed to upload attachment');
-    }
-    return res.json();
   },
 
   async sweepSheet(
@@ -268,7 +270,7 @@ export const api = {
     outputNodeIds: string[],
     inputOverrides?: Record<string, any>,
   ): Promise<SweepResponse> {
-    const res = await fetch(`${API_BASE}/sheets/${sheetId}/sweep`, {
+    return request(`${API_BASE}/sheets/${sheetId}/sweep`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
@@ -280,11 +282,6 @@ export const api = {
         input_overrides: inputOverrides,
       }),
     });
-    if (!res.ok) {
-      const err = await res.json();
-      throw new Error(err.detail || 'Sweep failed');
-    }
-    return res.json();
   },
 };
 
