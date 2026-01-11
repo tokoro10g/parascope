@@ -500,8 +500,13 @@ export const SheetEditor: React.FC = () => {
         .map((n: { label: string }) => createSocket(n.label));
 
       const outputs = fullSheet.nodes
-        .filter((n: { type: string }) => n.type === 'output')
-        .map((n: { label: string }) => createSocket(n.label));
+        .filter(
+          (n: { type: string }) => n.type === 'output' || n.type === 'constant',
+        )
+        .map((n: { label: string; type: string }) => ({
+          key: n.label,
+          socket_type: n.type,
+        }));
 
       const type = 'sheet';
       const label = sheet.name;

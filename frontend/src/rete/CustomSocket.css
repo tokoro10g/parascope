@@ -1,0 +1,28 @@
+.custom-socket {
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  border: 2px solid white;
+  display: inline-block;
+  vertical-align: middle;
+  cursor: pointer;
+  background: #999; /* Fallback */
+}
+
+.custom-socket-socket-constant {
+  background-color: #ec407a !important;
+}
+
+.custom-socket-socket-output {
+  background-color: #4caf50 !important;
+}
+
+/* Default Input Socket */
+.custom-socket-socket {
+    background-color: #9e9e9e !important;
+}
+
+.custom-socket:hover {
+    border-color: #ddd;
+    transform: scale(1.1);
+}

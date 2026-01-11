@@ -68,10 +68,10 @@ export const syncNestedSheets = async (
           .filter((n) => n.type === 'input')
           .map((n) => createSocket(n.label));
 
-        // Update Outputs (from child's Output nodes)
+        // Update Outputs (from child's Output nodes and Constant nodes)
         const newOutputs = childSheet.nodes
-          .filter((n) => n.type === 'output')
-          .map((n) => createSocket(n.label));
+          .filter((n) => n.type === 'output' || n.type === 'constant')
+          .map((n) => ({ key: n.label, socket_type: n.type }));
 
         // Find the node in the array and update it
         const nodeIndex = updatedNodes.findIndex((n) => n.id === node.id);

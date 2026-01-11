@@ -236,7 +236,10 @@ class SheetBase:
             attr = getattr(self, name)
             if hasattr(attr, '_node_config'):
                 cfg = attr._node_config
-                if cfg.get('type') == 'output':
+                node_type = cfg.get('type')
+                
+                # Expose both explicit Output nodes AND Constant nodes as sheet outputs
+                if node_type == 'output' or node_type == 'constant':
                     lbl = cfg.get('label') or name
                     nid = cfg['id']
                     
@@ -249,6 +252,7 @@ class SheetBase:
                             raise NodeError(nid, f"Output '{lbl}' failed: {err}")
 
                     # The value of an output node is what it 'passed through'
+                    # The value of a constant node is its configured value
                     val = res.get('value')
                     outputs[lbl] = val
         return outputs

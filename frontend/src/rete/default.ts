@@ -18,6 +18,7 @@ import { createSocket } from '../utils';
 
 import { CustomItem, CustomMenu, CustomSearch } from './ContextMenuStyles';
 import { CustomNode } from './CustomNode';
+import { CustomSocket } from './CustomSocket';
 import {
   type ContextMenuCallbacks,
   createContextMenuPlugin,
@@ -71,6 +72,7 @@ export async function createEditor(container: HTMLElement) {
         node: () => {
           return CustomNode;
         },
+        socket: () => CustomSocket,
         control: (data) => {
           if (data.payload instanceof DropdownControl) {
             return DropdownControlComponent as any;
