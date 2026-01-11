@@ -360,13 +360,11 @@ export async function createEditor(container: HTMLElement) {
             }
           }
         } else if (node.type === 'output') {
-          if (Object.hasOwn(outputs, node.id)) {
-            const val = outputs[node.id];
-            const newVal = String(val !== undefined && val !== null ? val : '');
-            if (valueControl.value !== newVal) {
-              valueControl.setValue(newVal);
-              area.update('node', node.id);
-            }
+          const val = outputs[node.id];
+          const newVal = String(val !== undefined && val !== null ? val : '');
+          if (valueControl.value !== newVal) {
+            valueControl.setValue(newVal);
+            area.update('node', node.id);
           }
         }
       });

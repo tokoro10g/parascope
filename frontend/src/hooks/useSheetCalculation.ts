@@ -55,6 +55,7 @@ export const useSheetCalculation = (editor: Editor | null | undefined) => {
   const calculate = useCallback(
     async (sheetId: string, inputs: Record<string, { value: any }>) => {
       setIsCalculating(true);
+      setLastResult(null);
       try {
         const response = await api.calculate(sheetId, inputs);
         applyCalculationResult(response.results);
@@ -75,6 +76,7 @@ export const useSheetCalculation = (editor: Editor | null | undefined) => {
   const calculatePreview = useCallback(
     async (inputs: Record<string, { value: any }>, graph: any) => {
       setIsCalculating(true);
+      setLastResult(null);
       try {
         const response = await api.calculatePreview(inputs, graph);
         applyCalculationResult(response.results);
