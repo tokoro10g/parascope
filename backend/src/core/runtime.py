@@ -1,4 +1,5 @@
 import inspect
+import networkx as nx
 from typing import Any, Dict, List, Optional, Union
 
 class ParascopeError(Exception):
@@ -10,6 +11,114 @@ class NodeError(ParascopeError):
         self.node_id = node_id
         self.message = message
         super().__init__(f"Error in node {node_id}: {message}")
+
+def sheet(sheet_id: str):
+    """Decorator to tag class as a Sheet"""
+    def decorator(cls):
+        cls._sheet_id = sheet_id
+        return cls
+    return decorator
+
+def node(node_id: str, inputs: Dict[str, str] = None, type: str = "function", label: str = None, **kwargs):
+    """Decorator to tag methods with their Node UUID and configuration"""
+    def decorator(func):
+        func._node_config = {
+            "id": node_id,
+            "inputs": inputs or {},
+            "type": type,
+            "label": label,
+            **kwargs
+        }
+        return func
+    return decorator
+
+def function_node(node_id: str, inputs: Dict[str, str] = None, label: str = None, **kwargs):
+    return node(node_id, inputs=inputs, type="function", label=label, **kwargs)
+
+def constant_node(node_id: str, label: str = None, value: Any = None, min: float = None, max: float = None, options: List[str] = None, **kwargs):
+    """Decorator for Constant Nodes with built-in validation logic"""
+    def decorator(func):
+        # Configuration
+        func._node_config = {
+            "id": node_id,
+            "inputs": {},
+            "type": "constant",
+            "label": label,
+        }
+        
+        # Standard Implementation
+        def wrapper(self, *args, **kwargs):
+            val = self.get_input_value(node_id, label, default=value)
+            
+            if options:
+                val = self.validate_option(val, options)
+            else:
+                val = self.parse_number(val)
+                val = self.validate_range(val, min, max)
+                
+            return val
+
+        # Copy metadata
+        wrapper._node_config = func._node_config
+        wrapper.__name__ = func.__name__
+        return wrapper
+    return decorator
+
+def input_node(node_id: str, label: str = None, value: Any = None, min: float = None, max: float = None, options: List[str] = None, **kwargs):
+    """Decorator for Input Nodes with built-in validation logic"""
+    def decorator(func):
+        func._node_config = {
+            "id": node_id,
+            "inputs": {},
+            "type": "input",
+            "label": label,
+        }
+        
+        def wrapper(self, *args, **kwargs):
+            val = self.get_input_value(node_id, label, default=value)
+            if val is None: 
+                raise ValueError(f"Input '{label}' required")
+            
+            if options:
+                val = self.validate_option(val, options)
+            else:
+                val = self.parse_number(val)
+                val = self.validate_range(val, min, max)
+                
+            return val
+
+        wrapper._node_config = func._node_config
+        wrapper.__name__ = func.__name__
+        return wrapper
+    return decorator
+
+def output_node(node_id: str, inputs: Dict[str, str] = None, label: str = None, **kwargs):
+    """Decorator for Output Nodes - Pass through logic"""
+    def decorator(func):
+        func._node_config = {
+            "id": node_id,
+            "inputs": inputs or {},
+            "type": "output",
+            "label": label,
+        }
+        
+        def wrapper(self, *args, **kwargs):
+            # Return the first available argument as value
+            val = None
+            if args: 
+                val = args[0]
+            elif kwargs: 
+                val = next(iter(kwargs.values()))
+            
+            return val
+
+        wrapper._node_config = func._node_config
+        wrapper.__name__ = func.__name__
+        return wrapper
+    return decorator
+
+def sheet_node(node_id: str, inputs: Dict[str, str] = None, label: str = None, **kwargs):
+    return node(node_id, inputs=inputs, type="sheet", label=label, **kwargs)
 
 class ValidationResult:
     def __init__(self, valid: bool, error: Optional[str] = None, value: Any = None):
@@ -97,14 +206,97 @@ class SheetBase:
     # --- Execution ---
     def run(self) -> Dict[str, Dict[str, Any]]:
         """
-        Main execution method. Should be overridden by generated class.
+        Main execution method.
+        Dynamically discovers decorated methods, builds dependency graph, and executes.
         """
-        self.compute()
-        return self.results
+        # 1. Discover Nodes
+        methods = {}
+        node_id_map = {} # method_name -> node_id
+        
+        for name in dir(self):
+            attr = getattr(self, name)
+            if hasattr(attr, '_node_config'):
+                methods[name] = attr
+                node_id_map[name] = attr._node_config['id']
 
-    def compute(self):
-        """
-        To be implemented by the generated class.
-        Calls node methods in order.
-        """
-        pass
+        # 2. Build Graph
+        G = nx.DiGraph()
+        G.add_nodes_from(methods.keys())
+        
+        for name, method in methods.items():
+            inputs = method._node_config.get('inputs', {})
+            for arg_name, src_ref in inputs.items():
+                if not src_ref: continue
+                # Parse "MethodName:Port" or "MethodName"
+                src_method = src_ref.split(':')[0] if ':' in src_ref else src_ref
+                
+                if src_method in methods:
+                    G.add_edge(src_method, name)
+        
+        # 3. Topological Sort
+        try:
+            execution_order = list(nx.topological_sort(G))
+        except nx.NetworkXUnfeasible:
+            # Cycle detected
+            raise ParascopeError("Cycle detected in sheet graph")
+            
+        # 4. Execute
+        for name in execution_order:
+            method = methods[name]
+            cfg = method._node_config
+            node_id = cfg['id']
+            
+            # Prepare Inputs
+            kwargs = {}
+            inputs_def = cfg.get('inputs', {})
+            
+            try:
+                for arg, src_ref in inputs_def.items():
+                    if not src_ref:
+                        kwargs[arg] = None
+                        continue
+                        
+                    if ':' in src_ref:
+                        src_method, src_port = src_ref.split(':')
+                    else:
+                        src_method, src_port = src_ref, None # Implicit?
+                    
+                    if src_method not in methods:
+                        # Could be a missing reference
+                        kwargs[arg] = None
+                        continue
+
+                    # Retrieve dependency value
+                    src_node_id = node_id_map[src_method]
+                    
+                    # Use get_value helper
+                    val = self.get_value(src_node_id, src_port)
+                    kwargs[arg] = val
+
+                # Call Method
+                res = method(**kwargs)
+                
+                # Register Result (Handle dicts vs usage)
+                self.register_result(node_id, res)
+                
+            except Exception as e:
+                # Capture method-level errors
+                self.register_error(node_id, str(e))
+        
+        # 5. Collect Public Outputs
+        # Default behavior: use get_public_outputs if exists (generated helper), 
+        # or scan for type='output'
+        if hasattr(self, 'get_public_outputs'):
+            return self.get_public_outputs()
+        
+        # Fallback dynamic collection
+        outputs = {}
+        for name, method in methods.items():
+            cfg = method._node_config
+            if cfg.get('type') == 'output':
+                lbl = cfg.get('label') or name
+                nid = cfg['id']
+                # The value of an output node is what it 'passed through'
+                val = self.results.get(nid, {}).get('value')
+                outputs[lbl] = val
+        return outputs

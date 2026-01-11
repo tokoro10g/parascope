@@ -9,13 +9,13 @@ from typing import Any, Dict, Optional
 from pydantic import BaseModel
 
 try:
-    from .runtime import SheetBase, NodeError
+    from .runtime import SheetBase, NodeError, node, sheet, function_node, constant_node, input_node, output_node, sheet_node
 except ImportError:
     # Fallback for different execution contexts
     try:
-        from src.core.runtime import SheetBase, NodeError
+        from src.core.runtime import SheetBase, NodeError, node, sheet, function_node, constant_node, input_node, output_node, sheet_node
     except ImportError:
-        from backend.src.core.runtime import SheetBase, NodeError
+        from backend.src.core.runtime import SheetBase, NodeError, node, sheet, function_node, constant_node, input_node, output_node, sheet_node
 
 
 class ExecutionResult(BaseModel):
@@ -38,12 +38,14 @@ def _persistent_worker_loop(task_queue, result_queue, runtime_classes):
     Long-running worker loop.
     Pre-imports heavy libraries to save time on subsequent runs.
     """
-    SheetBase, NodeError = runtime_classes
+    (SheetBase, NodeError, node, sheet, 
+     function_node, constant_node, input_node, output_node, sheet_node) = runtime_classes
 
     # Pre-import common scientific libraries
     try:
         import math
         import numpy
+        import networkx
     except ImportError:
         pass
 
@@ -60,7 +62,14 @@ def _persistent_worker_loop(task_queue, result_queue, runtime_classes):
 
             global_vars = {
                 "SheetBase": SheetBase,
-                "NodeError": NodeError
+                "NodeError": NodeError,
+                "node": node,
+                "sheet": sheet,
+                "function_node": function_node,
+                "constant_node": constant_node,
+                "input_node": input_node,
+                "output_node": output_node,
+                "sheet_node": sheet_node
             }
             success = False
             error = None
@@ -98,7 +107,10 @@ def _ensure_worker():
         _result_queue = multiprocessing.Queue()
         _worker_process = multiprocessing.Process(
             target=_persistent_worker_loop,
-            args=(_task_queue, _result_queue, (SheetBase, NodeError)),
+            args=(_task_queue, _result_queue, (
+                SheetBase, NodeError, node, sheet,
+                function_node, constant_node, input_node, output_node, sheet_node
+            )),
             daemon=True
         )
         _worker_process.start()
