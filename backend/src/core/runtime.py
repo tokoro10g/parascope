@@ -1,4 +1,5 @@
 import inspect
+import traceback
 import networkx as nx
 from typing import Any, Dict, List, Optional, Union
 
@@ -11,6 +12,12 @@ class NodeError(ParascopeError):
         self.node_id = node_id
         self.message = message
         super().__init__(f"Error in node {node_id}: {message}")
+
+class DependencyError(ParascopeError):
+    """Raised when a node fails due to upstream dependency failure"""
+    def __init__(self, message: str = None):
+        self.message = message
+        super().__init__(message or "Dependency failed")
 
 def sheet(sheet_id: str):
     """Decorator to tag class as a Sheet"""
@@ -140,9 +147,18 @@ class SheetBase:
         """Register a successful result"""
         self.results[node_id] = {"value": value, "valid": True}
 
-    def register_error(self, node_id: str, error: str):
-        """Register a failure"""
-        self.results[node_id] = {"value": None, "valid": False, "error": error}
+    def register_error(self, node_id: str, error: Optional[str], internal_error: Optional[str] = None):
+        """
+        Register a failure.
+        :param error: The error message to be displayed (or None to suppress)
+        :param internal_error: The underlying error message for debugging/upstream propagation
+        """
+        self.results[node_id] = {
+            "value": None, 
+            "valid": False, 
+            "error": error, 
+            "internal_error": internal_error or error
+        }
 
     def get_value(self, node_id: str, port: str = None):
         """Retrieve a value from a previous node's output"""
@@ -151,7 +167,8 @@ class SheetBase:
         
         res = self.results[node_id]
         if not res.get("valid", False):
-             raise NodeError(node_id, f"Dependency failed: {res.get('error')}")
+             cause = res.get('internal_error') or res.get('error')
+             raise DependencyError(cause)
         
         val = res.get("value")
         # If port is specified and value is a dict (multi-output), get it
@@ -216,8 +233,14 @@ class SheetBase:
                     
                     res = self.results.get(nid, {})
                     
-                    if raise_on_error and not res.get('valid', False) and 'error' in res:
-                        raise NodeError(nid, f"Output '{lbl}' failed: {res.get('error')}")
+                    if raise_on_error and not res.get('valid', False):
+                        if 'internal_error' in res:
+                            # Use internal_error to get the root cause even if the output node was silenced
+                            err = res.get('internal_error') or res.get('error')
+                            raise NodeError(nid, f"Output '{lbl}' failed: {err}")
+                        elif 'error' in res:
+                             # Fallback for legacy
+                             raise NodeError(nid, f"Output '{lbl}' failed: {res.get('error')}")
 
                     # The value of an output node is what it 'passed through'
                     val = res.get('value')
@@ -300,9 +323,22 @@ class SheetBase:
                 # Register Result (Handle dicts vs usage)
                 self.register_result(node_id, res)
                 
+            except DependencyError as e:
+                # Upstream failure
+                # If this is an output node, we MUST show the error to escape the sheet boundary
+                # Otherwise, stay silent to reduce clutter
+                show_error = cfg.get('type') == 'output'
+                
+                self.register_error(
+                    node_id, 
+                    error=e.message if show_error else None,
+                    internal_error=e.message
+                )
+
             except Exception as e:
-                # Capture method-level errors
-                self.register_error(node_id, str(e))
+                # Capture method-level errors (these are always visible)
+                tb = traceback.format_exc()
+                self.register_error(node_id, f"{str(e)}\n\n{tb}")
         
         # 5. Collect Public Outputs
         return self.get_public_outputs()
