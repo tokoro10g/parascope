@@ -50,6 +50,73 @@
   max-height: 400px;
 }
 
+.sweep-table th.checkbox-col {
+  width: 60px;
+  text-align: center;
+}
+
+.sweep-table th.name-col {
+  width: 200px;
+}
+
+.sweep-table td.checkbox-cell {
+  text-align: center;
+  vertical-align: middle;
+}
+
+.sweep-table td.name-cell {
+  vertical-align: middle;
+}
+
+.sweep-input-group {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.sweep-input-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.sweep-input-label {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+}
+
+.sweep-input-label span {
+  min-width: 75px;
+  font-size: 0.8em;
+  color: var(--text-secondary);
+}
+
+.sweep-header {
+  margin: 0 0 20px 0;
+  font-size: 1.5em;
+}
+
+.chart-container {
+  position: relative;
+  flex: 1;
+  width: 100%;
+  min-height: 0;
+}
+
+.empty-state {
+  flex: 1;
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #888;
+  border: 2px dashed var(--border-color);
+  border-radius: 8px;
+  min-height: 200px;
+}
+
 .sweep-table {
   width: 100%;
   border-collapse: collapse;

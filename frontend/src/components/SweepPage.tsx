@@ -7,61 +7,8 @@ import { useNavigate, useParams } from 'react-router-dom';
 import { api, type Sheet, type SweepResultStep } from '../api';
 import { useAuth } from '../contexts/AuthContext';
 import { NavBar } from './NavBar';
+import { getSweepChartOption } from './sweepChartUtils';
 import './SweepPage.css';
-
-// Helpers to generate consistent colors for strings
-const strHash = (s: string) => {
-  let h = 0;
-  for (let i = 0; i < s.length; i++)
-    h = (Math.imul(31, h) + s.charCodeAt(i)) | 0;
-  return h;
-};
-
-const getColor = (s: string) => {
-  if (!s) return '#ccc';
-  const hue = Math.abs(strHash(s)) % 360;
-  return `hsl(${hue}, 70%, 50%)`;
-};
-
-const renderTimelineItem = (params: any, api: any) => {
-  const categoryIndex = api.value(0);
-  const start = api.coord([api.value(1), categoryIndex]);
-  const end = api.coord([api.value(2), categoryIndex]);
-  const height = api.size([0, 1])[1] * 0.6;
-
-  const rectShape = {
-    x: start[0],
-    y: start[1] - height / 2,
-    width: end[0] - start[0],
-    height: height,
-  };
-
-  return {
-    type: 'group',
-    children: [
-      {
-        type: 'rect',
-        shape: rectShape,
-        style: {
-          fill: getColor(api.value(3) as string),
-        },
-      },
-      {
-        type: 'text',
-        style: {
-          text: api.value(3),
-          fill: '#fff',
-          textAlign: 'center',
-          textVerticalAlign: 'middle',
-          x: rectShape.x + rectShape.width / 2,
-          y: rectShape.y + rectShape.height / 2,
-          width: rectShape.width - 4, // Padding
-          overflow: 'truncate',
-        },
-      },
-    ],
-  };
-};
 
 export const SweepPage: React.FC = () => {
   const { sheetId } = useParams<{ sheetId: string }>();
@@ -248,222 +195,7 @@ export const SweepPage: React.FC = () => {
 
   // Prepare ECharts Option
   const echartsOption: EChartsOption = useMemo(() => {
-    if (!results || results.length === 0) return {};
-
-    const plottedIds = Object.keys(results[0].outputs);
-    const count = plottedIds.length;
-    const gap = 5; // gap in percent
-    const topMargin = 10;
-    const bottomMargin = 10;
-    const availableHeight = 100 - topMargin - bottomMargin;
-    // Height for each grid
-    // h * count + gap * (count - 1) = availableHeight
-    // h * count = availableHeight - gap * (count - 1)
-    const gridHeight =
-      count > 1
-        ? (availableHeight - gap * (count - 1)) / count
-        : availableHeight;
-
-    const grids: any[] = [];
-    const xAxes: any[] = [];
-    const yAxes: any[] = [];
-
-    const series = plottedIds.map((id, index) => {
-      const node = nodes.find((n) => n.id === id);
-      const label = node ? node.label : id;
-
-      // Determine if data is numeric
-      const rawValues = results.map((r) => r.outputs[id]);
-      const isNumeric = rawValues.every(
-        (v) => v === null || v === undefined || typeof v === 'number',
-      );
-
-      // Layout calculations
-      const top = topMargin + index * (gridHeight + gap);
-
-      grids.push({
-        top: `${top}%`,
-        height: `${gridHeight}%`,
-        left: 60,
-        right: 40,
-        containLabel: true,
-      });
-
-      xAxes.push({
-        type: 'value',
-        name: index === count - 1 ? selectedInputLabel : '', // Only last one gets x label
-        nameLocation: 'middle',
-        nameGap: 30,
-        scale: true,
-        gridIndex: index,
-        axisLine: { lineStyle: { color: theme.text } },
-        axisLabel: {
-          color: theme.text,
-          show: index === count - 1, // Optional: hide labels for upper plots if they align
-        },
-        splitLine: { show: true, lineStyle: { color: theme.grid } },
-      });
-
-      if (isNumeric) {
-        yAxes.push({
-          type: 'value',
-          name: label, // Y Axis named after the output
-          nameLocation: 'middle',
-          nameGap: 40,
-          scale: true,
-          gridIndex: index,
-          boundaryGap: ['5%', '5%'],
-          axisLine: { lineStyle: { color: theme.text } },
-          axisLabel: { color: theme.text },
-          splitLine: { show: true, lineStyle: { color: theme.grid } },
-        });
-
-        const data = results.map((r) => [
-          r.input_value,
-          r.outputs[id],
-        ]);
-
-        const min =
-          node?.data?.min !== undefined && node.data.min !== ''
-            ? Number(node.data.min)
-            : undefined;
-        const max =
-          node?.data?.max !== undefined && node.data.max !== ''
-            ? Number(node.data.max)
-            : undefined;
-
-        const markArea =
-          min !== undefined || max !== undefined
-            ? {
-                silent: true,
-                itemStyle: {
-                  color: 'rgba(76, 175, 80, 0.1)',
-                },
-                label: {
-                  position: 'insideRight',
-                  color: theme.text,
-                },
-                data: [
-                  [
-                    {
-                      name: `${label} Range`,
-                      yAxis: min !== undefined ? min : -Infinity,
-                    },
-                    {
-                      yAxis: max !== undefined ? max : Infinity,
-                    },
-                  ],
-                ],
-              }
-            : undefined;
-
-        return {
-          name: label,
-          type: 'line',
-          data: data,
-          symbolSize: 6,
-          showSymbol: true,
-          xAxisIndex: index,
-          yAxisIndex: index,
-          markArea,
-        };
-      } else {
-        // Timeline Chart equivalent using 'custom' series (Profile example)
-        yAxes.push({
-          type: 'category',
-          data: [label], // Single category represented by the label name
-          gridIndex: index,
-          name: label,
-          nameLocation: 'middle',
-          nameGap: 40,
-          axisLine: { show: false },
-          axisTick: { show: false },
-          axisLabel: {
-            show: false,
-          },
-        });
-
-        // Compute Segments
-        // [categoryIndex, start, end, value]
-        const segments: any[] = [];
-        let currentStart = results[0].input_value;
-        let currentVal = String(results[0].outputs[id] ?? '');
-
-        for (let i = 1; i < results.length; i++) {
-          const nextVal = String(results[i].outputs[id] ?? '');
-          const nextInput = results[i].input_value;
-
-          if (nextVal !== currentVal) {
-            segments.push([0, currentStart, nextInput, currentVal]);
-            currentStart = nextInput;
-            currentVal = nextVal;
-          }
-        }
-        // Last segment extension
-        let finalEnd = currentStart;
-        if (results.length > 1) {
-          const lastStep =
-            results[results.length - 1].input_value -
-            results[results.length - 2].input_value;
-          finalEnd = results[results.length - 1].input_value + lastStep;
-        } else {
-          finalEnd = currentStart + 1;
-        }
-        segments.push([0, currentStart, finalEnd, currentVal]);
-
-        return {
-          type: 'custom',
-          name: label,
-          renderItem: renderTimelineItem,
-          tooltip: {
-            show: false,
-          },
-          encode: {
-              x: [1, 2], // Start, End
-              y: 0,      // Category
-              tooltip: [3, 1, 2] // Value, Start, End for tooltip
-          },
-          data: segments,
-          xAxisIndex: index,
-          yAxisIndex: index,
-        };
-      }
-    });
-
-    return {
-      backgroundColor: 'transparent',
-      textStyle: {
-        fontFamily: theme.font,
-        color: theme.text,
-      },
-      axisPointer: {
-        link: { xAxisIndex: 'all' },
-        label: {
-          backgroundColor: '#777',
-        },
-      },
-      tooltip: {
-        trigger: 'axis',
-        axisPointer: {
-          type: 'cross',
-        },
-        backgroundColor: theme.grid,
-        textStyle: {
-          color: theme.text,
-        },
-        borderColor: theme.text,
-      },
-      legend: {
-        bottom: 0,
-        textStyle: {
-          color: theme.text,
-        },
-      },
-      grid: grids,
-      xAxis: xAxes,
-      yAxis: yAxes,
-      series: series as any,
-    };
+    return getSweepChartOption(results, nodes, theme, selectedInputLabel);
   }, [results, nodes, theme, selectedInputLabel]);
 
   return (
@@ -477,8 +209,8 @@ export const SweepPage: React.FC = () => {
             <table className="sweep-table">
               <thead>
                 <tr>
-                  <th style={{ width: '60px', textAlign: 'center' }}>Sweep</th>
-                  <th style={{ width: '200px' }}>Name</th>
+                  <th className="checkbox-col">Sweep</th>
+                  <th className="name-col">Name</th>
                   <th>Value / Range</th>
                 </tr>
               </thead>
@@ -487,9 +219,7 @@ export const SweepPage: React.FC = () => {
                   const isSweeping = inputNodeId === n.id;
                   return (
                     <tr key={n.id}>
-                      <td
-                        style={{ textAlign: 'center', verticalAlign: 'middle' }}
-                      >
+                      <td className="checkbox-cell">
                         <input
                           type="radio"
                           name="sweep-input"
@@ -497,40 +227,13 @@ export const SweepPage: React.FC = () => {
                           onChange={() => handleSweepInputChange(n.id!)}
                         />
                       </td>
-                      <td style={{ verticalAlign: 'middle' }}>{n.label}</td>
+                      <td className="name-cell">{n.label}</td>
                       <td>
                         {isSweeping ? (
-                          <div
-                            style={{
-                              display: 'flex',
-                              flexDirection: 'column',
-                              gap: '4px',
-                            }}
-                          >
-                            <div
-                              style={{
-                                display: 'flex',
-                                alignItems: 'center',
-                                gap: '8px',
-                              }}
-                            >
-                              <label
-                                style={{
-                                  display: 'flex',
-                                  alignItems: 'center',
-                                  gap: '8px',
-                                  width: '100%',
-                                }}
-                              >
-                                <span
-                                  style={{
-                                    minWidth: '75px',
-                                    fontSize: '0.8em',
-                                    color: 'var(--text-secondary)',
-                                  }}
-                                >
-                                  Start
-                                </span>
+                          <div className="sweep-input-group">
+                            <div className="sweep-input-row">
+                              <label className="sweep-input-label">
+                                <span>Start</span>
                                 <input
                                   type="text"
                                   value={startValue}
@@ -541,30 +244,9 @@ export const SweepPage: React.FC = () => {
                                 />
                               </label>
                             </div>
-                            <div
-                              style={{
-                                display: 'flex',
-                                alignItems: 'center',
-                                gap: '8px',
-                              }}
-                            >
-                              <label
-                                style={{
-                                  display: 'flex',
-                                  alignItems: 'center',
-                                  gap: '8px',
-                                  width: '100%',
-                                }}
-                              >
-                                <span
-                                  style={{
-                                    minWidth: '75px',
-                                    fontSize: '0.8em',
-                                    color: 'var(--text-secondary)',
-                                  }}
-                                >
-                                  End
-                                </span>
+                            <div className="sweep-input-row">
+                              <label className="sweep-input-label">
+                                <span>End</span>
                                 <input
                                   type="text"
                                   value={endValue}
@@ -573,30 +255,9 @@ export const SweepPage: React.FC = () => {
                                 />
                               </label>
                             </div>
-                            <div
-                              style={{
-                                display: 'flex',
-                                alignItems: 'center',
-                                gap: '8px',
-                              }}
-                            >
-                              <label
-                                style={{
-                                  display: 'flex',
-                                  alignItems: 'center',
-                                  gap: '8px',
-                                  width: '100%',
-                                }}
-                              >
-                                <span
-                                  style={{
-                                    minWidth: '75px',
-                                    fontSize: '0.8em',
-                                    color: 'var(--text-secondary)',
-                                  }}
-                                >
-                                  Increment
-                                </span>
+                            <div className="sweep-input-row">
+                              <label className="sweep-input-label">
+                                <span>Increment</span>
                                 <input
                                   type="text"
                                   value={increment}
@@ -635,7 +296,7 @@ export const SweepPage: React.FC = () => {
             <table className="sweep-table">
               <thead>
                 <tr>
-                  <th style={{ width: '60px', textAlign: 'center' }}>Plot</th>
+                  <th className="checkbox-col">Plot</th>
                   <th>Name</th>
                 </tr>
               </thead>
@@ -646,9 +307,7 @@ export const SweepPage: React.FC = () => {
                     onClick={() => toggleOutput(n.id!)}
                     style={{ cursor: 'pointer' }}
                   >
-                    <td
-                      style={{ textAlign: 'center', verticalAlign: 'middle' }}
-                    >
+                    <td className="checkbox-cell">
                       <input
                         type="checkbox"
                         checked={outputNodeIds.includes(n.id!)}
@@ -677,20 +336,12 @@ export const SweepPage: React.FC = () => {
         </aside>
 
         <main className="sweep-main">
-          <h2 style={{ margin: '0 0 20px 0', fontSize: '1.5em' }}>
+          <h2 className="sweep-header">
             {sheet?.name || 'Loading...'}
           </h2>
 
           {results ? (
-            <div
-              className="chart-container"
-              style={{
-                position: 'relative',
-                flex: 1,
-                width: '100%',
-                minHeight: 0,
-              }}
-            >
+            <div className="chart-container">
               <ReactECharts
                 option={echartsOption}
                 style={{ height: '100%', width: '100%' }}
@@ -698,19 +349,7 @@ export const SweepPage: React.FC = () => {
               />
             </div>
           ) : (
-            <div
-              style={{
-                flex: 1,
-                width: '100%',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                color: '#888',
-                border: '2px dashed var(--border-color)',
-                borderRadius: '8px',
-                minHeight: '200px',
-              }}
-            >
+            <div className="empty-state">
               <p>Configure inputs and run the sweep to see results.</p>
             </div>
           )}
