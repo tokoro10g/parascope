@@ -344,7 +344,7 @@ def {method_name}(self, {args_str}):
 def {method_name}(self, {args_str}):
     sub = {nested_class}(input_overrides={overrides_str})
     sub.run()
-    return sub.get_public_outputs()
+    return sub.get_public_outputs(raise_on_error=True)
 """
 
         elif node.type == 'constant':

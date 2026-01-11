@@ -203,9 +203,10 @@ class SheetBase:
         except ValueError:
             return float(value)
 
-    def get_public_outputs(self) -> Dict[str, Any]:
+    def get_public_outputs(self, raise_on_error: bool = False) -> Dict[str, Any]:
         """
         Collect values from all output nodes.
+        :param raise_on_error: If True, raises NodeError if an output node has a registered error.
         """
         outputs = {}
         for name in dir(self):
@@ -215,8 +216,14 @@ class SheetBase:
                 if cfg.get('type') == 'output':
                     lbl = cfg.get('label') or name
                     nid = cfg['id']
+                    
+                    res = self.results.get(nid, {})
+                    
+                    if raise_on_error and not res.get('valid', False) and 'error' in res:
+                        raise NodeError(nid, f"Output '{lbl}' failed: {res.get('error')}")
+
                     # The value of an output node is what it 'passed through'
-                    val = self.results.get(nid, {}).get('value')
+                    val = res.get('value')
                     outputs[lbl] = val
         return outputs
 
