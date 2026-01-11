@@ -218,6 +218,12 @@ export const SweepPage: React.FC = () => {
       const node = nodes.find((n) => n.id === id);
       const label = node ? node.label : id;
 
+      // Determine if data is numeric
+      const rawValues = results.map((r) => r.outputs[id]);
+      const isNumeric = rawValues.every(
+        (v) => v === null || v === undefined || typeof v === 'number',
+      );
+
       // Layout calculations
       const top = topMargin + index * (gridHeight + gap);
 
@@ -244,20 +250,41 @@ export const SweepPage: React.FC = () => {
         splitLine: { show: true, lineStyle: { color: theme.grid } },
       });
 
-      yAxes.push({
-        type: 'value',
-        name: label, // Y Axis named after the output
-        nameLocation: 'middle',
-        nameGap: 40,
-        scale: true,
-        gridIndex: index,
-        boundaryGap: ['5%', '5%'],
-        axisLine: { lineStyle: { color: theme.text } },
-        axisLabel: { color: theme.text },
-        splitLine: { show: true, lineStyle: { color: theme.grid } },
-      });
+      if (isNumeric) {
+        yAxes.push({
+          type: 'value',
+          name: label, // Y Axis named after the output
+          nameLocation: 'middle',
+          nameGap: 40,
+          scale: true,
+          gridIndex: index,
+          boundaryGap: ['5%', '5%'],
+          axisLine: { lineStyle: { color: theme.text } },
+          axisLabel: { color: theme.text },
+          splitLine: { show: true, lineStyle: { color: theme.grid } },
+        });
+      } else {
+        // Categorical Axis
+        const uniqueValues = Array.from(
+          new Set(rawValues.map((v) => String(v ?? ''))),
+        ).sort();
+        yAxes.push({
+          type: 'category',
+          data: uniqueValues,
+          name: label,
+          nameLocation: 'middle',
+          nameGap: 40,
+          gridIndex: index,
+          axisLine: { lineStyle: { color: theme.text } },
+          axisLabel: { color: theme.text },
+          splitLine: { show: true, lineStyle: { color: theme.grid } },
+        });
+      }
 
-      const data = results.map((r) => [r.input_value, r.outputs[id]]);
+      const data = results.map((r) => [
+        r.input_value,
+        isNumeric ? r.outputs[id] : String(r.outputs[id] ?? ''),
+      ]);
 
       const min =
         node?.data?.min !== undefined && node.data.min !== ''
@@ -269,7 +296,7 @@ export const SweepPage: React.FC = () => {
           : undefined;
 
       const markArea =
-        min !== undefined || max !== undefined
+        isNumeric && (min !== undefined || max !== undefined)
           ? {
               silent: true,
               itemStyle: {
@@ -296,6 +323,7 @@ export const SweepPage: React.FC = () => {
       return {
         name: label,
         type: 'line',
+        step: isNumeric ? undefined : 'start', // Step chart for categorical
         data: data,
         symbolSize: 6,
         showSymbol: true,
