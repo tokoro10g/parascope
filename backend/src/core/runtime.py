@@ -164,16 +164,13 @@ class SheetBase:
     def get_input_value(self, node_id: str, label: str, default: Any = None) -> Any:
         """Helper to resolve input node values from overrides"""
         # Checks by ID then Label
-        val = None
         if node_id in self.input_overrides:
-            val = self.input_overrides[node_id]
-        elif label in self.input_overrides:
-            val = self.input_overrides[label]
-        
-        if val is None:
-            val = default
+            return self.input_overrides[node_id]
             
-        return val
+        if label in self.input_overrides:
+            return self.input_overrides[label]
+        
+        return default
 
     # --- Validation Helpers ---
     def validate_option(self, value: Any, options: List[str]) -> Any:
