@@ -63,10 +63,17 @@ export function useSheetLock(sheetId: string | null) {
     }
   }, [sheetId, user, isLockedByMe, checkStatus]);
 
-  // Initial load: try to acquire once.
+  // Use a ref for heartbeat to access latest state without triggering effect re-run
+  const heartbeatRef = useRef(heartbeat);
+  useEffect(() => {
+    heartbeatRef.current = heartbeat;
+  }, [heartbeat]);
+
+  // Main lifecycle effect for the lock session
   useEffect(() => {
     if (!sheetId || !user) return;
 
+    // 1. Initial acquire
     const initialAcquire = async () => {
       try {
         const l = await api.acquireLock(sheetId);
@@ -74,22 +81,26 @@ export function useSheetLock(sheetId: string | null) {
         setIsLockedByMe(l.user_id === user);
       } catch (e: any) {
         if (e.message?.includes('Locked by')) {
-          // Locked by someone else
           checkStatus();
         }
       }
     };
     initialAcquire();
 
-    // Start polling
-    intervalRef.current = window.setInterval(heartbeat, 10000); // 10s
+    // 2. Start polling using the ref
+    const id = window.setInterval(() => {
+      heartbeatRef.current();
+    }, 10000); // 10s
+    intervalRef.current = id;
 
+    // 3. Cleanup: Stop polling AND Release lock
     return () => {
-      if (intervalRef.current) clearInterval(intervalRef.current);
-      // Only release if we think we own it. (Backend verifies anyway)
+      clearInterval(id);
+      // We only release when the user actually leaves the sheet (component unmounts or sheetId changes)
+      // verify isLockedByMeRef or similar if needed, but backend checks ownership safely.
       api.releaseLock(sheetId).catch(() => {});
     };
-  }, [sheetId, user]); // Removed heartbeat dependency to avoid reset loop, handled inside heartbeat ref
+  }, [sheetId, user, checkStatus]); // Strict dependency on Sheet ID, User, and checkStatus.
 
   const takeOver = async () => {
     if (!sheetId) return;
@@ -111,7 +122,7 @@ export function useSheetLock(sheetId: string | null) {
       setLock(l);
       setIsLockedByMe(true);
       setLockedByOther(null);
-    } catch (e) {
+    } catch (_e) {
       toast.error('Failed to acquire lock');
     }
   };
