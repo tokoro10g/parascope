@@ -332,6 +332,13 @@ export const api = {
       headers: getHeaders(),
     });
   },
+
+  getLock: (sheetId: string) => {
+    return request<Lock | null>(`${API_BASE}/api/sheets/${sheetId}/lock`, {
+      method: 'GET',
+      headers: getHeaders(),
+    });
+  },
 };
 
 export interface NodeResult {
