@@ -395,8 +395,20 @@ def {method_name}(self): pass
 
         elif node.type == 'output':
              # The wrapper handles passing args
+            params = []
+            
+            d_min = node.data.get("min")
+            d_max = node.data.get("max")
+            if d_min is not None: params.append(f"min={d_min}")
+            if d_max is not None: params.append(f"max={d_max}")
+            
+            if params:
+                params_str = ", " + ", ".join(params)
+            else:
+                params_str = ""
+
             return f"""
-@output_node("{nid}", inputs={dict_str}, label="{label_safe}")
+@output_node("{nid}", inputs={dict_str}, label="{label_safe}"{params_str})
 def {method_name}(self, {args_str}): pass
 """
         

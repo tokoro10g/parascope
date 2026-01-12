@@ -15,7 +15,10 @@ class NodeError(ParascopeError):
 
 class ValueValidationError(ParascopeError):
     """Raised when a value validation fails (range, options, types)"""
-    pass
+    def __init__(self, message: str, value: Any = None):
+        self.message = message
+        self.value = value
+        super().__init__(message)
 
 class DependencyError(ParascopeError):
     """Raised when a node fails due to upstream dependency failure"""
@@ -103,8 +106,8 @@ def input_node(node_id: str, label: str = None, value: Any = None, min: float = 
         return wrapper
     return decorator
 
-def output_node(node_id: str, inputs: Dict[str, str] = None, label: str = None, **kwargs):
-    """Decorator for Output Nodes - Pass through logic"""
+def output_node(node_id: str, inputs: Dict[str, str] = None, label: str = None, min: float = None, max: float = None, **kwargs):
+    """Decorator for Output Nodes - Pass through logic with validation"""
     def decorator(func):
         func._node_config = {
             "id": node_id,
@@ -121,6 +124,9 @@ def output_node(node_id: str, inputs: Dict[str, str] = None, label: str = None, 
             elif kwargs: 
                 val = next(iter(kwargs.values()))
             
+            # Perform validation if configured
+            val = self.validate_range(val, min, max)
+
             return val
 
         wrapper._node_config = func._node_config
@@ -198,7 +204,7 @@ class SheetBase:
         # Convert to string for comparison matches frontend behavior
         str_val = str(value)
         if str_val not in options:
-            raise ValueValidationError(f"Value '{value}' is not in allowed options: {options}")
+            raise ValueValidationError(f"Value '{value}' is not in allowed options: {options}", value)
         return str_val
 
     def validate_range(self, value: Any, min_val: Optional[float], max_val: Optional[float]) -> Any:
@@ -208,9 +214,9 @@ class SheetBase:
             return value # Cannot range check non-numbers
         
         if min_val is not None and value < min_val:
-             raise ValueValidationError(f"Value {value} is below minimum {min_val}")
+             raise ValueValidationError(f"Value {value} is below minimum {min_val}", value)
         if max_val is not None and value > max_val:
-             raise ValueValidationError(f"Value {value} is above maximum {max_val}")
+             raise ValueValidationError(f"Value {value} is above maximum {max_val}", value)
         return value
 
     def parse_number(self, value: Any) -> Union[int, float, str, None]:
@@ -344,15 +350,21 @@ class SheetBase:
                 # For validation errors, we always want to show the message on the node itself
                 msg = str(e) if is_validation else e.message
 
-                self.register_error(
-                    node_id, 
-                    error=msg if show_error else None,
-                    internal_error=msg
-                )
-                
-                # If it's a validation error (e.g. invalid input, missing field), stop the entire sheet
+                # Special Case: Validation errors (e.g. out of range) should 'soft fail'
+                # They return the invalid value but attach the error message, keeping valid=True for downstream.
+                # Creates a "warning" state effectively.
                 if is_validation:
-                    raise e
+                    self.results[node_id] = {
+                        "value": e.value,
+                        "valid": True, # Keep valid so it doesn't break logic expecting success
+                        "error": msg
+                    }
+                else:
+                    self.register_error(
+                        node_id, 
+                        error=msg if show_error else None,
+                        internal_error=msg
+                    )
 
             except Exception as e:
                 # Capture method-level errors (these are always visible)
