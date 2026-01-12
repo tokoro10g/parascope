@@ -213,10 +213,10 @@ class SheetBase:
         if not isinstance(value, (int, float)):
             return value # Cannot range check non-numbers
         
-        if min_val is not None and value < min_val:
-             raise ValueValidationError(f"Value {value} is below minimum {min_val}", value)
-        if max_val is not None and value > max_val:
-             raise ValueValidationError(f"Value {value} is above maximum {max_val}", value)
+        if (min_val is not None and value < min_val) or (max_val is not None and value > max_val):
+             min_str = str(min_val) if min_val is not None else "-inf"
+             max_str = str(max_val) if max_val is not None else "inf"
+             raise ValueValidationError(f"Value {value} is out of range [{min_str}, {max_str}]", value)
         return value
 
     def parse_number(self, value: Any) -> Union[int, float, str, None]:
