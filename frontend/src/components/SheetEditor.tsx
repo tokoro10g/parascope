@@ -50,15 +50,15 @@ export const SheetEditor: React.FC = () => {
   const [isSheetPickerOpen, setIsSheetPickerOpen] = useState(false);
 
   // Lock logic
-  const { lockedByOther, takeOver } = useSheetLock(sheetId || null);
+  const {
+    lockedByOther,
+    takeOver,
+    isLoading: isLockLoading,
+  } = useSheetLock(sheetId || null);
+
   // Derive Read only state.
-  // Ideally, if it's locked by other, it's read only.
-  // If it's locked by ME, it's editable.
-  // If it's loading (initial state), lock might be null.
-  // We should default to readonly until we acquire the lock?
-  // Or optimistically allow edit?
-  // Let's rely on `lockedByOther != null` for read-only to avoid blocking user during loading latency.
-  const isReadOnly = !!lockedByOther;
+  // We treat "Loading Lock" as Read Only to prevent race conditions (save before lock check returns).
+  const isReadOnly = !!lockedByOther || isLockLoading;
 
   const lastResultRef = useRef(lastResult);
   lastResultRef.current = lastResult;
@@ -676,6 +676,7 @@ export const SheetEditor: React.FC = () => {
               <EditorBar
                 sheetName={currentSheet?.name}
                 isDirty={isDirty}
+                readOnly={isReadOnly}
                 onRenameSheet={handleRenameSheet}
                 onSaveSheet={onSave}
                 onAddNode={handleAddNode}

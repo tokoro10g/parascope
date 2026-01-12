@@ -8,6 +8,7 @@ export function useSheetLock(sheetId: string | null) {
   const [lock, setLock] = useState<Lock | null>(null);
   const [isLockedByMe, setIsLockedByMe] = useState(false);
   const [lockedByOther, setLockedByOther] = useState<string | null>(null);
+  const [loading, setLoading] = useState(true);
 
   const intervalRef = useRef<number | null>(null);
 
@@ -34,6 +35,8 @@ export function useSheetLock(sheetId: string | null) {
       }
     } catch (e) {
       console.error('Lock status check failed', e);
+    } finally {
+        setLoading(false);
     }
   }, [sheetId, user]);
 
@@ -75,6 +78,22 @@ export function useSheetLock(sheetId: string | null) {
 
     // 1. Initial acquire
     const initialAcquire = async () => {
+      setLoading(true);
+
+      // Optimization: Peek first to avoid 409 error noise in console/network tab if we know it's locked
+      try {
+        const existing = await api.getLock(sheetId);
+        if (existing && existing.user_id !== user) {
+          setLockedByOther(existing.user_id);
+          setIsLockedByMe(false);
+          setLoading(false);
+          return; // Don't try to acquire if we know it's locked
+        }
+      } catch (e) {
+        // Ignore peek error, proceed to acquire attempt
+        console.warn('Peek lock failed', e);
+      }
+
       try {
         const l = await api.acquireLock(sheetId);
         setLock(l);
@@ -83,6 +102,8 @@ export function useSheetLock(sheetId: string | null) {
         if (e.message?.includes('Locked by')) {
           checkStatus();
         }
+      } finally {
+        setLoading(false);
       }
     };
     initialAcquire();
@@ -134,5 +155,6 @@ export function useSheetLock(sheetId: string | null) {
     takeOver,
     acquire,
     refreshLock: heartbeat,
+    isLoading: loading,
   };
 }

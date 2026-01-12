@@ -15,6 +15,7 @@ import './EditorBar.css';
 interface EditorBarProps {
   sheetName?: string;
   isDirty?: boolean;
+  readOnly?: boolean;
   onRenameSheet: (name: string) => void;
   onSaveSheet: () => void;
   onAddNode: (
@@ -27,6 +28,7 @@ interface EditorBarProps {
 export const EditorBar: React.FC<EditorBarProps> = ({
   sheetName,
   isDirty,
+  readOnly = false,
   onRenameSheet,
   onSaveSheet,
   onAddNode,
@@ -62,6 +64,8 @@ export const EditorBar: React.FC<EditorBarProps> = ({
           onKeyDown={handleKeyDown}
           className="sheet-name-input"
           placeholder="Sheet Name"
+          disabled={readOnly}
+          style={readOnly ? { cursor: 'not-allowed', opacity: 0.7 } : {}}
         />
         <span
           className="unsaved-indicator-badge"
@@ -143,8 +147,11 @@ export const EditorBar: React.FC<EditorBarProps> = ({
         <button
           type="button"
           onClick={onSaveSheet}
-          disabled={!isDirty}
-          title="Save Sheet"
+          disabled={!isDirty || readOnly}
+          title={readOnly ? 'Read Only' : 'Save Sheet'}
+          style={
+            readOnly ? { cursor: 'not-allowed', opacity: 0.5 } : undefined
+          }
         >
           <Save size={18} />
         </button>
