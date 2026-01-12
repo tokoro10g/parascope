@@ -66,8 +66,16 @@ export function useSheetLock(sheetId: string | null) {
         setLockedByOther(owner);
         setIsLockedByMe(false);
       } else {
-        console.error('Lock heartbeat failed', _e);
-      }
+        console.error('Lock heartbeat failed', _e);        // If acquire fails with other error (e.g. 403 Forbidden because lock was stolen/expired),
+        // we should assume we lost the lock.
+        // It's safer to downgrade to read-only if we can't confirm ownership.
+        if (!isLockedByMe) {
+             // If we were polling status and it failed, keep as is
+        } else {
+             // If we THOUGHT we had the lock but heartbeating failed,
+             // check status to confirm if we really lost it.
+             checkStatus();
+        }      }
     }
   }, [sheetId, user, isLockedByMe, checkStatus]);
 

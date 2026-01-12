@@ -52,13 +52,15 @@ export const SheetEditor: React.FC = () => {
   // Lock logic
   const {
     lockedByOther,
+    isLockedByMe,
     takeOver,
     isLoading: isLockLoading,
   } = useSheetLock(sheetId || null);
 
   // Derive Read only state.
   // We treat "Loading Lock" as Read Only to prevent race conditions (save before lock check returns).
-  const isReadOnly = !!lockedByOther || isLockLoading;
+  // CRITICAL: If I don't own the lock, it is read-only. Even if it's free (lockedByOther is null).
+  const isReadOnly = !isLockedByMe || isLockLoading;
 
   const lastResultRef = useRef(lastResult);
   lastResultRef.current = lastResult;
@@ -651,15 +653,25 @@ export const SheetEditor: React.FC = () => {
       {lockedByOther && (
         <div className="lock-banner">
           <span>
-            Sheet is locked by <strong>{lockedByOther}</strong>. You are in
+            Currently being edited by <strong>{lockedByOther}</strong>. You are in
             Read-Only mode.
           </span>
           <button type="button" onClick={takeOver} className="take-over-btn">
             Take Over
           </button>
         </div>
-      )}
-      <div
+      )}      {!lockedByOther && isReadOnly && !isLockLoading && (
+        <div className="lock-banner">
+          <span>You are in Read-Only mode. Reload to acquire lock.</span>
+          <button
+            type="button"
+            onClick={() => window.location.reload()}
+            className="take-over-btn"
+          >
+            Reload
+          </button>
+        </div>
+      )}      <div
         className="editor-content"
         style={{ display: 'flex', flex: 1, minHeight: 0, overflow: 'hidden' }}
       >
