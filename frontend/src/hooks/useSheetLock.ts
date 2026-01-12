@@ -48,9 +48,7 @@ export function useSheetLock(sheetId: string | null) {
     // We do NOT attempt to acquire it even if it becomes free.
     // The user must reload or manually "Take Over" (which acts as acquire if free).
     if (!isLockedByMe) {
-      if (lockedByOther) {
-         checkStatus();
-      }
+      checkStatus();
       return;
     }
 
