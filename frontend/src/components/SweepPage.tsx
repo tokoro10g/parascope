@@ -507,7 +507,7 @@ export const SweepPage: React.FC = () => {
               <ReactECharts
                 ref={chartRef}
                 option={echartsOption}
-                className="sweep-chart-instance"
+                style={{ height: '100%', width: '100%' }}
                 theme={undefined} // We pass styles manually
               />
             </div>
