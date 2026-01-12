@@ -30,7 +30,16 @@ async def get_lock_status(
     """
     query = select(Lock).where(Lock.sheet_id == sheet_id)
     result = await db.execute(query)
-    return result.scalar_one_or_none()
+    lock = result.scalar_one_or_none()
+    
+    # Hide expired locks (effectively free)
+    if lock:
+        now = datetime.utcnow()
+        timeout = timedelta(seconds=settings.LOCK_TIMEOUT_SECONDS)
+        if now - lock.last_heartbeat_at > timeout:
+            return None
+            
+    return lock
 
 
 @router.post("/sheets/{sheet_id}/lock", response_model=LockRead)
@@ -68,35 +77,23 @@ async def acquire_or_refresh_lock(
                 # Check expiration
                 timeout = timedelta(seconds=settings.LOCK_TIMEOUT_SECONDS)
                 if now - existing_lock.last_heartbeat_at > timeout:
-                     # IMPORTANT CHANGE: 
-                     # We do NOT steal the lock automatically if it's expired, 
-                     # unless the client explicitly requested a Force Takeover (which is a different endpoint).
-                     # OR if we decide that "acquire" implies "steal if expired".
-                     # The user requested: "Auto stealing should not happen".
-                     # If we return 409 here, the frontend (if smart) will see it's expired via GET status 
-                     # and prompt the user to "Take Over" or "Acquire" explicitly.
-                     # However, if we return 409, the error message says "Locked by X".
-                     # We should probably return 409 but maybe with a detail that hints it's expired?
-                     # No, let's just stick to 409. The frontend `get_lock_status` can see the timestamps 
-                     # and decide if it's expired.
-                     # Wait, if we don't steal it here, and the frontend says "Oh it's expired, let me call acquire()"
-                     # Then we hit this exact block again and fail with 409.
-                     # We need a way to say "I know it's expired, I want it". 
-                     # Currently `force_takeover_lock` does that.
-                     # So, "acquire" is "polite acquire". `force` is "rude acquire".
-                     # If it's expired, is it rude to take it?
-                     # Ideally, "acquire" should succeed if expired.
-                     # User said: "User B steals the lock... change A made is not reflected".
-                     # This implies the problem is the *silence* of the steal.
-                     # By making the Frontend check status first, we solve the UI issue.
-                     # BUT if the frontend *decides* to call acquire(), it effectively wants to steal it if expired.
-                     # If we disable stealing here, we MUST force the frontend to use `force_takeover_lock` for expired locks.
-                     # That seems correct for "No Auto Steal".
-                     
-                    raise HTTPException(
-                        status_code=status.HTTP_409_CONFLICT,
-                        detail=f"Sheet is locked by {existing_lock.user_id} (Expired)",
-                    )
+                    # Steal lock if expired
+                    # Since we filter expired locks in GET /lock, the client sees it as free.
+                    # If they try to acquire, they should succeed.
+                    existing_lock.user_id = user_id
+                    existing_lock.acquired_at = now
+                    existing_lock.last_heartbeat_at = now
+                    # Reset save time for new session or keep?
+                    # Let's keep it to be safe, or nullify. Previous decision was nullify in force takeover.
+                    # Here it acts as a "soft" takeover.
+                    # If we don't nullify, it might show "Last saved 30s ago" which is true.
+                    # But if we nullify, it cleanly starts a "Session".
+                    # Let's nullify to match "New Session" semantics.
+                    existing_lock.last_save_at = None
+                    
+                    await db.commit()
+                    await db.refresh(existing_lock)
+                    return existing_lock
                 else:
                     # Conflict
                     raise HTTPException(
