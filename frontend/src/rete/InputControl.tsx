@@ -1,5 +1,5 @@
 import type React from 'react';
-import { useCallback, useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { ClassicPreset } from 'rete';
 
 export class InputControl extends ClassicPreset.Control {
@@ -7,28 +7,30 @@ export class InputControl extends ClassicPreset.Control {
   public value: string | number;
   public onChange?: (value: any) => void;
   public readonly: boolean;
-  public min?: number;
-  public max?: number;
+  public error: string | null = null;
 
   constructor(
     value: string | number,
     options: {
       readonly?: boolean;
       change?: (value: any) => void;
-      min?: number;
-      max?: number;
     } = {},
   ) {
     super();
     this.value = value;
     this.onChange = options.change;
     this.readonly = options.readonly || false;
-    this.min = options.min;
-    this.max = options.max;
   }
 
   setValue(val: string | number) {
     this.value = val;
+    this.listeners.forEach((l) => {
+      l();
+    });
+  }
+
+  setError(err: string | null) {
+    this.error = err;
     this.listeners.forEach((l) => {
       l();
     });
@@ -46,44 +48,20 @@ export const InputControlComponent: React.FC<{ data: InputControl }> = ({
   data,
 }) => {
   const [value, setValue] = useState(data.value);
-  const [isValid, setIsValid] = useState(true);
-
-  const validate = useCallback(
-    (val: string | number) => {
-      if (val === '' || val === undefined || val === null) {
-        setIsValid(true);
-        return;
-      }
-      const num = Number(val);
-      if (
-        (data.min !== undefined || data.max !== undefined) &&
-        Number.isNaN(num)
-      ) {
-        setIsValid(false);
-        return;
-      }
-
-      let valid = true;
-      if (data.min !== undefined && num < data.min) valid = false;
-      if (data.max !== undefined && num > data.max) valid = false;
-      setIsValid(valid);
-    },
-    [data.min, data.max],
-  );
+  const [error, setError] = useState<string | null>(data.error);
 
   useEffect(() => {
     setValue(data.value);
-    validate(data.value);
+    setError(data.error);
     return data.subscribe(() => {
       setValue(data.value);
-      validate(data.value);
+      setError(data.error);
     });
-  }, [data, validate]);
+  }, [data]);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const val = e.target.value;
     setValue(val);
-    validate(val);
 
     // Update data model
     data.setValue(val);
@@ -102,14 +80,11 @@ export const InputControlComponent: React.FC<{ data: InputControl }> = ({
       style={{
         width: '100%',
         fontFamily: 'monospace',
-        color: isValid ? undefined : 'red',
-        borderColor: isValid ? undefined : 'red',
+        color: error ? 'red' : undefined,
+        borderColor: error ? 'red' : undefined,
       }}
-      title={
-        !isValid
-          ? `Value is out of the range [${data.min ?? '-inf'}, ${data.max ?? 'inf'}]`
-          : ''
-      }
+      title={error || ''}
+      className={data.readonly ? 'node-input-readonly' : 'node-input'}
     />
   );
 };

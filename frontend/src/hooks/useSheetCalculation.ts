@@ -1,6 +1,6 @@
 import { useCallback, useState } from 'react';
 import { api, type NodeResult } from '../api';
-import type { ParascopeNode } from '../rete';
+import { InputControl, type ParascopeNode } from '../rete';
 
 interface Editor {
   editor: {
@@ -35,6 +35,14 @@ export const useSheetCalculation = (editor: Editor | null | undefined) => {
           } else {
             node.error = undefined;
           }
+
+          // Propagate error to InputControl
+          Object.values(node.controls).forEach((control) => {
+            if (control instanceof InputControl) {
+              control.setError(node.error || null);
+            }
+          });
+
           editor.area.update('node', node.id);
         });
       }
