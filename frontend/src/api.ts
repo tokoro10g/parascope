@@ -314,8 +314,9 @@ export const api = {
     });
   },
 
-  async releaseLock(sheetId: string): Promise<void> {
-    return request<void>(`${API_BASE}/api/sheets/${sheetId}/lock`, {
+  async releaseLock(sheetId: string, tabId: string): Promise<void> {
+    const params = new URLSearchParams({ tab_id: tabId });
+    return request<void>(`${API_BASE}/api/sheets/${sheetId}/lock?${params.toString()}`, {
       method: 'DELETE',
       headers: getHeaders(),
     });

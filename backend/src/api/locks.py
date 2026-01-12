@@ -208,6 +208,7 @@ async def force_takeover_lock(
 @router.delete("/sheets/{sheet_id}/lock")
 async def release_lock(
     sheet_id: UUID,
+    tab_id: Optional[str] = None,
     user_id: str = Depends(get_current_user),
     db: AsyncSession = Depends(get_db),
 ):
@@ -219,6 +220,10 @@ async def release_lock(
     existing_lock = result.scalar_one_or_none()
 
     if existing_lock and existing_lock.user_id == user_id:
+        # If the lock has a tab_id, ensure the releasing requests matches it.
+        if existing_lock.tab_id and existing_lock.tab_id != tab_id:
+            return {"status": "ignored", "detail": "tab_mismatch"}
+
         await db.delete(existing_lock)
         await db.commit()
     

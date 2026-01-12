@@ -146,9 +146,9 @@ export function useSheetLock(sheetId: string | null) {
       clearInterval(id);
       // We only release when the user actually leaves the sheet (component unmounts or sheetId changes)
       // verify isLockedByMeRef or similar if needed, but backend checks ownership safely.
-      api.releaseLock(sheetId).catch(() => {});
+      api.releaseLock(sheetId, tabId).catch(() => {});
     };
-  }, [sheetId, user, checkStatus]); // Strict dependency on Sheet ID, User, and checkStatus.
+  }, [sheetId, user, checkStatus, tabId]); // Strict dependency on Sheet ID, User, and checkStatus.
 
   const takeOver = async () => {
     if (!sheetId) return;
