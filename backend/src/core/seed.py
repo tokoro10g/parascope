@@ -39,7 +39,7 @@ async def seed_database(session: AsyncSession):
         outputs=[{"key": "value", "socket_type": "any"}],
         position_x=100,
         position_y=100,
-        data={"description": "Specific Impulse of the engine in seconds."},
+        data={"description": "Specific Impulse of the engine in seconds.", "min": "0"},
     )
     node_m0 = Node(
         id=uuid.uuid4(),
@@ -50,7 +50,7 @@ async def seed_database(session: AsyncSession):
         outputs=[{"key": "value", "socket_type": "any"}],
         position_x=100,
         position_y=250,
-        data={"description": "Initial total mass of the rocket (wet mass) in kg."},
+        data={"description": "Initial total mass of the rocket (wet mass) in kg.", "min": "0"},
     )
     node_mf = Node(
         id=uuid.uuid4(),
@@ -61,7 +61,7 @@ async def seed_database(session: AsyncSession):
         outputs=[{"key": "value", "socket_type": "any"}],
         position_x=100,
         position_y=400,
-        data={"description": "Final mass of the rocket (dry mass) in kg."},
+        data={"description": "Final mass of the rocket (dry mass) in kg.", "min": "0"},
     )
 
     # Prepare attachment for Rocket Equation node
@@ -113,7 +113,7 @@ async def seed_database(session: AsyncSession):
         outputs=[],
         position_x=900,
         position_y=250,
-        data={"description": "The total change in velocity achievable by the rocket."},
+        data={"description": "The total change in velocity achievable by the rocket.", "min": "0"},
     )
 
     # Connections
@@ -155,7 +155,7 @@ async def seed_database(session: AsyncSession):
         outputs=[{"key": "value", "socket_type": "any"}],
         position_x=100,
         position_y=100,
-        data={"description": "Air density in kg/m³."},
+        data={"description": "Air density in kg/m³.", "min": "0"},
     )
     node_vel = Node(
         id=uuid.uuid4(),
@@ -166,7 +166,7 @@ async def seed_database(session: AsyncSession):
         outputs=[{"key": "value", "socket_type": "any"}],
         position_x=100,
         position_y=250,
-        data={"description": "Velocity of the object relative to the fluid in m/s."},
+        data={"description": "Velocity of the object relative to the fluid in m/s.", "min": "0"},
     )
 
     node_q_func = Node(
@@ -193,7 +193,7 @@ async def seed_database(session: AsyncSession):
         outputs=[],
         position_x=900,
         position_y=175,
-        data={"description": "Dynamic pressure in Pascals."},
+        data={"description": "Dynamic pressure in Pascals.", "min": "0"},
     )
 
     conn2_1 = Connection(
@@ -228,7 +228,7 @@ async def seed_database(session: AsyncSession):
         outputs=[{"key": "value", "socket_type": "any"}],
         position_x=100,
         position_y=50,
-        data={"description": "Drag coefficient (dimensionless)."},
+        data={"description": "Drag coefficient (dimensionless).", "min": "0"},
     )
     node_area = Node(
         id=uuid.uuid4(),
@@ -239,7 +239,7 @@ async def seed_database(session: AsyncSession):
         outputs=[{"key": "value", "socket_type": "any"}],
         position_x=100,
         position_y=200,
-        data={"description": "Reference area (usually frontal area) in m²."},
+        data={"description": "Reference area (usually frontal area) in m².", "min": "0"},
     )
     node_d_rho = Node(
         id=uuid.uuid4(),
@@ -250,7 +250,7 @@ async def seed_database(session: AsyncSession):
         outputs=[{"key": "value", "socket_type": "any"}],
         position_x=100,
         position_y=350,
-        data={"description": "Air density in kg/m³."},
+        data={"description": "Air density in kg/m³.", "min": "0"},
     )
     node_d_vel = Node(
         id=uuid.uuid4(),
@@ -261,7 +261,7 @@ async def seed_database(session: AsyncSession):
         outputs=[{"key": "value", "socket_type": "any"}],
         position_x=100,
         position_y=500,
-        data={"description": "Velocity in m/s."},
+        data={"description": "Velocity in m/s.", "min": "0"},
     )
 
     # Nested Sheet: Dynamic Pressure
@@ -307,7 +307,7 @@ async def seed_database(session: AsyncSession):
         outputs=[],
         position_x=1200,
         position_y=250,
-        data={"description": "Aerodynamic drag force in Newtons."},
+        data={"description": "Aerodynamic drag force in Newtons.", "min": "0"},
     )
 
     # Connections
@@ -369,7 +369,7 @@ async def seed_database(session: AsyncSession):
         outputs=[{"key": "value", "socket_type": "any"}],
         position_x=100,
         position_y=100,
-        data={"value": "2000", "description": "Mass of the payload to be delivered to orbit."},
+        data={"value": "2000", "description": "Mass of the payload to be delivered to orbit.", "min": "0"},
     )
     node_prop = Node(
         id=uuid.uuid4(),
@@ -380,7 +380,7 @@ async def seed_database(session: AsyncSession):
         outputs=[{"key": "value", "socket_type": "any"}],
         position_x=100,
         position_y=250,
-        data={"value": "93000", "description": "Mass of the propellant."},
+        data={"value": "93000", "description": "Mass of the propellant.", "min": "0"},
     )
     node_struc = Node(
         id=uuid.uuid4(),
@@ -391,7 +391,7 @@ async def seed_database(session: AsyncSession):
         outputs=[{"key": "value", "socket_type": "any"}],
         position_x=100,
         position_y=400,
-        data={"value": "5000", "description": "Mass of the rocket structure (tanks, engines, etc.)."},
+        data={"value": "5000", "description": "Mass of the rocket structure (tanks, engines, etc.).", "min": "0"},
     )
     node_ssto_isp = Node(
         id=uuid.uuid4(),
@@ -402,7 +402,7 @@ async def seed_database(session: AsyncSession):
         outputs=[{"key": "value", "socket_type": "any"}],
         position_x=100,
         position_y=550,
-        data={"value": "380", "description": "Specific Impulse of the SSTO engine."},
+        data={"value": "380", "description": "Specific Impulse of the SSTO engine.", "min": "0"},
     )
     node_target_dv = Node(
         id=uuid.uuid4(),
@@ -413,7 +413,7 @@ async def seed_database(session: AsyncSession):
         outputs=[{"key": "value", "socket_type": "any"}],
         position_x=100,
         position_y=700,
-        data={"value": "9000", "description": "Required Delta-V to reach the target orbit."},
+        data={"value": "9000", "description": "Required Delta-V to reach the target orbit.", "min": "0"},
     )
 
     # Function: Mass Sums
@@ -479,7 +479,7 @@ async def seed_database(session: AsyncSession):
         outputs=[],
         position_x=1600,
         position_y=400,
-        data={"description": "The calculated Delta-V capability of the vehicle."},
+        data={"description": "The calculated Delta-V capability of the vehicle.", "min": "0"},
     )
     node_out_margin = Node(
         id=uuid.uuid4(),
@@ -490,7 +490,7 @@ async def seed_database(session: AsyncSession):
         outputs=[],
         position_x=1600,
         position_y=550,
-        data={"description": "Excess Delta-V available (or deficit if negative)."},
+        data={"description": "Excess Delta-V available (or deficit if negative).", "min": "0"},
     )
     node_out_feas = Node(
         id=uuid.uuid4(),
@@ -644,7 +644,7 @@ async def seed_database(session: AsyncSession):
         outputs=[{"key": "value", "socket_type": "any"}],
         position_x=100,
         position_y=300,
-        data={"value": "1.0", "description": "Volume of the component."},
+        data={"value": "1.0", "description": "Volume of the component.", "min": "0"},
     )
 
     node_density_func = Node(
@@ -683,7 +683,7 @@ async def seed_database(session: AsyncSession):
         outputs=[],
         position_x=1000,
         position_y=200,
-        data={"description": "Total mass of the component."},
+        data={"description": "Total mass of the component.", "min": "0"},
     )
 
     # Connections
