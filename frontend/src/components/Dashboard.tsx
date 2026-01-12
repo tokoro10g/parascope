@@ -36,6 +36,7 @@ export const Dashboard: React.FC = () => {
   const [sheets, setSheets] = useState<SheetSummary[]>([]);
   const [folders, setFolders] = useState<Folder[]>([]);
   const [sessions, setSessions] = useState<Session[]>([]);
+  const dataLoadedRef = React.useRef(false);
   const [currentFolderId, setCurrentFolderId] = useState<string | undefined>(
     folderId,
   );
@@ -67,8 +68,25 @@ export const Dashboard: React.FC = () => {
   }, [folderId, folders]);
 
   useEffect(() => {
+    if (dataLoadedRef.current) return;
+    dataLoadedRef.current = true;
     loadData();
   }, [loadData]);
+
+  useEffect(() => {
+    const refreshSessions = async () => {
+      try {
+        const sessionsData = await api.getSessions();
+        setSessions(sessionsData);
+      } catch (e) {
+        // Silently fail on background refresh
+        console.error('Failed to refresh sessions', e);
+      }
+    };
+
+    const interval = setInterval(refreshSessions, 10_000);
+    return () => clearInterval(interval);
+  }, []);
 
   const handleCreateSheet = async () => {
     try {
@@ -249,30 +267,6 @@ export const Dashboard: React.FC = () => {
         </button>
       </div>
 
-      {sessions.length > 0 && (
-        <div className="active-sessions-panel">
-          <h3>Active Sessions</h3>
-          <div className="session-list">
-            {sessions.map((s) => (
-              <div key={s.sheet_id} className="session-item">
-                <Workflow size={16} style={{ marginRight: 8 }} />
-                <Link to={`/sheet/${s.sheet_id}`} style={{ marginRight: 12 }}>
-                  {s.sheet_name}
-                </Link>
-                <span style={{ color: '#666', marginRight: 12 }}>
-                  Locked by <strong>{s.user_id}</strong>
-                </span>
-                <span style={{ fontSize: '0.9em', color: '#888' }}>
-                  {s.last_save_at
-                    ? `Saved ${formatTimeAgo(s.last_save_at)}`
-                    : `Started ${formatTimeAgo(s.acquired_at)}`}
-                </span>
-              </div>
-            ))}
-          </div>
-        </div>
-      )}
-
       <div
         className="breadcrumbs"
         style={{
@@ -429,6 +423,30 @@ export const Dashboard: React.FC = () => {
           <p style={{ padding: 20, color: '#666' }}>This folder is empty.</p>
         )}
       </div>
+
+      {sessions.length > 0 && (
+        <div className="active-sessions-panel" style={{ marginTop: 40 }}>
+          <h3>Active Sessions</h3>
+          <div className="session-list">
+            {sessions.map((s) => (
+              <div key={s.sheet_id} className="session-item">
+                <Workflow size={16} style={{ marginRight: 8 }} />
+                <Link to={`/sheet/${s.sheet_id}`} style={{ marginRight: 12 }}>
+                  {s.sheet_name}
+                </Link>
+                <span style={{ color: '#666', marginRight: 12 }}>
+                  Locked by <strong>{s.user_id}</strong>
+                </span>
+                <span style={{ fontSize: '0.9em', color: '#888' }}>
+                  {s.last_save_at
+                    ? `Saved ${formatTimeAgo(s.last_save_at)}`
+                    : `Started ${formatTimeAgo(s.acquired_at)}`}
+                </span>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
 
       <FolderPickerModal
         isOpen={moveModalOpen}

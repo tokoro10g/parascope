@@ -232,6 +232,8 @@ export const SheetEditor: React.FC = () => {
     editor?.addHistoryAction,
   );
 
+
+
   const handleNodeUpdate = useCallback(
     async (nodeId: string, updates: any) => {
       await originalHandleNodeUpdate(nodeId, updates);
@@ -646,6 +648,85 @@ export const SheetEditor: React.FC = () => {
       { replace: true },
     );
   };
+
+  // Set up Editor event listeners (Context Menu, Double Click, etc)
+  useEffect(() => {
+    if (editor) {
+      editor.setContextMenuCallbacks({
+        onNodeEdit: (id) => {
+          const node = editor.editor.getNode(id);
+          if (node) setEditingNode(node as ParascopeNode);
+        },
+        onEditNestedSheet: (id) => {
+          const node = editor.editor.getNode(id) as ParascopeNode;
+          if (node && node.initialData && node.initialData.sheetId) {
+            handleSaveSheet(getExportData());
+            navigate(`/sheet/${node.initialData.sheetId}`);
+          }
+        },
+        onNodeTypeChange: async (nodeId, type) => {
+          const node = editor.editor.getNode(nodeId) as ParascopeNode;
+          if (!node) return;
+
+          let inputs: any[] = [];
+          let outputs: any[] = [];
+          const data: any = { value: '' };
+
+          const currentValue = (node.controls.value as any)?.value || node.initialData.value || '';
+
+          if (type === 'constant') {
+            outputs = [createSocket('value')];
+            data.value = currentValue;
+          } else if (type === 'function') {
+            inputs = [createSocket('a'), createSocket('b')];
+            outputs = [createSocket('result')];
+            data.expression = node.initialData.expression || 'a + b';
+          } else if (type === 'input') {
+            outputs = [createSocket('value')];
+          } else if (type === 'output') {
+            inputs = [createSocket('value')];
+          }
+
+          await handleNodeUpdate(nodeId, {
+            type,
+            inputs: inputs,
+            outputs: outputs,
+            initialData: data,
+          });
+        },
+        onNodeDuplicate: handleDuplicateNode,
+        onNodeRemove: async (nodeId) => await handleDelete([nodeId]),
+        onAddNode: (type) => handleAddNode(type),
+      });
+
+      editor.setNodeDoubleClickListener((id) => {
+        const node = editor.editor.getNode(id);
+        if (node) setEditingNode(node as ParascopeNode);
+      });
+
+      editor.setGraphChangeListener(() => {
+        setIsDirty(true);
+        triggerAutoCalculation();
+      });
+
+      editor.setLayoutChangeListener(() => {
+        setIsDirty(true);
+      });
+
+      editor.setInputValueChangeListener(handleCalculationInputChange);
+    }
+  }, [
+    editor,
+    handleSaveSheet,
+    getExportData,
+    navigate,
+    handleDuplicateNode,
+    handleDelete,
+    handleNodeUpdate,
+    handleCalculationInputChange,
+    triggerAutoCalculation,
+    handleAddNode,
+  ]);
 
   return (
     <div className="sheet-editor">

@@ -8,6 +8,7 @@ export interface ContextMenuCallbacks {
   onNodeTypeChange?: (nodeId: string, type: string) => void;
   onNodeDuplicate?: (nodeId: string) => void;
   onNodeRemove?: (nodeId: string) => Promise<void>;
+  onAddNode?: (type: 'constant' | 'function' | 'input' | 'output') => void;
 }
 
 export function createContextMenuPlugin(
@@ -17,7 +18,31 @@ export function createContextMenuPlugin(
   return new ContextMenuPlugin<Schemes>({
     items: (context) => {
       if (context === 'root') {
-        return { searchBar: false, list: [] };
+        return {
+          searchBar: false,
+          list: [
+            {
+              label: 'Add Constant',
+              key: 'add-constant',
+              handler: () => callbacks.onAddNode?.('constant'),
+            },
+            {
+              label: 'Add Function',
+              key: 'add-function',
+              handler: () => callbacks.onAddNode?.('function'),
+            },
+            {
+              label: 'Add Input',
+              key: 'add-input',
+              handler: () => callbacks.onAddNode?.('input'),
+            },
+            {
+              label: 'Add Output',
+              key: 'add-output',
+              handler: () => callbacks.onAddNode?.('output'),
+            },
+          ],
+        };
       }
 
       // Check for connection (has source/target)
