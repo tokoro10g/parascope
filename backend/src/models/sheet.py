@@ -75,10 +75,11 @@ class Connection(Base):
 
 
 class Lock(Base):
-    __tablename__ = "locks"
+    __tablename__ = "sheet_locks"
 
     sheet_id: Mapped[uuid.UUID] = mapped_column(ForeignKey("sheets.id"), primary_key=True)
     user_id: Mapped[str] = mapped_column(String, nullable=False)
+    tab_id: Mapped[Optional[str]] = mapped_column(String, nullable=True)
     acquired_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow)
     last_heartbeat_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow)
     last_save_at: Mapped[Optional[datetime]] = mapped_column(DateTime, nullable=True)

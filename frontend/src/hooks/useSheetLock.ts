@@ -10,6 +10,15 @@ export function useSheetLock(sheetId: string | null) {
   const [lockedByOther, setLockedByOther] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
 
+  const [tabId] = useState(() => {
+    let id = sessionStorage.getItem('parascope_tab_id');
+    if (!id) {
+       id = globalThis.crypto.randomUUID();
+       sessionStorage.setItem('parascope_tab_id', id);
+    }
+    return id;
+  });
+
   const intervalRef = useRef<number | null>(null);
 
   // Separate function to just check status (not acquire)
@@ -19,11 +28,16 @@ export function useSheetLock(sheetId: string | null) {
       const l = await api.getLock(sheetId);
       if (l) {
         if (l.user_id === user) {
-          // Weird edge case: we own it but didn't know?
-          // Recover ownership state
-          setLock(l);
-          setIsLockedByMe(true);
-          setLockedByOther(null);
+          if (l.tab_id === tabId) {
+            // We own it
+            setLock(l);
+            setIsLockedByMe(true);
+            setLockedByOther(null);
+          } else {
+            // We own it in another tab
+            setLockedByOther('You (another tab)');
+            setIsLockedByMe(false);
+          }
         } else {
           setLockedByOther(l.user_id);
           setIsLockedByMe(false);
@@ -39,7 +53,7 @@ export function useSheetLock(sheetId: string | null) {
     } finally {
         setLoading(false);
     }
-  }, [sheetId, user]);
+  }, [sheetId, user, tabId]);
 
   const heartbeat = useCallback(async () => {
     if (!sheetId || !user) return;
@@ -53,7 +67,7 @@ export function useSheetLock(sheetId: string | null) {
     }
 
     try {
-      const l = await api.acquireLock(sheetId);
+      const l = await api.acquireLock(sheetId, tabId);
       setLock(l);
       setIsLockedByMe(l.user_id === user);
       setLockedByOther(null);
@@ -94,11 +108,13 @@ export function useSheetLock(sheetId: string | null) {
       // Optimization: Peek first to avoid 409 error noise in console/network tab if we know it's locked
       try {
         const existing = await api.getLock(sheetId);
-        if (existing && existing.user_id !== user) {
-          setLockedByOther(existing.user_id);
-          setIsLockedByMe(false);
-          setLoading(false);
-          return; // Don't try to acquire if we know it's locked
+        if (existing) {
+          if (existing.user_id !== user || existing.tab_id !== tabId) {
+             setLockedByOther(existing.user_id === user ? 'You (another tab)' : existing.user_id);
+             setIsLockedByMe(false);
+             setLoading(false);
+             return; // Don't try to acquire if we know it's locked
+          }
         }
       } catch (e) {
         // Ignore peek error, proceed to acquire attempt
@@ -106,7 +122,7 @@ export function useSheetLock(sheetId: string | null) {
       }
 
       try {
-        const l = await api.acquireLock(sheetId);
+        const l = await api.acquireLock(sheetId, tabId);
         setLock(l);
         setIsLockedByMe(l.user_id === user);
       } catch (e: any) {
@@ -137,7 +153,7 @@ export function useSheetLock(sheetId: string | null) {
   const takeOver = async () => {
     if (!sheetId) return;
     try {
-      const l = await api.forceTakeoverLock(sheetId);
+      const l = await api.forceTakeoverLock(sheetId, tabId);
       setLock(l);
       setIsLockedByMe(true);
       setLockedByOther(null);
@@ -150,7 +166,7 @@ export function useSheetLock(sheetId: string | null) {
   const acquire = async () => {
     if (!sheetId) return;
     try {
-      const l = await api.acquireLock(sheetId);
+      const l = await api.acquireLock(sheetId, tabId);
       setLock(l);
       setIsLockedByMe(true);
       setLockedByOther(null);

@@ -13,7 +13,7 @@ from ..core.auth import get_current_user
 from ..core.config import settings
 from ..core.database import get_db
 from ..models.sheet import Lock, Sheet
-from ..schemas.lock import LockRead, SessionRead
+from ..schemas.lock import LockAcquire, LockRead, SessionRead
 
 router = APIRouter(tags=["concurrency"])
 
@@ -45,6 +45,7 @@ async def get_lock_status(
 @router.post("/sheets/{sheet_id}/lock", response_model=LockRead)
 async def acquire_or_refresh_lock(
     sheet_id: UUID,
+    body: LockAcquire,
     user_id: str = Depends(get_current_user),
     db: AsyncSession = Depends(get_db),
 ):
@@ -68,27 +69,39 @@ async def acquire_or_refresh_lock(
     if existing_lock:
         try:
             if existing_lock.user_id == user_id:
-                # Refresh
-                existing_lock.last_heartbeat_at = now
-                await db.commit()
-                await db.refresh(existing_lock)
-                return existing_lock
+                # Same user, check tab ID
+                if existing_lock.tab_id == body.tab_id:
+                    # Refresh
+                    existing_lock.last_heartbeat_at = now
+                    await db.commit()
+                    await db.refresh(existing_lock)
+                    return existing_lock
+                else:
+                    # Same user, different tab
+                    timeout = timedelta(seconds=settings.LOCK_TIMEOUT_SECONDS)
+                    if now - existing_lock.last_heartbeat_at > timeout:
+                        # Steal expired
+                        existing_lock.tab_id = body.tab_id
+                        existing_lock.last_heartbeat_at = now
+                        existing_lock.acquired_at = now
+                        existing_lock.last_save_at = None
+                        await db.commit()
+                        await db.refresh(existing_lock)
+                        return existing_lock
+                    else:
+                        raise HTTPException(
+                            status_code=status.HTTP_409_CONFLICT,
+                            detail="Sheet is open in another tab",
+                        )
             else:
                 # Check expiration
                 timeout = timedelta(seconds=settings.LOCK_TIMEOUT_SECONDS)
                 if now - existing_lock.last_heartbeat_at > timeout:
                     # Steal lock if expired
-                    # Since we filter expired locks in GET /lock, the client sees it as free.
-                    # If they try to acquire, they should succeed.
                     existing_lock.user_id = user_id
+                    existing_lock.tab_id = body.tab_id
                     existing_lock.acquired_at = now
                     existing_lock.last_heartbeat_at = now
-                    # Reset save time for new session or keep?
-                    # Let's keep it to be safe, or nullify. Previous decision was nullify in force takeover.
-                    # Here it acts as a "soft" takeover.
-                    # If we don't nullify, it might show "Last saved 30s ago" which is true.
-                    # But if we nullify, it cleanly starts a "Session".
-                    # Let's nullify to match "New Session" semantics.
                     existing_lock.last_save_at = None
                     
                     await db.commit()
@@ -110,6 +123,7 @@ async def acquire_or_refresh_lock(
         new_lock = Lock(
             sheet_id=sheet_id,
             user_id=user_id,
+            tab_id=body.tab_id,
             acquired_at=now,
             last_heartbeat_at=now,
         )
@@ -147,6 +161,7 @@ async def acquire_or_refresh_lock(
 @router.post("/sheets/{sheet_id}/lock/force", response_model=LockRead)
 async def force_takeover_lock(
     sheet_id: UUID,
+    body: LockAcquire,
     user_id: str = Depends(get_current_user),
     db: AsyncSession = Depends(get_db),
 ):
@@ -163,6 +178,7 @@ async def force_takeover_lock(
 
     if existing_lock:
         existing_lock.user_id = user_id
+        existing_lock.tab_id = body.tab_id
         existing_lock.acquired_at = now
         existing_lock.last_heartbeat_at = now
         # We preserve last_save_at? Or reset? 
@@ -178,6 +194,7 @@ async def force_takeover_lock(
         existing_lock = Lock(
             sheet_id=sheet_id,
             user_id=user_id,
+            tab_id=body.tab_id,
             acquired_at=now,
             last_heartbeat_at=now,
         )

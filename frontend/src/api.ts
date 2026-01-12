@@ -120,6 +120,7 @@ export interface GenerateFunctionResponse {
 export interface Lock {
   sheet_id: string;
   user_id: string;
+  tab_id?: string;
   acquired_at: string;
   last_heartbeat_at: string;
   last_save_at: string | null;
@@ -305,10 +306,11 @@ export const api = {
   },
 
   // CONCURRENCY
-  async acquireLock(sheetId: string): Promise<Lock> {
+  async acquireLock(sheetId: string, tabId: string): Promise<Lock> {
     return request<Lock>(`${API_BASE}/api/sheets/${sheetId}/lock`, {
       method: 'POST',
-      headers: getHeaders(),
+      headers: getHeaders({ 'Content-Type': 'application/json' }),
+      body: JSON.stringify({ tab_id: tabId }),
     });
   },
 
@@ -319,10 +321,11 @@ export const api = {
     });
   },
 
-  async forceTakeoverLock(sheetId: string): Promise<Lock> {
+  async forceTakeoverLock(sheetId: string, tabId: string): Promise<Lock> {
     return request<Lock>(`${API_BASE}/api/sheets/${sheetId}/lock/force`, {
       method: 'POST',
-      headers: getHeaders(),
+      headers: getHeaders({ 'Content-Type': 'application/json' }),
+      body: JSON.stringify({ tab_id: tabId }),
     });
   },
 
