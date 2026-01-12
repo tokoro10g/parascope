@@ -40,7 +40,7 @@ export function useSheetManager(
         setCurrentSheet(sheet);
         await onLoadSuccess(sheet);
         setIsDirty(false);
-        document.title = `Parascope - ${sheet.name}`;
+        document.title = `${sheet.name} - Parascope`;
       } catch (e) {
         console.error(e);
         toast.error(`Error loading sheet: ${e}`);
@@ -96,6 +96,7 @@ export function useSheetManager(
       try {
         const updatedSheet = await api.updateSheet(currentSheet.id, { name });
         setCurrentSheet(updatedSheet);
+        document.title = `${updatedSheet.name} - Parascope`;
         toast.success('Sheet renamed successfully');
       } catch (e) {
         console.error(e);

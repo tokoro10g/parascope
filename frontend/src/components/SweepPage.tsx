@@ -72,6 +72,7 @@ export const SweepPage: React.FC = () => {
         .getSheet(sheetId)
         .then((loadedSheet) => {
           setSheet(loadedSheet);
+          document.title = `Sweep: ${loadedSheet.name} - Parascope`;
           // Initialize overrides with default values
           const defaults: Record<string, string> = {};
           loadedSheet.nodes.forEach((n) => {

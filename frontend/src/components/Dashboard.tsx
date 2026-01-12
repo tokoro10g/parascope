@@ -64,7 +64,7 @@ export const Dashboard: React.FC = () => {
   useEffect(() => {
     setCurrentFolderId(folderId);
     const folder = folders.find((f) => f.id === folderId);
-    document.title = `Parascope - ${folder?.name || 'Home'}`;
+    document.title = `${folder?.name || 'Home'} - Parascope`;
   }, [folderId, folders]);
 
   useEffect(() => {

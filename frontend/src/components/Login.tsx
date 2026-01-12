@@ -15,7 +15,7 @@ export const Login: React.FC = () => {
   const usernameDescription = import.meta.env.VITE_USERNAME_DESCRIPTION;
 
   useEffect(() => {
-    document.title = 'Parascope - Login';
+    document.title = 'Login - Parascope';
   }, []);
 
   const isValid = (input: string) => {
