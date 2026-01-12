@@ -81,3 +81,45 @@
   font-size: 0.7em;
   font-family: monospace;
 }
+
+.active-sessions-panel {
+  background: #f9f9f9;
+  padding: 15px;
+  border-radius: 6px;
+  margin-bottom: 20px;
+  border: 1px solid #ddd;
+}
+
+@media (prefers-color-scheme: dark) {
+  .active-sessions-panel {
+    background: #2a2a2a;
+    border-color: #444;
+  }
+}
+
+.active-sessions-panel h3 {
+  margin-top: 0;
+  margin-bottom: 10px;
+  font-size: 1.1em;
+}
+
+.session-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.session-item {
+  display: flex;
+  align-items: center;
+  background: white;
+  padding: 8px;
+  border-radius: 4px;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+}
+
+@media (prefers-color-scheme: dark) {
+  .session-item {
+    background: #333;
+  }
+}

@@ -37,19 +37,19 @@ export class ParascopeNode extends Classic.Node {
       const output = new Classic.Output(s, out.key);
       if (type === 'sheet') {
         // Apply type-specific class to the socket element
-        // Since we can't easily access the DOM element here, we have to rely on 
+        // Since we can't easily access the DOM element here, we have to rely on
         // the fact that Rete renders sockets inside the node component
-        // or we utilize a custom Socket component. 
-        // A simpler way is to check the type in the CustomNode component? 
+        // or we utilize a custom Socket component.
+        // A simpler way is to check the type in the CustomNode component?
         // No, Classic.Output does not expose 'socket_type'.
         // HOWEVER, we can hack the socket name or properties?
       }
-      // Let's attach the type to the output object itself if possible, 
+      // Let's attach the type to the output object itself if possible,
       // but Classic.Output is strict.
-      // Alternatively, we can use different socket "names" 
+      // Alternatively, we can use different socket "names"
       // e.g. new Classic.Socket('socket-constant')
       // and match them in CustomNode or CSS selectors based on attributes?
-      
+
       // Better approach: Extend the Output class or just use the socket name.
       if (type === 'sheet') {
         output.socket = new Classic.Socket(

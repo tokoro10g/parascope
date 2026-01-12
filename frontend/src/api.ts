@@ -12,7 +12,10 @@ const getHeaders = (headers: Record<string, string> = {}) => {
   return headers;
 };
 
-async function request<T = any>(url: string, options: RequestInit = {}): Promise<T> {
+async function request<T = any>(
+  url: string,
+  options: RequestInit = {},
+): Promise<T> {
   let res: Response;
   try {
     res = await fetch(url, options);
@@ -46,7 +49,7 @@ async function request<T = any>(url: string, options: RequestInit = {}): Promise
     }
 
     toast.error(message);
-    
+
     const error = new Error(message);
     // Attach complex details (like node_id) to the error object
     if (errorDetails?.detail && typeof errorDetails.detail === 'object') {
@@ -62,7 +65,7 @@ async function request<T = any>(url: string, options: RequestInit = {}): Promise
   if (res.status === 204) {
     return {} as T;
   }
-  
+
   return res.json();
 }
 
@@ -112,6 +115,23 @@ export interface GenerateFunctionResponse {
   inputs: string[];
   outputs: string[];
   description: string;
+}
+
+export interface Lock {
+  sheet_id: string;
+  user_id: string;
+  acquired_at: string;
+  last_heartbeat_at: string;
+  last_save_at: string | null;
+}
+
+export interface Session {
+  sheet_id: string;
+  sheet_name: string;
+  user_id: string;
+  acquired_at: string;
+  last_save_at: string | null;
+  duration_since_save: number | null;
 }
 
 export const api = {
@@ -281,6 +301,35 @@ export const api = {
         output_node_ids: outputNodeIds,
         input_overrides: inputOverrides,
       }),
+    });
+  },
+
+  // CONCURRENCY
+  async acquireLock(sheetId: string): Promise<Lock> {
+    return request<Lock>(`${API_BASE}/api/sheets/${sheetId}/lock`, {
+      method: 'POST',
+      headers: getHeaders(),
+    });
+  },
+
+  async releaseLock(sheetId: string): Promise<void> {
+    return request<void>(`${API_BASE}/api/sheets/${sheetId}/lock`, {
+      method: 'DELETE',
+      headers: getHeaders(),
+    });
+  },
+
+  async forceTakeoverLock(sheetId: string): Promise<Lock> {
+    return request<Lock>(`${API_BASE}/api/sheets/${sheetId}/lock/force`, {
+      method: 'POST',
+      headers: getHeaders(),
+    });
+  },
+
+  async getSessions(): Promise<Session[]> {
+    return request<Session[]>(`${API_BASE}/api/sessions`, {
+      method: 'GET',
+      headers: getHeaders(),
     });
   },
 };

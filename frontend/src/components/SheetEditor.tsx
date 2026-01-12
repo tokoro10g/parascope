@@ -13,6 +13,7 @@ import { useAuth } from '../contexts/AuthContext';
 import { useNodeOperations } from '../hooks/useNodeOperations';
 import { useReteEvents } from '../hooks/useReteEvents';
 import { useSheetCalculation } from '../hooks/useSheetCalculation';
+import { useSheetLock } from '../hooks/useSheetLock';
 import { useSheetManager } from '../hooks/useSheetManager';
 import { useUnsavedChanges } from '../hooks/useUnsavedChanges';
 import { createEditor, type ParascopeNode } from '../rete';
@@ -47,6 +48,17 @@ export const SheetEditor: React.FC = () => {
   const [editingNode, setEditingNode] = useState<ParascopeNode | null>(null);
   const [isDirty, setIsDirty] = useState(false);
   const [isSheetPickerOpen, setIsSheetPickerOpen] = useState(false);
+
+  // Lock logic
+  const { lockedByOther, takeOver } = useSheetLock(sheetId || null);
+  // Derive Read only state.
+  // Ideally, if it's locked by other, it's read only.
+  // If it's locked by ME, it's editable.
+  // If it's loading (initial state), lock might be null.
+  // We should default to readonly until we acquire the lock?
+  // Or optimistically allow edit?
+  // Let's rely on `lockedByOther != null` for read-only to avoid blocking user during loading latency.
+  const isReadOnly = !!lockedByOther;
 
   const lastResultRef = useRef(lastResult);
   lastResultRef.current = lastResult;
@@ -325,7 +337,9 @@ export const SheetEditor: React.FC = () => {
 
   // Listen for custom node label updates from CustomNode
   useEffect(() => {
-    const handleCustomUpdate = (e: CustomEvent<{ id: string; label: string }>) => {
+    const handleCustomUpdate = (
+      e: CustomEvent<{ id: string; label: string }>,
+    ) => {
       const { id, label } = e.detail;
       handleNodeUpdate(id, { label });
     };
@@ -398,8 +412,12 @@ export const SheetEditor: React.FC = () => {
   }, [editor, calculationInputs, lastResult]);
 
   const onSave = useCallback(() => {
+    if (isReadOnly) {
+      toast.error('Cannot save (Read-Only)');
+      return;
+    }
     handleSaveSheet(getExportData());
-  }, [handleSaveSheet, getExportData]);
+  }, [handleSaveSheet, getExportData, isReadOnly]);
 
   // Keyboard Shortcuts for Undo/Redo
   useEffect(() => {
@@ -630,6 +648,17 @@ export const SheetEditor: React.FC = () => {
   return (
     <div className="sheet-editor">
       <NavBar user={user} onBack={handleBackClick} onLogout={logout} />
+      {lockedByOther && (
+        <div className="lock-banner">
+          <span>
+            Sheet is locked by <strong>{lockedByOther}</strong>. You are in
+            Read-Only mode.
+          </span>
+          <button type="button" onClick={takeOver} className="take-over-btn">
+            Take Over
+          </button>
+        </div>
+      )}
       <div
         className="editor-content"
         style={{ display: 'flex', flex: 1, minHeight: 0, overflow: 'hidden' }}

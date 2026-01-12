@@ -336,9 +336,7 @@ export const SweepPage: React.FC = () => {
         </aside>
 
         <main className="sweep-main">
-          <h2 className="sweep-header">
-            {sheet?.name || 'Loading...'}
-          </h2>
+          <h2 className="sweep-header">{sheet?.name || 'Loading...'}</h2>
 
           {results ? (
             <div className="chart-container">

@@ -183,3 +183,35 @@
   background-color: var(--item-hover);
   border-color: var(--primary-color);
 }
+
+.lock-banner {
+  background: #fff3cd;
+  color: #856404;
+  padding: 10px 20px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border-bottom: 1px solid #ffeeba;
+}
+
+@media (prefers-color-scheme: dark) {
+  .lock-banner {
+    background: #3a3014;
+    color: #ffda6a;
+    border-bottom-color: #554820;
+  }
+}
+
+.take-over-btn {
+  background: #dc3545;
+  color: white;
+  border: none;
+  padding: 5px 10px;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 0.9em;
+}
+
+.take-over-btn:hover {
+  background: #c82333;
+}

@@ -8,7 +8,7 @@ from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 
-from .api import attachments, calculate, genai, sheets, sweep
+from .api import attachments, calculate, genai, locks, sheets, sweep
 from .core.config import settings
 from .core.database import AsyncSessionLocal, Base, engine
 from .core.seed import seed_database
@@ -43,6 +43,7 @@ app.add_middleware(
 )
 
 app.include_router(sheets.router)
+app.include_router(locks.router, prefix="/api")
 app.include_router(sweep.router)
 app.include_router(calculate.router)
 app.include_router(attachments.router)

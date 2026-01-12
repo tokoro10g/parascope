@@ -1,7 +1,8 @@
 import uuid
+from datetime import datetime
 from typing import Any, List, Optional
 
-from sqlalchemy import Float, ForeignKey, String
+from sqlalchemy import DateTime, Float, ForeignKey, String
 from sqlalchemy.dialects.postgresql import JSONB, UUID
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
@@ -71,3 +72,15 @@ class Connection(Base):
     target_handle: Mapped[Optional[str]] = mapped_column(String, nullable=True)
 
     sheet: Mapped["Sheet"] = relationship(back_populates="connections")
+
+
+class Lock(Base):
+    __tablename__ = "locks"
+
+    sheet_id: Mapped[uuid.UUID] = mapped_column(ForeignKey("sheets.id"), primary_key=True)
+    user_id: Mapped[str] = mapped_column(String, nullable=False)
+    acquired_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow)
+    last_heartbeat_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow)
+    last_save_at: Mapped[Optional[datetime]] = mapped_column(DateTime, nullable=True)
+
+    sheet: Mapped["Sheet"] = relationship("Sheet")

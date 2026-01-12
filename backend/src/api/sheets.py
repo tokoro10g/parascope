@@ -1,3 +1,4 @@
+from datetime import datetime, timedelta
 from uuid import UUID, uuid4
 
 from fastapi import APIRouter, Depends, HTTPException
@@ -6,8 +7,9 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
 
 from ..core.auth import get_current_user
+from ..core.config import settings
 from ..core.database import get_db
-from ..models.sheet import Connection, Folder, Node, Sheet
+from ..models.sheet import Connection, Folder, Lock, Node, Sheet
 from ..schemas.sheet import (
     FolderCreate,
     FolderRead,
@@ -132,7 +134,12 @@ async def read_sheet(sheet_id: UUID, db: AsyncSession = Depends(get_db)):
 
 
 @router.put("/{sheet_id}", response_model=SheetRead)
-async def update_sheet(sheet_id: UUID, sheet_in: SheetUpdate, db: AsyncSession = Depends(get_db)):
+async def update_sheet(
+    sheet_id: UUID,
+    sheet_in: SheetUpdate,
+    db: AsyncSession = Depends(get_db),
+    user_id: str = Depends(get_current_user),
+):
     # Fetch existing sheet
     query = (
         select(Sheet).where(Sheet.id == sheet_id).options(selectinload(Sheet.nodes), selectinload(Sheet.connections))
@@ -141,6 +148,25 @@ async def update_sheet(sheet_id: UUID, sheet_in: SheetUpdate, db: AsyncSession =
     db_sheet = result.scalar_one_or_none()
     if not db_sheet:
         raise HTTPException(status_code=404, detail="Sheet not found")
+
+    # Lock Check and Session Update
+    if user_id:
+        lock_query = select(Lock).where(Lock.sheet_id == sheet_id)
+        lock_result = await db.execute(lock_query)
+        lock = lock_result.scalar_one_or_none()
+
+        if lock:
+            if lock.user_id != user_id:
+                # Check if lock is active
+                if datetime.utcnow() - lock.last_heartbeat_at <= timedelta(seconds=settings.LOCK_TIMEOUT_SECONDS):
+                    raise HTTPException(status_code=403, detail=f"Sheet is locked by {lock.user_id}")
+                # If stale, we arguably could allow overwrite, but let's stick to "Acquire First" policy to be safe.
+                # The user should have forced a takeover on the UI side.
+                # However, for UX robustness, if it IS stale, maybe we allow it?
+                # For now: strict block if ID mismatches and looks active.
+            else:
+                # Update last save time
+                lock.last_save_at = datetime.utcnow()
 
     # Update basic info
     update_data = sheet_in.model_dump(exclude_unset=True)

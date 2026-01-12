@@ -79,9 +79,7 @@ export const getSweepChartOption = (
   // h * count + gap * (count - 1) = availableHeight
   // h * count = availableHeight - gap * (count - 1)
   const gridHeight =
-    count > 1
-      ? (availableHeight - gap * (count - 1)) / count
-      : availableHeight;
+    count > 1 ? (availableHeight - gap * (count - 1)) / count : availableHeight;
 
   const grids: any[] = [];
   const xAxes: any[] = [];
@@ -95,14 +93,13 @@ export const getSweepChartOption = (
     // Determine if data is numeric
     const rawValues = results.map((r) => r.outputs[id]);
     const isNumeric = rawValues.every((v) => {
-        if (v === null || v === undefined) return true;
-        if (typeof v === 'number') return true;
-        if (typeof v === 'string') {
-          return !isNaN(parseFloat(v));
-        }
-        return false;
+      if (v === null || v === undefined) return true;
+      if (typeof v === 'number') return true;
+      if (typeof v === 'string') {
+        return !isNaN(parseFloat(v));
       }
-    );
+      return false;
+    });
 
     // Layout calculations
     const top = topMargin + index * (gridHeight + gap);
@@ -228,31 +225,35 @@ export const getSweepChartOption = (
       // Last segment extension
       let finalEnd = currentStart;
       if (results.length > 1) {
-        const lastInput = parseFloat(String(results[results.length - 1].input_value));
-        const secondLastInput = parseFloat(String(results[results.length - 2].input_value));
+        const lastInput = parseFloat(
+          String(results[results.length - 1].input_value),
+        );
+        const secondLastInput = parseFloat(
+          String(results[results.length - 2].input_value),
+        );
         const lastStep = lastInput - secondLastInput;
-          finalEnd = lastInput + lastStep;
-        } else {
-          finalEnd = currentStart + 1;
-        }
-        segments.push([0, currentStart, finalEnd, currentVal]);
+        finalEnd = lastInput + lastStep;
+      } else {
+        finalEnd = currentStart + 1;
+      }
+      segments.push([0, currentStart, finalEnd, currentVal]);
 
-        series.push({
-          type: 'custom',
-          name: label,
-          renderItem: renderTimelineItem,
-          tooltip: {
-            show: false,
-          },
-          encode: {
-            x: [1, 2], // Start, End
-            y: 0, // Category
-            tooltip: [3, 1, 2], // Value, Start, End for tooltip
-          },
-          data: segments,
-          xAxisIndex: index,
-          yAxisIndex: index,
-        });
+      series.push({
+        type: 'custom',
+        name: label,
+        renderItem: renderTimelineItem,
+        tooltip: {
+          show: false,
+        },
+        encode: {
+          x: [1, 2], // Start, End
+          y: 0, // Category
+          tooltip: [3, 1, 2], // Value, Start, End for tooltip
+        },
+        data: segments,
+        xAxisIndex: index,
+        yAxisIndex: index,
+      });
     }
   });
 

@@ -19,10 +19,10 @@
 
 /* Default Input Socket */
 .custom-socket-socket {
-    background-color: #9e9e9e !important;
+  background-color: #9e9e9e !important;
 }
 
 .custom-socket:hover {
-    border-color: #ddd;
-    transform: scale(1.1);
+  border-color: #ddd;
+  transform: scale(1.1);
 }

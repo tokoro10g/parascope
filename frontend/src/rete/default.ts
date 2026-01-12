@@ -385,7 +385,9 @@ export async function createEditor(container: HTMLElement) {
       }
     },
     getSelectedNodes: () => {
-      return editor.getNodes().filter((n) => selector.isSelected({id: n.id, label: 'node'}));
+      return editor
+        .getNodes()
+        .filter((n) => selector.isSelected({ id: n.id, label: 'node' }));
     },
   };
 }
