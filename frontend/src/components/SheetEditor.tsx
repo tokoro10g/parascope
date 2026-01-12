@@ -649,6 +649,28 @@ export const SheetEditor: React.FC = () => {
     );
   };
 
+  const handleOpenNestedSheet = useCallback(
+    (nodeId: string, newTab: boolean) => {
+      if (!editor) return;
+      const node = editor.editor.getNode(nodeId) as ParascopeNode;
+      const params = new URLSearchParams();
+      if (lastResult?.[nodeId]) {
+        const nodeRes = lastResult[nodeId];
+        for(const [inputKey, inputVal] of Object.entries(nodeRes.inputs || {})) {
+          params.set(inputKey, String(inputVal));
+        }
+      }
+      const url = `/sheet/${node.initialData.sheetId}?${params.toString()}`;
+      if (newTab) {
+        window.open(url, '_blank');
+      } else {
+        handleSaveSheet(getExportData());
+        navigate(url);
+      }
+    },
+    [editor, lastResult, handleSaveSheet, getExportData, navigate],
+  );
+
   // Set up Editor event listeners (Context Menu, Double Click, etc)
   useEffect(() => {
     if (editor) {
@@ -658,11 +680,7 @@ export const SheetEditor: React.FC = () => {
           if (node) setEditingNode(node as ParascopeNode);
         },
         onEditNestedSheet: (id) => {
-          const node = editor.editor.getNode(id) as ParascopeNode;
-          if (node && node.initialData && node.initialData.sheetId) {
-            handleSaveSheet(getExportData());
-            navigate(`/sheet/${node.initialData.sheetId}`);
-          }
+          handleOpenNestedSheet(id, true);
         },
         onNodeTypeChange: async (nodeId, type) => {
           const node = editor.editor.getNode(nodeId) as ParascopeNode;
@@ -701,7 +719,13 @@ export const SheetEditor: React.FC = () => {
 
       editor.setNodeDoubleClickListener((id) => {
         const node = editor.editor.getNode(id);
-        if (node) setEditingNode(node as ParascopeNode);
+        if (node) {
+          if (node.type === 'sheet') {
+            handleOpenNestedSheet(id, true);
+          } else {
+            setEditingNode(node as ParascopeNode);
+          }
+        }
       });
 
       editor.setGraphChangeListener(() => {
@@ -726,6 +750,7 @@ export const SheetEditor: React.FC = () => {
     handleCalculationInputChange,
     triggerAutoCalculation,
     handleAddNode,
+    handleOpenNestedSheet,
   ]);
 
   return (
