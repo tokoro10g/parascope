@@ -1,9 +1,9 @@
 import type { EChartsOption } from 'echarts';
 import ReactECharts from 'echarts-for-react';
 import type React from 'react';
-import { useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import toast from 'react-hot-toast';
-import { useNavigate, useParams } from 'react-router-dom';
+import { useNavigate, useParams, useSearchParams } from 'react-router-dom';
 import { api, type Sheet, type SweepResultStep } from '../api';
 import { useAuth } from '../contexts/AuthContext';
 import { NavBar } from './NavBar';
@@ -13,16 +13,44 @@ import './SweepPage.css';
 export const SweepPage: React.FC = () => {
   const { sheetId } = useParams<{ sheetId: string }>();
   const navigate = useNavigate();
+  const [searchParams, setSearchParams] = useSearchParams();
   const { user, logout } = useAuth();
+  
+  const hasAutoRun = useRef(false);
+  // Track if we should auto-run based on INITIAL URL params
+  // This prevents auto-run triggering when user manually selects options later
+  const [shouldAutoRun] = useState(() => 
+    searchParams.has('input') && searchParams.has('outputs')
+  );
 
   const [sheet, setSheet] = useState<Sheet | null>(null);
-  const [inputNodeId, setInputNodeId] = useState<string>('');
-  const [startValue, setStartValue] = useState<string>('0');
-  const [endValue, setEndValue] = useState<string>('10');
-  const [increment, setIncrement] = useState<string>('1');
-  const [outputNodeIds, setOutputNodeIds] = useState<string[]>([]);
+
+  // Initialize state from URL params if available
+  const [inputNodeId, setInputNodeId] = useState<string>(
+    searchParams.get('input') || '',
+  );
+  const [startValue, setStartValue] = useState<string>(
+    searchParams.get('start') || '0',
+  );
+  const [endValue, setEndValue] = useState<string>(
+    searchParams.get('end') || '10',
+  );
+  const [increment, setIncrement] = useState<string>(
+    searchParams.get('step') || '1',
+  );
+  const [outputNodeIds, setOutputNodeIds] = useState<string[]>(() => {
+    const outputs = searchParams.get('outputs');
+    return outputs ? outputs.split(',') : [];
+  });
   const [inputOverrides, setInputOverrides] = useState<Record<string, string>>(
-    {},
+    () => {
+      const overrides = searchParams.get('overrides');
+      try {
+        return overrides ? JSON.parse(overrides) : {};
+      } catch {
+        return {};
+      }
+    },
   );
 
   const [results, setResults] = useState<SweepResultStep[] | null>(null);
@@ -53,7 +81,8 @@ export const SweepPage: React.FC = () => {
               }
             }
           });
-          setInputOverrides(defaults);
+          // Merge defaults with existing state (URL params take precedence)
+          setInputOverrides((prev) => ({ ...defaults, ...prev }));
         })
         .catch((err) => {
           console.error(err);
@@ -95,6 +124,35 @@ export const SweepPage: React.FC = () => {
     };
   }, []);
 
+  // Sync state to URL
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      const params = new URLSearchParams();
+      if (inputNodeId) params.set('input', inputNodeId);
+      params.set('start', startValue);
+      params.set('end', endValue);
+      params.set('step', increment);
+      if (outputNodeIds.length > 0) {
+        params.set('outputs', outputNodeIds.join(','));
+      }
+      if (Object.keys(inputOverrides).length > 0) {
+        params.set('overrides', JSON.stringify(inputOverrides));
+      }
+
+      setSearchParams(params, { replace: true });
+    }, 500);
+
+    return () => clearTimeout(timer);
+  }, [
+    inputNodeId,
+    startValue,
+    endValue,
+    increment,
+    outputNodeIds,
+    inputOverrides,
+    setSearchParams,
+  ]);
+
   const nodes = sheet?.nodes || [];
   const inputOptions = nodes.filter((n) =>
     ['constant', 'input'].includes(n.type),
@@ -128,7 +186,7 @@ export const SweepPage: React.FC = () => {
     }
   };
 
-  const handleRun = async () => {
+  const handleRun = useCallback(async () => {
     if (!sheetId) return;
     setLoading(true);
     setError(null);
@@ -176,7 +234,23 @@ export const SweepPage: React.FC = () => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [
+    sheetId,
+    inputNodeId,
+    outputNodeIds,
+    startValue,
+    endValue,
+    increment,
+    inputOverrides,
+  ]);
+
+  // Auto-run if URL params indicate a complete sweep config
+  useEffect(() => {
+    if (sheet && shouldAutoRun && !hasAutoRun.current) {
+      hasAutoRun.current = true;
+      handleRun();
+    }
+  }, [sheet, handleRun, shouldAutoRun]);
 
   const toggleOutput = (id: string) => {
     if (!id) return;
