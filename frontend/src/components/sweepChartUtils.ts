@@ -97,7 +97,7 @@ export const getSweepChartOption = (
       if (v === null || v === undefined) return true;
       if (typeof v === 'number') return true;
       if (typeof v === 'string') {
-        return !isNaN(parseFloat(v));
+        return !Number.isNaN(parseFloat(v));
       }
       return false;
     });

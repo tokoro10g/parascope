@@ -14,8 +14,8 @@ export function useSheetLock(sheetId: string | null) {
   const [tabId] = useState(() => {
     let id = sessionStorage.getItem('parascope_tab_id');
     if (!id) {
-       id = uuidv4();
-       sessionStorage.setItem('parascope_tab_id', id);
+      id = uuidv4();
+      sessionStorage.setItem('parascope_tab_id', id);
     }
     return id;
   });
@@ -52,7 +52,7 @@ export function useSheetLock(sheetId: string | null) {
     } catch (e) {
       console.error('Lock status check failed', e);
     } finally {
-        setLoading(false);
+      setLoading(false);
     }
   }, [sheetId, user, tabId]);
 
@@ -79,16 +79,17 @@ export function useSheetLock(sheetId: string | null) {
         setLockedByOther(owner);
         setIsLockedByMe(false);
       } else {
-        console.error('Lock heartbeat failed', _e);        // If acquire fails with other error (e.g. 403 Forbidden because lock was stolen/expired),
+        console.error('Lock heartbeat failed', _e); // If acquire fails with other error (e.g. 403 Forbidden because lock was stolen/expired),
         // we should assume we lost the lock.
         // It's safer to downgrade to read-only if we can't confirm ownership.
         if (!isLockedByMe) {
-             // If we were polling status and it failed, keep as is
+          // If we were polling status and it failed, keep as is
         } else {
-             // If we THOUGHT we had the lock but heartbeating failed,
-             // check status to confirm if we really lost it.
-             checkStatus();
-        }      }
+          // If we THOUGHT we had the lock but heartbeating failed,
+          // check status to confirm if we really lost it.
+          checkStatus();
+        }
+      }
     }
   }, [sheetId, user, isLockedByMe, checkStatus, tabId]);
 
@@ -111,10 +112,14 @@ export function useSheetLock(sheetId: string | null) {
         const existing = await api.getLock(sheetId);
         if (existing) {
           if (existing.user_id !== user || existing.tab_id !== tabId) {
-             setLockedByOther(existing.user_id === user ? 'You (another tab)' : existing.user_id);
-             setIsLockedByMe(false);
-             setLoading(false);
-             return; // Don't try to acquire if we know it's locked
+            setLockedByOther(
+              existing.user_id === user
+                ? 'You (another tab)'
+                : existing.user_id,
+            );
+            setIsLockedByMe(false);
+            setLoading(false);
+            return; // Don't try to acquire if we know it's locked
           }
         }
       } catch (e) {

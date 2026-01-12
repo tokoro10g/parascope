@@ -10,16 +10,16 @@
 }
 
 .custom-socket-socket-constant {
-  background-color: #ec407a !important;
+  background-color: #ec407a;
 }
 
 .custom-socket-socket-output {
-  background-color: #4caf50 !important;
+  background-color: #4caf50;
 }
 
 /* Default Input Socket */
 .custom-socket-socket {
-  background-color: #9e9e9e !important;
+  background-color: #9e9e9e;
 }
 
 .custom-socket:hover {

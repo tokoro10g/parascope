@@ -211,8 +211,6 @@ export const SheetEditor: React.FC = () => {
     editor?.addHistoryAction,
   );
 
-
-
   const handleNodeUpdate = useCallback(
     async (nodeId: string, updates: any) => {
       await originalHandleNodeUpdate(nodeId, updates);
@@ -226,7 +224,7 @@ export const SheetEditor: React.FC = () => {
   useEffect(() => {
     // Only trigger if we are past the initial load phase
     if (initialLoadDone) {
-        triggerAutoCalculation();
+      triggerAutoCalculation();
     }
   }, [calculationInputs, triggerAutoCalculation, initialLoadDone]);
 
@@ -366,45 +364,49 @@ export const SheetEditor: React.FC = () => {
     });
 
     if (hasOverrides) {
-        setCalculationInputs(overrides);
+      setCalculationInputs(overrides);
     }
     setInitialLoadDone(true);
   }, [searchParams, nodes, initialLoadDone]);
-  
+
   // Update URL Query Params when Calculation Inputs change (Value Sink)
   useEffect(() => {
-     if (!initialLoadDone) return;
-     
-     setSearchParams(
-        (prev) => {
-          const newParams = new URLSearchParams(prev);
-          // We must be careful not to blow away unrelated params if any, 
-          // though typically all params are inputs.
-          
-          // Clear existing input params to ensure we sync strictly to current inputs
-          // (Optional: depending on if we want to support extra params)
-          
-          const nodesMap = new Map(nodes.map(n => [n.id, n.label]));
+    if (!initialLoadDone) return;
 
-          Object.entries(calculationInputs).forEach(([id, value]) => {
-              const label = nodesMap.get(id);
-              if (label) {
-                  if (value) newParams.set(label, value);
-                  else newParams.delete(label);
-              }
-          });
-          
-          // Also remove params for inputs that were cleared
-          nodes.forEach(n => {
-             if (n.type === 'input' && !calculationInputs[n.id] && newParams.has(n.label)) {
-                 newParams.delete(n.label);
-             }
-          });
+    setSearchParams(
+      (prev) => {
+        const newParams = new URLSearchParams(prev);
+        // We must be careful not to blow away unrelated params if any,
+        // though typically all params are inputs.
 
-          return newParams;
-        },
-        { replace: true },
-      );
+        // Clear existing input params to ensure we sync strictly to current inputs
+        // (Optional: depending on if we want to support extra params)
+
+        const nodesMap = new Map(nodes.map((n) => [n.id, n.label]));
+
+        Object.entries(calculationInputs).forEach(([id, value]) => {
+          const label = nodesMap.get(id);
+          if (label) {
+            if (value) newParams.set(label, value);
+            else newParams.delete(label);
+          }
+        });
+
+        // Also remove params for inputs that were cleared
+        nodes.forEach((n) => {
+          if (
+            n.type === 'input' &&
+            !calculationInputs[n.id] &&
+            newParams.has(n.label)
+          ) {
+            newParams.delete(n.label);
+          }
+        });
+
+        return newParams;
+      },
+      { replace: true },
+    );
   }, [calculationInputs, nodes, initialLoadDone, setSearchParams]);
 
   // Handle Hash Changes for Focus
@@ -672,7 +674,9 @@ export const SheetEditor: React.FC = () => {
       const params = new URLSearchParams();
       if (lastResult?.[nodeId]) {
         const nodeRes = lastResult[nodeId];
-        for(const [inputKey, inputVal] of Object.entries(nodeRes.inputs || {})) {
+        for (const [inputKey, inputVal] of Object.entries(
+          nodeRes.inputs || {},
+        )) {
           params.set(inputKey, String(inputVal));
         }
       }
@@ -706,7 +710,8 @@ export const SheetEditor: React.FC = () => {
           let outputs: any[] = [];
           const data: any = { value: '' };
 
-          const currentValue = (node.controls.value as any)?.value || node.initialData.value || '';
+          const currentValue =
+            (node.controls.value as any)?.value || node.initialData.value || '';
 
           if (type === 'constant') {
             outputs = [createSocket('value')];
@@ -775,14 +780,15 @@ export const SheetEditor: React.FC = () => {
       {lockedByOther && (
         <div className="lock-banner">
           <span>
-            Currently being edited by <strong>{lockedByOther}</strong>. You are in
-            Read-Only mode.
+            Currently being edited by <strong>{lockedByOther}</strong>. You are
+            in Read-Only mode.
           </span>
           <button type="button" onClick={takeOver} className="take-over-btn">
             Take Over
           </button>
         </div>
-      )}      {!lockedByOther && isReadOnly && !isLockLoading && (
+      )}{' '}
+      {!lockedByOther && isReadOnly && !isLockLoading && (
         <div className="lock-banner">
           <span>You are in Read-Only mode. Reload to acquire lock.</span>
           <button
@@ -793,7 +799,8 @@ export const SheetEditor: React.FC = () => {
             Reload
           </button>
         </div>
-      )}      <div
+      )}{' '}
+      <div
         className="editor-content"
         style={{ display: 'flex', flex: 1, minHeight: 0, overflow: 'hidden' }}
       >

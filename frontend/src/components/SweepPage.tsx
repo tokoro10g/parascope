@@ -21,8 +21,8 @@ export const SweepPage: React.FC = () => {
   const hasAutoRun = useRef(false);
   // Track if we should auto-run based on INITIAL URL params
   // This prevents auto-run triggering when user manually selects options later
-  const [shouldAutoRun] = useState(() => 
-    searchParams.has('input') && searchParams.has('outputs')
+  const [shouldAutoRun] = useState(
+    () => searchParams.has('input') && searchParams.has('outputs'),
   );
 
   const [sheet, setSheet] = useState<Sheet | null>(null);
@@ -433,9 +433,7 @@ export const SweepPage: React.FC = () => {
           </div>
 
           <h3>Outputs</h3>
-          <div
-            className="sweep-table-container sweep-outputs-container"
-          >
+          <div className="sweep-table-container sweep-outputs-container">
             <table className="sweep-table">
               <thead>
                 <tr>

@@ -149,9 +149,7 @@ export const EditorBar: React.FC<EditorBarProps> = ({
           onClick={onSaveSheet}
           disabled={!isDirty || readOnly}
           title={readOnly ? 'Read Only' : 'Save Sheet'}
-          style={
-            readOnly ? { cursor: 'not-allowed', opacity: 0.5 } : undefined
-          }
+          style={readOnly ? { cursor: 'not-allowed', opacity: 0.5 } : undefined}
         >
           <Save size={18} />
         </button>
