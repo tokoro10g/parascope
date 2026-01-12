@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import toast from 'react-hot-toast';
+import { v4 as uuidv4 } from 'uuid';
 import { api, type Lock } from '../api';
 import { useAuth } from '../contexts/AuthContext';
 
@@ -13,7 +14,7 @@ export function useSheetLock(sheetId: string | null) {
   const [tabId] = useState(() => {
     let id = sessionStorage.getItem('parascope_tab_id');
     if (!id) {
-       id = globalThis.crypto.randomUUID();
+       id = uuidv4();
        sessionStorage.setItem('parascope_tab_id', id);
     }
     return id;
@@ -89,7 +90,7 @@ export function useSheetLock(sheetId: string | null) {
              checkStatus();
         }      }
     }
-  }, [sheetId, user, isLockedByMe, checkStatus]);
+  }, [sheetId, user, isLockedByMe, checkStatus, tabId]);
 
   // Use a ref for heartbeat to access latest state without triggering effect re-run
   const heartbeatRef = useRef(heartbeat);
