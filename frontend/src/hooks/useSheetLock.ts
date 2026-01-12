@@ -29,9 +29,10 @@ export function useSheetLock(sheetId: string | null) {
           setIsLockedByMe(false);
         }
       } else {
-        // No lock exists
+        // No lock exists - Sheet is free.
         setLockedByOther(null);
-        // We do NOT auto-acquire here.
+        // Important: We do NOT set isLockedByMe(true) here.
+        // We stay in read-only mode until they reload or explicitly act.
       }
     } catch (e) {
       console.error('Lock status check failed', e);
@@ -44,8 +45,12 @@ export function useSheetLock(sheetId: string | null) {
     if (!sheetId || !user) return;
 
     // If not locked by me, we just check status to see if it becomes free/changed
+    // We do NOT attempt to acquire it even if it becomes free.
+    // The user must reload or manually "Take Over" (which acts as acquire if free).
     if (!isLockedByMe) {
-      checkStatus();
+      if (lockedByOther) {
+         checkStatus();
+      }
       return;
     }
 
