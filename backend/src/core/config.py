@@ -7,7 +7,7 @@ class Settings(BaseSettings):
     # Use localhost for local testing if not in docker
     DATABASE_URL: str = "postgresql+asyncpg://user:password@localhost:5432/parascope"
     UPLOAD_DIR: str = "uploads"
-    LOCK_TIMEOUT_SECONDS: int = 30  # Time in seconds before a lock is considered stale
+    LOCK_TIMEOUT_SECONDS: int = 60  # Time in seconds before a lock is considered stale
 
     model_config = SettingsConfigDict(env_file=".env")
 
