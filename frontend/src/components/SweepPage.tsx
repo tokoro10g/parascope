@@ -1,5 +1,6 @@
 import type { EChartsOption } from 'echarts';
 import ReactECharts from 'echarts-for-react';
+import { ChartArea, Table } from 'lucide-react';
 import type React from 'react';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import toast from 'react-hot-toast';
@@ -15,7 +16,8 @@ export const SweepPage: React.FC = () => {
   const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
   const { user, logout } = useAuth();
-  
+
+  const chartRef = useRef<ReactECharts>(null);
   const hasAutoRun = useRef(false);
   // Track if we should auto-run based on INITIAL URL params
   // This prevents auto-run triggering when user manually selects options later
@@ -264,6 +266,73 @@ export const SweepPage: React.FC = () => {
     navigate(`/sheet/${sheetId}`);
   };
 
+  const handleCopyPlot = async () => {
+    if (!chartRef.current) return;
+    const echartsInstance = chartRef.current.getEchartsInstance();
+
+    // Get background color from computed style
+    const backgroundColor =
+      getComputedStyle(document.body).backgroundColor || '#ffffff';
+
+    const base64 = echartsInstance.getDataURL({
+      type: 'png',
+      pixelRatio: 2,
+      backgroundColor,
+    });
+
+    try {
+      const res = await fetch(base64);
+      const blob = await res.blob();
+      await navigator.clipboard.write([
+        new ClipboardItem({
+          [blob.type]: blob,
+        }),
+      ]);
+      toast.success('Plot copied to clipboard');
+    } catch (e) {
+      console.error(e);
+      toast.error('Failed to copy plot');
+    }
+  };
+
+  const handleCopyTable = async () => {
+    if (!results || results.length === 0) return;
+
+    try {
+      // Find valid output nodes for header
+      const validOutputIds = results[0]?.outputs
+        ? Object.keys(results[0].outputs).filter((id) =>
+            outputNodeIds.includes(id),
+          )
+        : [];
+
+      // Create header row: InputName <tab> OutputName1 <tab> OutputName2 ...
+      const header = [
+        selectedInputLabel,
+        ...validOutputIds.map(
+          (id) => nodes.find((n) => n.id === id)?.label || id,
+        ),
+      ].join('\t');
+
+      // Create data rows
+      const rows = results.map((step) => {
+        const inputVal = step.input_value;
+        const outputVals = validOutputIds.map((id) => {
+          const val = step.outputs?.[id];
+          return val === undefined || val === null ? '' : String(val);
+        });
+        return [inputVal, ...outputVals].join('\t');
+      });
+
+      const text = [header, ...rows].join('\n');
+      await navigator.clipboard.writeText(text);
+      toast.success('Table copied to clipboard');
+    } catch (e) {
+      console.error(e);
+      toast.error('Failed to copy table');
+    }
+  };
+
   const selectedInputLabel =
     nodes.find((n) => n.id === inputNodeId)?.label || 'Input';
 
@@ -314,7 +383,7 @@ export const SweepPage: React.FC = () => {
                                   onChange={(e) =>
                                     setStartValue(e.target.value)
                                   }
-                                  style={{ flex: 1 }}
+                                  className="sweep-input-flex"
                                 />
                               </label>
                             </div>
@@ -325,7 +394,7 @@ export const SweepPage: React.FC = () => {
                                   type="text"
                                   value={endValue}
                                   onChange={(e) => setEndValue(e.target.value)}
-                                  style={{ flex: 1 }}
+                                  className="sweep-input-flex"
                                 />
                               </label>
                             </div>
@@ -336,7 +405,7 @@ export const SweepPage: React.FC = () => {
                                   type="text"
                                   value={increment}
                                   onChange={(e) => setIncrement(e.target.value)}
-                                  style={{ flex: 1 }}
+                                  className="sweep-input-flex"
                                 />
                               </label>
                             </div>
@@ -351,7 +420,7 @@ export const SweepPage: React.FC = () => {
                                 [n.id!]: e.target.value,
                               }))
                             }
-                            style={{ width: '100%' }}
+                            className="sweep-input-full"
                           />
                         )}
                       </td>
@@ -364,8 +433,7 @@ export const SweepPage: React.FC = () => {
 
           <h3>Outputs</h3>
           <div
-            className="sweep-table-container"
-            style={{ flex: 1, overflowY: 'auto' }}
+            className="sweep-table-container sweep-outputs-container"
           >
             <table className="sweep-table">
               <thead>
@@ -379,7 +447,7 @@ export const SweepPage: React.FC = () => {
                   <tr
                     key={n.id}
                     onClick={() => toggleOutput(n.id!)}
-                    style={{ cursor: 'pointer' }}
+                    className="sweep-output-row"
                   >
                     <td className="checkbox-cell">
                       <input
@@ -400,23 +468,47 @@ export const SweepPage: React.FC = () => {
 
           <button
             type="button"
-            className="btn-primary"
+            className="btn-primary sweep-run-button"
             onClick={handleRun}
             disabled={loading}
-            style={{ marginTop: 'auto' }}
           >
             {loading ? 'Running...' : 'Run Sweep'}
           </button>
         </aside>
 
         <main className="sweep-main">
-          <h2 className="sweep-header">{sheet?.name || 'Loading...'}</h2>
+          <div className="sweep-header-row">
+            <h2 className="sweep-header sweep-header-title">
+              {sheet?.name || 'Loading...'}
+            </h2>
+            {results && (
+              <div className="sweep-copy-actions">
+                <button
+                  type="button"
+                  onClick={handleCopyTable}
+                  className="btn-secondary sweep-copy-btn"
+                  title="Copy Data Table to Clipboard"
+                >
+                  <Table size={16} className="sweep-copy-icon" /> Copy Data
+                </button>
+                <button
+                  type="button"
+                  onClick={handleCopyPlot}
+                  className="btn-secondary sweep-copy-btn"
+                  title="Copy Plot Image to Clipboard"
+                >
+                  <ChartArea size={16} className="sweep-copy-icon" /> Copy Plot
+                </button>
+              </div>
+            )}
+          </div>
 
           {results ? (
             <div className="chart-container">
               <ReactECharts
+                ref={chartRef}
                 option={echartsOption}
-                style={{ height: '100%', width: '100%' }}
+                className="sweep-chart-instance"
                 theme={undefined} // We pass styles manually
               />
             </div>
