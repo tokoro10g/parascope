@@ -7,6 +7,9 @@ export const formatHumanReadableValue = (value: string): string => {
   if (Number.isNaN(valueAsNumber)) {
     return value;
   }
+  if (valueAsNumber === 0) {
+    return '0';
+  }
   const isTooLong =
     Math.abs(valueAsNumber) >= 1e6 || Math.abs(valueAsNumber) < 1e-3;
   const numberFormat = new Intl.NumberFormat('en-US', {
