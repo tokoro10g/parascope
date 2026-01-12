@@ -1,5 +1,6 @@
 import type { EChartsOption } from 'echarts';
 import type { SweepResultStep } from '../api';
+import { formatHumanReadableValue } from '../utils';
 
 // Helpers to generate consistent colors for strings
 export const strHash = (s: string) => {
@@ -123,6 +124,7 @@ export const getSweepChartOption = (
       axisLabel: {
         color: theme.text,
         show: index === count - 1, // Optional: hide labels for upper plots if they align
+        formatter: (value) => formatHumanReadableValue(value.toString()),
       },
       splitLine: { show: true, lineStyle: { color: theme.grid } },
     });
@@ -137,7 +139,10 @@ export const getSweepChartOption = (
         gridIndex: index,
         boundaryGap: ['5%', '5%'],
         axisLine: { lineStyle: { color: theme.text } },
-        axisLabel: { color: theme.text },
+        axisLabel: {
+          color: theme.text,
+          formatter: (value) => formatHumanReadableValue(value.toString()),
+        },
         splitLine: { show: true, lineStyle: { color: theme.grid } },
       });
 
