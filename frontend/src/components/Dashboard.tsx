@@ -18,6 +18,19 @@ import { FolderPickerModal } from './FolderPickerModal';
 import { ParascopeLogo } from './ParascopeLogo';
 import './Dashboard.css';
 
+export const formatTimeAgo = (dateStr: string) => {
+  // Backend returns generic UTC timestamp without 'Z'. Ensure it's treated as UTC.
+  const time = dateStr.endsWith('Z') ? dateStr : `${dateStr}Z`;
+  const date = new Date(time);
+  const now = new Date();
+  const seconds = Math.max(0, Math.floor((now.getTime() - date.getTime()) / 1000));
+
+  if (seconds < 60) return `${seconds}s ago`;
+  if (seconds < 3600) return `${Math.floor(seconds / 60)}m ago`;
+  if (seconds < 86400) return `${Math.floor(seconds / 3600)}h ago`;
+  return `${Math.floor(seconds / 86400)}d ago`;
+};
+
 export const Dashboard: React.FC = () => {
   const { folderId } = useParams<{ folderId: string }>();
   const [sheets, setSheets] = useState<SheetSummary[]>([]);
@@ -250,9 +263,9 @@ export const Dashboard: React.FC = () => {
                   Locked by <strong>{s.user_id}</strong>
                 </span>
                 <span style={{ fontSize: '0.9em', color: '#888' }}>
-                  {s.duration_since_save !== null
-                    ? `Saved ${Math.round(s.duration_since_save)}s ago`
-                    : 'Unsaved changes'}
+                  {s.last_save_at
+                    ? `Saved ${formatTimeAgo(s.last_save_at)}`
+                    : `Started ${formatTimeAgo(s.acquired_at)}`}
                 </span>
               </div>
             ))}

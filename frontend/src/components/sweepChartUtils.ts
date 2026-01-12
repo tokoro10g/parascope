@@ -15,7 +15,7 @@ export const getColor = (s: string) => {
   return `hsl(${hue}, 70%, 50%)`;
 };
 
-export const renderTimelineItem = (params: any, api: any) => {
+export const renderTimelineItem = (_params: any, api: any) => {
   const categoryIndex = api.value(0);
   const start = api.coord([api.value(1), categoryIndex]);
   const end = api.coord([api.value(2), categoryIndex]);
