@@ -48,6 +48,12 @@ export const SheetEditor: React.FC = () => {
   const [editingNode, setEditingNode] = useState<ParascopeNode | null>(null);
   const [isDirty, setIsDirty] = useState(false);
   const [isSheetPickerOpen, setIsSheetPickerOpen] = useState(false);
+  const [initialLoadDone, setInitialLoadDone] = useState(false);
+
+  const lastResultRef = useRef(lastResult);
+  lastResultRef.current = lastResult;
+  const calculationInputsRef = useRef(calculationInputs);
+  calculationInputsRef.current = calculationInputs;
 
   // Lock logic
   const {
@@ -61,13 +67,6 @@ export const SheetEditor: React.FC = () => {
   // We treat "Loading Lock" as Read Only to prevent race conditions (save before lock check returns).
   // CRITICAL: If I don't own the lock, it is read-only. Even if it's free (lockedByOther is null).
   const isReadOnly = !isLockedByMe || isLockLoading;
-
-  const lastResultRef = useRef(lastResult);
-  lastResultRef.current = lastResult;
-  const calculationInputsRef = useRef(calculationInputs);
-  calculationInputsRef.current = calculationInputs;
-  const searchParamsRef = useRef(searchParams);
-  searchParamsRef.current = searchParams;
 
   const calculateTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(
     null,
@@ -186,32 +185,12 @@ export const SheetEditor: React.FC = () => {
 
   const handleCalculationInputChange = useCallback(
     (id: string, value: string) => {
-      if (
-        calculationInputsRef.current &&
-        calculationInputsRef.current[id] === value
-      ) {
-        return;
-      }
-
-      const node = editor?.editor.getNode(id);
-      const label = node?.label;
-
-      if (!label) return;
-
-      setSearchParams(
-        (prev) => {
-          const newParams = new URLSearchParams(prev);
-          if (value) {
-            newParams.set(label, value);
-          } else {
-            newParams.delete(label);
-          }
-          return newParams;
-        },
-        { replace: true },
-      );
+      setCalculationInputs((prev) => {
+        if (prev[id] === value) return prev;
+        return { ...prev, [id]: value };
+      });
     },
-    [setSearchParams, editor],
+    [],
   );
 
   const {
@@ -245,8 +224,11 @@ export const SheetEditor: React.FC = () => {
   // Trigger auto-calculation when calculation inputs change (e.g. from URL source)
   // biome-ignore lint/correctness/useExhaustiveDependencies: Calculation should be triggered by calculationInputs
   useEffect(() => {
-    triggerAutoCalculation();
-  }, [calculationInputs, triggerAutoCalculation]);
+    // Only trigger if we are past the initial load phase
+    if (initialLoadDone) {
+        triggerAutoCalculation();
+    }
+  }, [calculationInputs, triggerAutoCalculation, initialLoadDone]);
 
   const handlePaste = useCallback(
     async (clipboardNodes: any[]) => {
@@ -364,32 +346,66 @@ export const SheetEditor: React.FC = () => {
   useEffect(() => {
     if (sheetId) {
       handleLoadSheet(sheetId);
+      setInitialLoadDone(false); // Reset load state
     }
   }, [sheetId, handleLoadSheet]);
 
-  // Sync URL Query Params to Calculation Inputs
+  // Sync URL Query Params to Calculation Inputs (ONLY ON INITIAL LOAD)
   useEffect(() => {
-    if (nodes.length === 0) return;
+    if (nodes.length === 0 || initialLoadDone) return;
 
     const overrides: Record<string, string> = {};
+    let hasOverrides = false;
+
     searchParams.forEach((value, key) => {
       const node = nodes.find((n) => n.type === 'input' && n.label === key);
       if (node?.id) {
         overrides[node.id] = value;
+        hasOverrides = true;
       }
     });
-    setCalculationInputs((prev) => {
-      const prevKeys = Object.keys(prev);
-      const newKeys = Object.keys(overrides);
-      if (prevKeys.length !== newKeys.length) return overrides;
 
-      for (const key of newKeys) {
-        if (prev[key] !== overrides[key]) return overrides;
-      }
+    if (hasOverrides) {
+        setCalculationInputs(overrides);
+    }
+    setInitialLoadDone(true);
+  }, [searchParams, nodes, initialLoadDone]);
+  
+  // Update URL Query Params when Calculation Inputs change (Value Sink)
+  useEffect(() => {
+     if (!initialLoadDone) return;
+     
+     setSearchParams(
+        (prev) => {
+          const newParams = new URLSearchParams(prev);
+          // We must be careful not to blow away unrelated params if any, 
+          // though typically all params are inputs.
+          
+          // Clear existing input params to ensure we sync strictly to current inputs
+          // (Optional: depending on if we want to support extra params)
+          
+          const nodesMap = new Map(nodes.map(n => [n.id, n.label]));
 
-      return prev;
-    });
-  }, [searchParams, nodes]);
+          Object.entries(calculationInputs).forEach(([id, value]) => {
+              const label = nodesMap.get(id);
+              if (label) {
+                  if (value) newParams.set(label, value);
+                  else newParams.delete(label);
+              }
+          });
+          
+          // Also remove params for inputs that were cleared
+          nodes.forEach(n => {
+             if (n.type === 'input' && !calculationInputs[n.id] && newParams.has(n.label)) {
+                 newParams.delete(n.label);
+             }
+          });
+
+          return newParams;
+        },
+        { replace: true },
+      );
+  }, [calculationInputs, nodes, initialLoadDone, setSearchParams]);
 
   // Handle Hash Changes for Focus
   useEffect(() => {

@@ -57,6 +57,9 @@ export async function createEditor(container: HTMLElement) {
   let onViewportChange: (() => void) | undefined;
   let onInputValueChange: ((nodeId: string, value: string) => void) | undefined;
 
+  // Flag to suppress graph change events (e.g. during loading)
+  let suppressGraphChange = false;
+
   AreaExtensions.selectableNodes(area, selector, {
     accumulating: AreaExtensions.accumulateOnCtrl(),
   });
@@ -105,7 +108,7 @@ export async function createEditor(container: HTMLElement) {
       context.type === 'nodecreated' ||
       context.type === 'noderemoved'
     ) {
-      if (onGraphChange) onGraphChange();
+      if (onGraphChange && !suppressGraphChange) onGraphChange();
     }
     return context;
   });
@@ -116,7 +119,7 @@ export async function createEditor(container: HTMLElement) {
       if (previous.x !== position.x || previous.y !== position.y) {
         if (onLayoutChange) {
           onLayoutChange();
-        } else if (onGraphChange) {
+        } else if (onGraphChange && !suppressGraphChange) {
           onGraphChange();
         }
       }
@@ -201,11 +204,11 @@ export async function createEditor(container: HTMLElement) {
     },
     undo: async () => {
       await history.undo();
-      if (onGraphChange) onGraphChange();
+      if (onGraphChange && !suppressGraphChange) onGraphChange();
     },
     redo: async () => {
       await history.redo();
-      if (onGraphChange) onGraphChange();
+      if (onGraphChange && !suppressGraphChange) onGraphChange();
     },
     addHistoryAction: (action: {
       redo: () => Promise<void> | void;
@@ -216,89 +219,94 @@ export async function createEditor(container: HTMLElement) {
 
     // Helper to load a sheet from the API
     loadSheet: async (sheet: Sheet, focusNodeId?: string) => {
-      await editor.clear();
+      suppressGraphChange = true;
+      try {
+        await editor.clear();
 
-      const nodeMap = new Map<string, ParascopeNode>();
+        const nodeMap = new Map<string, ParascopeNode>();
 
-      // Create Nodes
-      for (const n of sheet.nodes) {
-        if (!n.id) continue;
-        // Parse inputs/outputs if they are JSON strings, or use them directly if objects
-        const inputs = Array.isArray(n.inputs) ? n.inputs : [];
-        const outputs = Array.isArray(n.outputs) ? n.outputs : [];
+        // Create Nodes
+        for (const n of sheet.nodes) {
+          if (!n.id) continue;
+          // Parse inputs/outputs if they are JSON strings, or use them directly if objects
+          const inputs = Array.isArray(n.inputs) ? n.inputs : [];
+          const outputs = Array.isArray(n.outputs) ? n.outputs : [];
 
-        const node = new ParascopeNode(
-          n.type,
-          n.label || n.type,
-          inputs,
-          outputs,
-          n.data || {},
-          (val) => {
-            if (n.type === 'input') {
-              if (onInputValueChange && n.id)
-                onInputValueChange(n.id, String(val));
-            } else {
-              if (onGraphChange) onGraphChange();
+          const node = new ParascopeNode(
+            n.type,
+            n.label || n.type,
+            inputs,
+            outputs,
+            n.data || {},
+            (val) => {
+              if (n.type === 'input') {
+                if (onInputValueChange && n.id)
+                  onInputValueChange(n.id, String(val));
+              } else {
+                if (onGraphChange && !suppressGraphChange) onGraphChange();
+              }
+            },
+          );
+          node.id = n.id; // Use the DB ID as the Rete ID
+          node.dbId = n.id;
+          // node.label is already set by super(label)
+
+          await editor.addNode(node);
+
+          // Translate position
+          await area.translate(node.id, { x: n.position_x, y: n.position_y });
+
+          nodeMap.set(n.id, node);
+        }
+
+        // Create Connections
+        for (const c of sheet.connections) {
+          if (!c.id) continue;
+          const source = nodeMap.get(c.source_id);
+          const target = nodeMap.get(c.target_id);
+
+          if (source && target) {
+            try {
+              const conn = new Connection(
+                source,
+                c.source_port,
+                target,
+                c.target_port,
+              );
+              conn.id = c.id;
+              conn.dbId = c.id;
+              await editor.addConnection(conn);
+            } catch (e) {
+              console.error('Failed to create connection', c, e);
             }
-          },
-        );
-        node.id = n.id; // Use the DB ID as the Rete ID
-        node.dbId = n.id;
-        // node.label is already set by super(label)
-
-        await editor.addNode(node);
-
-        // Translate position
-        await area.translate(node.id, { x: n.position_x, y: n.position_y });
-
-        nodeMap.set(n.id, node);
-      }
-
-      // Create Connections
-      for (const c of sheet.connections) {
-        if (!c.id) continue;
-        const source = nodeMap.get(c.source_id);
-        const target = nodeMap.get(c.target_id);
-
-        if (source && target) {
-          try {
-            const conn = new Connection(
-              source,
-              c.source_port,
-              target,
-              c.target_port,
-            );
-            conn.id = c.id;
-            conn.dbId = c.id;
-            await editor.addConnection(conn);
-          } catch (e) {
-            console.error('Failed to create connection', c, e);
           }
         }
-      }
-      // Clear history to prevent undoing sheet loading
-      history.clear();
+        // Clear history to prevent undoing sheet loading
+        history.clear();
 
-      return new Promise<void>((resolve) => {
-        setTimeout(async () => {
-          // Force update nodes to recalculate socket positions after auto-sizing
-          for (const node of editor.getNodes()) {
-            await area.update('node', node.id);
-          }
+        return new Promise<void>((resolve) => {
+          setTimeout(async () => {
+            // Force update nodes to recalculate socket positions after auto-sizing
+            for (const node of editor.getNodes()) {
+              await area.update('node', node.id);
+            }
 
-          if (focusNodeId) {
-            const node = editor.getNode(focusNodeId);
-            if (node) {
-              await AreaExtensions.zoomAt(area, [node]);
+            if (focusNodeId) {
+              const node = editor.getNode(focusNodeId);
+              if (node) {
+                await AreaExtensions.zoomAt(area, [node]);
+              } else {
+                await AreaExtensions.zoomAt(area, editor.getNodes());
+              }
             } else {
               await AreaExtensions.zoomAt(area, editor.getNodes());
             }
-          } else {
-            await AreaExtensions.zoomAt(area, editor.getNodes());
-          }
-          resolve();
-        }, 200);
-      });
+            resolve();
+          }, 200);
+        });
+      } finally {
+        suppressGraphChange = false;
+      }
     },
 
     // Helper to get current graph state
