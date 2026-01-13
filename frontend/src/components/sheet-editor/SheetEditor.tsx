@@ -26,8 +26,8 @@ import { SheetTable } from '../sheet-table';
 import { TooltipLayer } from '../TooltipLayer';
 import './SheetEditor.css';
 import type { CalculationInputDefinition } from './types';
-import { useSheetClipboard } from './useSheetClipboard';
 import { useEditorSetup } from './useEditorSetup';
+import { useSheetClipboard } from './useSheetClipboard';
 import { useUrlSync } from './useUrlSync';
 
 export const SheetEditor: React.FC = () => {
@@ -224,8 +224,7 @@ export const SheetEditor: React.FC = () => {
     }
   }, [calculationInputs, triggerAutoCalculation, initialLoadDone]);
 
-
-    const { handlePaste } = useSheetClipboard(addNode, calcCenterPosition);
+  const { handlePaste } = useSheetClipboard(addNode, calcCenterPosition);
 
   const handleDelete = useCallback(
     async (nodeIds: string[]) => {
@@ -275,8 +274,7 @@ export const SheetEditor: React.FC = () => {
     { lastResultRef, calculationInputsRef },
   );
 
-
-    // Load the specific sheet when sheetId changes
+  // Load the specific sheet when sheetId changes
   useEffect(() => {
     if (sheetId) {
       handleLoadSheet(sheetId);
@@ -284,15 +282,15 @@ export const SheetEditor: React.FC = () => {
     }
   }, [sheetId, handleLoadSheet]);
 
-    useUrlSync({
-        nodes,
-        searchParams,
-        setSearchParams,
-        calculationInputs,
-        setCalculationInputs,
-        initialLoadDone,
-        setInitialLoadDone,
-    });
+  useUrlSync({
+    nodes,
+    searchParams,
+    setSearchParams,
+    calculationInputs,
+    setCalculationInputs,
+    initialLoadDone,
+    setInitialLoadDone,
+  });
 
   // Handle Hash Changes for Focus
   useEffect(() => {

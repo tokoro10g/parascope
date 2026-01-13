@@ -8,7 +8,7 @@ export const useSweepState = () => {
   const [searchParams, setSearchParams] = useSearchParams();
 
   const [sheet, setSheet] = useState<Sheet | null>(null);
-  
+
   // Track if we should auto-run based on INITIAL URL params
   const [shouldAutoRun] = useState(
     () => searchParams.has('input') && searchParams.has('outputs'),
@@ -43,7 +43,10 @@ export const useSweepState = () => {
     },
   );
 
-  const [selectedOptions, setSelectedOptions] = useState<string[]>([]);
+  const [selectedOptions, setSelectedOptions] = useState<string[]>(() => {
+    const opts = searchParams.get('options');
+    return opts ? opts.split(',') : [];
+  });
   const [results, setResults] = useState<SweepResultStep[] | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -54,6 +57,9 @@ export const useSweepState = () => {
     ['constant', 'input'].includes(n.type),
   );
   const outputOptions = nodes.filter((n) => n.type === 'output');
+
+  // Track the last input node to prevent overwriting URL state on load
+  const lastInputNodeId = useRef(inputNodeId);
 
   // Load Sheet
   useEffect(() => {
@@ -94,6 +100,9 @@ export const useSweepState = () => {
       params.set('start', startValue);
       params.set('end', endValue);
       params.set('step', increment);
+      if (selectedOptions.length > 0) {
+        params.set('options', selectedOptions.join(','));
+      }
       if (outputNodeIds.length > 0) {
         params.set('outputs', outputNodeIds.join(','));
       }
@@ -110,6 +119,7 @@ export const useSweepState = () => {
     startValue,
     endValue,
     increment,
+    selectedOptions,
     outputNodeIds,
     inputOverrides,
     setSearchParams,
@@ -125,12 +135,28 @@ export const useSweepState = () => {
   // Handle Option Type selection
   useEffect(() => {
     const node = nodes.find((n) => n.id === inputNodeId);
-    if (node && node.data?.dataType === 'option') {
-      setSelectedOptions(node.data.options);
+
+    if (inputNodeId !== lastInputNodeId.current) {
+      // Input changed manually, reset/default behavior
+      lastInputNodeId.current = inputNodeId;
+      if (node && node.data?.dataType === 'option') {
+        setSelectedOptions(node.data.options);
+      } else {
+        setSelectedOptions([]);
+      }
     } else {
-      setSelectedOptions([]);
+      // Same input (e.g. nodes loaded), check if we need to hydrate defaults
+      // Only set if we have NO selection and NO URL param
+      if (
+        node &&
+        node.data?.dataType === 'option' &&
+        selectedOptions.length === 0 &&
+        !searchParams.has('options')
+      ) {
+        setSelectedOptions(node.data.options);
+      }
     }
-  }, [inputNodeId, nodes]);
+  }, [inputNodeId, nodes, selectedOptions.length, searchParams]);
 
   const handleSweepInputChange = (id: string) => {
     setInputNodeId(id);

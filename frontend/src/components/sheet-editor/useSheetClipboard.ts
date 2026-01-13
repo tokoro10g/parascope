@@ -3,7 +3,7 @@ import { createSocket } from '../../utils';
 
 export function useSheetClipboard(
   addNode: any, // Typed as any in original to facilitate quick move
-  calcCenterPosition: () => { x: number; y: number }
+  calcCenterPosition: () => { x: number; y: number },
 ) {
   const handlePaste = useCallback(
     async (clipboardNodes: any[]) => {
@@ -28,11 +28,15 @@ export function useSheetClipboard(
       const offsetY = screenCenter.y - centerY;
 
       for (const nodeData of clipboardNodes) {
-        const inputs = nodeData.inputs.map((label: string) => createSocket(label)); // Original used createSocket callback logic differently?
+        const inputs = nodeData.inputs.map((label: string) =>
+          createSocket(label),
+        ); // Original used createSocket callback logic differently?
         // Wait, original: const inputs = nodeData.inputs.map(createSocket);
         // createSocket takes a label string.
-        
-        const outputs = nodeData.outputs.map((label: string) => createSocket(label));
+
+        const outputs = nodeData.outputs.map((label: string) =>
+          createSocket(label),
+        );
         const data = nodeData.initialData;
         if (nodeData.controls && nodeData.controls.value !== undefined) {
           data.value = nodeData.controls.value;
