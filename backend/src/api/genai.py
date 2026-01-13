@@ -1,3 +1,4 @@
+import base64
 import json
 import logging
 import os
@@ -13,6 +14,8 @@ logger = logging.getLogger(__name__)
 class GenerateFunctionRequest(BaseModel):
     prompt: str
     existing_code: str = ""
+    urls: list[str] = []
+    image: str | None = None
 
 class GenerateFunctionResponse(BaseModel):
     title: str
@@ -36,7 +39,7 @@ async def generate_function(request: GenerateFunctionRequest):
     try:
         client = get_gemini_client()
         
-        system_prompt = """
+        system_instruction = """
         You are an expert Python engineer helping a user write a function for an engineering calculation tool.
         The user will provide a prompt describing what they want the function to do.
         You must return a JSON object with the following structure:
@@ -45,7 +48,7 @@ async def generate_function(request: GenerateFunctionRequest):
             "code": "docstrings for the inputs and outputs explaining units. Then python code body. Do not include def function_name(): wrapper. Just write lines of code that use variable names as inputs and assign results to variable names as outputs. math and np are already imported.",
             "inputs": ["list", "of", "input", "variable", "names"],
             "outputs": ["list", "of", "output", "variable", "names"],
-            "description": "A markdown description of what the function does. Use KaTeX for any formulas."
+            "description": "A markdown description of what the code does. Use KaTeX for any formulas. Do not use headings. Include background information if relevant. If equation number is available, include it."
         }
         
         Rules:
@@ -66,21 +69,43 @@ async def generate_function(request: GenerateFunctionRequest):
             "code": "area = np.pi * radius**2",
             "inputs": ["radius"],
             "outputs": ["area"],
-            "description": "Calculates the area of a circle given its radius."
+            "description": "Calculates the area of a circle given its radius.\n\n$$\n\nA = \\pi r^2\n\n$$"
         }
         """
         
         user_prompt = f"Prompt: {request.prompt}\n"
+        if request.urls:
+            user_prompt += "\nReference URLs:\n" + "\n".join(request.urls) + "\n"
+
         if request.existing_code:
             user_prompt += f"Existing Code:\n{request.existing_code}\n"
             user_prompt += "Update the existing code based on the prompt, or rewrite it if requested."
 
+        parts = [genai.types.Part.from_text(text=user_prompt)]
+        
+        if request.image:
+            if "," in request.image:
+                header, encoded = request.image.split(",", 1)
+                mime_type = header.split(":")[1].split(";")[0]
+            else:
+                encoded = request.image
+                mime_type = "image/png"
+            
+            image_bytes = base64.b64decode(encoded)
+            parts.append(genai.types.Part.from_bytes(data=image_bytes, mime_type=mime_type))
+
+        tools = [
+            genai.types.Tool(url_context=genai.types.UrlContext()),
+            genai.types.Tool(google_search=genai.types.GoogleSearch())
+        ]
+
         response = client.models.generate_content(
             model="gemini-3-flash-preview",
-            contents=[system_prompt, user_prompt],
+            contents=[genai.types.Content(role="user", parts=parts)],
             config=genai.types.GenerateContentConfig(
+                system_instruction=system_instruction,
                 response_mime_type="application/json",
-                tools=[genai.types.Tool(url_context=genai.types.UrlContext())]
+                tools=tools
             )
         )
         

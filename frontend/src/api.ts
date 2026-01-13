@@ -153,11 +153,18 @@ export const api = {
   async generateFunction(
     prompt: string,
     existingCode: string = '',
+    urls: string[] = [],
+    image?: string,
   ): Promise<GenerateFunctionResponse> {
     return request(`${API_BASE}/api/genai/generate_function`, {
       method: 'POST',
       headers: getHeaders({ 'Content-Type': 'application/json' }),
-      body: JSON.stringify({ prompt, existing_code: existingCode }),
+      body: JSON.stringify({
+        prompt,
+        existing_code: existingCode,
+        urls,
+        image,
+      }),
     });
   },
 

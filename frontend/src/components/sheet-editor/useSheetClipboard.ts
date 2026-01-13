@@ -1,5 +1,4 @@
 import { useCallback } from 'react';
-import type { ParascopeNode } from '../../rete';
 import { createSocket } from '../../utils';
 
 export function useSheetClipboard(

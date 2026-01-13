@@ -33,6 +33,8 @@ export const NodeInspector: React.FC<NodeInspectorProps> = ({
 
   // AI State
   const [aiPrompt, setAiPrompt] = useState('');
+  const [aiUrls, setAiUrls] = useState('');
+  const [aiImage, setAiImage] = useState<string | null>(null);
   const [isGenerating, setIsGenerating] = useState(false);
   const [aiEnabled, setAiEnabled] = useState(false);
 
@@ -45,6 +47,9 @@ export const NodeInspector: React.FC<NodeInspectorProps> = ({
   useEffect(() => {
     if (node) {
       setLabel(node.label);
+      setAiPrompt('');
+      setAiUrls('');
+      setAiImage(null);
 
       const currentData = { ...(node.initialData || {}) };
 
@@ -131,7 +136,17 @@ export const NodeInspector: React.FC<NodeInspectorProps> = ({
     if (!aiPrompt.trim()) return;
     setIsGenerating(true);
     try {
-      const result = await api.generateFunction(aiPrompt, data.code);
+      const urls = aiUrls
+        .split('\n')
+        .map((u) => u.trim())
+        .filter((u) => u);
+
+      const result = await api.generateFunction(
+        aiPrompt,
+        data.code,
+        urls,
+        aiImage || undefined,
+      );
       setData((prev) => ({
         ...prev,
         code: result.code,
@@ -157,6 +172,10 @@ export const NodeInspector: React.FC<NodeInspectorProps> = ({
           <AIGenerator
             aiPrompt={aiPrompt}
             setAiPrompt={setAiPrompt}
+            aiUrls={aiUrls}
+            setAiUrls={setAiUrls}
+            aiImage={aiImage}
+            setAiImage={setAiImage}
             isGenerating={isGenerating}
             handleGenerate={handleGenerate}
             aiEnabled={aiEnabled}
