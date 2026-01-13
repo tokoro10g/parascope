@@ -114,6 +114,9 @@ try:
 
         except Exception as e:
             step_res["error"] = str(e)
+            # Ensure outputs are populated with None/Null for consistent structure
+            for out_id in output_node_ids:
+                step_res["outputs"][out_id] = None
             
         sweep_results.append(step_res)
 
