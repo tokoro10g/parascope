@@ -7,7 +7,8 @@ import remarkMath from 'remark-math';
 import { API_BASE } from '../api';
 import type { ParascopeNode } from '../rete';
 import './SheetTable.css';
-import { formatHumanReadableValue } from '../utils';
+import { fallbackCopy, formatHumanReadableValue } from '../utils';
+import toast from 'react-hot-toast';
 
 interface ScrollButtonProps {
   onClick: () => void;
@@ -175,42 +176,19 @@ export const SheetTable: React.FC<SheetTableProps> = ({
 
     const tsv = [headers.join('\t'), ...rows].join('\n');
 
-    if (navigator.clipboard?.writeText) {
+    try{
       navigator.clipboard
         .writeText(tsv)
         .then(() => {
-          console.log('Table copied to clipboard');
-        })
-        .catch((err) => {
-          console.error('Failed to copy: ', err);
-          fallbackCopy(tsv);
+          toast.success('Table copied to clipboard');
         });
-    } else {
-      fallbackCopy(tsv);
+    } catch {
+      if(fallbackCopy(tsv)) {
+        toast.success('Table copied to clipboard');
+      } else {
+        toast.error('Failed to copy table to clipboard');
+      }
     }
-  };
-
-  const fallbackCopy = (text: string) => {
-    const textArea = document.createElement('textarea');
-    textArea.value = text;
-
-    // Avoid scrolling to bottom
-    textArea.style.top = '0';
-    textArea.style.left = '0';
-    textArea.style.position = 'fixed';
-
-    document.body.appendChild(textArea);
-    textArea.focus();
-    textArea.select();
-
-    try {
-      document.execCommand('copy');
-      console.log('Fallback: Copying text command was successful');
-    } catch (err) {
-      console.error('Fallback: Oops, unable to copy', err);
-    }
-
-    document.body.removeChild(textArea);
   };
 
   return (

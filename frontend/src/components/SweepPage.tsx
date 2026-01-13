@@ -10,6 +10,7 @@ import { useAuth } from '../contexts/AuthContext';
 import { NavBar } from './NavBar';
 import { getSweepChartOption } from './sweepChartUtils';
 import './SweepPage.css';
+import { fallbackCopy } from '../utils';
 
 export const SweepPage: React.FC = () => {
   const { sheetId } = useParams<{ sheetId: string }>();
@@ -284,56 +285,63 @@ export const SweepPage: React.FC = () => {
       backgroundColor,
     });
 
+    const res = await fetch(base64);
+    const blob = await res.blob();
     try {
-      const res = await fetch(base64);
-      const blob = await res.blob();
       await navigator.clipboard.write([
         new ClipboardItem({
-          [blob.type]: blob,
-        }),
-      ]);
-      toast.success('Plot copied to clipboard');
+            [blob.type]: blob,
+          }),
+        ]).then(() => {
+          toast.success('Plot copied to clipboard');
+        });
     } catch (e) {
       console.error(e);
-      toast.error('Failed to copy plot');
+      const blobUrl = URL.createObjectURL(blob);
+      window.open(blobUrl, '_blank');
     }
   };
 
   const handleCopyTable = async () => {
     if (!results || results.length === 0) return;
 
-    try {
-      // Find valid output nodes for header
-      const validOutputIds = results[0]?.outputs
-        ? Object.keys(results[0].outputs).filter((id) =>
-            outputNodeIds.includes(id),
-          )
-        : [];
+    // Find valid output nodes for header
+    const validOutputIds = results[0]?.outputs
+      ? Object.keys(results[0].outputs).filter((id) =>
+          outputNodeIds.includes(id),
+        )
+      : [];
 
-      // Create header row: InputName <tab> OutputName1 <tab> OutputName2 ...
-      const header = [
-        selectedInputLabel,
-        ...validOutputIds.map(
-          (id) => nodes.find((n) => n.id === id)?.label || id,
-        ),
-      ].join('\t');
+    // Create header row: InputName <tab> OutputName1 <tab> OutputName2 ...
+    const header = [
+      selectedInputLabel,
+      ...validOutputIds.map(
+        (id) => nodes.find((n) => n.id === id)?.label || id,
+      ),
+    ].join('\t');
 
-      // Create data rows
-      const rows = results.map((step) => {
-        const inputVal = step.input_value;
-        const outputVals = validOutputIds.map((id) => {
-          const val = step.outputs?.[id];
-          return val === undefined || val === null ? '' : String(val);
-        });
-        return [inputVal, ...outputVals].join('\t');
+    // Create data rows
+    const rows = results.map((step) => {
+      const inputVal = step.input_value;
+      const outputVals = validOutputIds.map((id) => {
+        const val = step.outputs?.[id];
+        return val === undefined || val === null ? '' : String(val);
       });
+      return [inputVal, ...outputVals].join('\t');
+    });
 
-      const text = [header, ...rows].join('\n');
-      await navigator.clipboard.writeText(text);
-      toast.success('Table copied to clipboard');
-    } catch (e) {
-      console.error(e);
-      toast.error('Failed to copy table');
+    const text = [header, ...rows].join('\n');
+
+    try {
+      await navigator.clipboard.writeText(text).then(() => {
+        toast.success('Table copied to clipboard');
+      });
+    } catch {
+      if(fallbackCopy(text)) {
+        toast.success('Table copied to clipboard');
+      } else {
+        toast.error('Failed to copy table to clipboard');
+      }
     }
   };
 

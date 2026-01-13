@@ -162,3 +162,28 @@ export const resolveNestedSheetParams = (
 
   return queryParams.toString();
 };
+
+export const fallbackCopy = (text: string) => {
+  const textArea = document.createElement('textarea');
+  textArea.value = text;
+
+  // Avoid scrolling to bottom
+  textArea.style.top = '0';
+  textArea.style.left = '0';
+  textArea.style.position = 'fixed';
+
+  document.body.appendChild(textArea);
+  textArea.focus();
+  textArea.select();
+
+  try {
+    document.execCommand('copy');
+    console.log('Fallback: Copying text command was successful');
+    return true;
+  } catch (err) {
+    console.error('Fallback: Oops, unable to copy', err);
+    return false;
+  } finally {
+    document.body.removeChild(textArea);
+  }
+};
