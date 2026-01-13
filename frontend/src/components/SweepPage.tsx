@@ -64,6 +64,7 @@ export const SweepPage: React.FC = () => {
     text: '#213547',
     grid: '#ccc',
     font: 'system-ui, sans-serif',
+    background: '#fff',
   });
 
   useEffect(() => {
@@ -105,11 +106,13 @@ export const SweepPage: React.FC = () => {
       const textColor = bodyStyles.getPropertyValue('--text-color').trim();
       const borderColor = bodyStyles.getPropertyValue('--border-color').trim();
       const fontFamily = rootStyles.getPropertyValue('font-family').trim();
+      const backgroundColor = bodyStyles.getPropertyValue('--bg-color').trim();
 
       setTheme({
         text: textColor || '#213547',
         grid: borderColor || '#ccc',
         font: fontFamily || 'system-ui, Avenir, Helvetica, Arial, sans-serif',
+        background: backgroundColor || '#fff',
       });
     };
 

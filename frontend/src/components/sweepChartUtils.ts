@@ -60,6 +60,7 @@ export interface ChartTheme {
   text: string;
   grid: string;
   font: string;
+  background: string;
 }
 
 export const getSweepChartOption = (
@@ -123,8 +124,8 @@ export const getSweepChartOption = (
       axisLine: { lineStyle: { color: theme.text } },
       axisLabel: {
         color: theme.text,
-        show: index === count - 1, // Optional: hide labels for upper plots if they align
-        formatter: (value) => formatHumanReadableValue(value.toString()),
+        show: index === count - 1,
+        formatter: (value: number) => formatHumanReadableValue(value.toString()),
       },
       splitLine: { show: true, lineStyle: { color: theme.grid } },
     });
@@ -133,15 +134,21 @@ export const getSweepChartOption = (
       yAxes.push({
         type: 'value',
         name: label, // Y Axis named after the output
-        nameLocation: 'middle',
-        nameGap: 40,
+        nameLocation: 'end',
+        nameGap: 15,
+        nameTextStyle: {
+          align: 'left',
+        },
         scale: true,
         gridIndex: index,
         boundaryGap: ['5%', '5%'],
         axisLine: { lineStyle: { color: theme.text } },
         axisLabel: {
           color: theme.text,
-          formatter: (value) => formatHumanReadableValue(value.toString()),
+          backgroundColor: theme.background,
+          hideOverlap: true,
+          inside: true,
+          formatter: (value: number) => formatHumanReadableValue(value.toString()),
         },
         splitLine: { show: true, lineStyle: { color: theme.grid } },
       });
@@ -202,8 +209,11 @@ export const getSweepChartOption = (
         data: [label], // Single category represented by the label name
         gridIndex: index,
         name: label,
-        nameLocation: 'middle',
-        nameGap: 40,
+        nameLocation: 'end',
+        nameGap: 15,
+        nameTextStyle: {
+          align: 'left',
+        },
         axisLine: { show: false },
         axisTick: { show: false },
         axisLabel: {
