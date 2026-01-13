@@ -195,7 +195,7 @@ except Exception as e:
             clean = f"_{clean}"
         # Cleanup underscores
         clean = re.sub(r'_+', '_', clean)
-        return clean.strip('_')
+        return clean
 
     def _generate_sheet_class(self, sheet: Sheet) -> str:
         class_name = self._get_class_name(str(sheet.id))
