@@ -1,23 +1,27 @@
 import type { EChartsOption } from 'echarts';
 import type { SweepResultStep } from '../../api';
 import { formatHumanReadableValue } from '../../utils';
-import type { ChartTheme, StrategyContext, VisualizationStrategy } from './types';
-import { checkIsNumeric } from './utils';
-import { NumericLineStrategy } from './NumericLineStrategy';
 import { CategoricalBarStrategy } from './CategoricalBarStrategy';
-import { TimelineStrategy } from './TimelineStrategy';
+import { NumericLineStrategy } from './NumericLineStrategy';
 import { ScatterStrategy } from './ScatterStrategy';
+import { TimelineStrategy } from './TimelineStrategy';
+import type {
+  ChartTheme,
+  StrategyContext,
+  VisualizationStrategy,
+} from './types';
+import { checkIsNumeric } from './utils';
 
 // Re-export shared types for consumers
 export type { ChartTheme, StrategyContext, VisualizationStrategy };
-export { strHash, getColor } from './utils';
+export { getColor, strHash } from './utils';
 
 // Registry
 const strategies: VisualizationStrategy[] = [
-    new NumericLineStrategy(),
-    new CategoricalBarStrategy(),
-    new TimelineStrategy(),
-    new ScatterStrategy()
+  new NumericLineStrategy(),
+  new CategoricalBarStrategy(),
+  new TimelineStrategy(),
+  new ScatterStrategy(),
 ];
 
 export const getSweepChartOption = (
@@ -31,16 +35,17 @@ export const getSweepChartOption = (
   // 1. Context Preparation
   const plottedIds = Object.keys(results[0].outputs);
   const count = plottedIds.length;
-  
+
   // Layout Constants
-  const gap = 5; 
+  const gap = 5;
   const topMargin = 10;
   const bottomMargin = 10;
   const availableHeight = 100 - topMargin - bottomMargin;
-  const gridHeight = count > 1 ? (availableHeight - gap * (count - 1)) / count : availableHeight;
+  const gridHeight =
+    count > 1 ? (availableHeight - gap * (count - 1)) / count : availableHeight;
 
   // Global Data Analysis
-  const isXNumeric = checkIsNumeric(results.map(r => r.input_value));
+  const isXNumeric = checkIsNumeric(results.map((r) => r.input_value));
 
   // Containers
   const grids: any[] = [];
@@ -52,7 +57,7 @@ export const getSweepChartOption = (
   plottedIds.forEach((id, index) => {
     const node = nodes.find((n) => n.id === id);
     const label = node ? node.label : id;
-    const outputValues = results.map(r => r.outputs[id]);
+    const outputValues = results.map((r) => r.outputs[id]);
     const isOutputNumeric = checkIsNumeric(outputValues);
 
     const context: StrategyContext = {
@@ -68,12 +73,12 @@ export const getSweepChartOption = (
       showXLabel: index === count - 1,
       gridHeight,
       topMargin,
-      gap
+      gap,
     };
 
     // Find Strategy
-    const strategy = strategies.find(s => s.canHandle(context));
-    
+    const strategy = strategies.find((s) => s.canHandle(context));
+
     if (strategy) {
       // Grid
       grids.push(strategy.getGrid(context));
@@ -84,7 +89,7 @@ export const getSweepChartOption = (
       // Series
       series.push(strategy.getSeries(context));
     } else {
-        console.warn(`No strategy found for output ${label}`);
+      console.warn(`No strategy found for output ${label}`);
     }
   });
 

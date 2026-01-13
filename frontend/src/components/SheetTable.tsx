@@ -7,8 +7,8 @@ import remarkMath from 'remark-math';
 import { API_BASE } from '../api';
 import type { ParascopeNode } from '../rete';
 import './SheetTable.css';
-import { fallbackCopy, formatHumanReadableValue } from '../utils';
 import toast from 'react-hot-toast';
+import { fallbackCopy, formatHumanReadableValue } from '../utils';
 
 interface ScrollButtonProps {
   onClick: () => void;
@@ -176,14 +176,12 @@ export const SheetTable: React.FC<SheetTableProps> = ({
 
     const tsv = [headers.join('\t'), ...rows].join('\n');
 
-    try{
-      navigator.clipboard
-        .writeText(tsv)
-        .then(() => {
-          toast.success('Table copied to clipboard');
-        });
+    try {
+      navigator.clipboard.writeText(tsv).then(() => {
+        toast.success('Table copied to clipboard');
+      });
     } catch {
-      if(fallbackCopy(tsv)) {
+      if (fallbackCopy(tsv)) {
         toast.success('Table copied to clipboard');
       } else {
         toast.error('Failed to copy table to clipboard');

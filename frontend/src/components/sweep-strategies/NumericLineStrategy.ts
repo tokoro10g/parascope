@@ -1,11 +1,16 @@
-import type { VisualizationStrategy, StrategyContext } from './types';
-import { createBaseGrid, createBaseXAxis, createBaseYAxis, createMarkArea } from './utils';
+import type { StrategyContext, VisualizationStrategy } from './types';
+import {
+  createBaseGrid,
+  createBaseXAxis,
+  createBaseYAxis,
+  createMarkArea,
+} from './utils';
 
 export class NumericLineStrategy implements VisualizationStrategy {
   canHandle(ctx: StrategyContext) {
     return ctx.isXNumeric && ctx.isOutputNumeric;
   }
-  
+
   getGrid(ctx: StrategyContext) {
     return createBaseGrid(ctx);
   }
@@ -13,14 +18,14 @@ export class NumericLineStrategy implements VisualizationStrategy {
   getAxes(ctx: StrategyContext) {
     return {
       xAxis: createBaseXAxis(ctx, 'value'),
-      yAxis: createBaseYAxis(ctx, 'value', true)
+      yAxis: createBaseYAxis(ctx, 'value', true),
     };
   }
 
   getSeries(ctx: StrategyContext) {
     const data = ctx.results.map((r) => [
-        parseFloat(String(r.input_value)),
-        parseFloat(String(r.outputs[ctx.id])),
+      parseFloat(String(r.input_value)),
+      parseFloat(String(r.outputs[ctx.id])),
     ]);
     return {
       name: ctx.label,

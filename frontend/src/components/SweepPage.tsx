@@ -241,7 +241,9 @@ export const SweepPage: React.FC = () => {
           Number.isNaN(step) ||
           step === 0
         ) {
-          throw new Error('Invalid numeric inputs. Increment must be non-zero.');
+          throw new Error(
+            'Invalid numeric inputs. Increment must be non-zero.',
+          );
         }
       }
 
@@ -320,11 +322,13 @@ export const SweepPage: React.FC = () => {
     const res = await fetch(base64);
     const blob = await res.blob();
     try {
-      await navigator.clipboard.write([
-        new ClipboardItem({
+      await navigator.clipboard
+        .write([
+          new ClipboardItem({
             [blob.type]: blob,
           }),
-        ]).then(() => {
+        ])
+        .then(() => {
           toast.success('Plot copied to clipboard');
         });
     } catch (e) {
@@ -369,7 +373,7 @@ export const SweepPage: React.FC = () => {
         toast.success('Table copied to clipboard');
       });
     } catch {
-      if(fallbackCopy(text)) {
+      if (fallbackCopy(text)) {
         toast.success('Table copied to clipboard');
       } else {
         toast.error('Failed to copy table to clipboard');
