@@ -1,14 +1,12 @@
 import type React from 'react';
 import { useEffect, useState } from 'react';
-import { API_BASE, api } from '../api';
-import './Modal.css';
-import {
-  AIGenerator,
-  DescriptionEditor,
-  FunctionEditor,
-  type NodeUpdates,
-  TypeConfig,
-} from './node-inspector';
+import { API_BASE, api } from '../../api';
+import '../Modal.css';
+import { AIGenerator } from './AIGenerator';
+import { DescriptionEditor } from './DescriptionEditor';
+import { FunctionEditor } from './FunctionEditor';
+import { TypeConfig } from './TypeConfig';
+import type { NodeUpdates } from './types';
 
 interface NodeInspectorProps {
   node: any;

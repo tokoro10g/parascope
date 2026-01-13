@@ -20,7 +20,7 @@ import { createEditor, type ParascopeNode } from '../../rete';
 import { createSocket, extractValuesFromResult } from '../../utils';
 import { EditorBar } from '../EditorBar';
 import { NavBar } from '../NavBar';
-import { NodeInspector } from '../NodeInspector';
+import { NodeInspector } from '../node-inspector';
 import { SheetPickerModal } from '../SheetPickerModal';
 import { SheetTable } from '../SheetTable';
 import { TooltipLayer } from '../TooltipLayer';
