@@ -34,8 +34,9 @@ services:
 
   db:
     image: postgres:15
-    ports:
-      - "5432:5432"
+    # Do not expose Postgres port to the host machine by default
+    # ports:
+    #   - "5432:5432"
     environment:
       - POSTGRES_USER=user
       - POSTGRES_PASSWORD=password
