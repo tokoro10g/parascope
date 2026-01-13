@@ -7,6 +7,8 @@
 *   **Visual Graph Editor**: Intuitive node-based interface built with [Rete.js](https://retejs.org/).
 *   **Python-Powered Calculations**: Backend execution engine runs Python code for function nodes, supporting libraries like `math`.
 *   **Nested Sheets**: Create reusable calculation modules (sheets) and import them into other sheets as single nodes.
+*   **Advanced Trade Studies**: Perform parameter sweeps and visualize results with Line, Bar, Scatter, and Timeline charts.
+*   **AI Assistance**: Generate function logic from natural language using Gemini AI.
 *   **Real-time Evaluation**: Instant feedback on calculation results as you modify the graph.
 *   **Engineering Examples**: Comes pre-seeded with examples like the Tsiolkovsky Rocket Equation, Aerodynamic Drag, and SSTO Feasibility checks.
 *   **Modern Stack**: Built with React, FastAPI, and PostgreSQL.
