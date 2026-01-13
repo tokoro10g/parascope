@@ -8,29 +8,27 @@ import {
   useSearchParams,
 } from 'react-router-dom';
 import { useRete } from 'rete-react-plugin';
-import { api, type Sheet } from '../api';
-import { useAuth } from '../contexts/AuthContext';
-import { useNodeOperations } from '../hooks/useNodeOperations';
-import { useReteEvents } from '../hooks/useReteEvents';
-import { useSheetCalculation } from '../hooks/useSheetCalculation';
-import { useSheetLock } from '../hooks/useSheetLock';
-import { useSheetManager } from '../hooks/useSheetManager';
-import { useUnsavedChanges } from '../hooks/useUnsavedChanges';
-import { createEditor, type ParascopeNode } from '../rete';
-import { createSocket, extractValuesFromResult } from '../utils';
-import { EditorBar } from './EditorBar';
-import { NavBar } from './NavBar';
-import { NodeInspector } from './NodeInspector';
-import { SheetPickerModal } from './SheetPickerModal';
-import { SheetTable } from './SheetTable';
-import { TooltipLayer } from './TooltipLayer';
+import { api, type Sheet } from '../../api';
+import { useAuth } from '../../contexts/AuthContext';
+import { useNodeOperations } from '../../hooks/useNodeOperations';
+import { useReteEvents } from '../../hooks/useReteEvents';
+import { useSheetCalculation } from '../../hooks/useSheetCalculation';
+import { useSheetLock } from '../../hooks/useSheetLock';
+import { useSheetManager } from '../../hooks/useSheetManager';
+import { useUnsavedChanges } from '../../hooks/useUnsavedChanges';
+import { createEditor, type ParascopeNode } from '../../rete';
+import { createSocket, extractValuesFromResult } from '../../utils';
+import { EditorBar } from '../EditorBar';
+import { NavBar } from '../NavBar';
+import { NodeInspector } from '../NodeInspector';
+import { SheetPickerModal } from '../SheetPickerModal';
+import { SheetTable } from '../SheetTable';
+import { TooltipLayer } from '../TooltipLayer';
 import './SheetEditor.css';
-
-export interface CalculationInputDefinition {
-  id: string;
-  label: string;
-  value: string | number;
-}
+import type { CalculationInputDefinition } from './types';
+import { useSheetClipboard } from './useSheetClipboard';
+import { useEditorSetup } from './useEditorSetup';
+import { useUrlSync } from './useUrlSync';
 
 export const SheetEditor: React.FC = () => {
   const { sheetId } = useParams<{ sheetId: string }>();
@@ -64,8 +62,6 @@ export const SheetEditor: React.FC = () => {
   } = useSheetLock(sheetId || null);
 
   // Derive Read only state.
-  // We treat "Loading Lock" as Read Only to prevent race conditions (save before lock check returns).
-  // CRITICAL: If I don't own the lock, it is read-only. Even if it's free (lockedByOther is null).
   const isReadOnly = !isLockedByMe || isLockLoading;
 
   const calculateTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(
@@ -228,48 +224,8 @@ export const SheetEditor: React.FC = () => {
     }
   }, [calculationInputs, triggerAutoCalculation, initialLoadDone]);
 
-  const handlePaste = useCallback(
-    async (clipboardNodes: any[]) => {
-      if (!clipboardNodes.length) return;
 
-      // Calculate center of clipboard nodes
-      let minX = Infinity;
-      let minY = Infinity;
-      let maxX = -Infinity;
-      let maxY = -Infinity;
-      clipboardNodes.forEach((n) => {
-        minX = Math.min(minX, n.position.x);
-        minY = Math.min(minY, n.position.y);
-        maxX = Math.max(maxX, n.position.x);
-        maxY = Math.max(maxY, n.position.y);
-      });
-      const centerX = (minX + maxX) / 2;
-      const centerY = (minY + maxY) / 2;
-
-      const screenCenter = calcCenterPosition();
-      const offsetX = screenCenter.x - centerX;
-      const offsetY = screenCenter.y - centerY;
-
-      for (const nodeData of clipboardNodes) {
-        const inputs = nodeData.inputs.map(createSocket);
-        const outputs = nodeData.outputs.map(createSocket);
-        const data = nodeData.initialData;
-        if (nodeData.controls && nodeData.controls.value !== undefined) {
-          data.value = nodeData.controls.value;
-        }
-
-        const label = nodeData.label;
-
-        const position = {
-          x: nodeData.position.x + offsetX,
-          y: nodeData.position.y + offsetY,
-        };
-
-        await addNode(nodeData.type, label, inputs, outputs, data, position);
-      }
-    },
-    [addNode, calcCenterPosition],
-  );
+    const { handlePaste } = useSheetClipboard(addNode, calcCenterPosition);
 
   const handleDelete = useCallback(
     async (nodeIds: string[]) => {
@@ -319,28 +275,8 @@ export const SheetEditor: React.FC = () => {
     { lastResultRef, calculationInputsRef },
   );
 
-  // Listen for custom node label updates from CustomNode
-  useEffect(() => {
-    const handleCustomUpdate = (
-      e: CustomEvent<{ id: string; label: string }>,
-    ) => {
-      const { id, label } = e.detail;
-      handleNodeUpdate(id, { label });
-    };
 
-    window.addEventListener(
-      'parascope-node-update',
-      handleCustomUpdate as EventListener,
-    );
-    return () => {
-      window.removeEventListener(
-        'parascope-node-update',
-        handleCustomUpdate as EventListener,
-      );
-    };
-  }, [handleNodeUpdate]);
-
-  // Load the specific sheet when sheetId changes
+    // Load the specific sheet when sheetId changes
   useEffect(() => {
     if (sheetId) {
       handleLoadSheet(sheetId);
@@ -348,66 +284,15 @@ export const SheetEditor: React.FC = () => {
     }
   }, [sheetId, handleLoadSheet]);
 
-  // Sync URL Query Params to Calculation Inputs (ONLY ON INITIAL LOAD)
-  useEffect(() => {
-    if (nodes.length === 0 || initialLoadDone) return;
-
-    const overrides: Record<string, string> = {};
-    let hasOverrides = false;
-
-    searchParams.forEach((value, key) => {
-      const node = nodes.find((n) => n.type === 'input' && n.label === key);
-      if (node?.id) {
-        overrides[node.id] = value;
-        hasOverrides = true;
-      }
+    useUrlSync({
+        nodes,
+        searchParams,
+        setSearchParams,
+        calculationInputs,
+        setCalculationInputs,
+        initialLoadDone,
+        setInitialLoadDone,
     });
-
-    if (hasOverrides) {
-      setCalculationInputs(overrides);
-    }
-    setInitialLoadDone(true);
-  }, [searchParams, nodes, initialLoadDone]);
-
-  // Update URL Query Params when Calculation Inputs change (Value Sink)
-  useEffect(() => {
-    if (!initialLoadDone) return;
-
-    setSearchParams(
-      (prev) => {
-        const newParams = new URLSearchParams(prev);
-        // We must be careful not to blow away unrelated params if any,
-        // though typically all params are inputs.
-
-        // Clear existing input params to ensure we sync strictly to current inputs
-        // (Optional: depending on if we want to support extra params)
-
-        const nodesMap = new Map(nodes.map((n) => [n.id, n.label]));
-
-        Object.entries(calculationInputs).forEach(([id, value]) => {
-          const label = nodesMap.get(id);
-          if (label) {
-            if (value) newParams.set(label, value);
-            else newParams.delete(label);
-          }
-        });
-
-        // Also remove params for inputs that were cleared
-        nodes.forEach((n) => {
-          if (
-            n.type === 'input' &&
-            !calculationInputs[n.id] &&
-            newParams.has(n.label)
-          ) {
-            newParams.delete(n.label);
-          }
-        });
-
-        return newParams;
-      },
-      { replace: true },
-    );
-  }, [calculationInputs, nodes, initialLoadDone, setSearchParams]);
 
   // Handle Hash Changes for Focus
   useEffect(() => {
@@ -563,12 +448,6 @@ export const SheetEditor: React.FC = () => {
   // Derive Evaluator Props
   const inputProps = useMemo(() => {
     if (!currentSheet) return { inputs: [], outputs: [] };
-
-    // Use nodes state if available (for live position updates), otherwise fallback to currentSheet
-    // But currentSheet.nodes are NodeData, nodes are ParascopeNode.
-    // We need to normalize or just use nodes if we are sure it's populated.
-    // nodes is populated after loadSheet.
-
     const sourceNodes = nodes.length > 0 ? nodes : [];
 
     const sortedNodes = [...sourceNodes].sort((a, b) => {
@@ -638,11 +517,8 @@ export const SheetEditor: React.FC = () => {
     if (!node) return;
 
     if (node.type === 'input') {
-      // For input nodes, the source of truth is the Calculation Inputs/URL.
-      // We update that, and let the useEffect sync it back to the node.
       handleCalculationInputChange(nodeId, value);
     } else {
-      // For constant nodes, the source of truth is the node itself.
       const control = node.controls.value as any;
       if (control) {
         control.setValue(value);
@@ -691,88 +567,18 @@ export const SheetEditor: React.FC = () => {
     [editor, lastResult, handleSaveSheet, getExportData, navigate],
   );
 
-  // Set up Editor event listeners (Context Menu, Double Click, etc)
-  useEffect(() => {
-    if (editor) {
-      editor.setContextMenuCallbacks({
-        onNodeEdit: (id) => {
-          const node = editor.editor.getNode(id);
-          if (node) setEditingNode(node as ParascopeNode);
-        },
-        onEditNestedSheet: (id) => {
-          handleOpenNestedSheet(id, true);
-        },
-        onNodeTypeChange: async (nodeId, type) => {
-          const node = editor.editor.getNode(nodeId) as ParascopeNode;
-          if (!node) return;
-
-          let inputs: any[] = [];
-          let outputs: any[] = [];
-          const data: any = { value: '' };
-
-          const currentValue =
-            (node.controls.value as any)?.value || node.initialData.value || '';
-
-          if (type === 'constant') {
-            outputs = [createSocket('value')];
-            data.value = currentValue;
-          } else if (type === 'function') {
-            inputs = [createSocket('a'), createSocket('b')];
-            outputs = [createSocket('result')];
-            data.expression = node.initialData.expression || 'a + b';
-          } else if (type === 'input') {
-            outputs = [createSocket('value')];
-          } else if (type === 'output') {
-            inputs = [createSocket('value')];
-          }
-
-          await handleNodeUpdate(nodeId, {
-            type,
-            inputs: inputs,
-            outputs: outputs,
-            initialData: data,
-          });
-        },
-        onNodeDuplicate: handleDuplicateNode,
-        onNodeRemove: async (nodeId) => await handleDelete([nodeId]),
-        onAddNode: (type) => handleAddNode(type),
-      });
-
-      editor.setNodeDoubleClickListener((id) => {
-        const node = editor.editor.getNode(id);
-        if (node) {
-          if (node.type === 'sheet') {
-            handleOpenNestedSheet(id, true);
-          } else {
-            setEditingNode(node as ParascopeNode);
-          }
-        }
-      });
-
-      editor.setGraphChangeListener(() => {
-        setIsDirty(true);
-        triggerAutoCalculation();
-      });
-
-      editor.setLayoutChangeListener(() => {
-        setIsDirty(true);
-      });
-
-      editor.setInputValueChangeListener(handleCalculationInputChange);
-    }
-  }, [
+  useEditorSetup({
     editor,
-    handleSaveSheet,
-    getExportData,
-    navigate,
+    setEditingNode,
+    handleOpenNestedSheet,
+    handleNodeUpdate,
     handleDuplicateNode,
     handleDelete,
-    handleNodeUpdate,
-    handleCalculationInputChange,
-    triggerAutoCalculation,
     handleAddNode,
-    handleOpenNestedSheet,
-  ]);
+    setIsDirty,
+    triggerAutoCalculation,
+    handleCalculationInputChange,
+  });
 
   return (
     <div className="sheet-editor">

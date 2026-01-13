@@ -3,7 +3,7 @@ import { createBrowserRouter, Outlet, RouterProvider } from 'react-router-dom';
 import { Dashboard } from './components/Dashboard';
 import { Login } from './components/Login';
 import { RequireAuth } from './components/RequireAuth';
-import { SheetEditor } from './components/SheetEditor';
+import { SheetEditor } from './components/sheet-editor';
 import { SweepPage } from './components/SweepPage';
 import { AuthProvider } from './contexts/AuthContext';
 import './App.css';
