@@ -70,18 +70,7 @@ export const NodeInspector: React.FC<NodeInspectorProps> = ({
         const control = node.controls.value as any;
         // Check if control has a value property (it should for InputControl)
         if (control && control.value !== undefined) {
-          // Try to parse as number if it looks like one, since we store value as number in data
-          // Only parse as float if dataType is any (or not set, assuming any)
-          if (currentData.dataType === 'any') {
-            const val = parseFloat(control.value);
-            if (!Number.isNaN(val)) {
-              currentData.value = val;
-            } else {
-              currentData.value = control.value;
-            }
-          } else {
-            currentData.value = control.value;
-          }
+          currentData.value = control.value;
         }
       }
 
@@ -487,7 +476,7 @@ export const NodeInspector: React.FC<NodeInspectorProps> = ({
                       type="number"
                       value={data.min !== undefined ? data.min : ''}
                       onChange={(e) =>
-                        setData({ ...data, min: e.target.value })
+                        setData({ ...data, min: e.target.value === '' ? undefined : e.target.value})
                       }
                       placeholder="-Inf"
                       style={{ width: '100%' }}
@@ -505,7 +494,7 @@ export const NodeInspector: React.FC<NodeInspectorProps> = ({
                       type="number"
                       value={data.max !== undefined ? data.max : ''}
                       onChange={(e) =>
-                        setData({ ...data, max: e.target.value })
+                        setData({ ...data, max: e.target.value === '' ? undefined : e.target.value})
                       }
                       placeholder="+Inf"
                       style={{ width: '100%' }}
@@ -592,7 +581,7 @@ export const NodeInspector: React.FC<NodeInspectorProps> = ({
                 ) : (
                   <input
                     id="node-value"
-                    value={data.value || 0}
+                    value={data.value || ''}
                     onChange={(e) =>
                       setData({ ...data, value: e.target.value })
                     }
