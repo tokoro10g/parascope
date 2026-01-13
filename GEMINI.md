@@ -40,4 +40,5 @@ The project is a **Monorepo**.
 -   Make it clear if you are waiting for the user's feedback
 -   Make a commit once in a while. Use Conventional Commits.
 -   Do not leave any intermediate code or workaround before making a commit
+-   Prefer modularization over monolithic code.
 -   Frontend: Before making a commit, run `pnpm build` and `pnpm format` commands inside the `frontend` folder to ensure the code quality
