@@ -88,17 +88,29 @@ export const getSweepChartOption = (
   const yAxes: any[] = [];
   const series: any[] = [];
 
+  // Determine X-axis type (Numeric or Category)
+  const isXNumeric = results.every((r) => {
+    const v = r.input_value;
+    if (typeof v === 'number') return true;
+    if (typeof v === 'string') {
+        const n = parseFloat(v);
+        return !Number.isNaN(n) && isFinite(n);
+    } 
+    return false;
+  });
+
   plottedIds.forEach((id, index) => {
     const node = nodes.find((n) => n.id === id);
     const label = node ? node.label : id;
 
-    // Determine if data is numeric
+    // Determine if OUTPUT data is numeric
     const rawValues = results.map((r) => r.outputs[id]);
-    const isNumeric = rawValues.every((v) => {
+    const isOutputNumeric = rawValues.every((v) => {
       if (v === null || v === undefined) return true;
       if (typeof v === 'number') return true;
       if (typeof v === 'string') {
-        if (v === 'inf' || v === '-inf' || v.toLowerCase() === 'nan') return true;
+        if (v === 'inf' || v === '-inf' || v.toLowerCase() === 'nan')
+          return true;
         return !Number.isNaN(parseFloat(v));
       }
       return false;
@@ -115,23 +127,44 @@ export const getSweepChartOption = (
       containLabel: true,
     });
 
-    xAxes.push({
-      type: 'value',
-      name: index === count - 1 ? selectedInputLabel : '', // Only last one gets x label
-      nameLocation: 'middle',
-      nameGap: 30,
-      scale: true,
-      gridIndex: index,
-      axisLine: { lineStyle: { color: theme.text } },
-      axisLabel: {
-        color: theme.text,
-        show: index === count - 1,
-        formatter: (value: number) => formatHumanReadableValue(value.toString()),
-      },
-      splitLine: { show: true, lineStyle: { color: theme.grid } },
-    });
+    // X Axis Configuration
+    if (isXNumeric) {
+      xAxes.push({
+        type: 'value',
+        name: index === count - 1 ? selectedInputLabel : '', // Only last one gets x label
+        nameLocation: 'middle',
+        nameGap: 30,
+        scale: true,
+        gridIndex: index,
+        axisLine: { lineStyle: { color: theme.text } },
+        axisLabel: {
+          color: theme.text,
+          show: index === count - 1,
+          formatter: (value: number) =>
+            formatHumanReadableValue(value.toString()),
+        },
+        splitLine: { show: true, lineStyle: { color: theme.grid } },
+      });
+    } else {
+      xAxes.push({
+        type: 'category',
+        data: results.map(r => String(r.input_value)),
+        name: index === count - 1 ? selectedInputLabel : '', 
+        nameLocation: 'middle',
+        nameGap: 30,
+        gridIndex: index,
+        axisLine: { lineStyle: { color: theme.text } },
+        axisLabel: {
+          color: theme.text,
+          show: index === count - 1,
+          rotate: 45, // Rotate labels since they might be long strings
+          interval: 'auto',
+        },
+        splitLine: { show: false },
+      });
+    }
 
-    if (isNumeric) {
+    if (isOutputNumeric) {
       yAxes.push({
         type: 'value',
         name: label, // Y Axis named after the output
@@ -149,15 +182,22 @@ export const getSweepChartOption = (
           backgroundColor: theme.background,
           hideOverlap: true,
           inside: true,
-          formatter: (value: number) => formatHumanReadableValue(value.toString()),
+          formatter: (value: number) =>
+            formatHumanReadableValue(value.toString()),
         },
         splitLine: { show: true, lineStyle: { color: theme.grid } },
       });
 
-      const data = results.map((r) => [
-        parseFloat(String(r.input_value)),
-        parseFloat(String(r.outputs[id])),
-      ]);
+      let data;
+      if (isXNumeric) {
+         data = results.map((r) => [
+            parseFloat(String(r.input_value)),
+            parseFloat(String(r.outputs[id])),
+         ]);
+      } else {
+         // for bar chart with category X, we just pass the Y values, or [string, val]
+         data = results.map((r) => parseFloat(String(r.outputs[id])));
+      }
 
       const min =
         node?.data?.min !== undefined && node.data.min !== ''
@@ -195,81 +235,113 @@ export const getSweepChartOption = (
 
       series.push({
         name: label,
-        type: 'line',
+        type: isXNumeric ? 'line' : 'bar', // Use bar for category X
         data: data,
         symbolSize: 6,
         showSymbol: true,
         xAxisIndex: index,
         yAxisIndex: index,
         markArea,
+        // If bar chart, add some styling
+        itemStyle: !isXNumeric ? { borderRadius: [4, 4, 0, 0] } : undefined,
       });
     } else {
-      // Timeline Chart equivalent using 'custom' series (Profile example)
-      yAxes.push({
-        type: 'category',
-        data: [label], // Single category represented by the label name
-        gridIndex: index,
-        name: label,
-        nameLocation: 'end',
-        nameGap: 15,
-        nameTextStyle: {
-          align: 'left',
-        },
-        axisLine: { show: false },
-        axisTick: { show: false },
-        axisLabel: {
-          show: false,
-        },
-      });
+      // --- Categorical Output Logic ---
+      
+      if (isXNumeric) {
+          // Existing Timeline Logic for Numeric X
+          yAxes.push({
+            type: 'category',
+            data: [label], // Single category represented by the label name
+            gridIndex: index,
+            name: label,
+            nameLocation: 'end',
+            nameGap: 15,
+            nameTextStyle: {
+              align: 'left',
+            },
+            axisLine: { show: false },
+            axisTick: { show: false },
+            axisLabel: {
+              show: false,
+            },
+          });
 
-      // Compute Segments
-      // [categoryIndex, start, end, value]
-      const segments: any[] = [];
-      let currentStart = parseFloat(String(results[0].input_value));
-      let currentVal = String(results[0].outputs[id] ?? '');
+          // Compute Segments
+          // [categoryIndex, start, end, value]
+          const segments: any[] = [];
+          
+          let currentStart = parseFloat(String(results[0].input_value));
+          let currentVal = String(results[0].outputs[id] ?? '');
 
-      for (let i = 1; i < results.length; i++) {
-        const nextVal = String(results[i].outputs[id] ?? '');
-        const nextInput = parseFloat(String(results[i].input_value));
+          for (let i = 1; i < results.length; i++) {
+            const nextVal = String(results[i].outputs[id] ?? '');
+            const nextInput = parseFloat(String(results[i].input_value));
 
-        if (nextVal !== currentVal) {
-          segments.push([0, currentStart, nextInput, currentVal]);
-          currentStart = nextInput;
-          currentVal = nextVal;
-        }
-      }
-      // Last segment extension
-      let finalEnd = currentStart;
-      if (results.length > 1) {
-        const lastInput = parseFloat(
-          String(results[results.length - 1].input_value),
-        );
-        const secondLastInput = parseFloat(
-          String(results[results.length - 2].input_value),
-        );
-        const lastStep = lastInput - secondLastInput;
-        finalEnd = lastInput + lastStep;
+            if (nextVal !== currentVal) {
+              segments.push([0, currentStart, nextInput, currentVal]);
+              currentStart = nextInput;
+              currentVal = nextVal;
+            }
+          }
+          
+          let finalEnd = currentStart;
+          if (results.length > 1) {
+            const lastInput = parseFloat(
+              String(results[results.length - 1].input_value),
+            );
+            const secondLastInput = parseFloat(
+              String(results[results.length - 2].input_value),
+            );
+            const lastStep = lastInput - secondLastInput;
+            finalEnd = lastInput + lastStep;
+          } else {
+             finalEnd = currentStart + 1; 
+          }
+          segments.push([0, currentStart, finalEnd, currentVal]);
+
+          series.push({
+            type: 'custom',
+            renderItem: renderTimelineItem,
+            itemStyle: {
+              opacity: 0.8,
+            },
+            encode: {
+              x: [1, 2],
+              y: 0,
+            },
+            data: segments,
+            xAxisIndex: index,
+            yAxisIndex: index,
+            tooltip: {
+                formatter: (params: any) => {
+                    return `${label}<br/>${params.value[3]}`;
+                }
+            }
+          });
       } else {
-        finalEnd = currentStart + 1;
+          // X Categorical + Y Categorical => Scatter Plot
+          const uniqueY = Array.from(new Set(results.map(r => String(r.outputs[id]))));
+          
+          yAxes.push({
+             type: 'category',
+             data: uniqueY,
+             gridIndex: index,
+             name: label,
+             splitLine: { show: false },
+             axisLabel: { color: theme.text },
+             axisLine: { lineStyle: { color: theme.text } },
+          });
+          
+          series.push({
+              type: 'scatter',
+              datasetIndex: 0,
+              xAxisIndex: index,
+              yAxisIndex: index,
+              data: results.map(r => [String(r.input_value), String(r.outputs[id])]),
+              symbolSize: 10,
+          });
       }
-      segments.push([0, currentStart, finalEnd, currentVal]);
-
-      series.push({
-        type: 'custom',
-        name: label,
-        renderItem: renderTimelineItem,
-        tooltip: {
-          show: false,
-        },
-        encode: {
-          x: [1, 2], // Start, End
-          y: 0, // Category
-          tooltip: [3, 1, 2], // Value, Start, End for tooltip
-        },
-        data: segments,
-        xAxisIndex: index,
-        yAxisIndex: index,
-      });
     }
   });
 

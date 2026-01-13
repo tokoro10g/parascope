@@ -56,6 +56,7 @@ export const SweepPage: React.FC = () => {
     },
   );
 
+  const [selectedOptions, setSelectedOptions] = useState<string[]>([]);
   const [results, setResults] = useState<SweepResultStep[] | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -173,6 +174,19 @@ export const SweepPage: React.FC = () => {
     }
   }, [inputOptions, inputNodeId]);
 
+  // Handle Option Type selection
+  useEffect(() => {
+    const node = nodes.find((n) => n.id === inputNodeId);
+    if (node && Array.isArray(node.data?.options)) {
+      // It is an option node
+      // Preserve "all selected" default or load from URL (if we ever support manualValues in URL)
+      // For now, default to all options
+      setSelectedOptions(node.data.options);
+    } else {
+      setSelectedOptions([]);
+    }
+  }, [inputNodeId, nodes]);
+
   const handleSweepInputChange = (id: string) => {
     setInputNodeId(id);
     const currentVal = parseFloat(inputOverrides[id] || '0');
@@ -203,17 +217,32 @@ export const SweepPage: React.FC = () => {
       if (outputNodeIds.length === 0)
         throw new Error('Please select at least one output.');
 
-      const start = parseFloat(startValue);
-      const end = parseFloat(endValue);
-      const step = parseFloat(increment);
+      const node = nodes.find((n) => n.id === inputNodeId);
+      const isOptionType = node && Array.isArray(node.data?.options);
 
-      if (
-        Number.isNaN(start) ||
-        Number.isNaN(end) ||
-        Number.isNaN(step) ||
-        step === 0
-      ) {
-        throw new Error('Invalid numeric inputs. Increment must be non-zero.');
+      let start = null;
+      let end = null;
+      let step = null;
+      let manualValues: string[] | null = null;
+
+      if (isOptionType) {
+        if (selectedOptions.length === 0) {
+          throw new Error('Please select at least one option to sweep.');
+        }
+        manualValues = selectedOptions;
+      } else {
+        start = parseFloat(startValue);
+        end = parseFloat(endValue);
+        step = parseFloat(increment);
+
+        if (
+          Number.isNaN(start) ||
+          Number.isNaN(end) ||
+          Number.isNaN(step) ||
+          step === 0
+        ) {
+          throw new Error('Invalid numeric inputs. Increment must be non-zero.');
+        }
       }
 
       // Construct overrides, excluding the swept node
@@ -227,9 +256,10 @@ export const SweepPage: React.FC = () => {
       const res = await api.sweepSheet(
         sheetId,
         inputNodeId,
-        startValue,
-        endValue,
-        increment,
+        start !== null ? String(start) : null,
+        end !== null ? String(end) : null,
+        step !== null ? String(step) : null,
+        manualValues,
         outputNodeIds,
         currentOverrides,
       );
@@ -249,6 +279,8 @@ export const SweepPage: React.FC = () => {
     endValue,
     increment,
     inputOverrides,
+    selectedOptions,
+    nodes,
   ]);
 
   // Auto-run if URL params indicate a complete sweep config
@@ -385,43 +417,125 @@ export const SweepPage: React.FC = () => {
                       <td className="name-cell">{n.label}</td>
                       <td>
                         {isSweeping ? (
-                          <div className="sweep-input-group">
-                            <div className="sweep-input-row">
-                              <label className="sweep-input-label">
-                                <span>Start</span>
-                                <input
-                                  type="text"
-                                  value={startValue}
-                                  onChange={(e) =>
-                                    setStartValue(e.target.value)
-                                  }
-                                  className="sweep-input-flex"
-                                />
-                              </label>
+                          Array.isArray(n.data?.options) ? (
+                            <div
+                              className="sweep-input-group"
+                              style={{ display: 'block' }}
+                            >
+                              <div style={{ marginBottom: 5 }}>
+                                Select Options:
+                              </div>
+                              <select
+                                multiple
+                                value={selectedOptions}
+                                onChange={(e) => {
+                                  const vals = Array.from(
+                                    e.target.selectedOptions,
+                                    (o) => o.value,
+                                  );
+                                  setSelectedOptions(vals);
+                                }}
+                                style={{
+                                  width: '100%',
+                                  height: '100px',
+                                  padding: 5,
+                                  border: '1px solid var(--border-color)',
+                                  borderRadius: 4,
+                                  background: 'var(--bg-color)',
+                                  color: 'var(--text-color)',
+                                }}
+                              >
+                                {n.data.options.map((opt: string) => (
+                                  <option key={opt} value={opt}>
+                                    {opt}
+                                  </option>
+                                ))}
+                              </select>
+                              <div
+                                style={{
+                                  fontSize: '0.8em',
+                                  color: 'var(--text-muted)',
+                                  marginTop: 4,
+                                }}
+                              >
+                                Hold Ctrl/Cmd to select multiple
+                              </div>
                             </div>
-                            <div className="sweep-input-row">
-                              <label className="sweep-input-label">
-                                <span>End</span>
-                                <input
-                                  type="text"
-                                  value={endValue}
-                                  onChange={(e) => setEndValue(e.target.value)}
-                                  className="sweep-input-flex"
-                                />
-                              </label>
+                          ) : (
+                            <div className="sweep-input-group">
+                              <div className="sweep-input-row">
+                                <label className="sweep-input-label">
+                                  <span>Start</span>
+                                  <input
+                                    type="text"
+                                    value={startValue}
+                                    onChange={(e) =>
+                                      setStartValue(e.target.value)
+                                    }
+                                    className="sweep-input-flex"
+                                  />
+                                </label>
+                              </div>
+                              <div className="sweep-input-row">
+                                <label className="sweep-input-label">
+                                  <span>End</span>
+                                  <input
+                                    type="text"
+                                    value={endValue}
+                                    onChange={(e) =>
+                                      setEndValue(e.target.value)
+                                    }
+                                    className="sweep-input-flex"
+                                  />
+                                </label>
+                              </div>
+                              <div className="sweep-input-row">
+                                <label className="sweep-input-label">
+                                  <span>Increment</span>
+                                  <input
+                                    type="text"
+                                    value={increment}
+                                    onChange={(e) =>
+                                      setIncrement(e.target.value)
+                                    }
+                                    className="sweep-input-flex"
+                                  />
+                                </label>
+                              </div>
                             </div>
-                            <div className="sweep-input-row">
-                              <label className="sweep-input-label">
-                                <span>Increment</span>
-                                <input
-                                  type="text"
-                                  value={increment}
-                                  onChange={(e) => setIncrement(e.target.value)}
-                                  className="sweep-input-flex"
-                                />
-                              </label>
-                            </div>
-                          </div>
+                          )
+                        ) : Array.isArray(n.data?.options) ? (
+                          <select
+                            value={inputOverrides[n.id!] || ''}
+                            onChange={(e) =>
+                              setInputOverrides((prev) => ({
+                                ...prev,
+                                [n.id!]: e.target.value,
+                              }))
+                            }
+                            className="sweep-input-full"
+                            style={{
+                              background: 'var(--bg-color)',
+                              color: 'var(--text-color)',
+                              border: '1px solid var(--border-color)',
+                              padding: '4px',
+                            }}
+                          >
+                            {/* If current value is not in options (e.g. empty), show it? */}
+                            {inputOverrides[n.id!] &&
+                              !n.data.options.includes(
+                                inputOverrides[n.id!],
+                              ) && (
+                                <option value={inputOverrides[n.id!]}>
+                                  {inputOverrides[n.id!]}
+                                </option>
+                              )}
+                            {n.data.options.map((opt: string) => (
+                              <option key={opt} value={opt}>
+                                {opt}
+                              </option>
+                            ))}
+                          </select>
                         ) : (
                           <input
                             type="text"

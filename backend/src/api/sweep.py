@@ -57,44 +57,51 @@ async def sweep_sheet(
 
     sweep_results: List[SweepResultStep] = []
     
-    try:
-        start_val = float(body.start_value)
-        end_val = float(body.end_value)
-        increment_val = float(body.increment)
-    except ValueError:
-        raise HTTPException(status_code=400, detail="Start, End, and Increment values must be numeric strings.")
+    if body.manual_values is not None:
+        input_values_list = body.manual_values
+        if len(input_values_list) > 1000:
+            raise HTTPException(status_code=400, detail=f"Sweep generates too many steps ({len(input_values_list)}). Limit is 1000.")
+    elif body.start_value is not None and body.end_value is not None and body.increment is not None:
+        try:
+            start_val = float(body.start_value)
+            end_val = float(body.end_value)
+            increment_val = float(body.increment)
+        except ValueError:
+            raise HTTPException(status_code=400, detail="Start, End, and Increment values must be numeric strings.")
 
-    if increment_val == 0:
-        raise HTTPException(status_code=400, detail="Increment cannot be zero.")
+        if increment_val == 0:
+            raise HTTPException(status_code=400, detail="Increment cannot be zero.")
 
-    # Determine direction
-    if end_val < start_val:
-        increment_val = -abs(increment_val)
+        # Determine direction
+        if end_val < start_val:
+            increment_val = -abs(increment_val)
+        else:
+            increment_val = abs(increment_val)
+
+        # Calculate number of steps: floor((end - start) / inc) + 1
+        # Add epsilon to handle floating point inaccuracies
+        num_steps = int(np.floor((end_val - start_val) / increment_val + 1e-10)) + 1
+        
+        if num_steps > 1000:
+            raise HTTPException(status_code=400, detail=f"Sweep generates too many steps ({num_steps}). Limit is 1000.")
+            
+        if num_steps <= 0:
+            # Should not happen if logic is correct, but safe fallback
+            input_values = np.array([start_val])
+        else:
+            # Generate values with fixed increment
+            # We calculate the exact last value that fits in the range
+            last_val = start_val + (num_steps - 1) * increment_val
+            input_values = np.linspace(start_val, last_val, num_steps)
+
+        # If inputs are integers, cast the result to integers for cleaner output
+        if start_val.is_integer() and end_val.is_integer() and increment_val.is_integer():
+            input_values = np.round(input_values).astype(int)
+
+        # Convert numpy array to generic python list for repr() serialization
+        input_values_list = input_values.tolist()
     else:
-        increment_val = abs(increment_val)
-
-    # Calculate number of steps: floor((end - start) / inc) + 1
-    # Add epsilon to handle floating point inaccuracies
-    num_steps = int(np.floor((end_val - start_val) / increment_val + 1e-10)) + 1
-    
-    if num_steps > 1000:
-         raise HTTPException(status_code=400, detail=f"Sweep generates too many steps ({num_steps}). Limit is 1000.")
-         
-    if num_steps <= 0:
-         # Should not happen if logic is correct, but safe fallback
-         input_values = np.array([start_val])
-    else:
-        # Generate values with fixed increment
-        # We calculate the exact last value that fits in the range
-        last_val = start_val + (num_steps - 1) * increment_val
-        input_values = np.linspace(start_val, last_val, num_steps)
-
-    # If inputs are integers, cast the result to integers for cleaner output
-    if start_val.is_integer() and end_val.is_integer() and increment_val.is_integer():
-        input_values = np.round(input_values).astype(int)
-
-    # Convert numpy array to generic python list for repr() serialization
-    input_values_list = input_values.tolist()
+        raise HTTPException(status_code=400, detail="Must provide either numeric range (start/end/increment) or manual_values.")
 
     generator = CodeGenerator(db)
     
