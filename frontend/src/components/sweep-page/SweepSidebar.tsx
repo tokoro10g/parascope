@@ -75,7 +75,7 @@ export const SweepSidebar: React.FC<SweepSidebarProps> = ({
                   <td className="name-cell">{n.label}</td>
                   <td>
                     {isSweeping ? (
-                      Array.isArray(n.data?.options) ? (
+                      n.data?.dataType === 'option' ? (
                         <div
                           className="sweep-input-group"
                           style={{ display: 'block' }}
@@ -154,7 +154,7 @@ export const SweepSidebar: React.FC<SweepSidebarProps> = ({
                           </div>
                         </div>
                       )
-                    ) : Array.isArray(n.data?.options) ? (
+                    ) : n.data?.dataType === 'option' ? (
                       <select
                         value={inputOverrides[n.id!] || ''}
                         onChange={(e) =>

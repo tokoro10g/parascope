@@ -125,7 +125,7 @@ export const useSweepState = () => {
   // Handle Option Type selection
   useEffect(() => {
     const node = nodes.find((n) => n.id === inputNodeId);
-    if (node && Array.isArray(node.data?.options)) {
+    if (node && node.data?.dataType === 'option') {
       setSelectedOptions(node.data.options);
     } else {
       setSelectedOptions([]);
@@ -168,7 +168,7 @@ export const useSweepState = () => {
         throw new Error('Please select at least one output.');
 
       const node = nodes.find((n) => n.id === inputNodeId);
-      const isOptionType = node && Array.isArray(node.data?.options);
+      const isOptionType = node && node.data?.dataType === 'option';
 
       let start = null;
       let end = null;

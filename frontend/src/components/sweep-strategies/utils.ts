@@ -146,6 +146,7 @@ export function createBaseYAxis(
           : undefined,
     },
     splitLine: { show: true, lineStyle: { color: ctx.theme.grid } },
+    z: 10,
   };
 }
 
