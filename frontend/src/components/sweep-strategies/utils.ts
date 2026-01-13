@@ -108,7 +108,6 @@ export function createCategoricalXAxis(ctx: StrategyContext) {
         axisLabel: {
           color: ctx.theme.text,
           show: ctx.showXLabel,
-          rotate: 45,
           interval: 'auto',
         },
         splitLine: { show: false },
