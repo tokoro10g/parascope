@@ -8,7 +8,7 @@ import { useNavigate, useParams, useSearchParams } from 'react-router-dom';
 import { api, type Sheet, type SweepResultStep } from '../api';
 import { useAuth } from '../contexts/AuthContext';
 import { NavBar } from './NavBar';
-import { getSweepChartOption } from './sweepChartUtils';
+import { getSweepChartOption } from './sweep-strategies';
 import './SweepPage.css';
 import { fallbackCopy } from '../utils';
 
