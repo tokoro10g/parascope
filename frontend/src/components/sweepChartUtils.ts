@@ -157,7 +157,6 @@ export const getSweepChartOption = (
         axisLabel: {
           color: theme.text,
           show: index === count - 1,
-          rotate: 45, // Rotate labels since they might be long strings
           interval: 'auto',
         },
         splitLine: { show: false },
@@ -173,7 +172,7 @@ export const getSweepChartOption = (
         nameTextStyle: {
           align: 'left',
         },
-        scale: true,
+        scale: isXNumeric,
         gridIndex: index,
         boundaryGap: ['5%', '5%'],
         axisLine: { lineStyle: { color: theme.text } },
