@@ -147,9 +147,15 @@ export function useSheetLock(sheetId: string | null) {
     }, 10000); // 10s
     intervalRef.current = id;
 
+    const handleBeforeUnload = () => {
+      api.releaseLock(sheetId, tabId, { keepalive: true }).catch(() => {});
+    };
+    window.addEventListener('beforeunload', handleBeforeUnload);
+
     // 3. Cleanup: Stop polling AND Release lock
     return () => {
       clearInterval(id);
+      window.removeEventListener('beforeunload', handleBeforeUnload);
       // We only release when the user actually leaves the sheet (component unmounts or sheetId changes)
       // verify isLockedByMeRef or similar if needed, but backend checks ownership safely.
       api.releaseLock(sheetId, tabId).catch(() => {});

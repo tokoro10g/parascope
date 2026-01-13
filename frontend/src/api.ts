@@ -316,13 +316,18 @@ export const api = {
     });
   },
 
-  async releaseLock(sheetId: string, tabId: string): Promise<void> {
+  async releaseLock(
+    sheetId: string,
+    tabId: string,
+    options: RequestInit = {},
+  ): Promise<void> {
     const params = new URLSearchParams({ tab_id: tabId });
     return request<void>(
       `${API_BASE}/api/sheets/${sheetId}/lock?${params.toString()}`,
       {
         method: 'DELETE',
         headers: getHeaders(),
+        ...options,
       },
     );
   },
