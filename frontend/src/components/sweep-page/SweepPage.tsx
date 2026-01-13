@@ -1,0 +1,129 @@
+import type React from 'react';
+import { useEffect, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { useAuth } from '../../contexts/AuthContext';
+import { NavBar } from '../NavBar';
+import './SweepPage.css';
+import { SweepResults } from './SweepResults';
+import { SweepSidebar } from './SweepSidebar';
+import { useSweepState } from './useSweepState';
+
+export const SweepPage: React.FC = () => {
+  const navigate = useNavigate();
+  const { user, logout } = useAuth();
+
+  const {
+    sheet,
+    sheetId,
+    nodes,
+    inputOptions,
+    outputOptions,
+    inputNodeId,
+    handleSweepInputChange,
+    startValue,
+    setStartValue,
+    endValue,
+    setEndValue,
+    increment,
+    setIncrement,
+    selectedOptions,
+    setSelectedOptions,
+    inputOverrides,
+    setInputOverrides,
+    outputNodeIds,
+    toggleOutput,
+    loading,
+    error,
+    handleRun,
+    results,
+  } = useSweepState();
+
+  // State to track theme colors
+  const [theme, setTheme] = useState({
+    text: '#213547',
+    grid: '#ccc',
+    font: 'system-ui, sans-serif',
+    background: '#fff',
+  });
+
+  // Update theme on mount and system change
+  useEffect(() => {
+    const updateTheme = () => {
+      const rootStyles = getComputedStyle(document.documentElement);
+      const bodyStyles = getComputedStyle(document.body);
+
+      const textColor = bodyStyles.getPropertyValue('--text-color').trim();
+      const borderColor = bodyStyles.getPropertyValue('--border-color').trim();
+      const fontFamily = rootStyles.getPropertyValue('font-family').trim();
+      const backgroundColor = bodyStyles.getPropertyValue('--bg-color').trim();
+
+      setTheme({
+        text: textColor || '#213547',
+        grid: borderColor || '#ccc',
+        font: fontFamily || 'system-ui, Avenir, Helvetica, Arial, sans-serif',
+        background: backgroundColor || '#fff',
+      });
+    };
+
+    updateTheme();
+
+    const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
+    mediaQuery.addEventListener('change', updateTheme);
+
+    // Slight delay to ensure CSS is applied
+    const timer = setTimeout(updateTheme, 100);
+
+    return () => {
+      mediaQuery.removeEventListener('change', updateTheme);
+      clearTimeout(timer);
+    };
+  }, []);
+
+  const handleBack = (e: React.MouseEvent) => {
+    e.preventDefault();
+    if (sheetId) {
+      navigate(`/sheet/${sheetId}`);
+    } else {
+      navigate('/');
+    }
+  };
+
+  return (
+    <div className="sweep-page">
+      <NavBar user={user} onBack={handleBack} onLogout={logout} />
+
+      <div className="sweep-content">
+        <SweepSidebar
+          inputOptions={inputOptions}
+          outputOptions={outputOptions}
+          inputNodeId={inputNodeId}
+          onInputChange={handleSweepInputChange}
+          startValue={startValue}
+          setStartValue={setStartValue}
+          endValue={endValue}
+          setEndValue={setEndValue}
+          increment={increment}
+          setIncrement={setIncrement}
+          selectedOptions={selectedOptions}
+          setSelectedOptions={setSelectedOptions}
+          inputOverrides={inputOverrides}
+          setInputOverrides={setInputOverrides}
+          outputNodeIds={outputNodeIds}
+          toggleOutput={toggleOutput}
+          loading={loading}
+          error={error}
+          onRun={handleRun}
+        />
+
+        <SweepResults
+          sheetName={sheet?.name || 'Loading...'}
+          results={results}
+          nodes={nodes}
+          outputNodeIds={outputNodeIds}
+          inputNodeId={inputNodeId}
+          theme={theme}
+        />
+      </div>
+    </div>
+  );
+};

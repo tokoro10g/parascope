@@ -4,11 +4,11 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import ReactMarkdown from 'react-markdown';
 import rehypeKatex from 'rehype-katex';
 import remarkMath from 'remark-math';
-import { API_BASE } from '../api';
-import type { ParascopeNode } from '../rete';
+import { API_BASE } from '../../api';
+import type { ParascopeNode } from '../../rete';
 import './SheetTable.css';
 import toast from 'react-hot-toast';
-import { fallbackCopy, formatHumanReadableValue } from '../utils';
+import { fallbackCopy, formatHumanReadableValue } from '../../utils';
 
 interface ScrollButtonProps {
   onClick: () => void;

@@ -12,10 +12,10 @@ import {
 import React, { useCallback, useEffect, useState } from 'react';
 import toast from 'react-hot-toast';
 import { Link, useNavigate, useParams } from 'react-router-dom';
-import { api, type Folder, type Session, type SheetSummary } from '../api';
-import { useAuth } from '../contexts/AuthContext';
-import { FolderPickerModal } from './FolderPickerModal';
-import { ParascopeLogo } from './ParascopeLogo';
+import { api, type Folder, type Session, type SheetSummary } from '../../api';
+import { useAuth } from '../../contexts/AuthContext';
+import { FolderPickerModal } from '../FolderPickerModal';
+import { ParascopeLogo } from '../ParascopeLogo';
 import './Dashboard.css';
 
 export const formatTimeAgo = (dateStr: string) => {

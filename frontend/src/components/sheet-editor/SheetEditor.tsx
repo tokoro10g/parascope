@@ -22,7 +22,7 @@ import { EditorBar } from '../EditorBar';
 import { NavBar } from '../NavBar';
 import { NodeInspector } from '../node-inspector';
 import { SheetPickerModal } from '../SheetPickerModal';
-import { SheetTable } from '../SheetTable';
+import { SheetTable } from '../sheet-table';
 import { TooltipLayer } from '../TooltipLayer';
 import './SheetEditor.css';
 import type { CalculationInputDefinition } from './types';

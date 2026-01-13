@@ -1,10 +1,10 @@
 import { Toaster } from 'react-hot-toast';
 import { createBrowserRouter, Outlet, RouterProvider } from 'react-router-dom';
-import { Dashboard } from './components/Dashboard';
+import { Dashboard } from './components/dashboard';
 import { Login } from './components/Login';
 import { RequireAuth } from './components/RequireAuth';
 import { SheetEditor } from './components/sheet-editor';
-import { SweepPage } from './components/SweepPage';
+import { SweepPage } from './components/sweep-page';
 import { AuthProvider } from './contexts/AuthContext';
 import './App.css';
 import './rete.css';
