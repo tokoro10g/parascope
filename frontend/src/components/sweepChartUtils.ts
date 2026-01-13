@@ -274,7 +274,7 @@ export const getSweepChartOption = (
   });
 
   return {
-    backgroundColor: 'transparent',
+    backgroundColor: theme.background,
     textStyle: {
       fontFamily: theme.font,
       color: theme.text,
@@ -290,11 +290,15 @@ export const getSweepChartOption = (
       axisPointer: {
         type: 'cross',
       },
-      backgroundColor: theme.grid,
+      backgroundColor: theme.background,
       textStyle: {
         color: theme.text,
       },
       borderColor: theme.text,
+      valueFormatter: (value, _dataIndex) => {
+        if (!value && value !== 0) return '-';
+        return formatHumanReadableValue(value?.toString());
+      },
     },
     legend: {
       bottom: 0,
