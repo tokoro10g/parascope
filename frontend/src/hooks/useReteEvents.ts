@@ -281,6 +281,21 @@ export function useReteEvents(
       editor.setContextMenuCallbacks({
         onNodeDuplicate: handleDuplicateNode,
       });
+
+      const handleNodeLabelUpdate = (e: Event) => {
+        const customEvent = e as CustomEvent<{ id: string; label: string }>;
+        const { id, label } = customEvent.detail;
+        handleNodeUpdate(id, { label });
+      };
+
+      window.addEventListener('parascope-node-update', handleNodeLabelUpdate);
+
+      return () => {
+        window.removeEventListener(
+          'parascope-node-update',
+          handleNodeLabelUpdate,
+        );
+      };
     }
   }, [
     editor,
