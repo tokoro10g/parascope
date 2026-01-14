@@ -135,6 +135,13 @@ export interface Session {
   duration_since_save: number | null;
 }
 
+export interface SheetUsage {
+  parent_sheet_id: string;
+  parent_sheet_name: string;
+  node_path: { id: string; label: string }[];
+  can_import: boolean;
+}
+
 export const api = {
   // GENAI
   async getGenAIConfig(): Promise<{ enabled: boolean }> {
@@ -223,6 +230,12 @@ export const api = {
   async duplicateSheet(id: string): Promise<Sheet> {
     return request(`${API_BASE}/sheets/${id}/duplicate`, {
       method: 'POST',
+      headers: getHeaders(),
+    });
+  },
+
+  async getSheetUsages(sheetId: string): Promise<SheetUsage[]> {
+    return request(`${API_BASE}/sheets/${sheetId}/usages`, {
       headers: getHeaders(),
     });
   },

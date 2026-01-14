@@ -22,6 +22,7 @@ import { EditorBar } from '../EditorBar';
 import { NavBar } from '../NavBar';
 import { NodeInspector } from '../node-inspector';
 import { SheetPickerModal } from '../SheetPickerModal';
+import { SheetUsageModal } from '../SheetUsageModal';
 import { SheetTable } from '../sheet-table';
 import { TooltipLayer } from '../TooltipLayer';
 import './SheetEditor.css';
@@ -46,6 +47,7 @@ export const SheetEditor: React.FC = () => {
   const [editingNode, setEditingNode] = useState<ParascopeNode | null>(null);
   const [isDirty, setIsDirty] = useState(false);
   const [isSheetPickerOpen, setIsSheetPickerOpen] = useState(false);
+  const [isUsageModalOpen, setIsUsageModalOpen] = useState(false);
   const [initialLoadDone, setInitialLoadDone] = useState(false);
 
   const lastResultRef = useRef(lastResult);
@@ -578,6 +580,29 @@ export const SheetEditor: React.FC = () => {
     handleCalculationInputChange,
   });
 
+  const handleImportInputs = useCallback(
+    (inputs: Record<string, string>) => {
+      if (!editor) return;
+      const inputNodes = editor.editor
+        .getNodes()
+        .filter((n) => n.type === 'input');
+      const newInputs: Record<string, string> = {};
+
+      Object.entries(inputs).forEach(([label, value]) => {
+        const node = inputNodes.find((n) => n.label === label);
+        if (node) {
+          newInputs[node.id] = value;
+        }
+      });
+
+      setCalculationInputs((prev) => ({
+        ...prev,
+        ...newInputs,
+      }));
+    },
+    [editor],
+  );
+
   return (
     <div className="sheet-editor">
       <NavBar user={user} onBack={handleBackClick} onLogout={logout} />
@@ -627,6 +652,7 @@ export const SheetEditor: React.FC = () => {
                 onAddNode={handleAddNode}
                 onUndo={() => editor?.undo()}
                 onRedo={() => editor?.redo()}
+                onCheckUsage={() => setIsUsageModalOpen(true)}
               />
               <div
                 ref={ref}
@@ -662,6 +688,14 @@ export const SheetEditor: React.FC = () => {
         onClose={() => setIsSheetPickerOpen(false)}
         onSelect={handleImportSheet}
       />
+      {currentSheet && (
+        <SheetUsageModal
+          isOpen={isUsageModalOpen}
+          onClose={() => setIsUsageModalOpen(false)}
+          sheetId={currentSheet.id}
+          onImportInputs={handleImportInputs}
+        />
+      )}
     </div>
   );
 };

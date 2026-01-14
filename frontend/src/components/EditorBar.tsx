@@ -5,6 +5,7 @@ import {
   LogOut,
   Redo,
   Save,
+  Share2,
   Sigma,
   Undo,
 } from 'lucide-react';
@@ -23,6 +24,7 @@ interface EditorBarProps {
   ) => void;
   onUndo: () => void;
   onRedo: () => void;
+  onCheckUsage?: () => void;
 }
 
 export const EditorBar: React.FC<EditorBarProps> = ({
@@ -34,6 +36,7 @@ export const EditorBar: React.FC<EditorBarProps> = ({
   onAddNode,
   onUndo,
   onRedo,
+  onCheckUsage,
 }) => {
   const [name, setName] = useState(sheetName || '');
 
@@ -173,6 +176,19 @@ export const EditorBar: React.FC<EditorBarProps> = ({
       </div>
 
       <div className="toolbar-group save-group">
+        {onCheckUsage && (
+          <button
+            type="button"
+            onClick={(e) => {
+              onCheckUsage();
+              e.currentTarget.blur();
+            }}
+            title="Where is this sheet used?"
+            className="btn-check-usage"
+          >
+            <Share2 size={18} />
+          </button>
+        )}
         <button
           type="button"
           onClick={(e) => {

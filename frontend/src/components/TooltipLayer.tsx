@@ -122,7 +122,10 @@ export const TooltipLayer: React.FC<TooltipLayerProps> = ({ editor }) => {
                 gap: '6px',
               }}
             >
-              <AlertTriangle size={14} style={{ marginTop: '2px', flexShrink: 0 }} />
+              <AlertTriangle
+                size={14}
+                style={{ marginTop: '2px', flexShrink: 0 }}
+              />
               <span style={{ flex: 1 }}>{e.msg}</span>
               <button
                 type="button"
