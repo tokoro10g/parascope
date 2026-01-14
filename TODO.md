@@ -17,14 +17,21 @@ Generated from `SPECIFICATIONS.tsv`.
         - [x] Handle read-only state in `SheetEditor` (disable inputs/saving) (CO-05.0).
         - [x] Add "Locked by {User}" banner with "Take Over" button (CO-03.0).
         - [x] Display active sessions on Dashboard (CO-06.0).
+- [x] **Navigation & Debugging**:
+    - [x] **Backend**:
+        - [x] Recursive Parent/Root Sheet Search with Trace Path.
+        - [x] Recursive Execution Stage Propagation (Root -> Nodes -> Leaf).
+    - [x] **Frontend**:
+        - [x] "Usage" Modal to jump to Root Sheets.
+        - [x] "Import Inputs" feature to import inputs from live root simulation context.
 
 ## 5. GenAI Integration (Use Gemini)
-- [ ] **Backend**:
-    - [ ] Create `POST /api/genai/generate_function` endpoint (AI-02.0).
-    - [ ] Integrate Google Gemini SDK (AI-02.0).
-- [ ] **Frontend**:
-    - [ ] Add AI Prompt UI to Function Inspector (AI-03.0).
-    - [ ] Implement function update logic from AI response (AI-01.0).
+- [x] **Backend**:
+    - [x] Create `POST /api/genai/generate_function` endpoint (AI-02.0).
+    - [x] Integrate Google Gemini SDK (AI-02.0).
+- [x] **Frontend**:
+    - [x] Add AI Prompt UI to Function Inspector (AI-03.0).
+    - [x] Implement function update logic from AI response (AI-01.0).
 
 ## 6. Future Scope (Post-Initial)
 - [ ] **Notifications**: Owner-based change notifications (FS-N-01.0 - FS-N-04.0).
