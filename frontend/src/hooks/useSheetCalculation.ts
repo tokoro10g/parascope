@@ -1,4 +1,5 @@
 import { useCallback, useState } from 'react';
+import toast from 'react-hot-toast';
 import { api, type NodeResult } from '../api';
 import { InputControl, type ParascopeNode } from '../rete';
 import { validateGraphConnectivity } from '../utils';
@@ -67,6 +68,9 @@ export const useSheetCalculation = (editor: Editor | null | undefined) => {
       setLastResult(null);
       try {
         const response = await api.calculate(sheetId, inputs);
+        if (response.error) {
+          toast.error(`Execution Error: ${response.error}`);
+        }
         applyCalculationResult(response.results);
         return response.results;
       } catch (e: any) {
@@ -117,6 +121,9 @@ export const useSheetCalculation = (editor: Editor | null | undefined) => {
       setLastResult(null);
       try {
         const response = await api.calculatePreview(inputs, graph);
+        if (response.error) {
+          toast.error(`Execution Error: ${response.error}`);
+        }
         applyCalculationResult(response.results);
         return response.results;
       } catch (e: any) {

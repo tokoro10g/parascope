@@ -161,10 +161,9 @@ async def _run_calculation(
     detailed_results = await _enrich_results(sheet, results, db)
     
     # Global script error?
-    if not exec_result.get("success"):
-        pass
+    error = exec_result.get("error") if not exec_result.get("success") else None
 
-    return {"results": detailed_results}
+    return {"results": detailed_results, "error": error}
 
 
 def _construct_sheet(body: PreviewRequest) -> Sheet:

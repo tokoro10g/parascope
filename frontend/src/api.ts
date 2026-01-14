@@ -249,7 +249,7 @@ export const api = {
   async calculate(
     sheetId: string,
     inputs: Record<string, { value: any }>,
-  ): Promise<{ results: Record<string, NodeResult> }> {
+  ): Promise<{ results: Record<string, NodeResult>; error?: string }> {
     return request(`${API_BASE}/calculate/${sheetId}`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -260,7 +260,7 @@ export const api = {
   async calculatePreview(
     inputs: Record<string, { value: any }>,
     graph: Partial<Sheet>,
-  ): Promise<{ results: Record<string, NodeResult> }> {
+  ): Promise<{ results: Record<string, NodeResult>; error?: string }> {
     return request(`${API_BASE}/calculate/`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
