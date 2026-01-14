@@ -240,6 +240,11 @@ export const useSweepState = () => {
         outputNodeIds,
         currentOverrides,
       );
+      if (res.error) {
+        const msg = `Sweep Error: ${res.error}`;
+        setError(msg);
+        toast.error(msg);
+      }
       setResults(res.results);
     } catch (e: any) {
       const msg = e.message || 'An error occurred during sweep.';

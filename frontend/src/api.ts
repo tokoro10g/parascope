@@ -394,4 +394,5 @@ export interface SweepResultStep {
 
 export interface SweepResponse {
   results: SweepResultStep[];
+  error?: string;
 }

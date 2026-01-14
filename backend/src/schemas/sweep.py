@@ -21,3 +21,4 @@ class SweepResultStep(BaseModel):
 
 class SweepResponse(BaseModel):
     results: List[SweepResultStep]
+    error: str | None = None

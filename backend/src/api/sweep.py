@@ -109,6 +109,8 @@ async def sweep_sheet(
     static_overrides = {str(k): v for k, v in body.input_overrides.items()}
     output_ids_str = [str(oid) for oid in body.output_node_ids]
 
+    global_error = None
+
     try:
         script = await generator.generate_sweep_script(
             root_sheet=sheet,
@@ -120,6 +122,9 @@ async def sweep_sheet(
         
         exec_result = execute_full_script(script, timeout=30.0) # Extend timeout for sweeps
         
+        if not exec_result.get("success"):
+            global_error = exec_result.get("error")
+
         results_list = exec_result.get("results", [])
         if not isinstance(results_list, list):
              # Fallback if execution completely failed globally
@@ -136,9 +141,9 @@ async def sweep_sheet(
 
     except Exception as e:
          # Global generation error
-         # In a real app we might want to panic better
+         global_error = str(e)
          print(f"Sweep generation failed: {e}")
 
-    return SweepResponse(results=sweep_results)
+    return SweepResponse(results=sweep_results, error=global_error)
 
     
