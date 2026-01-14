@@ -1,6 +1,7 @@
 import { useCallback, useState } from 'react';
 import { api, type NodeResult } from '../api';
 import { InputControl, type ParascopeNode } from '../rete';
+import { validateGraphConnectivity } from '../utils';
 
 interface Editor {
   editor: {
@@ -83,6 +84,35 @@ export const useSheetCalculation = (editor: Editor | null | undefined) => {
 
   const calculatePreview = useCallback(
     async (inputs: Record<string, { value: any }>, graph: any) => {
+      const validation = validateGraphConnectivity(graph);
+      if (!validation.valid) {
+        console.warn('Calculation skipped due to incomplete graph');
+        setLastResult(null); // Clear stale results
+
+        if (editor) {
+          const errorMap = new Map(
+            validation.errors.map((e) => [e.nodeId, e.error]),
+          );
+
+          editor.editor.getNodes().forEach((node) => {
+            const errorMsg = errorMap.get(node.id);
+            // Only update if changed to avoid unnecessary renders?
+            // Rete update is cheap if we don't spam it.
+            node.error = errorMsg;
+
+            // Propagate error to InputControl
+            Object.values(node.controls).forEach((control) => {
+              if (control instanceof InputControl) {
+                control.setError(node.error || null);
+              }
+            });
+
+            editor.area.update('node', node.id);
+          });
+        }
+        return;
+      }
+
       setIsCalculating(true);
       setLastResult(null);
       try {

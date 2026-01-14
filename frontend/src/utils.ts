@@ -187,3 +187,32 @@ export const fallbackCopy = (text: string) => {
     document.body.removeChild(textArea);
   }
 };
+
+export const validateGraphConnectivity = (graph: {
+  nodes: { id?: string; type: string; label: string; inputs: any[] }[];
+  connections: { target_id: string; target_port: string }[];
+}): { valid: boolean; errors: { nodeId: string; error: string }[] } => {
+  const connectionMap = new Set<string>();
+  graph.connections.forEach((c) => {
+    connectionMap.add(`${c.target_id}:${c.target_port}`);
+  });
+
+  const errors: { nodeId: string; error: string }[] = [];
+
+  for (const node of graph.nodes) {
+    if (['function', 'output', 'sheet'].includes(node.type)) {
+      if (!node.inputs) continue;
+
+      for (const input of node.inputs) {
+        if (!node.id) continue;
+        if (!connectionMap.has(`${node.id}:${input.key}`)) {
+          errors.push({
+            nodeId: node.id,
+            error: `Unconnected input: ${input.key}`,
+          });
+        }
+      }
+    }
+  }
+  return { valid: errors.length === 0, errors };
+};
