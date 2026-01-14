@@ -152,10 +152,15 @@ class SheetBase:
         self.input_overrides = input_overrides or {}
         self.results: Dict[str, Dict[str, Any]] = {}
         self.node_map: Dict[str, Any] = {} # Metadata about nodes
+        self.node_instances: Dict[str, 'SheetBase'] = {} # Track nested sheet instances
 
     def register_result(self, node_id: str, value: Any):
         """Register a successful result"""
         self.results[node_id] = {"value": value, "valid": True}
+        
+    def register_instance(self, node_id: str, instance: 'SheetBase'):
+        """Register a nested sheet instance for state inspection"""
+        self.node_instances[node_id] = instance
 
     def register_error(self, node_id: str, error: Optional[str], internal_error: Optional[str] = None):
         """

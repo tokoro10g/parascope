@@ -308,3 +308,68 @@ async def delete_sheet(sheet_id: UUID, db: AsyncSession = Depends(get_db)):
     await db.delete(sheet)
     await db.commit()
     return None
+
+
+@router.get("/{sheet_id}/usages")
+async def get_sheet_usages(sheet_id: UUID, db: AsyncSession = Depends(get_db)):
+    """
+    Returns a list of 'Root Sheets' that ultimately use this sheet.
+    A Root Sheet is an ancestor that has NO 'input' nodes (self-contained simulation).
+    Returns the path of node IDs to reach the current sheet instance.
+    """
+    
+    # Queue: (current_sheet_id, list_of_nodes_trace)
+    # trace: [NodeInstance_in_Parent, NodeInstance_in_GrandParent...]
+    
+    queue = [(str(sheet_id), [])]
+    valid_roots = []
+    visited = set() # (sheet_id) to avoid cycles
+    
+    while queue:
+        curr_id, trace = queue.pop(0)
+        
+        if curr_id in visited:
+            continue
+        visited.add(curr_id)
+        
+        # 1. Find parents (sheets that contain curr_id as a node)
+        query = (
+            select(Node, Sheet)
+            .join(Sheet, Node.sheet_id == Sheet.id)
+            .where(
+                Node.type == "sheet", 
+                Node.data["sheetId"].astext == curr_id
+            )
+            .options(selectinload(Sheet.nodes)) # Load nodes to check for inputs
+        )
+        result = await db.execute(query)
+        parents = result.all()
+        
+        for node_instance, parent_sheet in parents:
+            # Check if parent has inputs
+            has_inputs = any(n.type == 'input' for n in parent_sheet.nodes)
+            
+            new_trace = [ {"id": str(node_instance.id), "label": node_instance.label} ] + trace
+            
+            if not has_inputs:
+                # Found a root!
+                valid_roots.append({
+                    "parent_sheet_id": parent_sheet.id,
+                    "parent_sheet_name": parent_sheet.name,
+                    "node_path": new_trace, # RootInstance -> ... -> LeafInstance
+                    "can_import": True
+                })
+            else:
+                # Show direct parents even if they have inputs (but not importable)
+                if len(new_trace) == 1:
+                    valid_roots.append({
+                        "parent_sheet_id": parent_sheet.id,
+                        "parent_sheet_name": parent_sheet.name,
+                        "node_path": new_trace,
+                        "can_import": False
+                    })
+
+                if len(new_trace) < 10: # Depth limit
+                    queue.append((str(parent_sheet.id), new_trace))
+    
+    return valid_roots

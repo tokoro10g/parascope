@@ -82,6 +82,28 @@ def _persistent_worker_loop(task_queue, result_queue, runtime_classes):
                 # Execute the script
                 exec(script, global_vars)
                 results = global_vars.get("results", {})
+
+                # If the script defines a 'sheet' instance (Root), extract its recursive state
+                root_sheet = global_vars.get("sheet")
+                if root_sheet and isinstance(root_sheet, SheetBase):
+                    # We need to enrich 'results' with internal state of nested sheets
+                    # The simple 'results' dict only flatly maps node_id -> output
+                    
+                    # Helper to traverse
+                    def extract_nodes_state(instance: SheetBase):
+                        state = {}
+                        # Instance results (node_id -> {value, valid, error})
+                        for nid, res_obj in instance.results.items():
+                            state[nid] = res_obj.copy()
+                            # If this node was a nested sheet, inject its internal state recursively
+                            if nid in instance.node_instances:
+                                sub_instance = instance.node_instances[nid]
+                                state[nid]['nodes'] = extract_nodes_state(sub_instance)
+                        return state
+
+                    full_state = extract_nodes_state(root_sheet)
+                    results = full_state
+
                 success = True
             except Exception:
                 error = traceback.format_exc()

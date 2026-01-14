@@ -348,6 +348,7 @@ def {method_name}(self, {args_str}):
 @sheet_node("{nid}", inputs={dict_str}, label="{label_safe}")
 def {method_name}(self, {args_str}):
     sub = {nested_class}(input_overrides={overrides_str})
+    self.register_instance("{nid}", sub)
     sub.run()
     return sub.get_public_outputs(raise_on_error=True)
 """
