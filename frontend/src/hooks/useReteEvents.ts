@@ -49,6 +49,7 @@ export function useReteEvents(
       }
 
       if (e.key === 'Delete' || e.key === 'Backspace') {
+        e.preventDefault();
         if (editor?.getSelectedNodes) {
           const selected = editor.getSelectedNodes();
           if (selected.length > 0) {
