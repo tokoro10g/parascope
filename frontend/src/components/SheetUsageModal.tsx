@@ -1,4 +1,4 @@
-import { Download, ExternalLink, Share2 } from 'lucide-react';
+import { Download, ExternalLink } from 'lucide-react';
 import type React from 'react';
 import { useEffect, useState } from 'react';
 import toast from 'react-hot-toast';

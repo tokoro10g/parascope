@@ -383,6 +383,7 @@ export interface NodeResult {
   outputs: Record<string, any>;
   valid?: boolean;
   error?: string;
+  nodes?: Record<string, NodeResult>;
 }
 
 export interface SweepResultStep {
