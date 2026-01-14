@@ -94,7 +94,10 @@ export const EditorBar: React.FC<EditorBarProps> = ({
       <div className="toolbar-group node-actions-group">
         <button
           type="button"
-          onClick={() => onAddNode('constant')}
+          onClick={(e) => {
+            onAddNode('constant');
+            e.currentTarget.blur();
+          }}
           title="Add Constant"
           className="btn-add-constant"
         >
@@ -102,7 +105,10 @@ export const EditorBar: React.FC<EditorBarProps> = ({
         </button>
         <button
           type="button"
-          onClick={() => onAddNode('input')}
+          onClick={(e) => {
+            onAddNode('input');
+            e.currentTarget.blur();
+          }}
           title="Add Input Node"
           className="btn-add-input"
         >
@@ -110,7 +116,10 @@ export const EditorBar: React.FC<EditorBarProps> = ({
         </button>
         <button
           type="button"
-          onClick={() => onAddNode('output')}
+          onClick={(e) => {
+            onAddNode('output');
+            e.currentTarget.blur();
+          }}
           title="Add Output Node"
           className="btn-add-output"
         >
@@ -118,7 +127,10 @@ export const EditorBar: React.FC<EditorBarProps> = ({
         </button>
         <button
           type="button"
-          onClick={() => onAddNode('function')}
+          onClick={(e) => {
+            onAddNode('function');
+            e.currentTarget.blur();
+          }}
           title="Add Function"
           className="btn-add-function"
         >
@@ -126,7 +138,10 @@ export const EditorBar: React.FC<EditorBarProps> = ({
         </button>
         <button
           type="button"
-          onClick={() => onAddNode('sheet')}
+          onClick={(e) => {
+            onAddNode('sheet');
+            e.currentTarget.blur();
+          }}
           title="Import Sheet"
           className="btn-add-sheet"
         >
@@ -135,10 +150,24 @@ export const EditorBar: React.FC<EditorBarProps> = ({
       </div>
 
       <div className="toolbar-group history-group">
-        <button type="button" onClick={onUndo} title="Undo">
+        <button
+          type="button"
+          onClick={(e) => {
+            onUndo();
+            e.currentTarget.blur();
+          }}
+          title="Undo"
+        >
           <Undo size={18} />
         </button>
-        <button type="button" onClick={onRedo} title="Redo">
+        <button
+          type="button"
+          onClick={(e) => {
+            onRedo();
+            e.currentTarget.blur();
+          }}
+          title="Redo"
+        >
           <Redo size={18} />
         </button>
       </div>
@@ -146,7 +175,10 @@ export const EditorBar: React.FC<EditorBarProps> = ({
       <div className="toolbar-group save-group">
         <button
           type="button"
-          onClick={onSaveSheet}
+          onClick={(e) => {
+            onSaveSheet();
+            e.currentTarget.blur();
+          }}
           disabled={!isDirty || readOnly}
           title={readOnly ? 'Read Only' : 'Save Sheet'}
           style={readOnly ? { cursor: 'not-allowed', opacity: 0.5 } : undefined}
