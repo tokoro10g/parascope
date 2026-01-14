@@ -56,6 +56,9 @@ export async function createEditor(container: HTMLElement) {
   let onLayoutChange: (() => void) | undefined;
   let onViewportChange: (() => void) | undefined;
   let onInputValueChange: ((nodeId: string, value: string) => void) | undefined;
+  let onConnectionCreated:
+    | ((connection: Connection<ParascopeNode, ParascopeNode>) => void)
+    | undefined;
 
   // Flag to suppress graph change events (e.g. during loading)
   let suppressGraphChange = false;
@@ -102,8 +105,13 @@ export async function createEditor(container: HTMLElement) {
 
   // Listen for changes
   editor.addPipe((context) => {
-    if (
-      context.type === 'connectioncreated' ||
+    if (context.type === 'connectioncreated') {
+      if (onConnectionCreated)
+        onConnectionCreated(
+          context.data as Connection<ParascopeNode, ParascopeNode>,
+        );
+      if (onGraphChange && !suppressGraphChange) onGraphChange();
+    } else if (
       context.type === 'connectionremoved' ||
       context.type === 'nodecreated' ||
       context.type === 'noderemoved'
@@ -201,6 +209,11 @@ export async function createEditor(container: HTMLElement) {
       cb: (nodeId: string, value: string) => void,
     ) => {
       onInputValueChange = cb;
+    },
+    setConnectionCreatedListener: (
+      cb: (connection: Connection<ParascopeNode, ParascopeNode>) => void,
+    ) => {
+      onConnectionCreated = cb;
     },
     undo: async () => {
       await history.undo();

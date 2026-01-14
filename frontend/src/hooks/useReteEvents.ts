@@ -1,4 +1,5 @@
 import { useEffect, useRef } from 'react';
+import { api } from '../api';
 import type { NodeEditorWrapper, ParascopeNode } from '../rete';
 import { resolveNestedSheetParams } from '../utils';
 
@@ -138,6 +139,68 @@ export function useReteEvents(
         },
         onEditNestedSheet: handleEditNestedSheet,
       });
+
+      editor.setConnectionCreatedListener(async (connection) => {
+        const source = editor.editor.getNode(connection.source);
+        const target = editor.editor.getNode(connection.target);
+
+        if (
+          target?.type === 'sheet' &&
+          (source?.type === 'constant' || source?.type === 'input')
+        ) {
+          const nestedSheetId = target.initialData?.sheetId;
+          const targetInputKey = connection.targetInput;
+
+          if (nestedSheetId && targetInputKey) {
+            try {
+              const nestedSheet = await api.getSheet(nestedSheetId);
+              const targetInputNode = nestedSheet.nodes.find(
+                (n: any) => n.label === targetInputKey && n.type === 'input',
+              );
+
+              if (targetInputNode) {
+                const isOption = targetInputNode.data?.dataType === 'option';
+                let updates: any = null;
+
+                if (isOption) {
+                  // Only update if not already matching to avoid redundant updates/loops
+                  if (
+                    source.initialData.dataType !== 'option' ||
+                    JSON.stringify(source.initialData.options) !==
+                      JSON.stringify(targetInputNode.data.options)
+                  ) {
+                    updates = {
+                      initialData: {
+                        ...source.initialData,
+                        dataType: 'option',
+                        options: targetInputNode.data.options || [],
+                      },
+                    };
+                  }
+                } else {
+                  // Reset to 'any' if it was option
+                  if (source.initialData.dataType === 'option') {
+                    updates = {
+                      initialData: {
+                        ...source.initialData,
+                        dataType: 'any',
+                        options: [],
+                      },
+                    };
+                  }
+                }
+
+                if (updates) {
+                  handleNodeUpdate(source.id, updates);
+                }
+              }
+            } catch (e) {
+              console.error('Failed to configure connected node', e);
+            }
+          }
+        }
+      });
+
       const updateNodesState = () => {
         setIsDirty(true);
         const nodes = [...editor.editor.getNodes()];
