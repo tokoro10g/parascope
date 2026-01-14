@@ -25,6 +25,7 @@ export function useNodeOperations(
   setCurrentSheet: React.Dispatch<React.SetStateAction<Sheet | null>>,
   currentSheet: Sheet | null,
   handleCalculationInputChange: (id: string, value: string) => void,
+  onGraphChange?: () => void,
   addHistoryAction?: (action: {
     redo: () => Promise<void> | void;
     undo: () => Promise<void> | void;
@@ -64,6 +65,7 @@ export function useNodeOperations(
             handleCalculationInputChange(id, String(val));
           } else {
             setIsDirty(true);
+            if (onGraphChange) onGraphChange();
           }
         },
       );
@@ -106,6 +108,7 @@ export function useNodeOperations(
       setCurrentSheet,
       setNodes,
       setIsDirty,
+      onGraphChange,
     ],
   );
 
