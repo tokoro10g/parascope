@@ -154,6 +154,35 @@ export function useReteEvents(
           if (nestedSheetId && targetInputKey) {
             try {
               const nestedSheet = await api.getSheet(nestedSheetId);
+
+              // 1. Sync Target Node (Sheet Node) Ports if stale
+              const expectedInputs = nestedSheet.nodes
+                .filter((n: any) => n.type === 'input')
+                .map((n: any) => ({ key: n.label, socket_type: 'any' }));
+
+              const expectedOutputs = nestedSheet.nodes
+                .filter((n: any) => n.type === 'output')
+                .map((n: any) => ({ key: n.label, socket_type: 'any' }));
+
+              const currentInputsKeys = Object.keys(target.inputs);
+              const currentOutputsKeys = Object.keys(target.outputs);
+
+              const inputsChanged =
+                expectedInputs.length !== currentInputsKeys.length ||
+                !expectedInputs.every((i: any) => target.inputs[i.key]);
+
+              const outputsChanged =
+                expectedOutputs.length !== currentOutputsKeys.length ||
+                !expectedOutputs.every((o: any) => target.outputs[o.key]);
+
+              if (inputsChanged || outputsChanged) {
+                // We await this to ensure the node is consistent, though Rete might handle it gracefully
+                await handleNodeUpdate(target.id, {
+                  inputs: expectedInputs,
+                  outputs: expectedOutputs,
+                });
+              }
+
               const targetInputNode = nestedSheet.nodes.find(
                 (n: any) => n.label === targetInputKey && n.type === 'input',
               );
