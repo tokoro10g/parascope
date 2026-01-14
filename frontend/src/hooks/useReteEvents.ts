@@ -145,14 +145,30 @@ export function useReteEvents(
         const source = editor.editor.getNode(connection.source);
         const target = editor.editor.getNode(connection.target);
 
+        let sheetNode: ParascopeNode | null = null;
+        let otherNode: ParascopeNode | null = null;
+        let isInputToSheet = false;
+
         if (
           target?.type === 'sheet' &&
           (source?.type === 'constant' || source?.type === 'input')
         ) {
-          const nestedSheetId = target.initialData?.sheetId;
-          const targetInputKey = connection.targetInput;
+          sheetNode = target;
+          otherNode = source;
+          isInputToSheet = true;
+        } else if (source?.type === 'sheet' && target?.type === 'output') {
+          sheetNode = source;
+          otherNode = target;
+          isInputToSheet = false;
+        }
 
-          if (nestedSheetId && targetInputKey) {
+        if (sheetNode && otherNode) {
+          const nestedSheetId = sheetNode.initialData?.sheetId;
+          const portKey = isInputToSheet
+            ? connection.targetInput
+            : connection.sourceOutput;
+
+          if (nestedSheetId && portKey) {
             try {
               const nestedSheet = await api.getSheet(nestedSheetId);
 
@@ -162,57 +178,61 @@ export function useReteEvents(
                 .map((n: any) => ({ key: n.label, socket_type: 'any' }));
 
               const expectedOutputs = nestedSheet.nodes
-                .filter((n: any) => n.type === 'output' || n.type === 'constant')
+                .filter(
+                  (n: any) => n.type === 'output' || n.type === 'constant',
+                )
                 .map((n: any) => ({ key: n.label, socket_type: 'any' }));
 
-              const currentInputsKeys = Object.keys(target.inputs);
-              const currentOutputsKeys = Object.keys(target.outputs);
+              const currentInputsKeys = Object.keys(sheetNode.inputs);
+              const currentOutputsKeys = Object.keys(sheetNode.outputs);
 
               const inputsChanged =
                 expectedInputs.length !== currentInputsKeys.length ||
-                !expectedInputs.every((i: any) => target.inputs[i.key]);
+                !expectedInputs.every((i: any) => sheetNode!.inputs[i.key]);
 
               const outputsChanged =
                 expectedOutputs.length !== currentOutputsKeys.length ||
-                !expectedOutputs.every((o: any) => target.outputs[o.key]);
+                !expectedOutputs.every((o: any) => sheetNode!.outputs[o.key]);
 
               if (inputsChanged || outputsChanged) {
-                // We await this to ensure the node is consistent, though Rete might handle it gracefully
-                await handleNodeUpdate(target.id, {
+                await handleNodeUpdate(sheetNode.id, {
                   inputs: expectedInputs,
                   outputs: expectedOutputs,
                 });
               }
 
-              const targetInputNode = nestedSheet.nodes.find(
-                (n: any) => n.label === targetInputKey && n.type === 'input',
+              // 2. Configure Connected Node
+              const matchingChildNode = nestedSheet.nodes.find(
+                (n: any) =>
+                  n.label === portKey &&
+                  (isInputToSheet
+                    ? n.type === 'input'
+                    : n.type === 'output' || n.type === 'constant'),
               );
 
-              if (targetInputNode) {
-                const isOption = targetInputNode.data?.dataType === 'option';
+              if (matchingChildNode) {
+                const isOption = matchingChildNode.data?.dataType === 'option';
                 let updates: any = null;
 
                 if (isOption) {
-                  // Only update if not already matching to avoid redundant updates/loops
                   if (
-                    source.initialData.dataType !== 'option' ||
-                    JSON.stringify(source.initialData.options) !==
-                      JSON.stringify(targetInputNode.data.options)
+                    otherNode.initialData.dataType !== 'option' ||
+                    JSON.stringify(otherNode.initialData.options) !==
+                      JSON.stringify(matchingChildNode.data.options)
                   ) {
                     updates = {
                       initialData: {
-                        ...source.initialData,
+                        ...otherNode.initialData,
                         dataType: 'option',
-                        options: targetInputNode.data.options || [],
+                        options: matchingChildNode.data.options || [],
                       },
                     };
                   }
                 } else {
-                  // Reset to 'any' if it was option
-                  if (source.initialData.dataType === 'option') {
+                  if (otherNode.initialData.dataType === 'option') {
                     updates = {
                       initialData: {
-                        ...source.initialData,
+                        ...otherNode.initialData,
                         dataType: 'any',
                         options: [],
                       },
@@ -221,7 +241,7 @@ export function useReteEvents(
                 }
 
                 if (updates) {
-                  handleNodeUpdate(source.id, updates);
+                  handleNodeUpdate(otherNode.id, updates);
                 }
               }
             } catch (e) {
