@@ -149,6 +149,7 @@ export const DescriptionEditor: React.FC<DescriptionEditorProps> = ({
         ) : (
           <input
             type="file"
+            accept="image/*"
             onChange={handleFileUpload}
             disabled={isGenerating}
           />

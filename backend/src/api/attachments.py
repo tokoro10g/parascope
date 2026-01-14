@@ -12,6 +12,9 @@ router = APIRouter(prefix="/attachments", tags=["attachments"])
 
 @router.post("/upload")
 async def upload_file(file: UploadFile = File(...)):
+    if not file.content_type or not file.content_type.startswith("image/"):
+        raise HTTPException(status_code=400, detail="Only image files are allowed.")
+
     # Generate unique filename
     file_ext = Path(file.filename).suffix
     # Keep original name if possible, but prepend uuid to avoid collisions?
