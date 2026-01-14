@@ -85,10 +85,10 @@ try:
         step_res = {{ "input_value": val, "outputs": {{}} }}
         
         try:
-            sheet = {root_class_name}(input_overrides=current_overrides)
+            _sweep_sheet_instance = {root_class_name}(input_overrides=current_overrides)
             # Run the sheet
-            sheet.run()
-            raw_results = sheet.results
+            _sweep_sheet_instance.run()
+            raw_results = _sweep_sheet_instance.results
             
             # Extract requested outputs
             for out_id in output_node_ids:
