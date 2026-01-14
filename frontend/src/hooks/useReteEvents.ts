@@ -162,7 +162,7 @@ export function useReteEvents(
                 .map((n: any) => ({ key: n.label, socket_type: 'any' }));
 
               const expectedOutputs = nestedSheet.nodes
-                .filter((n: any) => n.type === 'output')
+                .filter((n: any) => n.type === 'output' || n.type === 'constant')
                 .map((n: any) => ({ key: n.label, socket_type: 'any' }));
 
               const currentInputsKeys = Object.keys(target.inputs);
