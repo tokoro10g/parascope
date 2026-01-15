@@ -459,7 +459,7 @@ export const SheetEditor: React.FC = () => {
         }
       });
 
-      const result = await calculatePreview(apiInputs, graph);
+      const result = await calculatePreview(apiInputs, graph, true);
 
       if (editor && result) {
         editor.updateNodeValues(

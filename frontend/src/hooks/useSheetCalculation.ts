@@ -87,11 +87,17 @@ export const useSheetCalculation = (editor: Editor | null | undefined) => {
   );
 
   const calculatePreview = useCallback(
-    async (inputs: Record<string, { value: any }>, graph: any) => {
+    async (
+      inputs: Record<string, { value: any }>,
+      graph: any,
+      force = false,
+    ) => {
       const validation = validateGraphConnectivity(graph);
       if (!validation.valid) {
-        console.warn('Calculation skipped due to incomplete graph');
-        setLastResult(null); // Clear stale results
+        if (!force) {
+          console.warn('Calculation skipped due to incomplete graph');
+          setLastResult(null); // Clear stale results
+        }
 
         if (editor) {
           const errorMap = new Map(
@@ -114,7 +120,7 @@ export const useSheetCalculation = (editor: Editor | null | undefined) => {
             editor.area.update('node', node.id);
           });
         }
-        return;
+        if (!force) return;
       }
 
       setIsCalculating(true);
