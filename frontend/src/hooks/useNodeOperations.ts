@@ -1,9 +1,9 @@
 import { useCallback } from 'react';
-import type { NodeEditor } from 'rete';
 import { ClassicPreset as Classic } from 'rete';
 import type { AreaPlugin } from 'rete-area-plugin';
 import { v4 as uuidv4 } from 'uuid';
 import type { Sheet } from '../api';
+import type { NodeEditorWrapper } from '../rete';
 import { ParascopeNode, socket } from '../rete';
 import type { Schemes } from '../rete/types';
 import { createSocket } from '../utils';
@@ -17,20 +17,19 @@ export interface NodeUpdates {
 }
 
 export function useNodeOperations(
-  editor: NodeEditor<Schemes> | undefined,
+  wrapper: NodeEditorWrapper | undefined | null,
   area: AreaPlugin<Schemes, any> | undefined,
   nodes: ParascopeNode[],
-  setNodes: (nodes: ParascopeNode[]) => void,
   setIsDirty: (isDirty: boolean) => void,
-  setCurrentSheet: React.Dispatch<React.SetStateAction<Sheet | null>>,
   currentSheet: Sheet | null,
   handleCalculationInputChange: (id: string, value: string) => void,
-  onGraphChange?: () => void,
   addHistoryAction?: (action: {
     redo: () => Promise<void> | void;
     undo: () => Promise<void> | void;
   }) => void,
 ) {
+  const editor = wrapper?.instance;
+
   const calcCenterPosition = useCallback(() => {
     if (!editor || !area) return { x: 0, y: 0 };
     const bounds = area.container.getBoundingClientRect();
@@ -65,7 +64,7 @@ export function useNodeOperations(
             handleCalculationInputChange(id, String(val));
           } else {
             setIsDirty(true);
-            if (onGraphChange) onGraphChange();
+            wrapper?.triggerGraphChange();
           }
         },
       );
@@ -79,36 +78,15 @@ export function useNodeOperations(
         setEditingNode(node);
       }
 
-      const newNodeData = {
-        id,
-        type,
-        label,
-        position_x: position.x,
-        position_y: position.y,
-        inputs,
-        outputs,
-        data,
-      };
-
-      setCurrentSheet((prev) =>
-        prev
-          ? {
-              ...prev,
-              nodes: [...prev.nodes, newNodeData],
-            }
-          : null,
-      );
-      setNodes([...editor.getNodes()]);
+      // No manual setNodes/setCurrentSheet here - handled by Rete events
       setIsDirty(true);
     },
     [
       editor,
       area,
       handleCalculationInputChange,
-      setCurrentSheet,
-      setNodes,
       setIsDirty,
-      onGraphChange,
+      wrapper,
     ],
   );
 
@@ -157,10 +135,9 @@ export function useNodeOperations(
       }
 
       await editor.removeNode(nodeId);
-      setNodes([...editor.getNodes()]);
       setIsDirty(true);
     },
-    [editor, setNodes, setIsDirty],
+    [editor, setIsDirty],
   );
 
   const handleNodeUpdate = useCallback(
@@ -323,7 +300,7 @@ export function useNodeOperations(
       await applyUpdates(node, updates);
 
       setIsDirty(true);
-      setNodes([...editor.getNodes()]);
+      wrapper?.triggerGraphChange(); // Notify listeners
 
       if (addHistoryAction) {
         addHistoryAction({
@@ -331,18 +308,18 @@ export function useNodeOperations(
             const n = editor.getNode(nodeId);
             if (!n) return;
             await applyUpdates(n, oldState, true);
-            setNodes([...editor.getNodes()]);
+            wrapper?.triggerGraphChange();
           },
           redo: async () => {
             const n = editor.getNode(nodeId);
             if (!n) return;
             await applyUpdates(n, updates, false);
-            setNodes([...editor.getNodes()]);
+            wrapper?.triggerGraphChange();
           },
         });
       }
     },
-    [editor, area, nodes, setIsDirty, setNodes, addHistoryAction],
+    [editor, area, nodes, setIsDirty, addHistoryAction, wrapper],
   );
 
   return {

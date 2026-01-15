@@ -1,9 +1,10 @@
 import { AlertTriangle, X } from 'lucide-react';
 import type React from 'react';
 import { useEffect, useState } from 'react';
+import type { NodeEditorWrapper } from '../rete';
 
 interface TooltipLayerProps {
-  editor: any;
+  editor: NodeEditorWrapper | null;
 }
 
 export const TooltipLayer: React.FC<TooltipLayerProps> = ({ editor }) => {

@@ -264,10 +264,11 @@ export function useReteEvents(
         setNodes(nodes);
       };
 
-      editor.setGraphChangeListener(() => {
+      const unsubscribeGraph = editor.addGraphChangeListener(() => {
         updateNodesState();
         triggerAutoCalculation();
       });
+
       editor.setLayoutChangeListener(() => {
         updateNodesState();
       });
@@ -295,6 +296,7 @@ export function useReteEvents(
           'parascope-node-update',
           handleNodeLabelUpdate,
         );
+        unsubscribeGraph();
       };
     }
   }, [

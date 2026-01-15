@@ -104,7 +104,6 @@ export const SheetEditor: React.FC = () => {
 
   const {
     currentSheet,
-    setCurrentSheet,
     isLoading,
     handleLoadSheet,
     handleSaveSheet,
@@ -191,21 +190,6 @@ export const SheetEditor: React.FC = () => {
     [],
   );
 
-  const handleGraphChange = useCallback(() => {
-    if (!editor) return;
-    const nodes = [...editor.instance.getNodes()];
-    nodes.forEach((n) => {
-      const pos = editor.area.nodeViews.get(n.id)?.position;
-      if (pos) {
-        n.x = pos.x;
-        n.y = pos.y;
-      }
-    });
-    setNodes(nodes);
-    setIsDirty(true);
-    triggerAutoCalculation();
-  }, [editor, triggerAutoCalculation]);
-
   const {
     addNode,
     removeNode,
@@ -213,15 +197,12 @@ export const SheetEditor: React.FC = () => {
     handleNodeUpdate: originalHandleNodeUpdate,
     calcCenterPosition,
   } = useNodeOperations(
-    editor?.instance,
+    editor,
     editor?.area,
     nodes,
-    setNodes,
     setIsDirty,
-    setCurrentSheet,
     currentSheet,
     handleCalculationInputChange,
-    handleGraphChange,
     editor?.addHistoryAction,
   );
 

@@ -52,7 +52,7 @@ export async function createEditor(container: HTMLElement) {
   // We need to expose a way to set the callback later, or pass it in.
   // Since useRete calls this, we can attach it to the returned object.
   let onNodeDoubleClick: ((nodeId: string) => void) | undefined;
-  let onGraphChange: (() => void) | undefined;
+  const graphChangeListeners = new Set<() => void>();
   let onLayoutChange: (() => void) | undefined;
   let onViewportChange: (() => void) | undefined;
   let onInputValueChange: ((nodeId: string, value: string) => void) | undefined;
@@ -62,6 +62,12 @@ export async function createEditor(container: HTMLElement) {
 
   // Flag to suppress graph change events (e.g. during loading)
   let suppressGraphChange = false;
+
+  const notifyGraphChange = () => {
+    if (!suppressGraphChange) {
+      graphChangeListeners.forEach((cb) => cb());
+    }
+  };
 
   AreaExtensions.selectableNodes(area, selector, {
     accumulating: AreaExtensions.accumulateOnCtrl(),
@@ -110,13 +116,13 @@ export async function createEditor(container: HTMLElement) {
         onConnectionCreated(
           context.data as Connection<ParascopeNode, ParascopeNode>,
         );
-      if (onGraphChange && !suppressGraphChange) onGraphChange();
+      notifyGraphChange();
     } else if (
       context.type === 'connectionremoved' ||
       context.type === 'nodecreated' ||
       context.type === 'noderemoved'
     ) {
-      if (onGraphChange && !suppressGraphChange) onGraphChange();
+      notifyGraphChange();
     }
     return context;
   });
@@ -127,8 +133,8 @@ export async function createEditor(container: HTMLElement) {
       if (previous.x !== position.x || previous.y !== position.y) {
         if (onLayoutChange) {
           onLayoutChange();
-        } else if (onGraphChange && !suppressGraphChange) {
-          onGraphChange();
+        } else {
+          notifyGraphChange();
         }
       }
     }
@@ -196,8 +202,14 @@ export async function createEditor(container: HTMLElement) {
     setContextMenuCallbacks: (callbacks: ContextMenuCallbacks) => {
       Object.assign(contextMenuCallbacks, callbacks);
     },
-    setGraphChangeListener: (cb: () => void) => {
-      onGraphChange = cb;
+    addGraphChangeListener: (cb: () => void) => {
+      graphChangeListeners.add(cb);
+      return () => {
+        graphChangeListeners.delete(cb);
+      };
+    },
+    triggerGraphChange: () => {
+      notifyGraphChange();
     },
     setLayoutChangeListener: (cb: () => void) => {
       onLayoutChange = cb;
@@ -217,11 +229,11 @@ export async function createEditor(container: HTMLElement) {
     },
     undo: async () => {
       await history.undo();
-      if (onGraphChange && !suppressGraphChange) onGraphChange();
+      notifyGraphChange();
     },
     redo: async () => {
       await history.redo();
-      if (onGraphChange && !suppressGraphChange) onGraphChange();
+      notifyGraphChange();
     },
     addHistoryAction: (action: {
       redo: () => Promise<void> | void;
@@ -256,7 +268,7 @@ export async function createEditor(container: HTMLElement) {
                 if (onInputValueChange && n.id)
                   onInputValueChange(n.id, String(val));
               } else {
-                if (onGraphChange && !suppressGraphChange) onGraphChange();
+                notifyGraphChange();
               }
             },
           );

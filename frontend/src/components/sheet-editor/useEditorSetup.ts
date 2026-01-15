@@ -1,9 +1,9 @@
 import { useEffect } from 'react';
-import type { ParascopeNode } from '../../rete';
+import type { NodeEditorWrapper, ParascopeNode } from '../../rete';
 import { createSocket } from '../../utils';
 
 interface UseEditorSetupProps {
-  editor: any;
+  editor: NodeEditorWrapper | null;
   setEditingNode: (node: ParascopeNode | null) => void;
   handleOpenNestedSheet: (nodeId: string, newTab: boolean) => void;
   handleNodeUpdate: (nodeId: string, updates: any) => Promise<void>;
@@ -84,7 +84,7 @@ export function useEditorSetup({
         }
       });
 
-      editor.setGraphChangeListener(() => {
+      editor.addGraphChangeListener(() => {
         setIsDirty(true);
         triggerAutoCalculation();
       });
