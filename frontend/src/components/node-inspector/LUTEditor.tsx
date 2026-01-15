@@ -62,8 +62,11 @@ export const LUTEditor: React.FC<LUTEditorProps> = ({
       const newOutputs = [...outputs, { key: name, socket_type: 'any' }];
       setOutputs(newOutputs);
 
-      // Update all rows to include the new output
-      const newRows = rows.map((row: any) => ({ ...row, [name]: 0 }));
+      // Update all rows to include the new output in the "values" object
+      const newRows = rows.map((row: any) => ({
+        ...row,
+        values: { ...(row.values || {}), [name]: 0 },
+      }));
       setData({
         ...data,
         lut: { ...lut, rows: newRows },
@@ -74,7 +77,6 @@ export const LUTEditor: React.FC<LUTEditorProps> = ({
   const handleRenameOutput = (index: number, newKey: string) => {
     const oldKey = outputs[index].key;
     if (!newKey || newKey === oldKey) {
-      // Revert to original if empty or same
       const updated = [...tempOutputs];
       updated[index] = oldKey;
       setTempOutputs(updated);
@@ -89,51 +91,17 @@ export const LUTEditor: React.FC<LUTEditorProps> = ({
       return;
     }
 
-    // 1. Update node outputs
     const newOutputs = [...outputs];
     newOutputs[index] = { ...newOutputs[index], key: newKey };
     setOutputs(newOutputs);
 
-    // 2. Update data in rows
     const newRows = rows.map((row: any) => {
-      const newRow = { ...row };
-      newRow[newKey] = newRow[oldKey];
-      delete newRow[oldKey];
-      return newRow;
+      const newValues = { ...(row.values || {}) };
+      newValues[newKey] = newValues[oldKey];
+      delete newValues[oldKey];
+      return { ...row, values: newValues };
     });
 
-    setData({
-      ...data,
-      lut: { ...lut, rows: newRows },
-    });
-  };
-
-  const handleRenameKey = (index: number, newKey: string) => {
-    const oldKey = rows[index].key;
-    if (!newKey || newKey === oldKey) {
-      const updated = [...tempKeys];
-      updated[index] = oldKey;
-      setTempKeys(updated);
-      return;
-    }
-
-    // Check for uniqueness excluding current index
-
-    const otherKeys = rows
-
-      .filter((_: any, i: number) => i !== index)
-
-      .map((r: any) => r.key);
-    if (otherKeys.includes(newKey)) {
-      toast.error(`Key "${newKey}" already exists.`);
-      const updated = [...tempKeys];
-      updated[index] = oldKey;
-      setTempKeys(updated);
-      return;
-    }
-
-    const newRows = [...rows];
-    newRows[index] = { ...newRows[index], key: newKey };
     setData({
       ...data,
       lut: { ...lut, rows: newRows },
@@ -144,11 +112,10 @@ export const LUTEditor: React.FC<LUTEditorProps> = ({
     const newOutputs = outputs.filter((o) => o.key !== key);
     setOutputs(newOutputs);
 
-    // Update all rows to remove the output
     const newRows = rows.map((row: any) => {
-      const newRow = { ...row };
-      delete newRow[key];
-      return newRow;
+      const newValues = { ...(row.values || {}) };
+      delete newValues[key];
+      return { ...row, values: newValues };
     });
     setData({
       ...data,
@@ -173,10 +140,11 @@ export const LUTEditor: React.FC<LUTEditorProps> = ({
   };
 
   const handleAddRow = () => {
-    const newRow: any = { key: `Key ${rows.length + 1}` };
+    const newValues: any = {};
     for (const out of outputKeys) {
-      newRow[out] = 0;
+      newValues[out] = 0;
     }
+    const newRow = { key: `Key ${rows.length + 1}`, values: newValues };
     setData({
       ...data,
       lut: { ...lut, rows: [...rows, newRow] },
@@ -217,9 +185,14 @@ export const LUTEditor: React.FC<LUTEditorProps> = ({
     value: string,
   ) => {
     const newRows = [...rows];
-    newRows[rowIndex] = { ...newRows[rowIndex], [columnKey]: value };
+    if (columnKey === 'key') {
+      newRows[rowIndex] = { ...newRows[rowIndex], key: value };
+    } else {
+      const newValues = { ...(newRows[rowIndex].values || {}) };
+      newValues[columnKey] = value;
+      newRows[rowIndex] = { ...newRows[rowIndex], values: newValues };
+    }
 
-    // Explicitly update data to trigger re-render
     setData({
       ...data,
       lut: {
@@ -325,7 +298,7 @@ export const LUTEditor: React.FC<LUTEditorProps> = ({
                 {outputs.map((out) => (
                   <td key={out.key}>
                     <input
-                      value={row[out.key] ?? ''}
+                      value={row.values?.[out.key] ?? ''}
                       onChange={(e) =>
                         handleCellChange(rowIndex, out.key, e.target.value)
                       }

@@ -369,7 +369,7 @@ export const SheetEditor: React.FC = () => {
         outputs = [createSocket('Output 1')];
         data = {
           lut: {
-            rows: [{ key: 'Key 1', 'Output 1': 0 }],
+            rows: [{ key: 'Key 1', values: { 'Output 1': 0 } }],
           },
         };
         break;

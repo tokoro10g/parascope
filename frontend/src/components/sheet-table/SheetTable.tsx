@@ -140,12 +140,18 @@ export const SheetTable: React.FC<SheetTableProps> = ({
       return (a.y || 0) - (b.y || 0);
     });
 
-  // Filter for Descriptions (Constants, Inputs, Functions, Outputs, Sheets, Comments)
+  // Filter for Descriptions (Constants, Inputs, Functions, Outputs, Sheets, LUTs, Comments)
   const descriptionNodes = nodes
     .filter((node) =>
-      ['constant', 'input', 'function', 'output', 'sheet', 'comment'].includes(
-        node.type,
-      ),
+      [
+        'constant',
+        'input',
+        'function',
+        'output',
+        'sheet',
+        'lut',
+        'comment',
+      ].includes(node.type),
     )
     .sort((a, b) => {
       const typeOrder: Record<string, number> = {
@@ -153,8 +159,9 @@ export const SheetTable: React.FC<SheetTableProps> = ({
         input: 1,
         function: 2,
         sheet: 3,
-        output: 4,
-        comment: 5,
+        lut: 4,
+        output: 5,
+        comment: 6,
       };
       const typeDiff = (typeOrder[a.type] ?? 99) - (typeOrder[b.type] ?? 99);
       if (typeDiff !== 0) return typeDiff;
@@ -340,8 +347,10 @@ export const SheetTable: React.FC<SheetTableProps> = ({
             const name = nameControl?.value || node.label;
             const description = node.data?.description;
             const sheetId = node.data?.sheetId;
+            const lut = node.data?.lut;
 
-            if (!description && node.type !== 'sheet') return null;
+            if (!description && node.type !== 'sheet' && node.type !== 'lut')
+              return null;
 
             return (
               <div key={node.id} className="description-item">
@@ -359,6 +368,32 @@ export const SheetTable: React.FC<SheetTableProps> = ({
                       Open Referenced Sheet
                     </a>
                   </div>
+                ) : node.type === 'lut' && lut?.rows ? (
+                  <div className="description-item-lut">
+                    <table className="compact-table">
+                      <thead>
+                        <tr>
+                          <th>Key</th>
+                          {Object.keys(node.outputs).map((out) => (
+                            <th key={out}>{out}</th>
+                          ))}
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {lut.rows.map((row: any, i: number) => (
+                          // biome-ignore lint/suspicious/noArrayIndexKey: read-only display
+                          <tr key={i}>
+                            <td className="monospace">{row.key}</td>
+                            {Object.keys(node.outputs).map((out) => (
+                              <td key={out} className="monospace">
+                                {row.values?.[out]}
+                              </td>
+                            ))}
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
                 ) : (
                   <div className="markdown-body compact-markdown description-markdown">
                     <ReactMarkdown
@@ -374,7 +409,8 @@ export const SheetTable: React.FC<SheetTableProps> = ({
             );
           })}
           {descriptionNodes.every(
-            (n) => !n.data?.description && n.type !== 'sheet',
+            (n) =>
+              !n.data?.description && n.type !== 'sheet' && n.type !== 'lut',
           ) && (
             <div className="description-empty">No descriptions available</div>
           )}

@@ -612,7 +612,7 @@ async def seed_database(session: AsyncSession):
     )
 
     # ==========================================
-    # Sheet 5: Material Selection (Option Node)
+    # Sheet 5: Material Selection (LUT Node)
     # ==========================================
     sheet5_id = uuid.uuid4()
     sheet5 = Sheet(id=sheet5_id, name="Material Selection Example", owner_name="System", folder_id=folder_id)
@@ -631,7 +631,7 @@ async def seed_database(session: AsyncSession):
             "dataType": "option",
             "options": ["Steel", "Aluminum", "Titanium"],
             "value": "Steel",
-            "description": "Select the material for the component.",
+            "description": "Select the material for the component. This node gets its options from the connected LUT.",
         },
     )
 
@@ -643,22 +643,31 @@ async def seed_database(session: AsyncSession):
         inputs=[],
         outputs=[{"key": "value", "socket_type": "any"}],
         position_x=100,
-        position_y=300,
+        position_y=350,
         data={"value": "1.0", "description": "Volume of the component.", "min": "0"},
     )
 
-    node_density_func = Node(
+    node_material_lut = Node(
         id=uuid.uuid4(),
         sheet_id=sheet5_id,
-        type="function",
-        label="Get Density",
-        inputs=[{"key": "material", "socket_type": "any"}],
-        outputs=[{"key": "density", "socket_type": "any"}],
+        type="lut",
+        label="Material Properties LUT",
+        inputs=[{"key": "key", "socket_type": "any"}],
+        outputs=[
+            {"key": "Density [kg/m^3]", "socket_type": "any"},
+            {"key": "Young's Modulus [GPa]", "socket_type": "any"},
+        ],
         position_x=400,
         position_y=100,
         data={
-            "code": 'densities = {"Steel": 7850, "Aluminum": 2700, "Titanium": 4500}\ndensity = densities.get(material, 0)',
-            "description": "Look up density based on material name.",
+            "description": "Look up density and Young's modulus based on material name.",
+            "lut": {
+                "rows": [
+                    {"key": "Steel", "values": {"Density [kg/m^3]": 7850, "Young's Modulus [GPa]": 210}},
+                    {"key": "Aluminum", "values": {"Density [kg/m^3]": 2700, "Young's Modulus [GPa]": 70}},
+                    {"key": "Titanium", "values": {"Density [kg/m^3]": 4500, "Young's Modulus [GPa]": 110}},
+                ]
+            },
         },
     )
 
@@ -669,8 +678,8 @@ async def seed_database(session: AsyncSession):
         label="Calculate Mass",
         inputs=[{"key": "density", "socket_type": "any"}, {"key": "volume", "socket_type": "any"}],
         outputs=[{"key": "mass", "socket_type": "any"}],
-        position_x=700,
-        position_y=200,
+        position_x=750,
+        position_y=250,
         data={"code": "mass = density * volume", "description": "Calculate mass from density and volume."},
     )
 
@@ -681,8 +690,8 @@ async def seed_database(session: AsyncSession):
         label="Mass [kg]",
         inputs=[{"key": "value", "socket_type": "any"}],
         outputs=[],
-        position_x=1000,
-        position_y=200,
+        position_x=1050,
+        position_y=250,
         data={"description": "Total mass of the component.", "min": "0"},
     )
 
@@ -691,13 +700,13 @@ async def seed_database(session: AsyncSession):
         sheet_id=sheet5_id,
         source_id=node_material.id,
         source_port="value",
-        target_id=node_density_func.id,
-        target_port="material",
+        target_id=node_material_lut.id,
+        target_port="key",
     )
     conn5_2 = Connection(
         sheet_id=sheet5_id,
-        source_id=node_density_func.id,
-        source_port="density",
+        source_id=node_material_lut.id,
+        source_port="Density [kg/m^3]",
         target_id=node_mass_calc.id,
         target_port="density",
     )
@@ -717,7 +726,7 @@ async def seed_database(session: AsyncSession):
     )
 
     session.add(sheet5)
-    session.add_all([node_material, node_volume, node_density_func, node_mass_calc, node_out_mass])
+    session.add_all([node_material, node_volume, node_material_lut, node_mass_calc, node_out_mass])
     await session.flush()
     session.add_all([conn5_1, conn5_2, conn5_3, conn5_4])
 

@@ -306,6 +306,38 @@
   color: var(--link-color, #007bff);
 }
 
+.description-item-sheet-link a:hover {
+  text-decoration: underline;
+}
+
+.description-item-lut {
+  margin-top: 8px;
+  overflow-x: auto;
+}
+
+.compact-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.8rem;
+  border: 1px solid var(--border-color);
+}
+
+.compact-table th,
+.compact-table td {
+  border: 1px solid var(--border-color);
+  padding: 4px 8px;
+  text-align: left;
+}
+
+.compact-table th {
+  background: var(--panel-bg-secondary);
+  font-weight: bold;
+}
+
+.monospace {
+  font-family: monospace;
+}
+
 .description-markdown {
   font-size: 0.85em;
   line-height: 1.3;
