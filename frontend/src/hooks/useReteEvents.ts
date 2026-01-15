@@ -15,6 +15,7 @@ export function useReteEvents(
     handleCalculationInputChange: (id: string, value: string) => void;
     onPaste: (data: any) => void;
     onDelete: (nodeIds: string[]) => void;
+    onSave?: () => void;
     onViewportChange?: () => void;
   },
   refs: {
@@ -32,6 +33,7 @@ export function useReteEvents(
     handleCalculationInputChange,
     onPaste,
     onDelete,
+    onSave,
     onViewportChange,
   } = callbacks;
 
@@ -41,24 +43,37 @@ export function useReteEvents(
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       const target = e.target as HTMLElement;
-      if (
+      const isInput =
         ['INPUT', 'TEXTAREA', 'SELECT'].includes(target.tagName) ||
-        target.isContentEditable
-      ) {
-        return;
-      }
-
-      if (e.key === 'Delete' || e.key === 'Backspace') {
-        e.preventDefault();
-        if (editor?.getSelectedNodes) {
-          const selected = editor.getSelectedNodes();
-          if (selected.length > 0) {
-            onDelete(selected.map((n) => n.id));
-          }
-        }
-      }
+        target.isContentEditable;
 
       if (e.ctrlKey || e.metaKey) {
+        // Ctrl+S: Save (Allow even in inputs)
+        if (e.key.toLowerCase() === 's') {
+          e.preventDefault();
+          onSave?.();
+          return;
+        }
+
+        // For other shortcuts, respect input focus
+        if (isInput) return;
+
+        if (e.key.toLowerCase() === 'z') {
+          e.preventDefault();
+          if (e.shiftKey) {
+            editor?.redo();
+          } else {
+            editor?.undo();
+          }
+          return;
+        }
+
+        if (e.key.toLowerCase() === 'y') {
+          e.preventDefault();
+          editor?.redo();
+          return;
+        }
+
         if (e.key === 'c') {
           if (editor?.getSelectedNodes) {
             const selected = editor.getSelectedNodes();
@@ -88,11 +103,23 @@ export function useReteEvents(
           }
         }
       }
+
+      if (isInput) return;
+
+      if (e.key === 'Delete' || e.key === 'Backspace') {
+        e.preventDefault();
+        if (editor?.getSelectedNodes) {
+          const selected = editor.getSelectedNodes();
+          if (selected.length > 0) {
+            onDelete(selected.map((n) => n.id));
+          }
+        }
+      }
     };
 
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [editor, onPaste, onDelete]);
+  }, [editor, onPaste, onDelete, onSave]);
 
   useEffect(() => {
     if (editor) {

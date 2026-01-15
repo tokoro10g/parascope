@@ -256,6 +256,14 @@ export const SheetEditor: React.FC = () => {
     }
   }, [location.pathname, location.search, navigate]);
 
+  const onSave = useCallback(() => {
+    if (isReadOnly) {
+      toast.error('Cannot save (Read-Only)');
+      return;
+    }
+    handleSaveSheet(getExportData());
+  }, [handleSaveSheet, getExportData, isReadOnly]);
+
   useReteEvents(
     editor || undefined,
     {
@@ -269,6 +277,7 @@ export const SheetEditor: React.FC = () => {
       onPaste: handlePaste,
       onDelete: handleDelete,
       onViewportChange: handleViewportChange,
+      onSave,
     },
     { lastResultRef, calculationInputsRef },
   );
@@ -314,49 +323,6 @@ export const SheetEditor: React.FC = () => {
       setNodes(nodes);
     }
   }, [editor, calculationInputs, lastResult]);
-
-  const onSave = useCallback(() => {
-    if (isReadOnly) {
-      toast.error('Cannot save (Read-Only)');
-      return;
-    }
-    handleSaveSheet(getExportData());
-  }, [handleSaveSheet, getExportData, isReadOnly]);
-
-  // Keyboard Shortcuts for Undo/Redo
-  useEffect(() => {
-    const handleKeyDown = (e: KeyboardEvent) => {
-      if (!editor) return;
-
-      // Ignore if user is typing in an input field
-      if (
-        e.target instanceof HTMLInputElement ||
-        e.target instanceof HTMLTextAreaElement
-      ) {
-        return;
-      }
-
-      if (e.ctrlKey || e.metaKey) {
-        if (e.key.toLowerCase() === 'z') {
-          e.preventDefault();
-          if (e.shiftKey) {
-            editor.redo();
-          } else {
-            editor.undo();
-          }
-        } else if (e.key.toLowerCase() === 'y') {
-          e.preventDefault();
-          editor.redo();
-        } else if (e.key.toLowerCase() === 's') {
-          e.preventDefault();
-          onSave();
-        }
-      }
-    };
-
-    window.addEventListener('keydown', handleKeyDown);
-    return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [editor, onSave]);
 
   const handleAddNode = async (
     type: 'constant' | 'function' | 'input' | 'output' | 'sheet',
