@@ -437,7 +437,7 @@ def {method_name}(self, key):
             res = row.copy()
             if 'key' in res: del res['key']
             return res
-    raise ValueError(f"Key '{{key}}' not found in LUT '{label_safe}'")
+    raise ParascopeError(f"Key '{{key}}' not found in LUT '{label_safe}'")
 """
         
         return ""
