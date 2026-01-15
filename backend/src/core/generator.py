@@ -433,10 +433,8 @@ def {method_name}(self, key):
     key_str = str(key)
     for row in rows:
         if str(row.get('key')) == key_str:
-            # Found match, return all values except 'key'
-            res = row.copy()
-            if 'key' in res: del res['key']
-            return res
+            # Found match, return values from the nested 'values' object
+            return row.get('values', {{}})
     raise ParascopeError(f"Key '{{key}}' not found in LUT '{label_safe}'")
 """
         
