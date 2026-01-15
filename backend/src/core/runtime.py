@@ -137,6 +137,9 @@ def output_node(node_id: str, inputs: Dict[str, str] = None, label: str = None, 
 def sheet_node(node_id: str, inputs: Dict[str, str] = None, label: str = None, **kwargs):
     return node(node_id, inputs=inputs, type="sheet", label=label, **kwargs)
 
+def lut_node(node_id: str, inputs: Dict[str, str] = None, label: str = None, **kwargs):
+    return node(node_id, inputs=inputs, type="lut", label=label, **kwargs)
+
 class ValidationResult:
     def __init__(self, valid: bool, error: Optional[str] = None, value: Any = None):
         self.valid = valid

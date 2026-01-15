@@ -21,9 +21,18 @@ export type AreaExtra =
   | ReactArea2D<Schemes>
   | ContextMenuExtra;
 
+export type NodeType =
+  | 'constant'
+  | 'function'
+  | 'input'
+  | 'output'
+  | 'sheet'
+  | 'comment'
+  | 'lut';
+
 export interface NodeUpdates {
   label?: string;
-  type?: string;
+  type?: NodeType;
   data?: Record<string, any>;
   inputs?: { key: string; socket_type: string }[];
   outputs?: { key: string; socket_type: string }[];

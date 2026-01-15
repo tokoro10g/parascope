@@ -5,6 +5,7 @@ import {
   LogOut,
   MessageSquare,
   Sigma,
+  Table,
 } from 'lucide-react';
 import { useEffect, useRef, useState } from 'react';
 import { Presets } from 'rete-react-plugin';
@@ -17,6 +18,7 @@ const styles: Record<string, { background: string; borderColor: string }> = {
   output: { background: 'rgba(110, 218, 110, 0.8)', borderColor: '#4caf50' },
   sheet: { background: 'rgba(77, 208, 225, 0.8)', borderColor: '#00bcd4' },
   comment: { background: 'rgba(245, 245, 245, 0.95)', borderColor: '#bdbdbd' },
+  lut: { background: 'rgba(149, 117, 205, 0.8)', borderColor: '#673ab7' },
 };
 
 const icons: Record<string, any> = {
@@ -26,6 +28,7 @@ const icons: Record<string, any> = {
   output: LogOut,
   sheet: Import,
   comment: MessageSquare,
+  lut: Table,
 };
 
 export function CustomNode(props: any) {

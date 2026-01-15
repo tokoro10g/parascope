@@ -22,7 +22,12 @@ import { DropdownControl, DropdownControlComponent } from './DropdownControl';
 import { InputControl, InputControlComponent } from './InputControl';
 import { MarkdownControl, MarkdownControlComponent } from './MarkdownControl';
 import { ParascopeNode } from './ParascopeNode';
-import { type AreaExtra, Connection, type Schemes } from './types';
+import {
+  type AreaExtra,
+  Connection,
+  type NodeType,
+  type Schemes,
+} from './types';
 
 // --- Types ---
 
@@ -257,7 +262,7 @@ export async function createEditor(container: HTMLElement) {
           const outputs = Array.isArray(n.outputs) ? n.outputs : [];
 
           const node = new ParascopeNode(
-            n.type,
+            n.type as NodeType,
             n.label || n.type,
             inputs,
             outputs,

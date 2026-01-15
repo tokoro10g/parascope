@@ -8,10 +8,12 @@ import {
   Save,
   Share2,
   Sigma,
+  Table,
   Undo,
 } from 'lucide-react';
 import type React from 'react';
 import { useEffect, useState } from 'react';
+import type { NodeType } from '../rete/types';
 import './EditorBar.css';
 
 interface EditorBarProps {
@@ -20,9 +22,7 @@ interface EditorBarProps {
   readOnly?: boolean;
   onRenameSheet: (name: string) => void;
   onSaveSheet: () => void;
-  onAddNode: (
-    type: 'constant' | 'function' | 'input' | 'output' | 'sheet' | 'comment',
-  ) => void;
+  onAddNode: (type: NodeType) => void;
   onUndo: () => void;
   onRedo: () => void;
   onCheckUsage?: () => void;
@@ -161,6 +161,17 @@ export const EditorBar: React.FC<EditorBarProps> = ({
           className="btn-add-comment"
         >
           <MessageSquare size={18} />
+        </button>
+        <button
+          type="button"
+          onClick={(e) => {
+            onAddNode('lut');
+            e.currentTarget.blur();
+          }}
+          title="Add LUT"
+          className="btn-add-lut"
+        >
+          <Table size={18} />
         </button>
       </div>
 

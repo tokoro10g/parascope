@@ -419,6 +419,26 @@ def {method_name}(self): pass
 @output_node("{nid}", inputs={dict_str}, label="{label_safe}"{params_str})
 def {method_name}(self, {args_str}): pass
 """
+
+        elif node.type == 'lut':
+            lut_data = node.data.get("lut", {"rows": []})
+            rows = lut_data.get("rows", [])
+            
+            # Implementation: find matching key in rows
+            # We use string comparison for keys to match frontend behavior
+            return f"""
+@lut_node("{nid}", inputs={dict_str}, label="{label_safe}")
+def {method_name}(self, key):
+    rows = {repr(rows)}
+    key_str = str(key)
+    for row in rows:
+        if str(row.get('key')) == key_str:
+            # Found match, return all values except 'key'
+            res = row.copy()
+            if 'key' in res: del res['key']
+            return res
+    raise ValueError(f"Key '{{key}}' not found in LUT '{label_safe}'")
+"""
         
         return ""
 

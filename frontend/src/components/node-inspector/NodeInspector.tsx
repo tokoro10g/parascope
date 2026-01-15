@@ -5,6 +5,7 @@ import '../Modal.css';
 import { AIGenerator } from './AIGenerator';
 import { DescriptionEditor } from './DescriptionEditor';
 import { FunctionEditor } from './FunctionEditor';
+import { LUTEditor } from './LUTEditor';
 import { TypeConfig } from './TypeConfig';
 import type { NodeUpdates } from './types';
 
@@ -222,6 +223,16 @@ export const NodeInspector: React.FC<NodeInspectorProps> = ({
             outputs={outputs}
             setOutputs={setOutputs}
             isGenerating={isGenerating}
+          />
+        )}
+
+        {node.type === 'lut' && (
+          <LUTEditor
+            data={data}
+            setData={setData}
+            outputs={outputs}
+            setOutputs={setOutputs}
+            setInputs={setInputs}
           />
         )}
 

@@ -5,7 +5,7 @@ import { v4 as uuidv4 } from 'uuid';
 import type { Sheet } from '../api';
 import type { NodeEditorWrapper } from '../rete';
 import { ParascopeNode, socket } from '../rete';
-import type { NodeUpdates, Schemes } from '../rete/types';
+import type { NodeType, NodeUpdates, Schemes } from '../rete/types';
 import { createSocket } from '../utils';
 
 export function useNodeOperations(
@@ -33,7 +33,7 @@ export function useNodeOperations(
 
   const addNode = useCallback(
     async (
-      type: string,
+      type: NodeType,
       label: string,
       inputs: { key: string; socket_type: string }[],
       outputs: { key: string; socket_type: string }[],

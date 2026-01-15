@@ -189,6 +189,29 @@ export function useReteEvents(
           isInputToSheet = false;
         }
 
+        // --- LUT Option Propagation (Source: Input/Constant -> Target: LUT) ---
+        if (
+          target?.type === 'lut' &&
+          (source?.type === 'input' || source?.type === 'constant')
+        ) {
+          const lutData = target.data?.lut;
+          if (lutData?.rows) {
+            const options = lutData.rows.map((r: any) => String(r.key));
+            if (
+              JSON.stringify(source.data.options) !== JSON.stringify(options)
+            ) {
+              await handleNodeUpdate(source.id, {
+                data: {
+                  ...source.data,
+                  dataType: 'option',
+                  options: options,
+                },
+              });
+            }
+          }
+        }
+        // ----------------------------------------------------------------------
+
         if (sheetNode && otherNode) {
           const nestedSheetId = sheetNode.data?.sheetId;
           const portKey = isInputToSheet
@@ -281,6 +304,46 @@ export function useReteEvents(
       const updateNodesState = () => {
         setIsDirty(true);
         const nodes = [...editor.instance.getNodes()];
+
+        // --- LUT Key Propagation (Configure Sources connected to LUT Targets) ---
+        const connections = editor.instance.getConnections();
+        for (const target of nodes) {
+          if (target.type === 'lut') {
+            const lutData = target.data?.lut;
+            if (lutData?.rows) {
+              const options = lutData.rows.map((r: any) => String(r.key));
+
+              // Find source nodes (input/constant) connected TO this LUT target
+              const sourceNodeIds = connections
+                .filter((c) => c.target === target.id)
+                .map((c) => c.source);
+
+              for (const sourceId of sourceNodeIds) {
+                const sourceNode = editor.instance.getNode(sourceId);
+                if (
+                  sourceNode &&
+                  (sourceNode.type === 'input' ||
+                    sourceNode.type === 'constant')
+                ) {
+                  if (
+                    JSON.stringify(sourceNode.data.options) !==
+                    JSON.stringify(options)
+                  ) {
+                    handleNodeUpdate(sourceNode.id, {
+                      data: {
+                        ...sourceNode.data,
+                        dataType: 'option',
+                        options: options,
+                      },
+                    });
+                  }
+                }
+              }
+            }
+          }
+        }
+        // -----------------------------------------------------------------------
+
         nodes.forEach((n) => {
           const pos = editor.area.nodeViews.get(n.id)?.position;
           if (pos) {

@@ -17,6 +17,7 @@ import { useSheetLock } from '../../hooks/useSheetLock';
 import { useSheetManager } from '../../hooks/useSheetManager';
 import { useUnsavedChanges } from '../../hooks/useUnsavedChanges';
 import { createEditor, type ParascopeNode } from '../../rete';
+import type { NodeType } from '../../rete/types';
 import { createSocket, extractValuesFromResult } from '../../utils';
 import { EditorBar } from '../EditorBar';
 import { NavBar } from '../NavBar';
@@ -324,9 +325,7 @@ export const SheetEditor: React.FC = () => {
     }
   }, [editor, calculationInputs, lastResult]);
 
-  const handleAddNode = async (
-    type: 'constant' | 'function' | 'input' | 'output' | 'sheet' | 'comment',
-  ) => {
+  const handleAddNode = async (type: NodeType) => {
     if (!editor || !currentSheet) return;
 
     if (type === 'sheet') {
@@ -363,6 +362,16 @@ export const SheetEditor: React.FC = () => {
       case 'comment':
         label = 'Comment';
         data = { description: 'Add your comment here...' };
+        break;
+      case 'lut':
+        label = 'LUT';
+        inputs = [createSocket('key')];
+        outputs = [createSocket('output1')];
+        data = {
+          lut: {
+            rows: [{ key: 'Key 1', output1: 0 }],
+          },
+        };
         break;
     }
 

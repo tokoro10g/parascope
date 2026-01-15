@@ -48,6 +48,14 @@
   padding-right: 30px;
 }
 
+/* LUT Node - Purple */
+.node-lut .title {
+  background: #673ab7;
+  border-radius: 8px 8px 0px 0px;
+  color: white;
+  padding-right: 30px;
+}
+
 /* Error State */
 .node-error {
   box-shadow: 0 0 10px 4px #f44336;
@@ -65,7 +73,8 @@
 .node-input,
 .node-output,
 .node-sheet,
-.node-comment {
+.node-comment,
+.node-lut {
   width: auto;
   height: auto;
   min-width: 180px;
@@ -77,7 +86,8 @@
 .node-input .title,
 .node-output .title,
 .node-sheet .title,
-.node-comment .title {
+.node-comment .title,
+.node-lut .title {
   cursor: text;
 }
 
