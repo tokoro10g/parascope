@@ -11,6 +11,8 @@ from pydantic import BaseModel
 from .runtime import (
     SheetBase,
     NodeError,
+    ParascopeError,
+    ValueValidationError,
     node,
     sheet,
     function_node,
@@ -42,7 +44,7 @@ def _persistent_worker_loop(task_queue, result_queue, runtime_classes):
     Long-running worker loop.
     Pre-imports heavy libraries to save time on subsequent runs.
     """
-    (SheetBase, NodeError, node, sheet, 
+    (SheetBase, NodeError, ParascopeError, ValueValidationError, node, sheet, 
      function_node, constant_node, input_node, output_node, sheet_node, lut_node) = runtime_classes
 
     # Pre-import common scientific libraries
@@ -67,6 +69,8 @@ def _persistent_worker_loop(task_queue, result_queue, runtime_classes):
             global_vars = {
                 "SheetBase": SheetBase,
                 "NodeError": NodeError,
+                "ParascopeError": ParascopeError,
+                "ValueValidationError": ValueValidationError,
                 "node": node,
                 "sheet": sheet,
                 "function_node": function_node,
@@ -135,7 +139,7 @@ def _ensure_worker():
         _worker_process = multiprocessing.Process(
             target=_persistent_worker_loop,
             args=(_task_queue, _result_queue, (
-                SheetBase, NodeError, node, sheet,
+                SheetBase, NodeError, ParascopeError, ValueValidationError, node, sheet,
                 function_node, constant_node, input_node, output_node, sheet_node, lut_node
             )),
             daemon=True

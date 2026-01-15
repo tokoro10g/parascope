@@ -14,27 +14,52 @@
 
 .lut-table {
   width: 100%;
-  border-collapse: collapse;
+  border-collapse: separate; /* Required for sticky borders to work correctly */
+  border-spacing: 0;
   font-family: monospace;
   font-size: 0.85rem;
+}
+
+.lut-table th,
+.lut-table td {
+  border-bottom: 1px solid var(--border-color);
+  border-right: 1px solid var(--border-color);
 }
 
 .lut-table th {
   position: sticky;
   top: 0;
-  z-index: 2;
+  z-index: 10;
   background: var(--panel-bg-secondary);
-  border-bottom: 2px solid var(--border-color);
-  border-right: 1px solid var(--border-color);
   padding: 4px 8px;
   text-align: left;
   white-space: nowrap;
 }
 
+/* Fix first column (Key) */
+.lut-table th:first-child,
+.lut-table td:first-child {
+  position: sticky;
+  left: 0;
+  z-index: 11;
+  background: var(--panel-bg-secondary);
+  border-right: 2px solid var(--border-color);
+  min-width: 120px;
+}
+
+.lut-table td:first-child {
+  z-index: 5;
+  background: var(--panel-bg);
+}
+
+.lut-table th:first-child {
+  top: 0;
+  z-index: 20; /* Top-left corner needs highest z-index */
+}
+
 .lut-table td {
-  border-bottom: 1px solid var(--border-color);
-  border-right: 1px solid var(--border-color);
   padding: 0;
+  min-width: 100px;
 }
 
 .lut-table tr:last-child td {
@@ -62,6 +87,7 @@
   flex-direction: column;
   gap: 2px;
   align-items: center;
+  min-width: 80px;
 }
 
 .lut-header-main {
@@ -71,54 +97,45 @@
   gap: 4px;
 }
 
-.lut-header-actions,
-.lut-row-actions {
-  display: flex;
-  gap: 2px;
-  justify-content: center;
-  align-items: center;
-  height: 100%;
-}
-
-.lut-row-actions {
-  padding: 0 4px;
-}
-
-.lut-icon-btn,
-.lut-table .lut-remove-btn {
-  background: none;
+.lut-header-input {
+  background: transparent;
   border: none;
-  color: var(--text-color);
-  opacity: 0.3;
-  cursor: pointer;
-  padding: 2px 1px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
+  color: inherit;
+  font-family: inherit;
+  font-size: inherit;
+  font-weight: bold;
+  padding: 2px 4px;
+  width: 100%;
+  outline: none;
   border-radius: 2px;
-  transition: all 0.2s;
-  min-width: 18px;
-  height: 18px;
+  text-align: center;
 }
 
-.lut-icon-btn:hover:not(:disabled),
-.lut-table tr:hover .lut-remove-btn,
-.lut-table th:hover .lut-remove-btn {
-  opacity: 1;
+.lut-header-input:hover {
+  background: rgba(255, 255, 255, 0.1);
 }
 
-.lut-icon-btn:hover:not(:disabled) {
-  background: var(--panel-bg-translucent);
-}
-
-.lut-icon-btn:disabled {
-  cursor: not-allowed;
-  opacity: 0.05;
+.lut-header-input:focus {
+  background: var(--input-bg);
+  color: var(--text-color);
+  box-shadow: 0 0 0 1px var(--primary-color);
 }
 
 .lut-table .lut-remove-btn {
   opacity: 0.3;
   transition: opacity 0.2s;
+  padding: 2px;
+  min-width: auto;
+  height: auto;
+  background: none;
+  border: none;
+  color: var(--text-color);
+  cursor: pointer;
+}
+
+.lut-table tr:hover .lut-remove-btn,
+.lut-table th:hover .lut-remove-btn {
+  opacity: 1;
 }
 
 .lut-table .lut-remove-btn:hover {
@@ -165,4 +182,49 @@
 .lut-add-row-inline-btn:hover {
   opacity: 1;
   background: var(--panel-bg-translucent);
+}
+
+.lut-header-actions,
+.lut-row-actions {
+  display: flex;
+  gap: 2px;
+  justify-content: center;
+  align-items: center;
+  height: 100%;
+}
+
+.lut-row-actions {
+  padding: 0 4px;
+}
+
+.lut-icon-btn,
+.lut-table .lut-remove-btn {
+  background: none;
+  border: none;
+  color: var(--text-color);
+  opacity: 0.3;
+  cursor: pointer;
+  padding: 2px 1px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 2px;
+  transition: all 0.2s;
+  min-width: 18px;
+  height: 18px;
+}
+
+.lut-icon-btn:hover:not(:disabled),
+.lut-table tr:hover .lut-remove-btn,
+.lut-table th:hover .lut-remove-btn {
+  opacity: 1;
+}
+
+.lut-icon-btn:hover:not(:disabled) {
+  background: var(--panel-bg-translucent);
+}
+
+.lut-icon-btn:disabled {
+  cursor: not-allowed;
+  opacity: 0.05;
 }
