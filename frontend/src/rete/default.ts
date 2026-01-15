@@ -6,13 +6,8 @@ import {
   ConnectionPlugin,
   Presets as ConnectionPresets,
 } from 'rete-connection-plugin';
-import type { ContextMenuExtra } from 'rete-context-menu-plugin';
 import { HistoryPlugin, Presets as HistoryPresets } from 'rete-history-plugin';
-import {
-  type ReactArea2D,
-  ReactPlugin,
-  Presets as ReactPresets,
-} from 'rete-react-plugin';
+import { ReactPlugin, Presets as ReactPresets } from 'rete-react-plugin';
 import type { Sheet } from '../api';
 import { createSocket } from '../utils';
 
@@ -26,13 +21,11 @@ import {
 import { DropdownControl, DropdownControlComponent } from './DropdownControl';
 import { InputControl, InputControlComponent } from './InputControl';
 import { ParascopeNode } from './ParascopeNode';
-import { Connection, type Schemes } from './types';
+import { type AreaExtra, Connection, type Schemes } from './types';
 
 // --- Types ---
 
 const { Common, Subitems } = ReactPresets.contextMenu;
-
-type AreaExtra = Area2D<Schemes> | ReactArea2D<Schemes> | ContextMenuExtra;
 
 export type NodeEditorWrapper = Awaited<ReturnType<typeof createEditor>>;
 
