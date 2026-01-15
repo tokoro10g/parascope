@@ -31,14 +31,14 @@ export function useEditorSetup({
     if (editor) {
       editor.setContextMenuCallbacks({
         onNodeEdit: (id: string) => {
-          const node = editor.editor.getNode(id);
+          const node = editor.instance.getNode(id);
           if (node) setEditingNode(node as ParascopeNode);
         },
         onEditNestedSheet: (id: string) => {
           handleOpenNestedSheet(id, true);
         },
         onNodeTypeChange: async (nodeId: string, type: string) => {
-          const node = editor.editor.getNode(nodeId) as ParascopeNode;
+          const node = editor.instance.getNode(nodeId) as ParascopeNode;
           if (!node) return;
 
           let inputs: any[] = [];
@@ -46,7 +46,7 @@ export function useEditorSetup({
           const data: any = { value: '' };
 
           const currentValue =
-            (node.controls.value as any)?.value || node.initialData.value || '';
+            (node.controls.value as any)?.value || node.data.value || '';
 
           if (type === 'constant') {
             outputs = [createSocket('value')];
@@ -54,7 +54,7 @@ export function useEditorSetup({
           } else if (type === 'function') {
             inputs = [createSocket('a'), createSocket('b')];
             outputs = [createSocket('result')];
-            data.expression = node.initialData.expression || 'a + b';
+            data.expression = node.data.expression || 'a + b';
           } else if (type === 'input') {
             outputs = [createSocket('value')];
           } else if (type === 'output') {
@@ -65,7 +65,7 @@ export function useEditorSetup({
             type,
             inputs: inputs,
             outputs: outputs,
-            initialData: data,
+            data: data,
           });
         },
         onNodeDuplicate: handleDuplicateNode,
@@ -74,7 +74,7 @@ export function useEditorSetup({
       });
 
       editor.setNodeDoubleClickListener((id: string) => {
-        const node = editor.editor.getNode(id);
+        const node = editor.instance.getNode(id);
         if (node) {
           if (node.type === 'sheet') {
             handleOpenNestedSheet(id, true);

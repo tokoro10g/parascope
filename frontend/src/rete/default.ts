@@ -37,7 +37,7 @@ type AreaExtra = Area2D<Schemes> | ReactArea2D<Schemes> | ContextMenuExtra;
 export type NodeEditorWrapper = Awaited<ReturnType<typeof createEditor>>;
 
 export async function createEditor(container: HTMLElement) {
-  const editor = new NodeEditor<Schemes>();
+  const instance = new NodeEditor<Schemes>();
   const area = new AreaPlugin<Schemes, AreaExtra>(container);
   const connection = new ConnectionPlugin<Schemes, AreaExtra>();
   const reactRender = new ReactPlugin<Schemes, AreaExtra>({ createRoot });
@@ -45,7 +45,7 @@ export async function createEditor(container: HTMLElement) {
   history.addPreset(HistoryPresets.classic.setup());
 
   const contextMenuCallbacks: ContextMenuCallbacks = {};
-  const contextMenu = createContextMenuPlugin(editor, contextMenuCallbacks);
+  const contextMenu = createContextMenuPlugin(instance, contextMenuCallbacks);
 
   const selector = AreaExtensions.selector();
 
@@ -104,7 +104,7 @@ export async function createEditor(container: HTMLElement) {
   );
 
   // Listen for changes
-  editor.addPipe((context) => {
+  instance.addPipe((context) => {
     if (context.type === 'connectioncreated') {
       if (onConnectionCreated)
         onConnectionCreated(
@@ -138,13 +138,13 @@ export async function createEditor(container: HTMLElement) {
     return context;
   });
 
-  editor.use(area);
+  instance.use(area);
   area.use(connection);
   area.use(reactRender);
   area.use(history);
   area.use(contextMenu);
 
-  AreaExtensions.zoomAt(area, editor.getNodes());
+  AreaExtensions.zoomAt(area, instance.getNodes());
   AreaExtensions.snapGrid(area, { size: 20 });
 
   let lastNodePicked: string | null = null;
@@ -187,7 +187,7 @@ export async function createEditor(container: HTMLElement) {
   });
 
   return {
-    editor,
+    instance,
     area,
     destroy: () => area.destroy(),
     setNodeDoubleClickListener: (cb: (nodeId: string) => void) => {
@@ -234,7 +234,7 @@ export async function createEditor(container: HTMLElement) {
     loadSheet: async (sheet: Sheet, focusNodeId?: string) => {
       suppressGraphChange = true;
       try {
-        await editor.clear();
+        await instance.clear();
 
         const nodeMap = new Map<string, ParascopeNode>();
 
@@ -264,7 +264,7 @@ export async function createEditor(container: HTMLElement) {
           node.dbId = n.id;
           // node.label is already set by super(label)
 
-          await editor.addNode(node);
+          await instance.addNode(node);
 
           // Translate position
           await area.translate(node.id, { x: n.position_x, y: n.position_y });
@@ -288,7 +288,7 @@ export async function createEditor(container: HTMLElement) {
               );
               conn.id = c.id;
               conn.dbId = c.id;
-              await editor.addConnection(conn);
+              await instance.addConnection(conn);
             } catch (e) {
               console.error('Failed to create connection', c, e);
             }
@@ -300,19 +300,19 @@ export async function createEditor(container: HTMLElement) {
         return new Promise<void>((resolve) => {
           setTimeout(async () => {
             // Force update nodes to recalculate socket positions after auto-sizing
-            for (const node of editor.getNodes()) {
+            for (const node of instance.getNodes()) {
               await area.update('node', node.id);
             }
 
             if (focusNodeId) {
-              const node = editor.getNode(focusNodeId);
+              const node = instance.getNode(focusNodeId);
               if (node) {
                 await AreaExtensions.zoomAt(area, [node]);
               } else {
-                await AreaExtensions.zoomAt(area, editor.getNodes());
+                await AreaExtensions.zoomAt(area, instance.getNodes());
               }
             } else {
-              await AreaExtensions.zoomAt(area, editor.getNodes());
+              await AreaExtensions.zoomAt(area, instance.getNodes());
             }
             resolve();
           }, 200);
@@ -329,7 +329,7 @@ export async function createEditor(container: HTMLElement) {
           id,
         );
 
-      const nodes = editor.getNodes().map((n) => {
+      const nodes = instance.getNodes().map((n) => {
         const data: Record<string, any> = {};
 
         // Capture control values
@@ -355,11 +355,11 @@ export async function createEditor(container: HTMLElement) {
           position_y: area.nodeViews.get(n.id)?.position.y || 0,
           inputs: Object.keys(n.inputs).map(createSocket),
           outputs: Object.keys(n.outputs).map(createSocket),
-          data: { ...n.initialData, ...data },
+          data: { ...n.data, ...data },
         };
       });
 
-      const connections = editor.getConnections().map((c) => ({
+      const connections = instance.getConnections().map((c) => ({
         id: isUuid(c.id) ? c.id : undefined,
         source_id: c.source,
         target_id: c.target,
@@ -374,7 +374,7 @@ export async function createEditor(container: HTMLElement) {
       inputs: Record<string, any>,
       outputs: Record<string, any>,
     ) => {
-      editor.getNodes().forEach((node) => {
+      instance.getNodes().forEach((node) => {
         const valueControl = node.controls
           .value as Classic.InputControl<'text'>;
         if (!valueControl) return;
@@ -400,13 +400,13 @@ export async function createEditor(container: HTMLElement) {
     },
 
     zoomToNode: (nodeId: string) => {
-      const node = editor.getNode(nodeId);
+      const node = instance.getNode(nodeId);
       if (node) {
         AreaExtensions.zoomAt(area, [node]);
       }
     },
     getSelectedNodes: () => {
-      return editor
+      return instance
         .getNodes()
         .filter((n) => selector.isSelected({ id: n.id, label: 'node' }));
     },

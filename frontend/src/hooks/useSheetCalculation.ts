@@ -5,7 +5,7 @@ import { InputControl, type ParascopeNode } from '../rete';
 import { validateGraphConnectivity } from '../utils';
 
 interface Editor {
-  editor: {
+  instance: {
     getNodes: () => ParascopeNode[];
   };
   area: {
@@ -30,7 +30,7 @@ export const useSheetCalculation = (editor: Editor | null | undefined) => {
       setLastResult(result);
 
       if (editor) {
-        editor.editor.getNodes().forEach((node) => {
+        editor.instance.getNodes().forEach((node) => {
           const nodeRes = result[node.id];
           if (nodeRes && (nodeRes.valid === false || nodeRes.error)) {
             node.error = nodeRes.error || 'Invalid';
@@ -98,7 +98,7 @@ export const useSheetCalculation = (editor: Editor | null | undefined) => {
             validation.errors.map((e) => [e.nodeId, e.error]),
           );
 
-          editor.editor.getNodes().forEach((node) => {
+          editor.instance.getNodes().forEach((node) => {
             const errorMsg = errorMap.get(node.id);
             // Only update if changed to avoid unnecessary renders?
             // Rete update is cheap if we don't spam it.
@@ -136,7 +136,7 @@ export const useSheetCalculation = (editor: Editor | null | undefined) => {
         setIsCalculating(false);
       }
     },
-    [applyCalculationResult],
+    [applyCalculationResult, editor],
   );
 
   return {

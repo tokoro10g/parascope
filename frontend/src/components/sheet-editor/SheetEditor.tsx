@@ -119,7 +119,7 @@ export const SheetEditor: React.FC = () => {
           ? window.location.hash.substring(1)
           : undefined;
         await editor.loadSheet(sheet, focusNodeId);
-        const nodes = [...editor.editor.getNodes()];
+        const nodes = [...editor.instance.getNodes()];
         nodes.forEach((n) => {
           const pos = editor.area.nodeViews.get(n.id)?.position;
           if (pos) {
@@ -151,7 +151,7 @@ export const SheetEditor: React.FC = () => {
       const apiInputs: Record<string, { value: any }> = {};
       // Use latest calculation inputs
       const currentCalculationInputs = calculationInputsRef.current;
-      const nodes = editor?.editor.getNodes() || [];
+      const nodes = editor?.instance.getNodes() || [];
 
       Object.entries(currentCalculationInputs).forEach(([id, value]) => {
         const node = nodes.find((n) => n.id === id);
@@ -166,7 +166,7 @@ export const SheetEditor: React.FC = () => {
           {}, // Do not update inputs from calculation result (they are controlled locally)
           extractValuesFromResult(result),
         );
-        setNodes([...editor.editor.getNodes()]);
+        setNodes([...editor.instance.getNodes()]);
       }
     }, 50); // 50ms debounce
   }, [getExportData, calculatePreview, editor, currentSheet]);
@@ -193,7 +193,7 @@ export const SheetEditor: React.FC = () => {
 
   const handleGraphChange = useCallback(() => {
     if (!editor) return;
-    const nodes = [...editor.editor.getNodes()];
+    const nodes = [...editor.instance.getNodes()];
     nodes.forEach((n) => {
       const pos = editor.area.nodeViews.get(n.id)?.position;
       if (pos) {
@@ -213,7 +213,7 @@ export const SheetEditor: React.FC = () => {
     handleNodeUpdate: originalHandleNodeUpdate,
     calcCenterPosition,
   } = useNodeOperations(
-    editor?.editor,
+    editor?.instance,
     editor?.area,
     nodes,
     setNodes,
@@ -247,7 +247,7 @@ export const SheetEditor: React.FC = () => {
   const handleDelete = useCallback(
     async (nodeIds: string[]) => {
       for (const id of nodeIds) {
-        const node = editor?.editor.getNode(id);
+        const node = editor?.instance.getNode(id);
         if (node && (node.type === 'input' || node.type === 'output')) {
           if (
             !window.confirm(
@@ -322,7 +322,7 @@ export const SheetEditor: React.FC = () => {
   useEffect(() => {
     if (editor) {
       editor.updateNodeValues(calculationInputs, lastResult || {});
-      const nodes = [...editor.editor.getNodes()];
+      const nodes = [...editor.instance.getNodes()];
       nodes.forEach((n) => {
         const pos = editor.area.nodeViews.get(n.id)?.position;
         if (pos) {
@@ -519,7 +519,7 @@ export const SheetEditor: React.FC = () => {
           {}, // Do not update inputs from calculation result
           extractValuesFromResult(result),
         );
-        setNodes([...editor.editor.getNodes()]);
+        setNodes([...editor.instance.getNodes()]);
       }
     } catch (e: any) {
       console.error(e);
@@ -529,7 +529,7 @@ export const SheetEditor: React.FC = () => {
 
   const handleUpdateNodeValue = (nodeId: string, value: string) => {
     if (!editor) return;
-    const node = editor.editor.getNode(nodeId);
+    const node = editor.instance.getNode(nodeId);
     if (!node) return;
 
     if (node.type === 'input') {
@@ -540,7 +540,7 @@ export const SheetEditor: React.FC = () => {
         control.setValue(value);
         editor.area.update('control', nodeId);
         setIsDirty(true);
-        setNodes([...editor.editor.getNodes()]);
+        setNodes([...editor.instance.getNodes()]);
         triggerAutoCalculation();
       }
     }
@@ -562,7 +562,7 @@ export const SheetEditor: React.FC = () => {
   const handleOpenNestedSheet = useCallback(
     (nodeId: string, newTab: boolean) => {
       if (!editor) return;
-      const node = editor.editor.getNode(nodeId) as ParascopeNode;
+      const node = editor.instance.getNode(nodeId) as ParascopeNode;
       const params = new URLSearchParams();
       if (lastResult?.[nodeId]) {
         const nodeRes = lastResult[nodeId];
@@ -572,7 +572,7 @@ export const SheetEditor: React.FC = () => {
           params.set(inputKey, String(inputVal));
         }
       }
-      const url = `/sheet/${node.initialData.sheetId}?${params.toString()}`;
+      const url = `/sheet/${node.data.sheetId}?${params.toString()}`;
       if (newTab) {
         window.open(url, '_blank');
       } else {
@@ -599,7 +599,7 @@ export const SheetEditor: React.FC = () => {
   const handleImportInputs = useCallback(
     (inputs: Record<string, string>) => {
       if (!editor) return;
-      const inputNodes = editor.editor
+      const inputNodes = editor.instance
         .getNodes()
         .filter((n) => n.type === 'input');
       const newInputs: Record<string, string> = {};

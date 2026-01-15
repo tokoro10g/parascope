@@ -37,7 +37,7 @@ export function useSheetClipboard(
         const outputs = nodeData.outputs.map((label: string) =>
           createSocket(label),
         );
-        const data = nodeData.initialData;
+        const data = nodeData.data;
         if (nodeData.controls && nodeData.controls.value !== undefined) {
           data.value = nodeData.controls.value;
         }

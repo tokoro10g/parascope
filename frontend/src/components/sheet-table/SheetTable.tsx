@@ -246,7 +246,7 @@ export const SheetTable: React.FC<SheetTableProps> = ({
                   const isEditable =
                     node.type === 'constant' || node.type === 'input';
                   const isDropdown =
-                    isEditable && node.initialData.dataType === 'option';
+                    isEditable && node.data.dataType === 'option';
                   const nameControl = node.controls.name as any;
                   const valueControl = node.controls.value as any;
 
@@ -293,7 +293,7 @@ export const SheetTable: React.FC<SheetTableProps> = ({
                             className="sheet-table-input"
                           >
                             <option key="" value=""></option>
-                            {node.initialData.options.map((opt: string) => (
+                            {node.data.options.map((opt: string) => (
                               <option key={opt} value={opt}>
                                 {opt}
                               </option>
@@ -335,8 +335,8 @@ export const SheetTable: React.FC<SheetTableProps> = ({
           {descriptionNodes.map((node) => {
             const nameControl = node.controls.name as any;
             const name = nameControl?.value || node.label;
-            const description = node.initialData?.description;
-            const sheetId = node.initialData?.sheetId;
+            const description = node.data?.description;
+            const sheetId = node.data?.sheetId;
 
             if (!description && node.type !== 'sheet') return null;
 
@@ -371,7 +371,7 @@ export const SheetTable: React.FC<SheetTableProps> = ({
             );
           })}
           {descriptionNodes.every(
-            (n) => !n.initialData?.description && n.type !== 'sheet',
+            (n) => !n.data?.description && n.type !== 'sheet',
           ) && (
             <div className="description-empty">No descriptions available</div>
           )}

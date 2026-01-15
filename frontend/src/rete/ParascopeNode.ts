@@ -11,7 +11,7 @@ export class ParascopeNode extends Classic.Node {
   public type: string;
   public x = 0;
   public y = 0;
-  public initialData: Record<string, any>;
+  public data: Record<string, any>;
   public onChange?: (value: any) => void;
   public error?: string;
 
@@ -25,7 +25,7 @@ export class ParascopeNode extends Classic.Node {
   ) {
     super(label);
     this.type = type;
-    this.initialData = data;
+    this.data = data;
     this.onChange = onChange;
 
     inputs.forEach((inp) => {
@@ -48,7 +48,7 @@ export class ParascopeNode extends Classic.Node {
   }
 
   setupControl() {
-    const data = this.initialData;
+    const data = this.data;
     const onChange = this.onChange;
 
     if (this.controls.value) {

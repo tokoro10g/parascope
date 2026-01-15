@@ -11,7 +11,7 @@ import { createSocket } from '../utils';
 export interface NodeUpdates {
   label?: string;
   type?: string;
-  initialData?: Record<string, any>;
+  data?: Record<string, any>;
   inputs?: { key: string; socket_type: string }[];
   outputs?: { key: string; socket_type: string }[];
 }
@@ -124,7 +124,7 @@ export function useNodeOperations(
       const inputs = Object.keys(originalNode.inputs).map(createSocket);
       const outputs = Object.keys(originalNode.outputs).map(createSocket);
 
-      const data = JSON.parse(JSON.stringify(originalNode.initialData));
+      const data = JSON.parse(JSON.stringify(originalNode.data));
 
       if (originalNode.controls.value) {
         const control = originalNode.controls.value as any;
@@ -174,7 +174,7 @@ export function useNodeOperations(
       const oldState: NodeUpdates = {
         label: node.label,
         type: node.type,
-        initialData: JSON.parse(JSON.stringify(node.initialData)),
+        data: JSON.parse(JSON.stringify(node.data)),
         inputs: Object.keys(node.inputs).map((key) => ({
           key,
           socket_type: 'socket',
@@ -254,11 +254,11 @@ export function useNodeOperations(
           n.type = u.type;
           n.setupControl();
         }
-        if (u.initialData) {
+        if (u.data) {
           if (replaceData) {
-            n.initialData = { ...u.initialData };
+            n.data = { ...u.data };
           } else {
-            n.initialData = { ...n.initialData, ...u.initialData };
+            n.data = { ...n.data, ...u.data };
           }
           n.setupControl();
         }

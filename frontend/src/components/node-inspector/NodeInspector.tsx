@@ -51,13 +51,13 @@ export const NodeInspector: React.FC<NodeInspectorProps> = ({
       setAiUrls('');
       setAiImage(null);
 
-      const currentData = { ...(node.initialData || {}) };
+      const currentData = { ...(node.data || {}) };
 
       // Initialize defaults for new fields
       if (!currentData.dataType) currentData.dataType = 'any';
       if (!currentData.options) currentData.options = [];
 
-      // Sync value from control if it exists, as it might be newer than initialData
+      // Sync value from control if it exists, as it might be newer than data
       if (node.controls.value) {
         const control = node.controls.value as any;
         // Check if control has a value property (it should for InputControl)
@@ -94,7 +94,7 @@ export const NodeInspector: React.FC<NodeInspectorProps> = ({
   const handleSave = () => {
     onSave(node.id, {
       label,
-      initialData: data,
+      data,
       inputs,
       outputs,
     });

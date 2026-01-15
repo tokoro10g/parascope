@@ -1,7 +1,7 @@
 export interface NodeUpdates {
   type?: string;
   label?: string;
-  initialData?: Record<string, any>;
+  data?: Record<string, any>;
   inputs?: { key: string; socket_type: string }[];
   outputs?: { key: string; socket_type: string }[];
 }

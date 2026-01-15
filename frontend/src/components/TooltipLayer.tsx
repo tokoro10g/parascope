@@ -27,7 +27,7 @@ export const TooltipLayer: React.FC<TooltipLayerProps> = ({ editor }) => {
       }
 
       const newErrors = [];
-      for (const node of editor.editor.getNodes()) {
+      for (const node of editor.instance.getNodes()) {
         if (node.error) {
           // Check if this exact error message was dismissed
           if (dismissedErrors[node.id] === node.error) continue;

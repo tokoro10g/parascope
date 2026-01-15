@@ -70,7 +70,7 @@ export function useReteEvents(
                   label: n.label,
                   inputs: Object.keys(n.inputs),
                   outputs: Object.keys(n.outputs),
-                  initialData: JSON.parse(JSON.stringify(n.initialData)),
+                  data: JSON.parse(JSON.stringify(n.data)),
                   controls: n.controls.value
                     ? { value: (n.controls.value as any).value }
                     : {},
@@ -97,22 +97,22 @@ export function useReteEvents(
   useEffect(() => {
     if (editor) {
       const handleEdit = (nodeId: string) => {
-        const node = editor.editor.getNode(nodeId);
+        const node = editor.instance.getNode(nodeId);
         if (node) {
           setEditingNode(node);
         }
       };
 
       const handleEditNestedSheet = (nodeId: string) => {
-        const node = editor.editor.getNode(nodeId);
-        if (node?.initialData?.sheetId) {
+        const node = editor.instance.getNode(nodeId);
+        if (node?.data?.sheetId) {
           const queryString = resolveNestedSheetParams(
-            editor.editor,
+            editor.instance,
             nodeId,
             lastResultRef.current,
             calculationInputsRef.current,
           );
-          const url = `/sheet/${node.initialData.sheetId}${
+          const url = `/sheet/${node.data.sheetId}${
             queryString ? `?${queryString}` : ''
           }`;
           window.open(url, '_blank');
@@ -120,7 +120,7 @@ export function useReteEvents(
       };
 
       const handleDoubleClick = (nodeId: string) => {
-        const node = editor.editor.getNode(nodeId);
+        const node = editor.instance.getNode(nodeId);
         if (node?.type === 'sheet') {
           handleEditNestedSheet(nodeId);
         } else {
@@ -142,8 +142,8 @@ export function useReteEvents(
       });
 
       editor.setConnectionCreatedListener(async (connection) => {
-        const source = editor.editor.getNode(connection.source);
-        const target = editor.editor.getNode(connection.target);
+        const source = editor.instance.getNode(connection.source);
+        const target = editor.instance.getNode(connection.target);
 
         let sheetNode: ParascopeNode | null = null;
         let otherNode: ParascopeNode | null = null;
@@ -163,7 +163,7 @@ export function useReteEvents(
         }
 
         if (sheetNode && otherNode) {
-          const nestedSheetId = sheetNode.initialData?.sheetId;
+          const nestedSheetId = sheetNode.data?.sheetId;
           const portKey = isInputToSheet
             ? connection.targetInput
             : connection.sourceOutput;
@@ -216,23 +216,23 @@ export function useReteEvents(
 
                 if (isOption) {
                   if (
-                    otherNode.initialData.dataType !== 'option' ||
-                    JSON.stringify(otherNode.initialData.options) !==
+                    otherNode.data.dataType !== 'option' ||
+                    JSON.stringify(otherNode.data.options) !==
                       JSON.stringify(matchingChildNode.data.options)
                   ) {
                     updates = {
-                      initialData: {
-                        ...otherNode.initialData,
+                      data: {
+                        ...otherNode.data,
                         dataType: 'option',
                         options: matchingChildNode.data.options || [],
                       },
                     };
                   }
                 } else {
-                  if (otherNode.initialData.dataType === 'option') {
+                  if (otherNode.data.dataType === 'option') {
                     updates = {
-                      initialData: {
-                        ...otherNode.initialData,
+                      data: {
+                        ...otherNode.data,
                         dataType: 'any',
                         options: [],
                       },
@@ -253,7 +253,7 @@ export function useReteEvents(
 
       const updateNodesState = () => {
         setIsDirty(true);
-        const nodes = [...editor.editor.getNodes()];
+        const nodes = [...editor.instance.getNodes()];
         nodes.forEach((n) => {
           const pos = editor.area.nodeViews.get(n.id)?.position;
           if (pos) {

@@ -121,7 +121,7 @@ export const resolveNestedSheetParams = (
   calculationInputs: any,
 ): string => {
   const node = editor.getNode(nodeId);
-  if (!node?.initialData?.sheetId) return '';
+  if (!node?.data?.sheetId) return '';
 
   const connections = editor
     .getConnections()
