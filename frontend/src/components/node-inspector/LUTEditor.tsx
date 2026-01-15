@@ -108,6 +108,34 @@ export const LUTEditor: React.FC<LUTEditorProps> = ({
     });
   };
 
+  const handleRenameKey = (index: number, newKey: string) => {
+    const oldKey = rows[index].key;
+    if (!newKey || newKey === oldKey) {
+      const updated = [...tempKeys];
+      updated[index] = oldKey;
+      setTempKeys(updated);
+      return;
+    }
+
+    const otherKeys = rows
+      .filter((_: any, i: number) => i !== index)
+      .map((r: any) => r.key);
+    if (otherKeys.includes(newKey)) {
+      toast.error(`Key "${newKey}" already exists.`);
+      const updated = [...tempKeys];
+      updated[index] = oldKey;
+      setTempKeys(updated);
+      return;
+    }
+
+    const newRows = [...rows];
+    newRows[index] = { ...newRows[index], key: newKey };
+    setData({
+      ...data,
+      lut: { ...lut, rows: newRows },
+    });
+  };
+
   const handleRemoveOutput = (key: string) => {
     const newOutputs = outputs.filter((o) => o.key !== key);
     setOutputs(newOutputs);

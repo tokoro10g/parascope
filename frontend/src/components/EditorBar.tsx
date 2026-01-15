@@ -154,17 +154,6 @@ export const EditorBar: React.FC<EditorBarProps> = ({
         <button
           type="button"
           onClick={(e) => {
-            onAddNode('comment');
-            e.currentTarget.blur();
-          }}
-          title="Add Comment"
-          className="btn-add-comment"
-        >
-          <MessageSquare size={18} />
-        </button>
-        <button
-          type="button"
-          onClick={(e) => {
             onAddNode('lut');
             e.currentTarget.blur();
           }}
@@ -172,6 +161,17 @@ export const EditorBar: React.FC<EditorBarProps> = ({
           className="btn-add-lut"
         >
           <Table size={18} />
+        </button>
+        <button
+          type="button"
+          onClick={(e) => {
+            onAddNode('comment');
+            e.currentTarget.blur();
+          }}
+          title="Add Comment"
+          className="btn-add-comment"
+        >
+          <MessageSquare size={18} />
         </button>
       </div>
 
