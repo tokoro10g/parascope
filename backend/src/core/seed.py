@@ -9,10 +9,10 @@ from ..models.sheet import Connection, Folder, Node, Sheet
 
 
 async def seed_database(session: AsyncSession):
-    # Check if database is empty
-    result = await session.execute(select(Sheet).limit(1))
+    # Check if "Examples" folder already exists
+    result = await session.execute(select(Folder).where(Folder.name == "Examples"))
     if result.scalar_one_or_none() is not None:
-        print("Database already initialized. Skipping seed.")
+        print("'Examples' folder already exists. Skipping seed.")
         return
 
     print("Seeding database with sophisticated engineering examples...")
