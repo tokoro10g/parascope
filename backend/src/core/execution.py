@@ -18,6 +18,7 @@ from .runtime import (
     input_node,
     output_node,
     sheet_node,
+    lut_node,
 )
 
 
@@ -42,7 +43,7 @@ def _persistent_worker_loop(task_queue, result_queue, runtime_classes):
     Pre-imports heavy libraries to save time on subsequent runs.
     """
     (SheetBase, NodeError, node, sheet, 
-     function_node, constant_node, input_node, output_node, sheet_node) = runtime_classes
+     function_node, constant_node, input_node, output_node, sheet_node, lut_node) = runtime_classes
 
     # Pre-import common scientific libraries
     try:
@@ -72,7 +73,8 @@ def _persistent_worker_loop(task_queue, result_queue, runtime_classes):
                 "constant_node": constant_node,
                 "input_node": input_node,
                 "output_node": output_node,
-                "sheet_node": sheet_node
+                "sheet_node": sheet_node,
+                "lut_node": lut_node
             }
             success = False
             error = None
@@ -134,7 +136,7 @@ def _ensure_worker():
             target=_persistent_worker_loop,
             args=(_task_queue, _result_queue, (
                 SheetBase, NodeError, node, sheet,
-                function_node, constant_node, input_node, output_node, sheet_node
+                function_node, constant_node, input_node, output_node, sheet_node, lut_node
             )),
             daemon=True
         )
