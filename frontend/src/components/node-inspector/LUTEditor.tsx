@@ -7,7 +7,8 @@ import {
   Trash2,
 } from 'lucide-react';
 import type React from 'react';
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
+import toast from 'react-hot-toast';
 import './LUTEditor.css';
 
 interface LUTEditorProps {
@@ -25,6 +26,9 @@ export const LUTEditor: React.FC<LUTEditorProps> = ({
   setOutputs,
   setInputs,
 }) => {
+  const [tempKeys, setTempKeys] = useState<string[]>([]);
+  const [tempOutputs, setTempOutputs] = useState<string[]>([]);
+
   // Ensure LUT data structure exists
   useEffect(() => {
     if (!data.lut) {
@@ -41,6 +45,15 @@ export const LUTEditor: React.FC<LUTEditorProps> = ({
 
   const lut = data.lut || { rows: [{ key: 'Key 1' }] };
   const rows = lut.rows || [];
+
+  // Sync temp state with real data when it changes externally (e.g. initial load)
+  useEffect(() => {
+    setTempKeys(rows.map((r: any) => r.key));
+  }, [rows]);
+
+  useEffect(() => {
+    setTempOutputs(outputs.map((o) => o.key));
+  }, [outputs]);
 
   // Get unique output keys from rows (excluding 'key')
   const outputKeys = outputs.map((o) => o.key);
@@ -67,13 +80,27 @@ export const LUTEditor: React.FC<LUTEditorProps> = ({
     }
   };
 
-  const handleRenameOutput = (oldKey: string, newKey: string) => {
-    if (!newKey || newKey === oldKey || outputKeys.includes(newKey)) return;
+  const handleRenameOutput = (index: number, newKey: string) => {
+    const oldKey = outputs[index].key;
+    if (!newKey || newKey === oldKey) {
+      // Revert to original if empty or same
+      const updated = [...tempOutputs];
+      updated[index] = oldKey;
+      setTempOutputs(updated);
+      return;
+    }
+
+    if (outputKeys.includes(newKey)) {
+      toast.error(`Output "${newKey}" already exists.`);
+      const updated = [...tempOutputs];
+      updated[index] = oldKey;
+      setTempOutputs(updated);
+      return;
+    }
 
     // 1. Update node outputs
-    const newOutputs = outputs.map((o) =>
-      o.key === oldKey ? { ...o, key: newKey } : o,
-    );
+    const newOutputs = [...outputs];
+    newOutputs[index] = { ...newOutputs[index], key: newKey };
     setOutputs(newOutputs);
 
     // 2. Update data in rows
@@ -84,6 +111,38 @@ export const LUTEditor: React.FC<LUTEditorProps> = ({
       return newRow;
     });
 
+    setData({
+      ...data,
+      lut: { ...lut, rows: newRows },
+    });
+  };
+
+  const handleRenameKey = (index: number, newKey: string) => {
+    const oldKey = rows[index].key;
+    if (!newKey || newKey === oldKey) {
+      const updated = [...tempKeys];
+      updated[index] = oldKey;
+      setTempKeys(updated);
+      return;
+    }
+
+    // Check for uniqueness excluding current index
+
+    const otherKeys = rows
+
+      .filter((_: any, i: number) => i !== index)
+
+      .map((r: any) => r.key);
+    if (otherKeys.includes(newKey)) {
+      toast.error(`Key "${newKey}" already exists.`);
+      const updated = [...tempKeys];
+      updated[index] = oldKey;
+      setTempKeys(updated);
+      return;
+    }
+
+    const newRows = [...rows];
+    newRows[index] = { ...newRows[index], key: newKey };
     setData({
       ...data,
       lut: { ...lut, rows: newRows },
@@ -224,10 +283,13 @@ export const LUTEditor: React.FC<LUTEditorProps> = ({
                     </div>
                     <div className="lut-header-main">
                       <input
-                        value={out.key}
-                        onChange={(e) =>
-                          handleRenameOutput(out.key, e.target.value)
-                        }
+                        value={tempOutputs[idx] ?? out.key}
+                        onChange={(e) => {
+                          const updated = [...tempOutputs];
+                          updated[idx] = e.target.value;
+                          setTempOutputs(updated);
+                        }}
+                        onBlur={(e) => handleRenameOutput(idx, e.target.value)}
                         className="lut-header-input"
                         title="Rename Output"
                       />
@@ -255,10 +317,13 @@ export const LUTEditor: React.FC<LUTEditorProps> = ({
               >
                 <td>
                   <input
-                    value={row.key}
-                    onChange={(e) =>
-                      handleCellChange(rowIndex, 'key', e.target.value)
-                    }
+                    value={tempKeys[rowIndex] ?? row.key}
+                    onChange={(e) => {
+                      const updated = [...tempKeys];
+                      updated[rowIndex] = e.target.value;
+                      setTempKeys(updated);
+                    }}
+                    onBlur={(e) => handleRenameKey(rowIndex, e.target.value)}
                   />
                 </td>
                 {outputs.map((out) => (
