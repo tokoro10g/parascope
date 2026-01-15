@@ -202,7 +202,7 @@ export const LUTEditor: React.FC<LUTEditorProps> = ({
                         disabled={idx === 0}
                         title="Move Left"
                       >
-                        <ArrowLeft size={10} />
+                        <ArrowLeft size={12} />
                       </button>
                       <button
                         type="button"
@@ -211,7 +211,7 @@ export const LUTEditor: React.FC<LUTEditorProps> = ({
                         disabled={idx === outputs.length - 1}
                         title="Move Right"
                       >
-                        <ArrowRight size={10} />
+                        <ArrowRight size={12} />
                       </button>
                     </div>
                     <div className="lut-header-main">
@@ -280,7 +280,7 @@ export const LUTEditor: React.FC<LUTEditorProps> = ({
                       disabled={rowIndex === 0}
                       title="Move Up"
                     >
-                      <ArrowUp size={10} />
+                      <ArrowUp size={12} />
                     </button>
                     <button
                       type="button"
@@ -289,7 +289,7 @@ export const LUTEditor: React.FC<LUTEditorProps> = ({
                       disabled={rowIndex === rows.length - 1}
                       title="Move Down"
                     >
-                      <ArrowDown size={10} />
+                      <ArrowDown size={12} />
                     </button>
                     <button
                       type="button"
