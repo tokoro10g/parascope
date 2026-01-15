@@ -213,6 +213,14 @@ export const LUTEditor: React.FC<LUTEditorProps> = ({
                       >
                         <ArrowRight size={12} />
                       </button>
+                      <button
+                        type="button"
+                        className="lut-remove-btn"
+                        onClick={() => handleRemoveOutput(out.key)}
+                        title="Remove Column"
+                      >
+                        <Trash2 size={12} />
+                      </button>
                     </div>
                     <div className="lut-header-main">
                       <input
@@ -223,14 +231,6 @@ export const LUTEditor: React.FC<LUTEditorProps> = ({
                         className="lut-header-input"
                         title="Rename Output"
                       />
-                      <button
-                        type="button"
-                        className="lut-remove-btn"
-                        onClick={() => handleRemoveOutput(out.key)}
-                        title="Remove Column"
-                      >
-                        <Trash2 size={12} />
-                      </button>
                     </div>
                   </div>
                 </th>
