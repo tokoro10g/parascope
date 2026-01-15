@@ -5,16 +5,8 @@ import { v4 as uuidv4 } from 'uuid';
 import type { Sheet } from '../api';
 import type { NodeEditorWrapper } from '../rete';
 import { ParascopeNode, socket } from '../rete';
-import type { Schemes } from '../rete/types';
+import type { NodeUpdates, Schemes } from '../rete/types';
 import { createSocket } from '../utils';
-
-export interface NodeUpdates {
-  label?: string;
-  type?: string;
-  data?: Record<string, any>;
-  inputs?: { key: string; socket_type: string }[];
-  outputs?: { key: string; socket_type: string }[];
-}
 
 export function useNodeOperations(
   wrapper: NodeEditorWrapper | undefined | null,

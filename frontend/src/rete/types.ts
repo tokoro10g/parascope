@@ -8,6 +8,14 @@ export class Connection<
   public dbId?: string;
 }
 
+export interface NodeUpdates {
+  label?: string;
+  type?: string;
+  data?: Record<string, any>;
+  inputs?: { key: string; socket_type: string }[];
+  outputs?: { key: string; socket_type: string }[];
+}
+
 export type Schemes = GetSchemes<
   ParascopeNode,
   Connection<ParascopeNode, ParascopeNode>

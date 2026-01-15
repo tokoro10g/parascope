@@ -1,10 +1,5 @@
-export interface NodeUpdates {
-  type?: string;
-  label?: string;
-  data?: Record<string, any>;
-  inputs?: { key: string; socket_type: string }[];
-  outputs?: { key: string; socket_type: string }[];
-}
+import type { NodeUpdates } from '../../rete/types';
+export type { NodeUpdates };
 
 export interface NodeInspectorProps {
   node: any; // Using any for ParascopeNode to avoid circular deps or complex imports for now, can be refined
