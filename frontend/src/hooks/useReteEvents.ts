@@ -285,7 +285,11 @@ export function useReteEvents(
 
         // --- Schema Consensus (Sync Sources connected to LUT Targets) ---
         const connections = editor.instance.getConnections();
-        const sourceRequirements = new Map<string, string[][]>();
+        // Map sourceId -> [{ options: string[], requesterLabel: string }]
+        const sourceRequirements = new Map<
+          string,
+          { options: string[]; label: string }[]
+        >();
 
         // 1. Collect requirements from all LUT targets
         for (const target of nodes) {
@@ -301,23 +305,26 @@ export function useReteEvents(
                 if (!sourceRequirements.has(sourceId)) {
                   sourceRequirements.set(sourceId, []);
                 }
-                sourceRequirements.get(sourceId)!.push(options);
+                sourceRequirements.get(sourceId)!.push({
+                  options,
+                  label: target.label,
+                });
               }
             }
           }
         }
 
         // 2. Apply updates only if all requirements for a source agree
-        for (const [sourceId, requiredOptionSets] of sourceRequirements) {
+        for (const [sourceId, requirements] of sourceRequirements) {
           const sourceNode = editor.instance.getNode(sourceId);
           if (
             sourceNode &&
             (sourceNode.type === 'input' || sourceNode.type === 'constant')
           ) {
             // Check if all sets are identical
-            const firstSet = JSON.stringify(requiredOptionSets[0]);
-            const allAgree = requiredOptionSets.every(
-              (set) => JSON.stringify(set) === firstSet,
+            const firstSet = JSON.stringify(requirements[0].options);
+            const allAgree = requirements.every(
+              (req) => JSON.stringify(req.options) === firstSet,
             );
 
             if (allAgree) {
@@ -326,14 +333,36 @@ export function useReteEvents(
                   data: {
                     ...sourceNode.data,
                     dataType: 'option',
-                    options: requiredOptionSets[0],
+                    options: requirements[0].options,
                   },
                 });
               }
             } else {
-              const msg = `Conflict detected for node "${sourceNode.label}": Connected LUTs require different option sets. Auto-sync disabled.`;
+              // Group by option set to show what is conflicting
+              const groups: { options: string[]; labels: string[] }[] = [];
+              for (const req of requirements) {
+                const existing = groups.find(
+                  (g) =>
+                    JSON.stringify(g.options) === JSON.stringify(req.options),
+                );
+                if (existing) {
+                  existing.labels.push(req.label);
+                } else {
+                  groups.push({ options: req.options, labels: [req.label] });
+                }
+              }
+
+              const groupDescriptions = groups
+                .map((g) => {
+                  const keys = g.options.slice(0, 3).join(', ');
+                  const more = g.options.length > 3 ? '...' : '';
+                  return `${g.labels.join(', ')}: {${keys}${more}}`;
+                })
+                .join(' vs ');
+
+              const msg = `Conflict for "${sourceNode.label}": Incompatible options requested. ${groupDescriptions}. Auto-sync disabled.`;
               console.warn(msg);
-              toast.error(msg, { id: `conflict-${sourceId}`, duration: 4000 });
+              toast.error(msg, { id: `conflict-${sourceId}`, duration: 8000 });
             }
           }
         }
