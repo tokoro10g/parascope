@@ -1,6 +1,7 @@
 import { ClassicPreset as Classic } from 'rete';
 import { DropdownControl } from './DropdownControl';
 import { InputControl } from './InputControl';
+import { MarkdownControl } from './MarkdownControl';
 import type { NodeType } from './types';
 
 export const socket = new Classic.Socket('socket');
@@ -59,13 +60,20 @@ export class ParascopeNode extends Classic.Node {
       this.removeControl('description');
     }
 
-    // Comment, Function, Sheet, and LUT nodes don't need standard value controls
-    if (
-      this.type === 'comment' ||
-      this.type === 'function' ||
-      this.type === 'sheet' ||
-      this.type === 'lut'
-    ) {
+    if (this.type === 'lut') {
+      return;
+    }
+
+    if (this.type === 'comment') {
+      this.addControl(
+        'description',
+        new MarkdownControl(this.data.description || ''),
+      );
+      return;
+    }
+
+    // Function and Sheet nodes don't need standard value controls
+    if (this.type === 'function' || this.type === 'sheet') {
       return;
     }
 
