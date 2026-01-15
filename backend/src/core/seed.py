@@ -643,8 +643,20 @@ async def seed_database(session: AsyncSession):
         inputs=[],
         outputs=[{"key": "value", "socket_type": "any"}],
         position_x=100,
-        position_y=350,
+        position_y=250,
         data={"value": "1.0", "description": "Volume of the component.", "min": "0"},
+    )
+
+    node_strain = Node(
+        id=uuid.uuid4(),
+        sheet_id=sheet5_id,
+        type="constant",
+        label="Strain",
+        inputs=[],
+        outputs=[{"key": "value", "socket_type": "any"}],
+        position_x=100,
+        position_y=400,
+        data={"value": "0.001", "description": "Applied strain (dimensionless).", "min": "0"},
     )
 
     node_material_lut = Node(
@@ -679,8 +691,20 @@ async def seed_database(session: AsyncSession):
         inputs=[{"key": "density", "socket_type": "any"}, {"key": "volume", "socket_type": "any"}],
         outputs=[{"key": "mass", "socket_type": "any"}],
         position_x=750,
-        position_y=250,
+        position_y=150,
         data={"code": "mass = density * volume", "description": "Calculate mass from density and volume."},
+    )
+
+    node_stress_calc = Node(
+        id=uuid.uuid4(),
+        sheet_id=sheet5_id,
+        type="function",
+        label="Calculate Stress",
+        inputs=[{"key": "E", "socket_type": "any"}, {"key": "epsilon", "socket_type": "any"}],
+        outputs=[{"key": "stress", "socket_type": "any"}],
+        position_x=750,
+        position_y=350,
+        data={"code": "stress = E * epsilon", "description": "Calculate stress using Hooke's Law: $\\sigma = E \\cdot \\epsilon$"},
     )
 
     node_out_mass = Node(
@@ -691,8 +715,20 @@ async def seed_database(session: AsyncSession):
         inputs=[{"key": "value", "socket_type": "any"}],
         outputs=[],
         position_x=1050,
-        position_y=250,
+        position_y=150,
         data={"description": "Total mass of the component.", "min": "0"},
+    )
+
+    node_out_stress = Node(
+        id=uuid.uuid4(),
+        sheet_id=sheet5_id,
+        type="output",
+        label="Stress [GPa]",
+        inputs=[{"key": "value", "socket_type": "any"}],
+        outputs=[],
+        position_x=1050,
+        position_y=350,
+        data={"description": "Calculated stress based on applied strain.", "min": "0"},
     )
 
     # Connections
@@ -724,11 +760,32 @@ async def seed_database(session: AsyncSession):
         target_id=node_out_mass.id,
         target_port="value",
     )
+    conn5_5 = Connection(
+        sheet_id=sheet5_id,
+        source_id=node_material_lut.id,
+        source_port="Young's Modulus [GPa]",
+        target_id=node_stress_calc.id,
+        target_port="E",
+    )
+    conn5_6 = Connection(
+        sheet_id=sheet5_id,
+        source_id=node_strain.id,
+        source_port="value",
+        target_id=node_stress_calc.id,
+        target_port="epsilon",
+    )
+    conn5_7 = Connection(
+        sheet_id=sheet5_id,
+        source_id=node_stress_calc.id,
+        source_port="stress",
+        target_id=node_out_stress.id,
+        target_port="value",
+    )
 
     session.add(sheet5)
-    session.add_all([node_material, node_volume, node_material_lut, node_mass_calc, node_out_mass])
+    session.add_all([node_material, node_volume, node_strain, node_material_lut, node_mass_calc, node_stress_calc, node_out_mass, node_out_stress])
     await session.flush()
-    session.add_all([conn5_1, conn5_2, conn5_3, conn5_4])
+    session.add_all([conn5_1, conn5_2, conn5_3, conn5_4, conn5_5, conn5_6, conn5_7])
 
     await session.commit()
     print("Database seeded successfully.")
