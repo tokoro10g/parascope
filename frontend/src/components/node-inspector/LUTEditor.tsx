@@ -1,6 +1,7 @@
 import { Plus, Trash2 } from 'lucide-react';
 import type React from 'react';
 import { useEffect } from 'react';
+import './LUTEditor.css';
 
 interface LUTEditorProps {
   data: Record<string, any>;
@@ -38,7 +39,14 @@ export const LUTEditor: React.FC<LUTEditorProps> = ({
   const outputKeys = outputs.map((o) => o.key);
 
   const handleAddOutput = () => {
-    const name = prompt('Output Name:');
+    let nextNum = outputs.length + 1;
+    let defaultName = `Output ${nextNum}`;
+    while (outputKeys.includes(defaultName)) {
+      nextNum++;
+      defaultName = `Output ${nextNum}`;
+    }
+
+    const name = prompt('Output Name:', defaultName);
     if (name && !outputKeys.includes(name)) {
       const newOutputs = [...outputs, { key: name, socket_type: 'any' }];
       setOutputs(newOutputs);
@@ -108,146 +116,96 @@ export const LUTEditor: React.FC<LUTEditorProps> = ({
           display: 'flex',
           justifyContent: 'space-between',
           alignItems: 'center',
-          marginBottom: '10px',
         }}
       >
-        <h3>Look-up Table</h3>
-        <button type="button" onClick={handleAddOutput}>
-          + Add Output Column
-        </button>
+        <h3 style={{ margin: 0, fontSize: '1rem' }}>Look-up Table</h3>
       </div>
 
-      <div style={{ overflowX: 'auto', marginBottom: '10px' }}>
-        <table
-          className="lut-table"
-          style={{ width: '100%', borderCollapse: 'collapse' }}
-        >
+      <div className="lut-table-container">
+        <table className="lut-table">
           <thead>
             <tr>
-              <th
-                style={{
-                  border: '1px solid var(--border-color)',
-                  padding: '8px',
-                  background: 'var(--panel-bg-secondary)',
-                }}
-              >
-                Key (Input)
-              </th>
+              <th>Key (Input)</th>
               {outputKeys.map((out) => (
-                <th
-                  key={out}
-                  style={{
-                    border: '1px solid var(--border-color)',
-                    padding: '8px',
-                    background: 'var(--panel-bg-secondary)',
-                  }}
-                >
-                  <div
-                    style={{
-                      display: 'flex',
-                      alignItems: 'center',
-                      gap: '5px',
-                      justifyContent: 'center',
-                    }}
-                  >
+                <th key={out}>
+                  <div className="lut-header-cell">
                     {out}
                     <button
                       type="button"
-                      className="danger"
-                      style={{
-                        padding: '2px',
-                        minWidth: 'auto',
-                        height: 'auto',
-                      }}
+                      className="lut-remove-btn"
                       onClick={() => handleRemoveOutput(out)}
+                      title="Remove Column"
                     >
                       <Trash2 size={12} />
                     </button>
                   </div>
                 </th>
               ))}
-              <th
-                style={{
-                  width: '40px',
-                  border: '1px solid var(--border-color)',
-                  background: 'var(--panel-bg-secondary)',
-                }}
-              ></th>
+              <th style={{ width: '32px', borderRight: 'none', padding: 0 }}>
+                <button
+                  type="button"
+                  className="lut-add-inline-btn"
+                  onClick={handleAddOutput}
+                  title="Add Column"
+                >
+                  <Plus size={14} />
+                </button>
+              </th>
             </tr>
           </thead>
           <tbody>
             {rows.map((row: any, rowIndex: number) => (
               <tr
-                // biome-ignore lint/suspicious/noArrayIndexKey: row.key might be duplicate during editing
+                // biome-ignore lint/suspicious/noArrayIndexKey: composite key for stability
                 key={`${row.key}-${rowIndex}`}
               >
-                <td
-                  style={{
-                    border: '1px solid var(--border-color)',
-                    padding: '4px',
-                  }}
-                >
+                <td>
                   <input
                     value={row.key}
                     onChange={(e) =>
                       handleCellChange(rowIndex, 'key', e.target.value)
                     }
-                    style={{
-                      width: '100%',
-                      border: 'none',
-                      background: 'transparent',
-                    }}
                   />
                 </td>
                 {outputKeys.map((out) => (
-                  <td
-                    key={out}
-                    style={{
-                      border: '1px solid var(--border-color)',
-                      padding: '4px',
-                    }}
-                  >
+                  <td key={out}>
                     <input
                       value={row[out] ?? ''}
                       onChange={(e) =>
                         handleCellChange(rowIndex, out, e.target.value)
                       }
-                      style={{
-                        width: '100%',
-                        border: 'none',
-                        background: 'transparent',
-                      }}
                     />
                   </td>
                 ))}
-                <td
-                  style={{
-                    border: '1px solid var(--border-color)',
-                    textAlign: 'center',
-                  }}
-                >
+                <td style={{ textAlign: 'center', borderRight: 'none' }}>
                   <button
                     type="button"
-                    className="danger"
-                    style={{ padding: '2px', minWidth: 'auto', height: 'auto' }}
+                    className="lut-remove-btn"
                     onClick={() => handleRemoveRow(rowIndex)}
+                    title="Remove Row"
                   >
                     <Trash2 size={12} />
                   </button>
                 </td>
               </tr>
             ))}
+            <tr>
+              <td
+                colSpan={outputKeys.length + 2}
+                style={{ borderRight: 'none', borderBottom: 'none' }}
+              >
+                <button
+                  type="button"
+                  className="lut-add-row-inline-btn"
+                  onClick={handleAddRow}
+                >
+                  <Plus size={14} /> Add Row
+                </button>
+              </td>
+            </tr>
           </tbody>
         </table>
       </div>
-
-      <button
-        type="button"
-        onClick={handleAddRow}
-        style={{ display: 'flex', alignItems: 'center', gap: '5px' }}
-      >
-        <Plus size={14} /> Add Row
-      </button>
     </div>
   );
 };

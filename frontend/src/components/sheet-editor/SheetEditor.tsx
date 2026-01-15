@@ -366,10 +366,10 @@ export const SheetEditor: React.FC = () => {
       case 'lut':
         label = 'LUT';
         inputs = [createSocket('key')];
-        outputs = [createSocket('output1')];
+        outputs = [createSocket('Output 1')];
         data = {
           lut: {
-            rows: [{ key: 'Key 1', output1: 0 }],
+            rows: [{ key: 'Key 1', 'Output 1': 0 }],
           },
         };
         break;
