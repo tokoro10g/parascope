@@ -32,6 +32,7 @@ class Sheet(Base):
     folder: Mapped[Optional["Folder"]] = relationship(back_populates="sheets")
     nodes: Mapped[List["Node"]] = relationship(back_populates="sheet", cascade="all, delete-orphan")
     connections: Mapped[List["Connection"]] = relationship(back_populates="sheet", cascade="all, delete-orphan")
+    locks: Mapped[List["Lock"]] = relationship(back_populates="sheet", cascade="all, delete-orphan")
 
 
 class Node(Base):
@@ -77,11 +78,11 @@ class Connection(Base):
 class Lock(Base):
     __tablename__ = "sheet_locks"
 
-    sheet_id: Mapped[uuid.UUID] = mapped_column(ForeignKey("sheets.id"), primary_key=True)
+    sheet_id: Mapped[uuid.UUID] = mapped_column(ForeignKey("sheets.id", ondelete="CASCADE"), primary_key=True)
     user_id: Mapped[str] = mapped_column(String, nullable=False)
     tab_id: Mapped[Optional[str]] = mapped_column(String, nullable=True)
     acquired_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow)
     last_heartbeat_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow)
     last_save_at: Mapped[Optional[datetime]] = mapped_column(DateTime, nullable=True)
 
-    sheet: Mapped["Sheet"] = relationship("Sheet")
+    sheet: Mapped["Sheet"] = relationship("Sheet", back_populates="locks")
