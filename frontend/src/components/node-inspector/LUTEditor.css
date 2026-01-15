@@ -59,9 +59,70 @@
 
 .lut-header-cell {
   display: flex;
+  flex-direction: column;
+  gap: 2px;
   align-items: center;
-  gap: 6px;
-  justify-content: space-between;
+}
+
+.lut-header-main {
+  display: flex;
+  align-items: center;
+  width: 100%;
+  gap: 4px;
+}
+
+.lut-header-actions,
+.lut-row-actions {
+  display: flex;
+  gap: 2px;
+  justify-content: center;
+}
+
+.lut-icon-btn {
+  background: none;
+  border: none;
+  color: var(--text-color);
+  opacity: 0.3;
+  cursor: pointer;
+  padding: 2px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 2px;
+  transition: all 0.2s;
+}
+
+.lut-icon-btn:hover:not(:disabled) {
+  opacity: 1;
+  background: var(--panel-bg-translucent);
+}
+
+.lut-icon-btn:disabled {
+  cursor: not-allowed;
+  opacity: 0.1;
+}
+
+.lut-header-input {
+  background: transparent;
+  border: none;
+  color: inherit;
+  font-family: inherit;
+  font-size: inherit;
+  font-weight: bold;
+  padding: 2px 4px;
+  width: 100%;
+  outline: none;
+  border-radius: 2px;
+}
+
+.lut-header-input:hover {
+  background: rgba(255, 255, 255, 0.1);
+}
+
+.lut-header-input:focus {
+  background: var(--input-bg);
+  color: var(--text-color);
+  box-shadow: 0 0 0 1px var(--primary-color);
 }
 
 .lut-table .lut-remove-btn {

@@ -1,4 +1,11 @@
-import { Plus, Trash2 } from 'lucide-react';
+import {
+  ArrowDown,
+  ArrowLeft,
+  ArrowRight,
+  ArrowUp,
+  Plus,
+  Trash2,
+} from 'lucide-react';
 import type React from 'react';
 import { useEffect } from 'react';
 import './LUTEditor.css';
@@ -46,8 +53,8 @@ export const LUTEditor: React.FC<LUTEditorProps> = ({
       defaultName = `Output ${nextNum}`;
     }
 
-    const name = prompt('Output Name:', defaultName);
-    if (name && !outputKeys.includes(name)) {
+    const name = defaultName;
+    if (!outputKeys.includes(name)) {
       const newOutputs = [...outputs, { key: name, socket_type: 'any' }];
       setOutputs(newOutputs);
 
@@ -58,6 +65,29 @@ export const LUTEditor: React.FC<LUTEditorProps> = ({
         lut: { ...lut, rows: newRows },
       });
     }
+  };
+
+  const handleRenameOutput = (oldKey: string, newKey: string) => {
+    if (!newKey || newKey === oldKey || outputKeys.includes(newKey)) return;
+
+    // 1. Update node outputs
+    const newOutputs = outputs.map((o) =>
+      o.key === oldKey ? { ...o, key: newKey } : o,
+    );
+    setOutputs(newOutputs);
+
+    // 2. Update data in rows
+    const newRows = rows.map((row: any) => {
+      const newRow = { ...row };
+      newRow[newKey] = newRow[oldKey];
+      delete newRow[oldKey];
+      return newRow;
+    });
+
+    setData({
+      ...data,
+      lut: { ...lut, rows: newRows },
+    });
   };
 
   const handleRemoveOutput = (key: string) => {
@@ -76,6 +106,22 @@ export const LUTEditor: React.FC<LUTEditorProps> = ({
     });
   };
 
+  const handleMoveOutput = (index: number, direction: 'left' | 'right') => {
+    const newOutputs = [...outputs];
+    if (direction === 'left' && index > 0) {
+      [newOutputs[index], newOutputs[index - 1]] = [
+        newOutputs[index - 1],
+        newOutputs[index],
+      ];
+    } else if (direction === 'right' && index < outputs.length - 1) {
+      [newOutputs[index], newOutputs[index + 1]] = [
+        newOutputs[index + 1],
+        newOutputs[index],
+      ];
+    }
+    setOutputs(newOutputs);
+  };
+
   const handleAddRow = () => {
     const newRow: any = { key: `Key ${rows.length + 1}` };
     for (const out of outputKeys) {
@@ -90,6 +136,25 @@ export const LUTEditor: React.FC<LUTEditorProps> = ({
   const handleRemoveRow = (index: number) => {
     const newRows = [...rows];
     newRows.splice(index, 1);
+    setData({
+      ...data,
+      lut: { ...lut, rows: newRows },
+    });
+  };
+
+  const handleMoveRow = (index: number, direction: 'up' | 'down') => {
+    const newRows = [...rows];
+    if (direction === 'up' && index > 0) {
+      [newRows[index], newRows[index - 1]] = [
+        newRows[index - 1],
+        newRows[index],
+      ];
+    } else if (direction === 'down' && index < rows.length - 1) {
+      [newRows[index], newRows[index + 1]] = [
+        newRows[index + 1],
+        newRows[index],
+      ];
+    }
     setData({
       ...data,
       lut: { ...lut, rows: newRows },
@@ -126,18 +191,47 @@ export const LUTEditor: React.FC<LUTEditorProps> = ({
           <thead>
             <tr>
               <th>Key (Input)</th>
-              {outputKeys.map((out) => (
-                <th key={out}>
+              {outputs.map((out, idx) => (
+                <th key={out.key}>
                   <div className="lut-header-cell">
-                    {out}
-                    <button
-                      type="button"
-                      className="lut-remove-btn"
-                      onClick={() => handleRemoveOutput(out)}
-                      title="Remove Column"
-                    >
-                      <Trash2 size={12} />
-                    </button>
+                    <div className="lut-header-actions">
+                      <button
+                        type="button"
+                        className="lut-icon-btn"
+                        onClick={() => handleMoveOutput(idx, 'left')}
+                        disabled={idx === 0}
+                        title="Move Left"
+                      >
+                        <ArrowLeft size={10} />
+                      </button>
+                      <button
+                        type="button"
+                        className="lut-icon-btn"
+                        onClick={() => handleMoveOutput(idx, 'right')}
+                        disabled={idx === outputs.length - 1}
+                        title="Move Right"
+                      >
+                        <ArrowRight size={10} />
+                      </button>
+                    </div>
+                    <div className="lut-header-main">
+                      <input
+                        value={out.key}
+                        onChange={(e) =>
+                          handleRenameOutput(out.key, e.target.value)
+                        }
+                        className="lut-header-input"
+                        title="Rename Output"
+                      />
+                      <button
+                        type="button"
+                        className="lut-remove-btn"
+                        onClick={() => handleRemoveOutput(out.key)}
+                        title="Remove Column"
+                      >
+                        <Trash2 size={12} />
+                      </button>
+                    </div>
                   </div>
                 </th>
               ))}
@@ -167,31 +261,51 @@ export const LUTEditor: React.FC<LUTEditorProps> = ({
                     }
                   />
                 </td>
-                {outputKeys.map((out) => (
-                  <td key={out}>
+                {outputs.map((out) => (
+                  <td key={out.key}>
                     <input
-                      value={row[out] ?? ''}
+                      value={row[out.key] ?? ''}
                       onChange={(e) =>
-                        handleCellChange(rowIndex, out, e.target.value)
+                        handleCellChange(rowIndex, out.key, e.target.value)
                       }
                     />
                   </td>
                 ))}
-                <td style={{ textAlign: 'center', borderRight: 'none' }}>
-                  <button
-                    type="button"
-                    className="lut-remove-btn"
-                    onClick={() => handleRemoveRow(rowIndex)}
-                    title="Remove Row"
-                  >
-                    <Trash2 size={12} />
-                  </button>
+                <td style={{ borderRight: 'none' }}>
+                  <div className="lut-row-actions">
+                    <button
+                      type="button"
+                      className="lut-icon-btn"
+                      onClick={() => handleMoveRow(rowIndex, 'up')}
+                      disabled={rowIndex === 0}
+                      title="Move Up"
+                    >
+                      <ArrowUp size={10} />
+                    </button>
+                    <button
+                      type="button"
+                      className="lut-icon-btn"
+                      onClick={() => handleMoveRow(rowIndex, 'down')}
+                      disabled={rowIndex === rows.length - 1}
+                      title="Move Down"
+                    >
+                      <ArrowDown size={10} />
+                    </button>
+                    <button
+                      type="button"
+                      className="lut-remove-btn"
+                      onClick={() => handleRemoveRow(rowIndex)}
+                      title="Remove Row"
+                    >
+                      <Trash2 size={12} />
+                    </button>
+                  </div>
                 </td>
               </tr>
             ))}
             <tr>
               <td
-                colSpan={outputKeys.length + 2}
+                colSpan={outputs.length + 2}
                 style={{ borderRight: 'none', borderBottom: 'none' }}
               >
                 <button
