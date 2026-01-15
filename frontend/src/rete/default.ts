@@ -20,6 +20,7 @@ import {
 } from './contextMenu';
 import { DropdownControl, DropdownControlComponent } from './DropdownControl';
 import { InputControl, InputControlComponent } from './InputControl';
+import { MarkdownControl, MarkdownControlComponent } from './MarkdownControl';
 import { ParascopeNode } from './ParascopeNode';
 import { type AreaExtra, Connection, type Schemes } from './types';
 
@@ -58,7 +59,9 @@ export async function createEditor(container: HTMLElement) {
 
   const notifyGraphChange = () => {
     if (!suppressGraphChange) {
-      graphChangeListeners.forEach((cb) => cb());
+      graphChangeListeners.forEach((cb) => {
+        cb();
+      });
     }
   };
 
@@ -84,6 +87,9 @@ export async function createEditor(container: HTMLElement) {
           }
           if (data.payload instanceof InputControl) {
             return InputControlComponent as any;
+          }
+          if (data.payload instanceof MarkdownControl) {
+            return MarkdownControlComponent as any;
           }
           return ReactPresets.classic.Control;
         },

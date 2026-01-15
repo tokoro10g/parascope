@@ -8,7 +8,9 @@ export interface ContextMenuCallbacks {
   onNodeTypeChange?: (nodeId: string, type: string) => void;
   onNodeDuplicate?: (nodeId: string) => void;
   onNodeRemove?: (nodeId: string) => Promise<void>;
-  onAddNode?: (type: 'constant' | 'function' | 'input' | 'output') => void;
+  onAddNode?: (
+    type: 'constant' | 'function' | 'input' | 'output' | 'comment',
+  ) => void;
 }
 
 export function createContextMenuPlugin(
@@ -40,6 +42,11 @@ export function createContextMenuPlugin(
               label: 'Add Output',
               key: 'add-output',
               handler: () => callbacks.onAddNode?.('output'),
+            },
+            {
+              label: 'Add Comment',
+              key: 'add-comment',
+              handler: () => callbacks.onAddNode?.('comment'),
             },
           ],
         };

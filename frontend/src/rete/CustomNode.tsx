@@ -1,4 +1,11 @@
-import { CaseLower, Import, LogIn, LogOut, Sigma } from 'lucide-react';
+import {
+  CaseLower,
+  Import,
+  LogIn,
+  LogOut,
+  MessageSquare,
+  Sigma,
+} from 'lucide-react';
 import { useEffect, useRef, useState } from 'react';
 import { Presets } from 'rete-react-plugin';
 import './custom-node.css';
@@ -9,6 +16,7 @@ const styles: Record<string, { background: string; borderColor: string }> = {
   input: { background: 'rgba(255, 183, 77, 0.8)', borderColor: '#ff9800' },
   output: { background: 'rgba(110, 218, 110, 0.8)', borderColor: '#4caf50' },
   sheet: { background: 'rgba(77, 208, 225, 0.8)', borderColor: '#00bcd4' },
+  comment: { background: 'rgba(245, 245, 245, 0.95)', borderColor: '#bdbdbd' },
 };
 
 const icons: Record<string, any> = {
@@ -17,6 +25,7 @@ const icons: Record<string, any> = {
   input: LogIn,
   output: LogOut,
   sheet: Import,
+  comment: MessageSquare,
 };
 
 export function CustomNode(props: any) {
@@ -150,7 +159,7 @@ export function CustomNode(props: any) {
             top: '8px',
             right: '8px',
             pointerEvents: 'none',
-            color: 'white',
+            color: type === 'comment' ? '#424242' : 'white',
             zIndex: 1,
           }}
         >

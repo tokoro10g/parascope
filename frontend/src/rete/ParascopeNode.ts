@@ -1,6 +1,7 @@
 import { ClassicPreset as Classic } from 'rete';
 import { DropdownControl } from './DropdownControl';
 import { InputControl } from './InputControl';
+import { MarkdownControl } from './MarkdownControl';
 
 export const socket = new Classic.Socket('socket');
 
@@ -53,6 +54,17 @@ export class ParascopeNode extends Classic.Node {
 
     if (this.controls.value) {
       this.removeControl('value');
+    }
+    if (this.controls.description) {
+      this.removeControl('description');
+    }
+
+    if (this.type === 'comment') {
+      this.addControl(
+        'description',
+        new MarkdownControl(data.description || ''),
+      );
+      return;
     }
 
     const isOption = data.dataType === 'option';

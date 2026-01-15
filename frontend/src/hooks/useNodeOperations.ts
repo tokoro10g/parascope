@@ -73,13 +73,7 @@ export function useNodeOperations(
       // No manual setNodes/setCurrentSheet here - handled by Rete events
       setIsDirty(true);
     },
-    [
-      editor,
-      area,
-      handleCalculationInputChange,
-      setIsDirty,
-      wrapper,
-    ],
+    [editor, area, handleCalculationInputChange, setIsDirty, wrapper],
   );
 
   const handleDuplicateNode = useCallback(

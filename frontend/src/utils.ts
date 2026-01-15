@@ -200,7 +200,10 @@ export const validateGraphConnectivity = (graph: {
   const errors: { nodeId: string; error: string }[] = [];
 
   for (const node of graph.nodes) {
-    if (['function', 'output', 'sheet'].includes(node.type)) {
+    if (
+      ['function', 'output', 'sheet'].includes(node.type) &&
+      node.type !== 'comment'
+    ) {
       if (!node.inputs) continue;
 
       for (const input of node.inputs) {

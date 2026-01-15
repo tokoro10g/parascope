@@ -40,6 +40,14 @@
   padding-right: 30px;
 }
 
+/* Comment Node - Light Grey */
+.node-comment .title {
+  background: #bdbdbd;
+  border-radius: 8px 8px 0px 0px;
+  color: #424242;
+  padding-right: 30px;
+}
+
 /* Error State */
 .node-error {
   box-shadow: 0 0 10px 4px #f44336;
@@ -56,7 +64,8 @@
 .node-function,
 .node-input,
 .node-output,
-.node-sheet {
+.node-sheet,
+.node-comment {
   width: auto;
   height: auto;
   min-width: 180px;
@@ -67,7 +76,8 @@
 .node-function .title,
 .node-input .title,
 .node-output .title,
-.node-sheet .title {
+.node-sheet .title,
+.node-comment .title {
   cursor: text;
 }
 

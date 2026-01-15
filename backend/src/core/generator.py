@@ -271,6 +271,10 @@ except Exception as e:
         result_code = [f"@sheet('{sheet.id}')", f"class {class_name}(SheetBase):"]
         
         for node in sheet.nodes:
+            # Skip comment nodes - they're for documentation only
+            if node.type == 'comment':
+                continue
+                
             nid = str(node.id)
             method_name = node_method_map[nid]
             inputs_config = node_inputs_map[nid]

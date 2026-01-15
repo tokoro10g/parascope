@@ -325,7 +325,7 @@ export const SheetEditor: React.FC = () => {
   }, [editor, calculationInputs, lastResult]);
 
   const handleAddNode = async (
-    type: 'constant' | 'function' | 'input' | 'output' | 'sheet',
+    type: 'constant' | 'function' | 'input' | 'output' | 'sheet' | 'comment',
   ) => {
     if (!editor || !currentSheet) return;
 
@@ -359,6 +359,10 @@ export const SheetEditor: React.FC = () => {
       case 'output':
         label = 'Output';
         inputs = [createSocket('value')];
+        break;
+      case 'comment':
+        label = 'Comment';
+        data = { description: 'Add your comment here...' };
         break;
     }
 

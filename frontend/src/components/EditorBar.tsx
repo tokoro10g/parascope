@@ -3,6 +3,7 @@ import {
   Import,
   LogIn,
   LogOut,
+  MessageSquare,
   Redo,
   Save,
   Share2,
@@ -20,7 +21,7 @@ interface EditorBarProps {
   onRenameSheet: (name: string) => void;
   onSaveSheet: () => void;
   onAddNode: (
-    type: 'constant' | 'function' | 'input' | 'output' | 'sheet',
+    type: 'constant' | 'function' | 'input' | 'output' | 'sheet' | 'comment',
   ) => void;
   onUndo: () => void;
   onRedo: () => void;
@@ -149,6 +150,17 @@ export const EditorBar: React.FC<EditorBarProps> = ({
           className="btn-add-sheet"
         >
           <Import size={18} />
+        </button>
+        <button
+          type="button"
+          onClick={(e) => {
+            onAddNode('comment');
+            e.currentTarget.blur();
+          }}
+          title="Add Comment"
+          className="btn-add-comment"
+        >
+          <MessageSquare size={18} />
         </button>
       </div>
 

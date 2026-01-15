@@ -1,10 +1,11 @@
 import { useEffect } from 'react';
+import type { SetURLSearchParams } from 'react-router-dom';
 import type { ParascopeNode } from '../../rete';
 
 interface UseUrlSyncProps {
   nodes: ParascopeNode[];
   searchParams: URLSearchParams;
-  setSearchParams: Function;
+  setSearchParams: SetURLSearchParams;
   calculationInputs: Record<string, string>;
   setCalculationInputs: React.Dispatch<
     React.SetStateAction<Record<string, string>>

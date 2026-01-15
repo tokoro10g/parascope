@@ -140,10 +140,12 @@ export const SheetTable: React.FC<SheetTableProps> = ({
       return (a.y || 0) - (b.y || 0);
     });
 
-  // Filter for Descriptions (Constants, Inputs, Functions, Outputs, Sheets)
+  // Filter for Descriptions (Constants, Inputs, Functions, Outputs, Sheets, Comments)
   const descriptionNodes = nodes
     .filter((node) =>
-      ['constant', 'input', 'function', 'output', 'sheet'].includes(node.type),
+      ['constant', 'input', 'function', 'output', 'sheet', 'comment'].includes(
+        node.type,
+      ),
     )
     .sort((a, b) => {
       const typeOrder: Record<string, number> = {
@@ -152,6 +154,7 @@ export const SheetTable: React.FC<SheetTableProps> = ({
         function: 2,
         sheet: 3,
         output: 4,
+        comment: 5,
       };
       const typeDiff = (typeOrder[a.type] ?? 99) - (typeOrder[b.type] ?? 99);
       if (typeDiff !== 0) return typeDiff;

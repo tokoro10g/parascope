@@ -119,7 +119,7 @@ export function useReteEvents(
 
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [editor, onPaste, onDelete, onSave]);
+  }, [editor, onDelete, onSave, onPaste]);
 
   useEffect(() => {
     if (editor) {
@@ -337,7 +337,6 @@ export function useReteEvents(
     setNodes,
     lastResultRef,
     calculationInputsRef,
-    onPaste,
     onDelete,
     onViewportChange,
   ]);
