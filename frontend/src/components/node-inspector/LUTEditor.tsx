@@ -29,24 +29,15 @@ export const LUTEditor: React.FC<LUTEditorProps> = ({
   const [tempKeys, setTempKeys] = useState<string[]>([]);
   const [tempOutputs, setTempOutputs] = useState<string[]>([]);
 
-  // Ensure LUT data structure exists
-  useEffect(() => {
-    if (!data.lut) {
-      setData({
-        ...data,
-        lut: {
-          rows: [{ key: 'Key 1' }],
-        },
-      });
-    }
-    // LUT always has one input: the key to look up
-    setInputs([{ key: 'key', socket_type: 'any' }]);
-  }, [data, setData, setInputs]);
-
-  const lut = data.lut || { rows: [{ key: 'Key 1' }] };
+  const lut = data.lut || { rows: [] };
   const rows = lut.rows || [];
 
-  // Sync temp state with real data when it changes externally (e.g. initial load)
+  // Ensure inputs are set for LUT on mount
+  useEffect(() => {
+    setInputs([{ key: 'key', socket_type: 'any' }]);
+  }, [setInputs]);
+
+  // Sync temp state with real data whenever it changes
   useEffect(() => {
     setTempKeys(rows.map((r: any) => r.key));
   }, [rows]);
@@ -55,7 +46,7 @@ export const LUTEditor: React.FC<LUTEditorProps> = ({
     setTempOutputs(outputs.map((o) => o.key));
   }, [outputs]);
 
-  // Get unique output keys from rows (excluding 'key')
+  // Get unique output keys for logic
   const outputKeys = outputs.map((o) => o.key);
 
   const handleAddOutput = () => {
@@ -227,9 +218,14 @@ export const LUTEditor: React.FC<LUTEditorProps> = ({
   ) => {
     const newRows = [...rows];
     newRows[rowIndex] = { ...newRows[rowIndex], [columnKey]: value };
+
+    // Explicitly update data to trigger re-render
     setData({
       ...data,
-      lut: { ...lut, rows: newRows },
+      lut: {
+        ...lut,
+        rows: newRows,
+      },
     });
   };
 

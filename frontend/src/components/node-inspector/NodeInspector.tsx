@@ -31,6 +31,7 @@ export const NodeInspector: React.FC<NodeInspectorProps> = ({
     { key: string; socket_type: string }[]
   >([]);
   const [showPreview, setShowPreview] = useState(false);
+  const [dataLoaded, setDataLoaded] = useState(false);
 
   // AI State
   const [aiPrompt, setAiPrompt] = useState('');
@@ -47,6 +48,7 @@ export const NodeInspector: React.FC<NodeInspectorProps> = ({
 
   useEffect(() => {
     if (node) {
+      setDataLoaded(false);
       setLabel(node.label);
       setAiPrompt('');
       setAiUrls('');
@@ -76,6 +78,7 @@ export const NodeInspector: React.FC<NodeInspectorProps> = ({
       setOutputs(
         Object.keys(node.outputs).map((key) => ({ key, socket_type: 'any' })),
       );
+      setDataLoaded(true);
     }
   }, [node]);
 
@@ -193,47 +196,51 @@ export const NodeInspector: React.FC<NodeInspectorProps> = ({
           />
         </div>
 
-        {node.type !== 'sheet' && (
-          <DescriptionEditor
-            data={data}
-            setData={setData}
-            showPreview={showPreview}
-            setShowPreview={setShowPreview}
-            isGenerating={isGenerating}
-            transformUrl={transformUrl}
-            getAttachmentUrl={getAttachmentUrl}
-            handleFileUpload={handleFileUpload}
-            handleInsertToDescription={handleInsertToDescription}
-            handleRemoveAttachment={handleRemoveAttachment}
-          />
-        )}
+        {dataLoaded && (
+          <>
+            {node.type !== 'sheet' && (
+              <DescriptionEditor
+                data={data}
+                setData={setData}
+                showPreview={showPreview}
+                setShowPreview={setShowPreview}
+                isGenerating={isGenerating}
+                transformUrl={transformUrl}
+                getAttachmentUrl={getAttachmentUrl}
+                handleFileUpload={handleFileUpload}
+                handleInsertToDescription={handleInsertToDescription}
+                handleRemoveAttachment={handleRemoveAttachment}
+              />
+            )}
 
-        {(node.type === 'constant' ||
-          node.type === 'input' ||
-          node.type === 'output') && (
-          <TypeConfig nodeType={node.type} data={data} setData={setData} />
-        )}
+            {(node.type === 'constant' ||
+              node.type === 'input' ||
+              node.type === 'output') && (
+              <TypeConfig nodeType={node.type} data={data} setData={setData} />
+            )}
 
-        {node.type === 'function' && (
-          <FunctionEditor
-            data={data}
-            setData={setData}
-            inputs={inputs}
-            setInputs={setInputs}
-            outputs={outputs}
-            setOutputs={setOutputs}
-            isGenerating={isGenerating}
-          />
-        )}
+            {node.type === 'function' && (
+              <FunctionEditor
+                data={data}
+                setData={setData}
+                inputs={inputs}
+                setInputs={setInputs}
+                outputs={outputs}
+                setOutputs={setOutputs}
+                isGenerating={isGenerating}
+              />
+            )}
 
-        {node.type === 'lut' && (
-          <LUTEditor
-            data={data}
-            setData={setData}
-            outputs={outputs}
-            setOutputs={setOutputs}
-            setInputs={setInputs}
-          />
+            {node.type === 'lut' && (
+              <LUTEditor
+                data={data}
+                setData={setData}
+                outputs={outputs}
+                setOutputs={setOutputs}
+                setInputs={setInputs}
+              />
+            )}
+          </>
         )}
 
         <div className="modal-actions">
