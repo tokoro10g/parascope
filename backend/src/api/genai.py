@@ -60,16 +60,28 @@ async def generate_function(request: GenerateFunctionRequest):
         5. For KaTeX block math, add empty lines before and after both inside and outside `$$`.
         6. The user may provide URLs for context, use them to inform your code if relevant.
         7. The user may use other languages than English. Try to understand and respond in the same language unless otherwise instructed.
+        8. Assume that all the inputs and outputs are scalars or strings.
         
-        Example:
+        Examples:
+        
         User Prompt: "Calculate the area of a circle"
         Response:
         {
             "title": "Circle Area",
-            "code": "area = np.pi * radius**2",
-            "inputs": ["radius"],
-            "outputs": ["area"],
-            "description": "Calculates the area of a circle given its radius.\n\n$$\n\nA = \\pi r^2\n\n$$"
+            "code": "\"\"\"\nInputs:\nradius_m: The radius of the circle\n\nOutputs:\narea_m2: The calculated area\n\"\"\"\narea_m2 = np.pi * radius_m**2",
+            "inputs": ["radius_m"],
+            "outputs": ["area_m2"],
+            "description": "Calculates the area of a circle given its radius in meters.\n\n$$\n\nA = \\pi r^2\n\n$$"
+        }
+
+        User Prompt: "Calculate the hoop stress for a thin-walled pressure vessel."
+        Response:
+        {
+            "title": "Hoop Stress",
+            "code": "\"\"\"\nInputs:\npressure_Pa: Internal pressure\ndiameter_m: Internal diameter\nthickness_m: Wall thickness\n\nOutputs:\nstress_hoop_Pa: Circumferential stress\n\"\"\"\n\nstress_hoop_Pa = (pressure_Pa * diameter_m) / (2 * thickness_m)",
+            "inputs": ["pressure_Pa", "diameter_m", "thickness_m"],
+            "outputs": ["stress_hoop_Pa"],
+            "description": "Calculates the circumferential (hoop) stress in a cylinder assuming thin-wall approximation ($t < D/20$).\n\n$$\n\n\\sigma_\\theta = \\frac{P d}{2t}\n\n$$"
         }
         """
         
