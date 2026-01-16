@@ -215,7 +215,8 @@ export const NodeInspector: React.FC<NodeInspectorProps> = ({
               <option value="">Live (Latest Draft)</option>
               {versions.map((v) => (
                 <option key={v.id} value={v.id}>
-                  {v.version_tag} ({new Date(v.created_at).toLocaleDateString()})
+                  {v.version_tag} ({new Date(v.created_at).toLocaleDateString()}
+                  )
                 </option>
               ))}
             </select>

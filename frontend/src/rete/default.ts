@@ -345,7 +345,10 @@ export async function createEditor(container: HTMLElement) {
           id,
         );
 
-      const nodes = instance.getNodes().map((n) => {
+      const allNodes = instance.getNodes();
+      const hasInputs = allNodes.some((n) => n.type === 'input');
+
+      const nodes = allNodes.map((n) => {
         const data: Record<string, any> = {};
 
         // Capture control values
@@ -355,8 +358,13 @@ export async function createEditor(container: HTMLElement) {
             control instanceof DropdownControl ||
             control instanceof InputControl
           ) {
-            // Don't save values for input/output nodes as they are transient
-            if (n.type !== 'input' && n.type !== 'output') {
+            // Persistence Logic:
+            // 1. Inputs are always transient.
+            // 2. Outputs are persistent ONLY IF the sheet has no input nodes.
+            const isTransient =
+              n.type === 'input' || (n.type === 'output' && hasInputs);
+
+            if (!isTransient) {
               data[key] = control.value;
             }
           }
