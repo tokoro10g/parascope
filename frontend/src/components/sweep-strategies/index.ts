@@ -104,6 +104,7 @@ export const getSweepChartOption = (
       label: { backgroundColor: '#777' },
     },
     tooltip: {
+      confine: true,
       trigger: 'axis',
       axisPointer: { type: 'cross' },
       backgroundColor: theme.background,
