@@ -44,7 +44,7 @@ interface SheetTableProps {
 }
 
 // Helper to group all deltas across all logs by node
-const groupHistoryByNode = (history: AuditLog[]) => {
+const groupHistoryByNode = (history: AuditLog[], nodes: ParascopeNode[]) => {
   const nodeGroups: Record<string, { label: string; changes: any[] }> = {};
 
   history.forEach((log) => {
@@ -62,10 +62,13 @@ const groupHistoryByNode = (history: AuditLog[]) => {
       });
     });
   });
-
-  return Object.values(nodeGroups).sort((a, b) =>
-    a.label.localeCompare(b.label),
-  );
+  return Object.entries(nodeGroups)
+    .filter(([nodeId, _value]) => {
+      // filter out groups with no matching nodes (e.g. deleted nodes)
+      return nodes.some((n) => n.id === nodeId);
+    })
+    .map(([_key, value]) => value)
+    .sort((a, b) => a.label.localeCompare(b.label));
 };
 
 const formatValue = (val: any) => {
@@ -541,7 +544,7 @@ export const SheetTable: React.FC<SheetTableProps> = ({
             ) : history.length === 0 ? (
               <div className="history-empty">No changes recorded yet</div>
             ) : (
-              groupHistoryByNode(history).map((group) => (
+              groupHistoryByNode(history, nodes).map((group) => (
                 <div key={group.label} className="history-node-section">
                   <div className="history-node-header">
                     <strong>{group.label}</strong>
@@ -564,7 +567,8 @@ export const SheetTable: React.FC<SheetTableProps> = ({
                         <div className="history-timeline-delta">
                           <span className="delta-field">{change.field}</span>
                           <span className="delta-values">
-                            {formatValue(change.old)} → {formatValue(change.new)}
+                            {formatValue(change.old)} →{' '}
+                            {formatValue(change.new)}
                           </span>
                         </div>
                       </div>
