@@ -233,13 +233,13 @@ export const SheetTable: React.FC<SheetTableProps> = ({
     )
     .sort((a, b) => {
       const typeOrder: Record<string, number> = {
-        constant: 0,
-        input: 1,
-        function: 2,
-        sheet: 3,
-        lut: 4,
-        output: 5,
-        comment: 6,
+        comment: 0,
+        constant: 1,
+        input: 2,
+        function: 3,
+        sheet: 4,
+        lut: 5,
+        output: 6,
       };
       const typeDiff = (typeOrder[a.type] ?? 99) - (typeOrder[b.type] ?? 99);
       if (typeDiff !== 0) return typeDiff;
