@@ -4,6 +4,7 @@ import {
   LogIn,
   LogOut,
   MessageSquare,
+  Milestone,
   Redo,
   Save,
   Share2,
@@ -22,6 +23,7 @@ interface EditorBarProps {
   readOnly?: boolean;
   onRenameSheet: (name: string) => void;
   onSaveSheet: () => void;
+  onCreateVersion?: () => void;
   onAddNode: (type: NodeType) => void;
   onUndo: () => void;
   onRedo: () => void;
@@ -34,6 +36,7 @@ export const EditorBar: React.FC<EditorBarProps> = ({
   readOnly = false,
   onRenameSheet,
   onSaveSheet,
+  onCreateVersion,
   onAddNode,
   onUndo,
   onRedo,
@@ -199,6 +202,19 @@ export const EditorBar: React.FC<EditorBarProps> = ({
       </div>
 
       <div className="toolbar-group save-group">
+        {onCreateVersion && (
+          <button
+            type="button"
+            onClick={(e) => {
+              onCreateVersion();
+              e.currentTarget.blur();
+            }}
+            title="Create named version"
+            className="btn-create-version"
+          >
+            <Milestone size={18} />
+          </button>
+        )}
         {onCheckUsage && (
           <button
             type="button"

@@ -3,20 +3,25 @@ from uuid import UUID, uuid4
 
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy import select, update
+from sqlalchemy.dialects.postgresql import insert
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
 
 from ..core.auth import get_current_user
 from ..core.config import settings
 from ..core.database import get_db
-from ..models.sheet import Connection, Folder, Lock, Node, Sheet
+from ..models.sheet import AuditLog, Connection, Folder, Lock, Node, Sheet, SheetVersion, UserReadState
 from ..schemas.sheet import (
+    AuditLogRead,
     FolderCreate,
     FolderRead,
     SheetCreate,
     SheetRead,
     SheetSummary,
     SheetUpdate,
+    SheetVersionCreate,
+    SheetVersionRead,
+    UserReadStateRead,
 )
 
 router = APIRouter(prefix="/sheets", tags=["sheets"])
@@ -63,12 +68,68 @@ async def delete_folder(folder_id: UUID, db: AsyncSession = Depends(get_db)):
     return {"ok": True}
 
 
+async def _check_for_updates(sheet_id: UUID, user_name: str, db: AsyncSession) -> bool:
+    # 1. Get user's last read time for THIS sheet
+    read_state_query = select(UserReadState).where(
+        UserReadState.sheet_id == sheet_id, UserReadState.user_name == user_name
+    )
+    res = await db.execute(read_state_query)
+    read_state = res.scalar_one_or_none()
+
+    last_read = read_state.last_read_at if read_state else datetime(1970, 1, 1)
+
+    # 2. Check for NEW audit logs in the entire tree
+    queue = [sheet_id]
+    visited = {sheet_id}
+
+    while queue:
+        curr_id = queue.pop(0)
+
+        # Check direct logs
+        log_query = (
+            select(AuditLog.id)
+            .where(AuditLog.sheet_id == curr_id, AuditLog.timestamp > last_read, AuditLog.user_name != user_name)
+            .limit(1)
+        )
+        log_res = await db.execute(log_query)
+        if log_res.first():
+            return True
+
+        # Find children
+        child_query = select(Node.data["sheetId"]).where(Node.sheet_id == curr_id, Node.type == "sheet")
+        child_res = await db.execute(child_query)
+        for row in child_res.all():
+            try:
+                child_id = UUID(row[0])
+                if child_id not in visited:
+                    visited.add(child_id)
+                    queue.append(child_id)
+            except (ValueError, TypeError):
+                continue
+
+    return False
+
+
 @router.get("/", response_model=list[SheetSummary])
-async def list_sheets(skip: int = 0, limit: int = 100, db: AsyncSession = Depends(get_db)):
+async def list_sheets(
+    skip: int = 0,
+    limit: int = 100,
+    db: AsyncSession = Depends(get_db),
+    user_id: str | None = Depends(get_current_user),
+):
     query = select(Sheet).offset(skip).limit(limit)
     result = await db.execute(query)
     sheets = result.scalars().all()
-    return sheets
+
+    # Enrich with update flag
+    summary_list = []
+    for s in sheets:
+        has_updates = await _check_for_updates(s.id, user_id, db) if user_id else False
+        summary = SheetSummary.model_validate(s)
+        summary.has_updates = has_updates
+        summary_list.append(summary)
+
+    return summary_list
 
 
 @router.post("/", response_model=SheetRead)
@@ -160,13 +221,88 @@ async def update_sheet(
                 # Check if lock is active
                 if datetime.utcnow() - lock.last_heartbeat_at <= timedelta(seconds=settings.LOCK_TIMEOUT_SECONDS):
                     raise HTTPException(status_code=403, detail=f"Sheet is locked by {lock.user_id}")
-                # If stale, we arguably could allow overwrite, but let's stick to "Acquire First" policy to be safe.
-                # The user should have forced a takeover on the UI side.
-                # However, for UX robustness, if it IS stale, maybe we allow it?
-                # For now: strict block if ID mismatches and looks active.
             else:
                 # Update last save time
                 lock.last_save_at = datetime.utcnow()
+
+    # --- Phase 2: Audit Logging (Diffing) ---
+    delta = []
+    if sheet_in.nodes is not None:
+        old_nodes_by_id = {str(n.id): n for n in db_sheet.nodes}
+        new_node_ids = set()
+
+        for node_in in sheet_in.nodes:
+            nid_str = str(node_in.id) if node_in.id else None
+            if nid_str:
+                new_node_ids.add(nid_str)
+
+            if nid_str and nid_str in old_nodes_by_id:
+                old_node = old_nodes_by_id[nid_str]
+                
+                # 1. Label
+                if old_node.label != node_in.label:
+                    delta.append({
+                        "node_id": nid_str,
+                        "label": node_in.label,
+                        "field": "label",
+                        "old": old_node.label,
+                        "new": node_in.label
+                    })
+
+                # 2. Values & Core Config
+                old_data = old_node.data or {}
+                new_data = node_in.data or {}
+                
+                for field in ["value", "code", "lut", "description"]:
+                    if old_data.get(field) != new_data.get(field):
+                        delta.append({
+                            "node_id": nid_str,
+                            "label": node_in.label,
+                            "field": field,
+                            "old": old_data.get(field),
+                            "new": new_data.get(field)
+                        })
+            elif not nid_str:
+                # New node (no ID provided yet)
+                delta.append({
+                    "node_id": None,
+                    "label": node_in.label,
+                    "field": "node",
+                    "old": None,
+                    "new": "created"
+                })
+        
+        # 3. Deleted Nodes
+        for old_id, old_node in old_nodes_by_id.items():
+            if old_id not in new_node_ids:
+                delta.append({
+                    "node_id": old_id,
+                    "label": old_node.label,
+                    "field": "node",
+                    "old": "existing",
+                    "new": "deleted"
+                })
+
+    if delta:
+        audit_log = AuditLog(
+            sheet_id=sheet_id,
+            user_name=user_id or "Anonymous",
+            delta=delta
+        )
+        db.add(audit_log)
+
+    # Auto-update read state for the person who saved
+    if user_id:
+        read_state_stmt = insert(UserReadState).values(
+            user_name=user_id,
+            sheet_id=sheet_id,
+            last_read_at=datetime.utcnow()
+        ).on_conflict_do_update(
+            index_elements=['user_name', 'sheet_id'],
+            set_={'last_read_at': datetime.utcnow()}
+        )
+        await db.execute(read_state_stmt)
+    # ----------------------------------------
 
     # Update basic info
     update_data = sheet_in.model_dump(exclude_unset=True)
@@ -373,3 +509,93 @@ async def get_sheet_usages(sheet_id: UUID, db: AsyncSession = Depends(get_db)):
                     queue.append((str(parent_sheet.id), new_trace))
     
     return valid_roots
+
+
+@router.get("/{sheet_id}/history", response_model=list[AuditLogRead])
+async def get_sheet_history(sheet_id: UUID, db: AsyncSession = Depends(get_db)):
+    query = select(AuditLog).where(AuditLog.sheet_id == sheet_id).order_by(AuditLog.timestamp.desc()).limit(50)
+    result = await db.execute(query)
+    return result.scalars().all()
+
+
+@router.post("/{sheet_id}/read")
+async def mark_sheet_as_read(
+    sheet_id: UUID, db: AsyncSession = Depends(get_db), user_id: str = Depends(get_current_user)
+):
+    if not user_id:
+        raise HTTPException(status_code=401, detail="User identity required")
+
+    stmt = (
+        insert(UserReadState)
+        .values(user_name=user_id, sheet_id=sheet_id, last_read_at=datetime.utcnow())
+        .on_conflict_do_update(index_elements=["user_name", "sheet_id"], set_={"last_read_at": datetime.utcnow()})
+    )
+    await db.execute(stmt)
+    await db.commit()
+    return {"ok": True}
+
+
+@router.post("/{sheet_id}/versions", response_model=SheetVersionRead)
+async def create_version(
+    sheet_id: UUID,
+    version_in: SheetVersionCreate,
+    db: AsyncSession = Depends(get_db),
+    user_id: str = Depends(get_current_user),
+):
+    # Fetch full sheet data
+    query = (
+        select(Sheet).where(Sheet.id == sheet_id).options(selectinload(Sheet.nodes), selectinload(Sheet.connections))
+    )
+    result = await db.execute(query)
+    sheet = result.scalar_one_or_none()
+    if not sheet:
+        raise HTTPException(status_code=404, detail="Sheet not found")
+
+    # Serialize current state
+    # We use a similar format to what the frontend expects
+    data = {
+        "nodes": [
+            {
+                "id": str(n.id),
+                "type": n.type,
+                "label": n.label,
+                "inputs": n.inputs,
+                "outputs": n.outputs,
+                "position_x": n.position_x,
+                "position_y": n.position_y,
+                "data": n.data,
+            }
+            for n in sheet.nodes
+        ],
+        "connections": [
+            {
+                "id": str(c.id),
+                "source_id": str(c.source_id),
+                "target_id": str(c.target_id),
+                "source_port": c.source_port,
+                "target_port": c.target_port,
+                "source_handle": c.source_handle,
+                "target_handle": c.target_handle,
+            }
+            for c in sheet.connections
+        ],
+    }
+
+    db_version = SheetVersion(
+        sheet_id=sheet_id,
+        version_tag=version_in.version_tag,
+        description=version_in.description,
+        data=data,
+        created_by=user_id or "Anonymous",
+    )
+    db.add(db_version)
+    await db.commit()
+    await db.refresh(db_version)
+    return db_version
+
+
+@router.get("/{sheet_id}/versions", response_model=list[SheetVersionRead])
+async def list_versions(sheet_id: UUID, db: AsyncSession = Depends(get_db)):
+    query = select(SheetVersion).where(SheetVersion.sheet_id == sheet_id).order_by(SheetVersion.created_at.desc())
+    result = await db.execute(query)
+    return result.scalars().all()

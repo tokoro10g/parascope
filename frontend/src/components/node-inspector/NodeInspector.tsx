@@ -1,6 +1,6 @@
 import type React from 'react';
 import { useEffect, useState } from 'react';
-import { API_BASE, api } from '../../api';
+import { API_BASE, api, type SheetVersion } from '../../api';
 import '../Modal.css';
 import { AIGenerator } from './AIGenerator';
 import { DescriptionEditor } from './DescriptionEditor';
@@ -32,6 +32,7 @@ export const NodeInspector: React.FC<NodeInspectorProps> = ({
   >([]);
   const [showPreview, setShowPreview] = useState(false);
   const [dataLoaded, setDataLoaded] = useState(false);
+  const [versions, setVersions] = useState<SheetVersion[]>([]);
 
   // AI State
   const [aiPrompt, setAiPrompt] = useState('');
@@ -53,8 +54,13 @@ export const NodeInspector: React.FC<NodeInspectorProps> = ({
       setAiPrompt('');
       setAiUrls('');
       setAiImage(null);
+      setVersions([]);
 
       const currentData = { ...(node.data || {}) };
+
+      if (node.type === 'sheet' && currentData.sheetId) {
+        api.listSheetVersions(currentData.sheetId).then(setVersions);
+      }
 
       // Initialize defaults for new fields
       if (!currentData.dataType) currentData.dataType = 'any';
@@ -195,6 +201,33 @@ export const NodeInspector: React.FC<NodeInspectorProps> = ({
             disabled={isGenerating}
           />
         </div>
+
+        {node.type === 'sheet' && (
+          <div className="form-group">
+            <label htmlFor="sheet-version">Logic Version:</label>
+            <select
+              id="sheet-version"
+              value={data.versionId || ''}
+              onChange={(e) =>
+                setData({ ...data, versionId: e.target.value || null })
+              }
+            >
+              <option value="">Live (Latest Draft)</option>
+              {versions.map((v) => (
+                <option key={v.id} value={v.id}>
+                  {v.version_tag} ({new Date(v.created_at).toLocaleDateString()})
+                </option>
+              ))}
+            </select>
+            <p
+              className="help-text"
+              style={{ fontSize: '0.8rem', color: '#666', marginTop: '4px' }}
+            >
+              Choose "Live" for agile concurrent work, or a specific version to
+              freeze the logic.
+            </p>
+          </div>
+        )}
 
         {dataLoaded && (
           <>

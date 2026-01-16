@@ -385,6 +385,21 @@ export const Dashboard: React.FC = () => {
               >
                 <Workflow size={20} />
                 <span className="sheet-name">{sheet.name}</span>
+                {sheet.has_updates && (
+                  <span
+                    className="update-indicator"
+                    title="New updates available"
+                    style={{
+                      width: '8px',
+                      height: '8px',
+                      backgroundColor: '#007bff',
+                      borderRadius: '50%',
+                      marginLeft: '8px',
+                      display: 'inline-block',
+                      boxShadow: '0 0 4px rgba(0,123,255,0.5)',
+                    }}
+                  />
+                )}
               </div>
             </Link>
             <span className="sheet-id">{sheet.id}</span>

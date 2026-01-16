@@ -3,16 +3,16 @@ import uuid
 import ast
 import re
 import networkx as nx
-from typing import Any, Dict, List, Set, Tuple
+from typing import Any, Dict, List, Optional, Set, Tuple
 from sqlalchemy import select
 from sqlalchemy.orm import selectinload
 from sqlalchemy.ext.asyncio import AsyncSession
-from ..models.sheet import Sheet, Node
+from ..models.sheet import Connection, Node, Sheet, SheetVersion
 
 class CodeGenerator:
     def __init__(self, session: AsyncSession):
         self.session = session
-        self.processed_sheets: Set[str] = set()
+        self.processed_ids: Set[str] = set()
         self.definitions: List[str] = []
         self.sheet_class_names: Dict[str, str] = {}
         self.used_class_names: Set[str] = set()
@@ -130,20 +130,61 @@ except Exception as e:
 """
         return header + definitions_code + entry_point
 
-    async def _process_sheet_recursive(self, sheet: Sheet) -> str:
-        sheet_id_str = str(sheet.id)
-        if sheet_id_str in self.processed_sheets:
-            return self._get_class_name(sheet_id_str)
+    async def _process_sheet_recursive(self, sheet: Sheet, version_id: Optional[str] = None) -> str:
+        processed_id = f"{sheet.id}:{version_id}" if version_id else str(sheet.id)
+        if processed_id in self.processed_ids:
+            return self._get_class_name(processed_id)
         
-        self._register_sheet_name(sheet)
-        self.processed_sheets.add(sheet_id_str)
+        self._register_sheet_name(sheet, version_id)
+        self.processed_ids.add(processed_id)
 
         # 1. Identify Nested Sheets and Process them first
         for node in sheet.nodes:
             if node.type == 'sheet':
                 nested_sheet_id = node.data.get('sheetId')
-                if nested_sheet_id:
-                    # Fetch from DB
+                nested_version_id = node.data.get('versionId')
+                
+                if nested_version_id:
+                    # Fetch from snapshot
+                    stmt = select(SheetVersion).where(SheetVersion.id == uuid.UUID(nested_version_id))
+                    result = await self.session.execute(stmt)
+                    version = result.scalars().first()
+                    
+                    if version:
+                        # Reconstruct virtual sheet from snapshot
+                        v_data = version.data
+                        v_nodes = [
+                            Node(
+                                id=uuid.UUID(n["id"]),
+                                type=n["type"],
+                                label=n["label"],
+                                inputs=n["inputs"],
+                                outputs=n["outputs"],
+                                data=n["data"]
+                            )
+                            for n in v_data.get("nodes", [])
+                        ]
+                        # Connections are needed for _generate_sheet_class
+                        v_connections = [
+                            Connection(
+                                id=uuid.UUID(c["id"]) if c.get("id") else uuid.uuid4(),
+                                source_id=uuid.UUID(c["source_id"]),
+                                target_id=uuid.UUID(c["target_id"]),
+                                source_port=c["source_port"],
+                                target_port=c["target_port"]
+                            )
+                            for c in v_data.get("connections", [])
+                        ]
+                        v_sheet = Sheet(
+                            id=version.sheet_id,
+                            name=f"{sheet.name}_v{version.version_tag}",
+                            nodes=v_nodes,
+                            connections=v_connections
+                        )
+                        await self._process_sheet_recursive(v_sheet, nested_version_id)
+
+                elif nested_sheet_id:
+                    # Fetch Latest (Live)
                     stmt = select(Sheet).where(Sheet.id == uuid.UUID(nested_sheet_id)).options(
                         selectinload(Sheet.nodes), 
                         selectinload(Sheet.connections)
@@ -154,24 +195,27 @@ except Exception as e:
                         await self._process_sheet_recursive(nested_sheet)
         
         # 2. Generate Class Code for this sheet
-        class_code = self._generate_sheet_class(sheet)
+        class_code = self._generate_sheet_class(sheet, version_id)
         self.definitions.append(class_code)
         
-        return self._get_class_name(sheet_id_str)
+        return self._get_class_name(processed_id)
 
-    def _get_class_name(self, sheet_id: str) -> str:
-        if sheet_id in self.sheet_class_names:
-            return self.sheet_class_names[sheet_id]
-        safe_uuid = sheet_id.replace("-", "_")
-        return f"Sheet_{safe_uuid}"
+    def _get_class_name(self, processed_id: str) -> str:
+        if processed_id in self.sheet_class_names:
+            return self.sheet_class_names[processed_id]
+        safe_id = processed_id.replace("-", "_").replace(":", "_")
+        return f"Sheet_{safe_id}"
 
-    def _register_sheet_name(self, sheet: Sheet):
-        sheet_id_str = str(sheet.id)
-        if sheet_id_str in self.sheet_class_names:
+    def _register_sheet_name(self, sheet: Sheet, version_id: Optional[str] = None):
+        processed_id = f"{sheet.id}:{version_id}" if version_id else str(sheet.id)
+        if processed_id in self.sheet_class_names:
             return
 
         # Sanitize for Class Name (PascalCase preference)
         raw_name = sheet.name or "Sheet"
+        if version_id:
+            raw_name += f"_v{str(version_id)[:4]}"
+        
         # Remove invalid chars
         clean = re.sub(r'[^a-zA-Z0-9_]', '', raw_name.title().replace(" ", ""))
         if not clean:
@@ -186,7 +230,7 @@ except Exception as e:
             idx += 1
             
         self.used_class_names.add(name)
-        self.sheet_class_names[sheet_id_str] = name
+        self.sheet_class_names[processed_id] = name
 
     def _sanitize_identifier(self, text: str) -> str:
         if not text:
@@ -200,8 +244,9 @@ except Exception as e:
         clean = re.sub(r'_+', '_', clean)
         return clean
 
-    def _generate_sheet_class(self, sheet: Sheet) -> str:
-        class_name = self._get_class_name(str(sheet.id))
+    def _generate_sheet_class(self, sheet: Sheet, version_id: Optional[str] = None) -> str:
+        processed_id = f"{sheet.id}:{version_id}" if version_id else str(sheet.id)
+        class_name = self._get_class_name(processed_id)
         
         # 1. Determine Method Names and Identify Inputs for ALL nodes
         node_method_map = {}
@@ -337,8 +382,11 @@ def {method_name}(self, {args_str}):
         elif node.type == 'sheet':
             # Nested Sheet
             nested_id = node.data.get("sheetId")
+            version_id = node.data.get("versionId")
             if not nested_id: return "pass"
-            nested_class = self._get_class_name(nested_id)
+            
+            processed_id = f"{nested_id}:{version_id}" if version_id else str(nested_id)
+            nested_class = self._get_class_name(processed_id)
             
             # Construct dictionary to pass to sub-sheet
             # keys matching input_overrides

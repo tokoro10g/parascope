@@ -82,6 +82,25 @@ export interface SheetSummary {
   name: string;
   owner_name?: string;
   folder_id?: string | null;
+  has_updates?: boolean;
+}
+
+export interface AuditLog {
+  id: string;
+  sheet_id: string;
+  user_name: string;
+  timestamp: string;
+  delta: any[];
+}
+
+export interface SheetVersion {
+  id: string;
+  sheet_id: string;
+  version_tag: string;
+  description?: string;
+  data: any;
+  created_at: string;
+  created_by: string;
 }
 
 export interface Folder {
@@ -243,6 +262,37 @@ export const api = {
   async deleteSheet(id: string): Promise<void> {
     return request(`${API_BASE}/sheets/${id}`, {
       method: 'DELETE',
+    });
+  },
+
+  async getSheetHistory(id: string): Promise<AuditLog[]> {
+    return request(`${API_BASE}/sheets/${id}/history`, {
+      headers: getHeaders(),
+    });
+  },
+
+  async markSheetAsRead(id: string): Promise<{ ok: boolean }> {
+    return request(`${API_BASE}/sheets/${id}/read`, {
+      method: 'POST',
+      headers: getHeaders(),
+    });
+  },
+
+  async listSheetVersions(id: string): Promise<SheetVersion[]> {
+    return request(`${API_BASE}/sheets/${id}/versions`, {
+      headers: getHeaders(),
+    });
+  },
+
+  async createSheetVersion(
+    id: string,
+    version_tag: string,
+    description?: string,
+  ): Promise<SheetVersion> {
+    return request(`${API_BASE}/sheets/${id}/versions`, {
+      method: 'POST',
+      headers: getHeaders({ 'Content-Type': 'application/json' }),
+      body: JSON.stringify({ version_tag, description }),
     });
   },
 

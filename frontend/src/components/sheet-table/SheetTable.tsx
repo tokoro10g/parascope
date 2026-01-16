@@ -1,10 +1,19 @@
-import { ChevronDown, Copy, LineChart, Play } from 'lucide-react';
+import {
+  CheckCheck,
+  ChevronDown,
+  Copy,
+  History,
+  LineChart,
+  List,
+  Play,
+} from 'lucide-react';
 import type React from 'react';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import ReactMarkdown from 'react-markdown';
+import { useParams } from 'react-router-dom';
 import rehypeKatex from 'rehype-katex';
 import remarkMath from 'remark-math';
-import { API_BASE } from '../../api';
+import { API_BASE, type AuditLog, api } from '../../api';
 import type { ParascopeNode } from '../../rete';
 import './SheetTable.css';
 import toast from 'react-hot-toast';
@@ -42,11 +51,45 @@ export const SheetTable: React.FC<SheetTableProps> = ({
   onSweep,
   isCalculating,
 }) => {
+  const { sheetId } = useParams<{ sheetId: string }>();
+  const [activeTab, setActiveTab] = useState<'table' | 'history'>('table');
+  const [history, setHistory] = useState<AuditLog[]>([]);
+  const [isHistoryLoading, setIsHistoryLoading] = useState(false);
+
   const tableContainerRef = useRef<HTMLDivElement>(null);
   const descriptionContainerRef = useRef<HTMLDivElement>(null);
   const [showScrollIndicator, setShowScrollIndicator] = useState(false);
   const [showDescriptionScrollIndicator, setShowDescriptionScrollIndicator] =
     useState(false);
+
+  const loadHistory = useCallback(async () => {
+    if (!sheetId) return;
+    setIsHistoryLoading(true);
+    try {
+      const data = await api.getSheetHistory(sheetId);
+      setHistory(data);
+    } catch (e) {
+      console.error(e);
+    } finally {
+      setIsHistoryLoading(false);
+    }
+  }, [sheetId]);
+
+  useEffect(() => {
+    if (activeTab === 'history') {
+      loadHistory();
+    }
+  }, [activeTab, loadHistory]);
+
+  const handleMarkAsRead = async () => {
+    if (!sheetId) return;
+    try {
+      await api.markSheetAsRead(sheetId);
+      toast.success('All changes marked as seen');
+    } catch (e) {
+      console.error(e);
+    }
+  };
 
   const checkScroll = useCallback(() => {
     const el = tableContainerRef.current;
@@ -201,224 +244,300 @@ export const SheetTable: React.FC<SheetTableProps> = ({
 
   return (
     <div className="sheet-table">
-      <div className="sheet-table-constants-section">
-        <div className="sheet-table-controls">
-          <button
-            type="button"
-            onClick={onCalculate}
-            disabled={isCalculating}
-            className="run-button"
-            title="Run Calculation"
-          >
-            {isCalculating ? '...' : <Play size={14} fill="currentColor" />}
-            Run Calculation
-          </button>
-          <button
-            type="button"
-            onClick={onSweep}
-            className="sweep-button"
-            title="Sweep"
-          >
-            <LineChart size={14} />
-            Sweep
-          </button>
-        </div>
-        <div className="sheet-table-header">
-          <h3>Constants & I/O</h3>
-          <div className="sheet-table-actions">
+      <div className="sheet-table-tabs">
+        <button
+          type="button"
+          className={`sheet-table-tab ${activeTab === 'table' ? 'active' : ''}`}
+          onClick={() => setActiveTab('table')}
+        >
+          <List size={16} /> Table
+        </button>
+        <button
+          type="button"
+          className={`sheet-table-tab ${activeTab === 'history' ? 'active' : ''}`}
+          onClick={() => setActiveTab('history')}
+        >
+          <History size={16} /> History
+        </button>
+      </div>
+
+      {activeTab === 'table' ? (
+        <>
+          <div className="sheet-table-constants-section">
+            <div className="sheet-table-controls">
+              <button
+                type="button"
+                onClick={onCalculate}
+                disabled={isCalculating}
+                className="run-button"
+                title="Run Calculation"
+              >
+                {isCalculating ? '...' : <Play size={14} fill="currentColor" />}
+                Run Calculation
+              </button>
+              <button
+                type="button"
+                onClick={onSweep}
+                className="sweep-button"
+                title="Sweep"
+              >
+                <LineChart size={14} />
+                Sweep
+              </button>
+            </div>
+            <div className="sheet-table-header">
+              <h3>Constants & I/O</h3>
+              <div className="sheet-table-actions">
+                <button
+                  type="button"
+                  onClick={handleCopyTable}
+                  className="copy-button"
+                >
+                  <Copy size={14} />
+                  Copy Table
+                </button>
+              </div>
+            </div>
+            <div className="sheet-table-list-container">
+              <div
+                ref={tableContainerRef}
+                onScroll={handleScroll}
+                className="sheet-table-scroll-area"
+              >
+                <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+                  <thead>
+                    <tr>
+                      <th>Name</th>
+                      <th>Type</th>
+                      <th className="sheet-table-header-right">Value</th>
+                    </tr>
+                  </thead>
+
+                  <tbody>
+                    {tableNodes.map((node) => {
+                      const isEditable =
+                        node.type === 'constant' || node.type === 'input';
+                      const isDropdown =
+                        isEditable && node.data.dataType === 'option';
+                      const nameControl = node.controls.name as any;
+                      const valueControl = node.controls.value as any;
+
+                      const name = nameControl?.value || node.label;
+                      const value = valueControl?.value;
+                      let displayValue = value;
+
+                      if (!isEditable) {
+                        if (
+                          isCalculating ||
+                          value === undefined ||
+                          value === null ||
+                          value === ''
+                        ) {
+                          displayValue = '?';
+                        } else {
+                          displayValue = formatHumanReadableValue(value);
+                        }
+                      }
+
+                      const hasError = !!node.error;
+
+                      return (
+                        <tr key={node.id} onClick={() => onSelectNode(node.id)}>
+                          <td>{name}</td>
+                          <td>{node.type}</td>
+                          <td
+                            className={`sheet-table-cell-value ${
+                              hasError && !isCalculating
+                                ? 'value-error'
+                                : !isEditable && displayValue !== '?'
+                                  ? 'value-blink'
+                                  : ''
+                            }`}
+                            data-error={hasError ? node.error : undefined}
+                          >
+                            {isDropdown ? (
+                              <select
+                                value={value}
+                                onChange={(e) => {
+                                  onUpdateValue(node.id, e.target.value);
+                                }}
+                                onClick={(e) => e.stopPropagation()} // Prevent row selection when editing
+                                className="sheet-table-input"
+                              >
+                                <option key="" value=""></option>
+                                {node.data.options.map((opt: string) => (
+                                  <option key={opt} value={opt}>
+                                    {opt}
+                                  </option>
+                                ))}
+                              </select>
+                            ) : isEditable ? (
+                              <input
+                                size={9}
+                                value={value}
+                                onChange={(e) =>
+                                  onUpdateValue(node.id, e.target.value)
+                                }
+                                onClick={(e) => e.stopPropagation()} // Prevent row selection when editing
+                                className="sheet-table-input"
+                              />
+                            ) : (
+                              <span>{displayValue}</span>
+                            )}
+                          </td>
+                        </tr>
+                      );
+                    })}
+                  </tbody>
+                </table>
+              </div>
+              {showScrollIndicator && <ScrollButton onClick={scrollToBottom} />}
+            </div>
+          </div>
+
+          <div className="description-panel">
+            <div className="description-panel-header">
+              <h3>Descriptions</h3>
+            </div>
+            <div
+              ref={descriptionContainerRef}
+              onScroll={handleDescriptionScroll}
+              className="description-list"
+            >
+              {descriptionNodes.map((node) => {
+                const nameControl = node.controls.name as any;
+                const name = nameControl?.value || node.label;
+                const description = node.data?.description;
+                const sheetId = node.data?.sheetId;
+                const lut = node.data?.lut;
+
+                if (
+                  !description &&
+                  node.type !== 'sheet' &&
+                  node.type !== 'lut'
+                )
+                  return null;
+
+                return (
+                  <div key={node.id} className="description-item">
+                    <h4 className="description-item-header">
+                      <span>{name}</span>
+                      <span className="description-item-type">{node.type}</span>
+                    </h4>
+                    {node.type === 'sheet' && sheetId ? (
+                      <div className="description-item-sheet-link">
+                        <a
+                          href={`/sheet/${sheetId}`}
+                          target="_blank"
+                          rel="noreferrer"
+                        >
+                          Open Referenced Sheet
+                        </a>
+                      </div>
+                    ) : node.type === 'lut' && lut?.rows ? (
+                      <div className="description-item-lut">
+                        <table className="compact-table">
+                          <thead>
+                            <tr>
+                              <th>Key</th>
+                              {Object.keys(node.outputs).map((out) => (
+                                <th key={out}>{out}</th>
+                              ))}
+                            </tr>
+                          </thead>
+                          <tbody>
+                            {lut.rows.map((row: any, i: number) => (
+                              // biome-ignore lint/suspicious/noArrayIndexKey: read-only display
+                              <tr key={i}>
+                                <td className="monospace">{row.key}</td>
+                                {Object.keys(node.outputs).map((out) => (
+                                  <td key={out} className="monospace">
+                                    {row.values?.[out]}
+                                  </td>
+                                ))}
+                              </tr>
+                            ))}
+                          </tbody>
+                        </table>
+                      </div>
+                    ) : (
+                      <div className="markdown-body compact-markdown description-markdown">
+                        <ReactMarkdown
+                          remarkPlugins={[remarkMath]}
+                          rehypePlugins={[rehypeKatex]}
+                          urlTransform={transformUrl}
+                        >
+                          {description}
+                        </ReactMarkdown>
+                      </div>
+                    )}
+                  </div>
+                );
+              })}
+              {descriptionNodes.every(
+                (n) =>
+                  !n.data?.description &&
+                  n.type !== 'sheet' &&
+                  n.type !== 'lut',
+              ) && (
+                <div className="description-empty">
+                  No descriptions available
+                </div>
+              )}
+            </div>
+            {showDescriptionScrollIndicator && (
+              <ScrollButton onClick={scrollToDescriptionBottom} />
+            )}
+          </div>
+        </>
+      ) : (
+        <div className="history-panel">
+          <div className="history-header">
+            <h3>Edit History</h3>
             <button
               type="button"
-              onClick={handleCopyTable}
-              className="copy-button"
+              className="mark-read-btn"
+              onClick={handleMarkAsRead}
+              title="Mark all as seen"
             >
-              <Copy size={14} />
-              Copy Table
+              <CheckCheck size={16} /> Mark all seen
             </button>
           </div>
-        </div>
-        <div className="sheet-table-list-container">
-          <div
-            ref={tableContainerRef}
-            onScroll={handleScroll}
-            className="sheet-table-scroll-area"
-          >
-            <table style={{ width: '100%', borderCollapse: 'collapse' }}>
-              <thead>
-                <tr>
-                  <th>Name</th>
-                  <th>Type</th>
-                  <th className="sheet-table-header-right">Value</th>
-                </tr>
-              </thead>
-
-              <tbody>
-                {tableNodes.map((node) => {
-                  const isEditable =
-                    node.type === 'constant' || node.type === 'input';
-                  const isDropdown =
-                    isEditable && node.data.dataType === 'option';
-                  const nameControl = node.controls.name as any;
-                  const valueControl = node.controls.value as any;
-
-                  const name = nameControl?.value || node.label;
-                  const value = valueControl?.value;
-                  let displayValue = value;
-
-                  if (!isEditable) {
-                    if (
-                      isCalculating ||
-                      value === undefined ||
-                      value === null ||
-                      value === ''
-                    ) {
-                      displayValue = '?';
-                    } else {
-                      displayValue = formatHumanReadableValue(value);
-                    }
-                  }
-
-                  const hasError = !!node.error;
-
-                  return (
-                    <tr key={node.id} onClick={() => onSelectNode(node.id)}>
-                      <td>{name}</td>
-                      <td>{node.type}</td>
-                      <td
-                        className={`sheet-table-cell-value ${
-                          hasError && !isCalculating
-                            ? 'value-error'
-                            : !isEditable && displayValue !== '?'
-                              ? 'value-blink'
-                              : ''
-                        }`}
-                        data-error={hasError ? node.error : undefined}
+          <div className="history-list">
+            {isHistoryLoading ? (
+              <div className="history-empty">Loading history...</div>
+            ) : history.length === 0 ? (
+              <div className="history-empty">No changes recorded yet</div>
+            ) : (
+              history.map((log) => (
+                <div key={log.id} className="history-item">
+                  <div className="history-item-header">
+                    <strong>{log.user_name}</strong>
+                    <span className="history-time">
+                      {new Date(log.timestamp).toLocaleString()}
+                    </span>
+                  </div>
+                  <div className="history-deltas">
+                    {log.delta.map((d, i) => (
+                      <div
+                        // biome-ignore lint/suspicious/noArrayIndexKey: simple display
+                        key={i}
+                        className="history-delta"
                       >
-                        {isDropdown ? (
-                          <select
-                            value={value}
-                            onChange={(e) => {
-                              onUpdateValue(node.id, e.target.value);
-                            }}
-                            onClick={(e) => e.stopPropagation()} // Prevent row selection when editing
-                            className="sheet-table-input"
-                          >
-                            <option key="" value=""></option>
-                            {node.data.options.map((opt: string) => (
-                              <option key={opt} value={opt}>
-                                {opt}
-                              </option>
-                            ))}
-                          </select>
-                        ) : isEditable ? (
-                          <input
-                            size={9}
-                            value={value}
-                            onChange={(e) =>
-                              onUpdateValue(node.id, e.target.value)
-                            }
-                            onClick={(e) => e.stopPropagation()} // Prevent row selection when editing
-                            className="sheet-table-input"
-                          />
-                        ) : (
-                          <span>{displayValue}</span>
-                        )}
-                      </td>
-                    </tr>
-                  );
-                })}
-              </tbody>
-            </table>
+                        <span className="delta-label">{d.label}</span>
+                        <span className="delta-field">{d.field}</span>
+                        <span className="delta-values">
+                          {JSON.stringify(d.old)} → {JSON.stringify(d.new)}
+                        </span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              ))
+            )}
           </div>
-          {showScrollIndicator && <ScrollButton onClick={scrollToBottom} />}
         </div>
-      </div>
-
-      <div className="description-panel">
-        <div className="description-panel-header">
-          <h3>Descriptions</h3>
-        </div>
-        <div
-          ref={descriptionContainerRef}
-          onScroll={handleDescriptionScroll}
-          className="description-list"
-        >
-          {descriptionNodes.map((node) => {
-            const nameControl = node.controls.name as any;
-            const name = nameControl?.value || node.label;
-            const description = node.data?.description;
-            const sheetId = node.data?.sheetId;
-            const lut = node.data?.lut;
-
-            if (!description && node.type !== 'sheet' && node.type !== 'lut')
-              return null;
-
-            return (
-              <div key={node.id} className="description-item">
-                <h4 className="description-item-header">
-                  <span>{name}</span>
-                  <span className="description-item-type">{node.type}</span>
-                </h4>
-                {node.type === 'sheet' && sheetId ? (
-                  <div className="description-item-sheet-link">
-                    <a
-                      href={`/sheet/${sheetId}`}
-                      target="_blank"
-                      rel="noreferrer"
-                    >
-                      Open Referenced Sheet
-                    </a>
-                  </div>
-                ) : node.type === 'lut' && lut?.rows ? (
-                  <div className="description-item-lut">
-                    <table className="compact-table">
-                      <thead>
-                        <tr>
-                          <th>Key</th>
-                          {Object.keys(node.outputs).map((out) => (
-                            <th key={out}>{out}</th>
-                          ))}
-                        </tr>
-                      </thead>
-                      <tbody>
-                        {lut.rows.map((row: any, i: number) => (
-                          // biome-ignore lint/suspicious/noArrayIndexKey: read-only display
-                          <tr key={i}>
-                            <td className="monospace">{row.key}</td>
-                            {Object.keys(node.outputs).map((out) => (
-                              <td key={out} className="monospace">
-                                {row.values?.[out]}
-                              </td>
-                            ))}
-                          </tr>
-                        ))}
-                      </tbody>
-                    </table>
-                  </div>
-                ) : (
-                  <div className="markdown-body compact-markdown description-markdown">
-                    <ReactMarkdown
-                      remarkPlugins={[remarkMath]}
-                      rehypePlugins={[rehypeKatex]}
-                      urlTransform={transformUrl}
-                    >
-                      {description}
-                    </ReactMarkdown>
-                  </div>
-                )}
-              </div>
-            );
-          })}
-          {descriptionNodes.every(
-            (n) =>
-              !n.data?.description && n.type !== 'sheet' && n.type !== 'lut',
-          ) && (
-            <div className="description-empty">No descriptions available</div>
-          )}
-        </div>
-        {showDescriptionScrollIndicator && (
-          <ScrollButton onClick={scrollToDescriptionBottom} />
-        )}
-      </div>
+      )}
     </div>
   );
 };

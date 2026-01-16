@@ -204,7 +204,139 @@
 /* Extracted styles from SheetTable.tsx */
 
 .sheet-table {
-  overflow: hidden; /* Override overflow-y: auto from previous rule */
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  background-color: var(--panel-bg);
+  border-left: 1px solid var(--border-color);
+}
+
+.sheet-table-tabs {
+  display: flex;
+  border-bottom: 1px solid var(--border-color);
+  background-color: var(--panel-bg-secondary);
+}
+
+.sheet-table-tab {
+  flex: 1;
+  padding: 10px;
+  border: none;
+  background: none;
+  color: var(--text-secondary);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  font-size: 0.9rem;
+  font-weight: 600;
+  transition: all 0.2s ease;
+  border-bottom: 2px solid transparent;
+}
+
+.sheet-table-tab:hover {
+  background-color: var(--panel-bg-translucent);
+  color: var(--text-color);
+}
+
+.sheet-table-tab.active {
+  color: var(--primary-color);
+  border-bottom-color: var(--primary-color);
+  background-color: var(--panel-bg);
+}
+
+.history-panel {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  overflow: hidden;
+}
+
+.history-header {
+  padding: 15px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-bottom: 1px solid var(--border-color);
+}
+
+.history-header h3 {
+  margin: 0;
+  font-size: 1.1rem;
+}
+
+.mark-read-btn {
+  font-size: 0.8rem;
+  padding: 4px 8px;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.history-list {
+  flex: 1;
+  overflow-y: auto;
+  padding: 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.history-item {
+  padding: 10px;
+  background-color: var(--panel-bg-secondary);
+  border: 1px solid var(--border-color);
+  border-radius: 6px;
+}
+
+.history-item-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  margin-bottom: 8px;
+  font-size: 0.85rem;
+}
+
+.history-time {
+  color: var(--text-secondary);
+  font-size: 0.75rem;
+}
+
+.history-deltas {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.history-delta {
+  font-size: 0.8rem;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  align-items: baseline;
+}
+
+.delta-label {
+  font-weight: 600;
+  color: var(--primary-color);
+}
+
+.delta-field {
+  color: var(--text-secondary);
+  font-style: italic;
+  font-size: 0.75rem;
+}
+
+.delta-values {
+  font-family: monospace;
+  word-break: break-all;
+}
+
+.history-empty {
+  padding: 40px 20px;
+  text-align: center;
+  color: var(--text-secondary);
+  font-style: italic;
 }
 
 .sheet-table-constants-section {

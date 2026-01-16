@@ -1,3 +1,4 @@
+from datetime import datetime
 from typing import Any, Dict, List, Optional
 from uuid import UUID
 
@@ -84,6 +85,7 @@ class SheetRead(SheetBase):
 class SheetSummary(SheetBase):
     id: UUID
     folder_id: Optional[UUID] = None
+    has_updates: bool = False
     model_config = ConfigDict(from_attributes=True)
 
 
@@ -92,3 +94,35 @@ class SheetUpdate(BaseModel):
     folder_id: Optional[UUID] = None
     nodes: Optional[List[NodeCreate]] = None
     connections: Optional[List[ConnectionCreate]] = None
+
+
+class AuditLogRead(BaseModel):
+    id: UUID
+    sheet_id: UUID
+    user_name: str
+    timestamp: datetime
+    delta: List[Any]
+    model_config = ConfigDict(from_attributes=True)
+
+
+class UserReadStateRead(BaseModel):
+    user_name: str
+    sheet_id: UUID
+    last_read_at: datetime
+    model_config = ConfigDict(from_attributes=True)
+
+
+class SheetVersionCreate(BaseModel):
+    version_tag: str
+    description: Optional[str] = None
+
+
+class SheetVersionRead(BaseModel):
+    id: UUID
+    sheet_id: UUID
+    version_tag: str
+    description: Optional[str]
+    data: Dict[str, Any]
+    created_at: datetime
+    created_by: str
+    model_config = ConfigDict(from_attributes=True)
