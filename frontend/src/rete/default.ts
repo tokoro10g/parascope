@@ -1,6 +1,11 @@
 import { createRoot } from 'react-dom/client';
 import { ClassicPreset as Classic, NodeEditor } from 'rete';
-import { type Area2D, AreaExtensions, AreaPlugin } from 'rete-area-plugin';
+import {
+  type Area2D,
+  AreaExtensions,
+  AreaPlugin,
+  Zoom,
+} from 'rete-area-plugin';
 import { ConnectionPathPlugin } from 'rete-connection-path-plugin';
 import {
   ConnectionPlugin,
@@ -149,6 +154,7 @@ export async function createEditor(container: HTMLElement) {
   });
 
   instance.use(area);
+  area.area.setZoomHandler(new Zoom(0.05));
   area.use(connection);
   area.use(reactRender);
   area.use(history);
