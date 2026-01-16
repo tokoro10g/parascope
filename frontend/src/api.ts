@@ -91,6 +91,7 @@ export interface AuditLog {
   user_name: string;
   timestamp: string;
   delta: any[];
+  is_unread?: boolean;
 }
 
 export interface SheetVersion {

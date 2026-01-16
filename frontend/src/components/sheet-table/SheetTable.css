@@ -280,56 +280,80 @@
   display: flex;
   flex-direction: column;
   gap: 12px;
+  min-height: 0; /* Important for nested flex scroll */
 }
 
-.history-item {
-  padding: 10px;
-  background-color: var(--panel-bg-secondary);
+.history-node-section {
+  margin-bottom: 0; /* Handled by gap in history-list */
+  background-color: var(--panel-bg);
   border: 1px solid var(--border-color);
-  border-radius: 6px;
+  border-radius: 8px;
+  overflow: hidden;
+  flex-shrink: 0; /* Prevent crushing */
 }
 
-.history-item-header {
+.history-node-header {
+  padding: 8px 12px;
+  background-color: var(--panel-bg-secondary);
+  border-bottom: 1px solid var(--border-color);
+  font-size: 0.9rem;
+  color: var(--primary-color);
+}
+
+.history-node-timeline {
+  display: flex;
+  flex-direction: column;
+}
+
+.history-timeline-item {
+  padding: 10px 12px;
+  border-bottom: 1px solid var(--border-color-translucent);
+  transition: all 0.2s ease;
+}
+
+.history-timeline-item:last-child {
+  border-bottom: none;
+}
+
+.history-timeline-item.unread {
+  border-left: 4px solid var(--primary-color);
+  background-color: var(--panel-bg-translucent);
+}
+
+.history-timeline-meta {
   display: flex;
   justify-content: space-between;
-  align-items: baseline;
-  margin-bottom: 8px;
-  font-size: 0.85rem;
+  margin-bottom: 4px;
+  font-size: 0.75rem;
+}
+
+.history-user {
+  font-weight: 600;
+  color: var(--text-color);
 }
 
 .history-time {
   color: var(--text-secondary);
-  font-size: 0.75rem;
 }
 
-.history-deltas {
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-}
-
-.history-delta {
+.history-timeline-delta {
   font-size: 0.8rem;
   display: flex;
-  flex-wrap: wrap;
-  gap: 4px;
+  gap: 8px;
   align-items: baseline;
-}
-
-.delta-label {
-  font-weight: 600;
-  color: var(--primary-color);
 }
 
 .delta-field {
   color: var(--text-secondary);
   font-style: italic;
-  font-size: 0.75rem;
+  font-size: 0.7rem;
+  min-width: 40px;
 }
 
 .delta-values {
   font-family: monospace;
   word-break: break-all;
+  flex: 1;
 }
 
 .history-empty {

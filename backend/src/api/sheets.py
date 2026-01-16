@@ -512,10 +512,36 @@ async def get_sheet_usages(sheet_id: UUID, db: AsyncSession = Depends(get_db)):
 
 
 @router.get("/{sheet_id}/history", response_model=list[AuditLogRead])
-async def get_sheet_history(sheet_id: UUID, db: AsyncSession = Depends(get_db)):
+async def get_sheet_history(
+    sheet_id: UUID,
+    db: AsyncSession = Depends(get_db),
+    user_id: str | None = Depends(get_current_user),
+):
+    # 1. Get user's last read time
+    last_read = datetime(1970, 1, 1)
+    if user_id:
+        read_state_query = select(UserReadState).where(
+            UserReadState.sheet_id == sheet_id, UserReadState.user_name == user_id
+        )
+        res = await db.execute(read_state_query)
+        read_state = res.scalar_one_or_none()
+        if read_state:
+            last_read = read_state.last_read_at
+
+    # 2. Fetch logs
     query = select(AuditLog).where(AuditLog.sheet_id == sheet_id).order_by(AuditLog.timestamp.desc()).limit(50)
     result = await db.execute(query)
-    return result.scalars().all()
+    logs = result.scalars().all()
+
+    # 3. Enrich with is_unread
+    enriched_logs = []
+    for log in logs:
+        is_unread = log.timestamp > last_read and log.user_name != user_id
+        enriched_log = AuditLogRead.model_validate(log)
+        enriched_log.is_unread = is_unread
+        enriched_logs.append(enriched_log)
+
+    return enriched_logs
 
 
 @router.post("/{sheet_id}/read")

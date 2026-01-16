@@ -102,6 +102,7 @@ class AuditLogRead(BaseModel):
     user_name: str
     timestamp: datetime
     delta: List[Any]
+    is_unread: bool = False
     model_config = ConfigDict(from_attributes=True)
 
 

@@ -43,6 +43,37 @@ interface SheetTableProps {
   isCalculating: boolean;
 }
 
+// Helper to group all deltas across all logs by node
+const groupHistoryByNode = (history: AuditLog[]) => {
+  const nodeGroups: Record<string, { label: string; changes: any[] }> = {};
+
+  history.forEach((log) => {
+    log.delta.forEach((d) => {
+      const nodeId = d.node_id || 'new-node';
+      const label = d.label || '(Unknown Node)';
+      if (!nodeGroups[nodeId]) {
+        nodeGroups[nodeId] = { label, changes: [] };
+      }
+      nodeGroups[nodeId].changes.push({
+        ...d,
+        user_name: log.user_name,
+        timestamp: log.timestamp,
+        is_unread: log.is_unread,
+      });
+    });
+  });
+
+  return Object.values(nodeGroups).sort((a, b) =>
+    a.label.localeCompare(b.label),
+  );
+};
+
+const formatValue = (val: any) => {
+  if (val === null || val === undefined) return 'null';
+  if (typeof val === 'object') return JSON.stringify(val);
+  return String(val);
+};
+
 export const SheetTable: React.FC<SheetTableProps> = ({
   nodes,
   onUpdateValue,
@@ -86,6 +117,7 @@ export const SheetTable: React.FC<SheetTableProps> = ({
     try {
       await api.markSheetAsRead(sheetId);
       toast.success('All changes marked as seen');
+      loadHistory(); // Refresh the list to clear highlights
     } catch (e) {
       console.error(e);
     }
@@ -509,26 +541,32 @@ export const SheetTable: React.FC<SheetTableProps> = ({
             ) : history.length === 0 ? (
               <div className="history-empty">No changes recorded yet</div>
             ) : (
-              history.map((log) => (
-                <div key={log.id} className="history-item">
-                  <div className="history-item-header">
-                    <strong>{log.user_name}</strong>
-                    <span className="history-time">
-                      {new Date(log.timestamp).toLocaleString()}
-                    </span>
+              groupHistoryByNode(history).map((group) => (
+                <div key={group.label} className="history-node-section">
+                  <div className="history-node-header">
+                    <strong>{group.label}</strong>
                   </div>
-                  <div className="history-deltas">
-                    {log.delta.map((d, i) => (
+                  <div className="history-node-timeline">
+                    {group.changes.map((change, i) => (
                       <div
-                        // biome-ignore lint/suspicious/noArrayIndexKey: simple display
+                        // biome-ignore lint/suspicious/noArrayIndexKey: timeline display
                         key={i}
-                        className="history-delta"
+                        className={`history-timeline-item ${change.is_unread ? 'unread' : ''}`}
                       >
-                        <span className="delta-label">{d.label}</span>
-                        <span className="delta-field">{d.field}</span>
-                        <span className="delta-values">
-                          {JSON.stringify(d.old)} → {JSON.stringify(d.new)}
-                        </span>
+                        <div className="history-timeline-meta">
+                          <span className="history-user">
+                            {change.user_name}
+                          </span>
+                          <span className="history-time">
+                            {new Date(change.timestamp).toLocaleString()}
+                          </span>
+                        </div>
+                        <div className="history-timeline-delta">
+                          <span className="delta-field">{change.field}</span>
+                          <span className="delta-values">
+                            {formatValue(change.old)} → {formatValue(change.new)}
+                          </span>
+                        </div>
                       </div>
                     ))}
                   </div>
