@@ -63,7 +63,7 @@ export const MarkdownControlComponent: React.FC<{ data: MarkdownControl }> = ({
         background: 'rgba(255, 255, 255, 0.3)',
         borderRadius: '4px',
         marginTop: '5px',
-        maxHeight: '300px',
+        maxWidth: '600px',
         overflowY: 'auto',
       }}
     >

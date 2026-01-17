@@ -139,6 +139,10 @@ button:focus-visible {
   height: auto;
 }
 
+.katex-display {
+  overflow-x: auto;
+}
+
 button.danger {
   background-color: var(--danger-color);
   color: white;
