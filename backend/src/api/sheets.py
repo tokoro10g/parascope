@@ -529,7 +529,7 @@ async def get_sheet_history(
             last_read = read_state.last_read_at
 
     # 2. Fetch logs
-    query = select(AuditLog).where(AuditLog.sheet_id == sheet_id).order_by(AuditLog.timestamp.desc()).limit(50)
+    query = select(AuditLog).where(AuditLog.sheet_id == sheet_id).order_by(AuditLog.timestamp.desc()).limit(10)
     result = await db.execute(query)
     logs = result.scalars().all()
 
