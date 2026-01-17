@@ -647,7 +647,7 @@ export const SheetEditor: React.FC = () => {
               onUpdateValue={handleUpdateNodeValue}
               onSelectNode={handleSelectNode}
               onCalculate={handleCalculate}
-              onSweep={() => navigate(`/sheet/${sheetId}/sweep`)}
+              onSweep={() => window.open(`/sheet/${sheetId}/sweep`, '_blank')}
               isCalculating={isCalculating}
             />
           </Panel>
