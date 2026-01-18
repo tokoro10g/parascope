@@ -8,15 +8,6 @@ importers:
 
   .:
     dependencies:
-      '@types/d3-shape':
-        specifier: ^3.1.7
-        version: 3.1.7
-      '@types/styled-components':
-        specifier: ^5.1.36
-        version: 5.1.36
-      '@types/three':
-        specifier: ^0.156.0
-        version: 0.156.0
       '@uiw/react-textarea-code-editor':
         specifier: ^3.1.1
         version: 3.1.1(@babel/runtime@7.28.4)(react-dom@19.2.3(react@19.2.3))(react@19.2.3)
@@ -41,6 +32,9 @@ importers:
       lucide-react:
         specifier: ^0.562.0
         version: 0.562.0(react@19.2.3)
+      normalize-wheel:
+        specifier: ^1.0.1
+        version: 1.0.1
       p-retry:
         specifier: ^7.1.1
         version: 7.1.1
@@ -123,15 +117,27 @@ importers:
       '@biomejs/biome':
         specifier: ^2.3.10
         version: 2.3.10
+      '@types/d3-shape':
+        specifier: ^3.1.7
+        version: 3.1.7
       '@types/js-cookie':
         specifier: ^3.0.6
         version: 3.0.6
+      '@types/normalize-wheel':
+        specifier: ^1.0.4
+        version: 1.0.4
       '@types/react':
         specifier: ^19.2.7
         version: 19.2.7
       '@types/react-dom':
         specifier: ^19.2.3
         version: 19.2.3(@types/react@19.2.7)
+      '@types/styled-components':
+        specifier: ^5.1.36
+        version: 5.1.36
+      '@types/three':
+        specifier: ^0.156.0
+        version: 0.156.0
       '@vitejs/plugin-react':
         specifier: ^5.0.3
         version: 5.1.2(vite@7.3.0)
@@ -641,6 +647,9 @@ packages:
   '@types/ms@2.1.0':
     resolution: {integrity: sha512-GsCCIZDE/p3i96vtEqx+7dBUGXrc7zeSK3wwPHIaRThS+9OhWIXRqzs4d6k1SVU8g91DrNRWxWUGhp5KXQb2VA==}
 
+  '@types/normalize-wheel@1.0.4':
+    resolution: {integrity: sha512-iclKEmOclXH2LGVkMkdal0+ffJphB3kbazakec96z1hW/CfJYmsZNFYLAmkpzePxKoKewXp2HSlsN6G4SG0b0g==}
+
   '@types/prismjs@1.26.5':
     resolution: {integrity: sha512-AUZTa7hQ2KY5L7AmtSiqxlhWxb4ina0yd8hNbl4TWuqnv/pFP0nDMb3YrfSBf4hJVGLh2YEIBfKaBW/9UEl6IQ==}
 
@@ -1060,6 +1069,9 @@ packages:
 
   node-releases@2.0.27:
     resolution: {integrity: sha512-nmh3lCkYZ3grZvqcCH+fjmQ7X+H0OeZgP40OierEaAptX4XofMh5kwNbWh7lBduUzCcV/8kZ+NDLCwm2iorIlA==}
+
+  normalize-wheel@1.0.1:
+    resolution: {integrity: sha512-1OnlAPZ3zgrk8B91HyRj+eVv+kS5u+Z0SCsak6Xil/kmgEia50ga7zfkumayonZrImffAxPU/5WcyGhzetHNPA==}
 
   p-retry@7.1.1:
     resolution: {integrity: sha512-J5ApzjyRkkf601HpEeykoiCvzHQjWxPAHhyjFcEUP2SWq0+35NKh8TLhpLw+Dkq5TZBFvUM6UigdE9hIVYTl5w==}
@@ -1832,6 +1844,8 @@ snapshots:
 
   '@types/ms@2.1.0': {}
 
+  '@types/normalize-wheel@1.0.4': {}
+
   '@types/prismjs@1.26.5': {}
 
   '@types/react-dom@19.2.3(@types/react@19.2.7)':
@@ -2447,6 +2461,8 @@ snapshots:
   nanoid@3.3.11: {}
 
   node-releases@2.0.27: {}
+
+  normalize-wheel@1.0.1: {}
 
   p-retry@7.1.1:
     dependencies:
