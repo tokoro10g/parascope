@@ -1,7 +1,7 @@
 import type React from 'react';
 import { useEffect, useState } from 'react';
 import { API_BASE, api, type SheetVersion } from '../../api';
-import '../Modal.css';
+import { Modal } from '../Modal';
 import { AIGenerator } from './AIGenerator';
 import { DescriptionEditor } from './DescriptionEditor';
 import { FunctionEditor } from './FunctionEditor';
@@ -173,11 +173,24 @@ export const NodeInspector: React.FC<NodeInspectorProps> = ({
     }
   };
 
-  return (
-    <div className="modal-overlay">
-      <div className="modal-content">
-        <h2>Edit Node: {node.type}</h2>
+  const footer = (
+    <>
+      <button type="button" onClick={onClose}>
+        Cancel
+      </button>
+      <button type="button" onClick={handleSave} className="primary">
+        Save
+      </button>
+    </>
+  );
 
+  return (
+    <Modal
+      isOpen={isOpen}
+      onClose={onClose}
+      title={`Edit Node: ${node.type}`}
+      footer={footer}
+    >
         {node.type === 'function' && (
           <AIGenerator
             aiPrompt={aiPrompt}
@@ -276,16 +289,6 @@ export const NodeInspector: React.FC<NodeInspectorProps> = ({
             )}
           </>
         )}
-
-        <div className="modal-actions">
-          <button type="button" onClick={onClose}>
-            Cancel
-          </button>
-          <button type="button" onClick={handleSave} className="primary">
-            Save
-          </button>
-        </div>
-      </div>
-    </div>
+    </Modal>
   );
 };
