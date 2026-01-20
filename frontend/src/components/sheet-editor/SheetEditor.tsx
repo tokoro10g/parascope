@@ -24,9 +24,9 @@ import { NavBar } from '../NavBar';
 import { NodeInspector } from '../node-inspector';
 import { SheetPickerModal } from '../SheetPickerModal';
 import { SheetUsageModal } from '../SheetUsageModal';
-import { VersionCreateModal } from '../VersionCreateModal';
 import { SheetTable } from '../sheet-table';
 import { TooltipLayer } from '../TooltipLayer';
+import { VersionCreateModal } from '../VersionCreateModal';
 import './SheetEditor.css';
 import type { CalculationInputDefinition } from './types';
 import { useEditorSetup } from './useEditorSetup';
@@ -265,7 +265,7 @@ export const SheetEditor: React.FC = () => {
       editor.updateNodeValues(calculationInputsRef.current, lastResult || {});
     }
     handleSaveSheet(getExportData());
-  }, [handleSaveSheet, getExportData, isReadOnly, editor, lastResult]);
+  }, [handleSaveSheet, getExportData, editor, lastResult]);
 
   const handleCreateVersion = useCallback(
     async (tag: string, description: string) => {
