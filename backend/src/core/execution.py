@@ -1,9 +1,11 @@
 import io
+import linecache
 import multiprocessing
 import queue as pyqueue
 import sys
 import threading
 import traceback
+import uuid
 from typing import Any, Dict, Optional, List
 
 from pydantic import BaseModel
@@ -56,6 +58,16 @@ def _persistent_worker_loop(task_queue, result_queue, runtime_classes):
             if script is None:  # Sentinel to exit
                 break
 
+            # Register script in linecache so traceback can show source lines
+            # We use a unique name per execution to avoid cache issues
+            filename = f"<parascope-{uuid.uuid4().hex[:8]}>"
+            linecache.cache[filename] = (
+                len(script),
+                None,
+                [line + '\n' for line in script.splitlines()],
+                filename
+            )
+
             # Capture stdout
             old_stdout = sys.stdout
             redirected_output = io.StringIO()
@@ -80,8 +92,9 @@ def _persistent_worker_loop(task_queue, result_queue, runtime_classes):
             results = {}
 
             try:
-                # Execute the script
-                exec(script, global_vars)
+                # Compile and execute the script
+                code_obj = compile(script, filename, "exec")
+                exec(code_obj, global_vars)
                 results = global_vars.get("results", {})
 
                 # If the script defines a 'sheet' instance (Root), extract its recursive state

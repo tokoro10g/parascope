@@ -375,6 +375,7 @@ def {method_name}(self, {args_str}):
             return f"""
 @function_node("{nid}", inputs={dict_str}, label="{label_safe}")
 def {method_name}(self, {args_str}):
+    # NODE_ID:{nid}
 {indented_code}
 {ret_stmt}
 """

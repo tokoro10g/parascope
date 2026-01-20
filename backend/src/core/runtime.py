@@ -380,8 +380,49 @@ class SheetBase:
 
             except Exception as e:
                 # Capture method-level errors (these are always visible)
-                tb = traceback.format_exc()
-                self.register_error(node_id, f"{str(e)}\n\n{tb}")
+                # We try to reformat the traceback to show relative line numbers for the node
+                import linecache
+                stack = traceback.extract_tb(e.__traceback__)
+                new_stack = []
+                
+                for frame in stack:
+                    # Filter for our generated script
+                    if frame.filename.startswith("<parascope-"):
+                        lines = linecache.getlines(frame.filename)
+                        marker = f"# NODE_ID:{node_id}"
+                        
+                        marker_idx = -1
+                        for i, line in enumerate(lines):
+                            if marker in line:
+                                marker_idx = i
+                                break
+                        
+                        if marker_idx != -1:
+                            # frame.lineno is 1-based. marker_idx is 0-based.
+                            # The first line of user code is marker_idx + 2 (1-based)
+                            # so rel_line = frame.lineno - (marker_idx + 1)
+                            rel_line = frame.lineno - (marker_idx + 1)
+                            
+                            new_frame = traceback.FrameSummary(
+                                filename=f"Node '{cfg.get('label', node_id)}'",
+                                lineno=rel_line,
+                                name=frame.name,
+                                line=frame.line
+                            )
+                            new_stack.append(new_frame)
+                        else:
+                            new_stack.append(frame)
+                    elif "core/runtime.py" not in frame.filename:
+                        # Keep external frames but skip our own runtime wrapper
+                        new_stack.append(frame)
+
+                if new_stack:
+                    formatted_tb = "".join(traceback.format_list(new_stack))
+                    error_msg = f"{formatted_tb}\n{type(e).__name__}: {str(e)}"
+                else:
+                    error_msg = f"{str(e)}\n\n{traceback.format_exc()}"
+
+                self.register_error(node_id, error_msg)
                 # For unexpected errors, stop execution
                 raise e
         
