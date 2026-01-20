@@ -1,11 +1,13 @@
 import {
   CaseLower,
   ChevronDown,
+  FileText,
   Import,
   LogIn,
   LogOut,
   MessageSquare,
   Milestone,
+  MoreHorizontal,
   Plus,
   Redo,
   Save,
@@ -26,6 +28,7 @@ interface EditorBarProps {
   onRenameSheet: (name: string) => void;
   onSaveSheet: () => void;
   onCreateVersion?: () => void;
+  onOpenVersionList?: () => void;
   onAddNode: (type: NodeType) => void;
   onUndo: () => void;
   onRedo: () => void;
@@ -39,6 +42,7 @@ export const EditorBar: React.FC<EditorBarProps> = ({
   onRenameSheet,
   onSaveSheet,
   onCreateVersion,
+  onOpenVersionList,
   onAddNode,
   onUndo,
   onRedo,
@@ -46,13 +50,15 @@ export const EditorBar: React.FC<EditorBarProps> = ({
 }) => {
   const [name, setName] = useState(sheetName || '');
   const [isAddMenuOpen, setIsAddMenuOpen] = useState(false);
+  const [isSheetMenuOpen, setIsSheetMenuOpen] = useState(false);
   const addMenuRef = useRef<HTMLDivElement>(null);
+  const sheetMenuRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     setName(sheetName || '');
   }, [sheetName]);
 
-  // Close menu when clicking outside
+  // Close menus when clicking outside
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       if (
@@ -61,15 +67,21 @@ export const EditorBar: React.FC<EditorBarProps> = ({
       ) {
         setIsAddMenuOpen(false);
       }
+      if (
+        sheetMenuRef.current &&
+        !sheetMenuRef.current.contains(event.target as Node)
+      ) {
+        setIsSheetMenuOpen(false);
+      }
     };
 
-    if (isAddMenuOpen) {
+    if (isAddMenuOpen || isSheetMenuOpen) {
       document.addEventListener('mousedown', handleClickOutside);
     }
     return () => {
       document.removeEventListener('mousedown', handleClickOutside);
     };
-  }, [isAddMenuOpen]);
+  }, [isAddMenuOpen, isSheetMenuOpen]);
 
   const handleBlur = () => {
     if (name !== sheetName) {
@@ -219,32 +231,69 @@ export const EditorBar: React.FC<EditorBarProps> = ({
       </div>
 
       <div className="toolbar-group save-group">
-        {onCreateVersion && (
+        <div
+          className="sheet-actions-group"
+          ref={sheetMenuRef}
+          style={{ position: 'relative' }}
+        >
           <button
             type="button"
-            onClick={(e) => {
-              onCreateVersion();
-              e.currentTarget.blur();
-            }}
-            title="Create named version"
-            className="btn-create-version"
+            onClick={() => setIsSheetMenuOpen(!isSheetMenuOpen)}
+            className={`btn-sheet-menu-trigger ${isSheetMenuOpen ? 'active' : ''}`}
+            title="Sheet Actions"
+            style={{ padding: '6px', minWidth: '32px' }}
           >
-            <Milestone size={18} />
+            <MoreHorizontal size={18} />
           </button>
-        )}
-        {onCheckUsage && (
-          <button
-            type="button"
-            onClick={(e) => {
-              onCheckUsage();
-              e.currentTarget.blur();
-            }}
-            title="Where is this sheet used?"
-            className="btn-check-usage"
-          >
-            <Share2 size={18} />
-          </button>
-        )}
+
+          {isSheetMenuOpen && (
+            <div
+              className="add-node-dropdown"
+              style={{ right: 0, left: 'auto' }}
+            >
+              {onCreateVersion && (
+                <button
+                  type="button"
+                  onClick={() => {
+                    onCreateVersion();
+                    setIsSheetMenuOpen(false);
+                  }}
+                  className="add-menu-item"
+                  style={{ color: 'var(--text-color)' }}
+                >
+                  <Milestone size={16} /> Create Version
+                </button>
+              )}
+              {onOpenVersionList && (
+                <button
+                  type="button"
+                  onClick={() => {
+                    onOpenVersionList();
+                    setIsSheetMenuOpen(false);
+                  }}
+                  className="add-menu-item"
+                  style={{ color: 'var(--text-color)' }}
+                >
+                  <FileText size={16} /> Version History
+                </button>
+              )}
+              {onCheckUsage && (
+                <button
+                  type="button"
+                  onClick={() => {
+                    onCheckUsage();
+                    setIsSheetMenuOpen(false);
+                  }}
+                  className="add-menu-item"
+                  style={{ color: 'var(--text-color)' }}
+                >
+                  <Share2 size={16} /> Check Usage
+                </button>
+              )}
+            </div>
+          )}
+        </div>
+
         <button
           type="button"
           onClick={(e) => {

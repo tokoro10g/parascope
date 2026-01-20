@@ -5,9 +5,7 @@ import {
   History,
   LineChart,
   List,
-  Milestone,
   Play,
-  RotateCcw,
 } from 'lucide-react';
 import type React from 'react';
 import { useCallback, useEffect, useRef, useState } from 'react';
@@ -15,7 +13,7 @@ import ReactMarkdown from 'react-markdown';
 import { useParams } from 'react-router-dom';
 import rehypeKatex from 'rehype-katex';
 import remarkMath from 'remark-math';
-import { API_BASE, type AuditLog, api, type SheetVersion } from '../../api';
+import { API_BASE, type AuditLog, api } from '../../api';
 import type { ParascopeNode } from '../../rete';
 import './SheetTable.css';
 import toast from 'react-hot-toast';
@@ -42,7 +40,6 @@ interface SheetTableProps {
   onSelectNode: (nodeId: string) => void;
   onCalculate: () => void;
   onSweep: () => void;
-  onRestoreVersion: (version: SheetVersion) => void;
   isCalculating: boolean;
 }
 
@@ -86,17 +83,12 @@ export const SheetTable: React.FC<SheetTableProps> = ({
   onSelectNode,
   onCalculate,
   onSweep,
-  onRestoreVersion,
   isCalculating,
 }) => {
   const { sheetId } = useParams<{ sheetId: string }>();
-  const [activeTab, setActiveTab] = useState<'table' | 'history' | 'versions'>(
-    'table',
-  );
+  const [activeTab, setActiveTab] = useState<'table' | 'history'>('table');
   const [history, setHistory] = useState<AuditLog[]>([]);
-  const [versions, setVersions] = useState<SheetVersion[]>([]);
   const [isHistoryLoading, setIsHistoryLoading] = useState(false);
-  const [isVersionsLoading, setIsVersionsLoading] = useState(false);
 
   const tableContainerRef = useRef<HTMLDivElement>(null);
   const descriptionContainerRef = useRef<HTMLDivElement>(null);
@@ -117,26 +109,11 @@ export const SheetTable: React.FC<SheetTableProps> = ({
     }
   }, [sheetId]);
 
-  const loadVersions = useCallback(async () => {
-    if (!sheetId) return;
-    setIsVersionsLoading(true);
-    try {
-      const data = await api.listSheetVersions(sheetId);
-      setVersions(data);
-    } catch (e) {
-      console.error(e);
-    } finally {
-      setIsVersionsLoading(false);
-    }
-  }, [sheetId]);
-
   useEffect(() => {
     if (activeTab === 'history') {
       loadHistory();
-    } else if (activeTab === 'versions') {
-      loadVersions();
     }
-  }, [activeTab, loadHistory, loadVersions]);
+  }, [activeTab, loadHistory]);
 
   const handleMarkAsRead = async () => {
     if (!sheetId) return;
@@ -316,13 +293,6 @@ export const SheetTable: React.FC<SheetTableProps> = ({
           onClick={() => setActiveTab('history')}
         >
           <History size={16} /> History
-        </button>
-        <button
-          type="button"
-          className={`sheet-table-tab ${activeTab === 'versions' ? 'active' : ''}`}
-          onClick={() => setActiveTab('versions')}
-        >
-          <Milestone size={16} /> Versions
         </button>
       </div>
 
@@ -555,7 +525,7 @@ export const SheetTable: React.FC<SheetTableProps> = ({
             )}
           </div>
         </>
-      ) : activeTab === 'history' ? (
+      ) : (
         <div className="history-panel">
           <div className="history-header">
             <h3>Edit History</h3>
@@ -603,72 +573,6 @@ export const SheetTable: React.FC<SheetTableProps> = ({
                         </div>
                       </div>
                     ))}
-                  </div>
-                </div>
-              ))
-            )}
-          </div>
-        </div>
-      ) : (
-        <div className="history-panel">
-          <div className="history-header">
-            <h3>Versions</h3>
-          </div>
-          <div className="history-list">
-            {isVersionsLoading ? (
-              <div className="history-empty">Loading versions...</div>
-            ) : versions.length === 0 ? (
-              <div className="history-empty">No versions created yet</div>
-            ) : (
-              versions.map((v) => (
-                <div key={v.id} className="history-item">
-                  <div className="history-item-header">
-                    <strong>{v.version_tag}</strong>
-                    <span className="history-time">
-                      {new Date(v.created_at).toLocaleString()}
-                    </span>
-                  </div>
-                  <div style={{ fontSize: '0.85rem', marginBottom: '8px' }}>
-                    {v.description || <em>No description</em>}
-                  </div>
-                  <div
-                    style={{
-                      fontSize: '0.75rem',
-                      color: 'var(--text-secondary)',
-                      display: 'flex',
-                      justifyContent: 'space-between',
-                      alignItems: 'center',
-                    }}
-                  >
-                    <span>By {v.created_by}</span>
-                    <div style={{ display: 'flex', gap: '8px' }}>
-                      <a
-                        href={`/sheet/${sheetId}?versionId=${v.id}`}
-                        target="_blank"
-                        rel="noreferrer"
-                        className="mark-read-btn"
-                        style={{ textDecoration: 'none', color: 'inherit' }}
-                        title="Open in new tab (Read-Only)"
-                      >
-                        View
-                      </a>
-                      <button
-                        type="button"
-                        className="mark-read-btn" // Reuse style
-                        onClick={() => {
-                          if (
-                            window.confirm(
-                              `Are you sure you want to restore version "${v.version_tag}"? This will overwrite your current sheet state.`,
-                            )
-                          ) {
-                            onRestoreVersion(v);
-                          }
-                        }}
-                        title="Restore this version"
-                      >
-                        <RotateCcw size={14} /> Restore
-                      </button>
-                    </div>
                   </div>
                 </div>
               ))

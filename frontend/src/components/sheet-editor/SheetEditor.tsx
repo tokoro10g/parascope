@@ -25,8 +25,9 @@ import { NodeInspector } from '../node-inspector';
 import { SheetPickerModal } from '../SheetPickerModal';
 import { SheetUsageModal } from '../SheetUsageModal';
 import { SheetTable } from '../sheet-table';
-import { TooltipLayer } from '../TooltipLayer';
 import { VersionCreateModal } from '../VersionCreateModal';
+import { VersionListModal } from '../VersionListModal';
+import { TooltipLayer } from '../TooltipLayer';
 import './SheetEditor.css';
 import type { CalculationInputDefinition } from './types';
 import { useEditorSetup } from './useEditorSetup';
@@ -51,6 +52,7 @@ export const SheetEditor: React.FC = () => {
   const [isSheetPickerOpen, setIsSheetPickerOpen] = useState(false);
   const [isUsageModalOpen, setIsUsageModalOpen] = useState(false);
   const [isVersionModalOpen, setIsVersionModalOpen] = useState(false);
+  const [isVersionListOpen, setIsVersionListOpen] = useState(false);
   const [initialLoadDone, setInitialLoadDone] = useState(false);
 
   const lastResultRef = useRef(lastResult);
@@ -345,10 +347,7 @@ export const SheetEditor: React.FC = () => {
     if (sheetId) {
       if (versionId) {
         setIsLoading(true);
-        Promise.all([
-          api.getVersion(sheetId, versionId),
-          api.getSheet(sheetId)
-        ])
+        Promise.all([api.getVersion(sheetId, versionId), api.getSheet(sheetId)])
           .then(([v, liveSheet]) => {
             if (editor && v.data) {
               const tempSheet = {
@@ -373,12 +372,7 @@ export const SheetEditor: React.FC = () => {
         setInitialLoadDone(false);
       }
     }
-  }, [
-    sheetId,
-    handleLoadSheet,
-    searchParams,
-    editor,
-  ]);
+  }, [sheetId, handleLoadSheet, searchParams, editor, setIsLoading, setCurrentSheet]);
 
   useUrlSync({
     nodes,
@@ -672,9 +666,20 @@ export const SheetEditor: React.FC = () => {
     <div className="sheet-editor">
       <NavBar user={user} onBack={handleBackClick} onLogout={logout} />
       {isVersionView && (
-        <div className="lock-banner" style={{ backgroundColor: '#e3f2fd', color: '#0d47a1', borderColor: '#90caf9' }}>
+        <div
+          className="lock-banner"
+          style={{
+            backgroundColor: '#e3f2fd',
+            color: '#0d47a1',
+            borderColor: '#90caf9',
+          }}
+        >
           <span>
-            Viewing <strong>Version Snapshot ({(currentSheet as any)?.version_tag})</strong>. Read-Only Mode.
+            Viewing{' '}
+            <strong>
+              Version Snapshot ({(currentSheet as any)?.version_tag})
+            </strong>
+            . Read-Only Mode.
           </span>
           <button
             type="button"
@@ -730,6 +735,7 @@ export const SheetEditor: React.FC = () => {
                 onRenameSheet={handleRenameSheet}
                 onSaveSheet={onSave}
                 onCreateVersion={() => setIsVersionModalOpen(true)}
+                onOpenVersionList={() => setIsVersionListOpen(true)}
                 onAddNode={handleAddNode}
                 onUndo={() => editor?.undo()}
                 onRedo={() => editor?.redo()}
@@ -753,7 +759,6 @@ export const SheetEditor: React.FC = () => {
               onSelectNode={handleSelectNode}
               onCalculate={handleCalculate}
               onSweep={() => window.open(`/sheet/${sheetId}/sweep`, '_blank')}
-              onRestoreVersion={handleRestoreVersion}
               isCalculating={isCalculating}
             />
           </Panel>
@@ -783,6 +788,14 @@ export const SheetEditor: React.FC = () => {
         onClose={() => setIsVersionModalOpen(false)}
         onSave={handleCreateVersion}
       />
+      {currentSheet && (
+        <VersionListModal
+          isOpen={isVersionListOpen}
+          onClose={() => setIsVersionListOpen(false)}
+          sheetId={currentSheet.id}
+          onRestore={handleRestoreVersion}
+        />
+      )}
     </div>
   );
 };
