@@ -1,7 +1,7 @@
 import { ArrowLeft, Folder as FolderIcon } from 'lucide-react';
 import React, { useEffect, useState } from 'react';
 import { api, type Folder } from '../api';
-import './Modal.css';
+import { Modal } from './Modal';
 
 interface FolderPickerModalProps {
   isOpen: boolean;
@@ -68,13 +68,30 @@ export const FolderPickerModal: React.FC<FolderPickerModalProps> = ({
 
   const breadcrumbs = getBreadcrumbs();
 
-  return (
-    <div className="modal-overlay">
-      <div className="modal-content">
-        <h2>Select Destination Folder</h2>
+  const footer = (
+    <>
+      <button type="button" onClick={onClose}>
+        Cancel
+      </button>
+      <button
+        type="button"
+        onClick={() => onSelect(currentFolderId)}
+        className="primary"
+      >
+        Move Here
+      </button>
+    </>
+  );
 
-        <div
-          className="breadcrumbs"
+  return (
+    <Modal
+      isOpen={isOpen}
+      onClose={onClose}
+      title="Select Destination Folder"
+      footer={footer}
+    >
+      <div
+        className="breadcrumbs"
           style={{
             marginBottom: 15,
             display: 'flex',
@@ -158,13 +175,6 @@ export const FolderPickerModal: React.FC<FolderPickerModalProps> = ({
             )}
           </div>
         )}
-        <button type="button" onClick={() => onSelect(currentFolderId)}>
-          Move to This Folder
-        </button>
-        <button type="button" onClick={onClose} style={{ marginTop: '20px' }}>
-          Cancel
-        </button>
-      </div>
-    </div>
+    </Modal>
   );
 };
