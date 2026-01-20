@@ -1,6 +1,7 @@
 import type { NodeEditor } from 'rete';
 import { ContextMenuPlugin } from 'rete-context-menu-plugin';
 import type { Schemes } from './types';
+import { copyToClipboard } from '../utils';
 
 export interface ContextMenuCallbacks {
   onNodeEdit?: (nodeId: string) => void;
@@ -124,11 +125,7 @@ export function createContextMenuPlugin(
           key: 'copy-url',
           handler: () => {
             const url = `${window.location.origin}${window.location.pathname}${window.location.search}#${context.id}`;
-            if (navigator.clipboard?.writeText) {
-              navigator.clipboard
-                .writeText(url)
-                .catch((err) => console.error('Failed to copy URL:', err));
-            }
+            copyToClipboard(url);
           },
         },
         {

@@ -1,3 +1,4 @@
+import { toast } from 'react-hot-toast';
 import type { NodeEditor } from 'rete';
 import { api, type NodeResult, type Sheet } from './api';
 import type { Schemes } from './rete/types';
@@ -185,6 +186,20 @@ export const fallbackCopy = (text: string) => {
     return false;
   } finally {
     document.body.removeChild(textArea);
+  }
+};
+
+export const copyToClipboard = (text: string) => {
+  try {
+    navigator.clipboard.writeText(text).then(() => {
+      toast.success('Copied to clipboard');
+    });
+  } catch {
+    if (fallbackCopy(text)) {
+      toast.success('Copied to clipboard');
+    } else {
+      toast.error('Failed to copy to clipboard');
+    }
   }
 };
 

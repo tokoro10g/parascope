@@ -5,7 +5,7 @@ import type React from 'react';
 import { useMemo, useRef } from 'react';
 import toast from 'react-hot-toast';
 import type { NodeData, SweepResultStep } from '../../api';
-import { fallbackCopy } from '../../utils';
+import { copyToClipboard } from '../../utils';
 import { getSweepChartOption } from '../sweep-strategies';
 import './SweepPage.css';
 
@@ -103,18 +103,7 @@ export const SweepResults: React.FC<SweepResultsProps> = ({
     });
 
     const text = [header, ...rows].join('\n');
-
-    try {
-      await navigator.clipboard.writeText(text).then(() => {
-        toast.success('Table copied to clipboard');
-      });
-    } catch {
-      if (fallbackCopy(text)) {
-        toast.success('Table copied to clipboard');
-      } else {
-        toast.error('Failed to copy table to clipboard');
-      }
-    }
+    copyToClipboard(text);
   };
 
   return (

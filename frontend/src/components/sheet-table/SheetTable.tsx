@@ -17,7 +17,7 @@ import { API_BASE, type AuditLog, api } from '../../api';
 import type { ParascopeNode } from '../../rete';
 import './SheetTable.css';
 import toast from 'react-hot-toast';
-import { fallbackCopy, formatHumanReadableValue } from '../../utils';
+import { copyToClipboard, formatHumanReadableValue } from '../../utils';
 import { ScrollablePanel } from '../ScrollablePanel';
 
 interface SheetTableProps {
@@ -182,18 +182,7 @@ export const SheetTable: React.FC<SheetTableProps> = ({
     });
 
     const tsv = [headers.join('\t'), ...rows].join('\n');
-
-    try {
-      navigator.clipboard.writeText(tsv).then(() => {
-        toast.success('Table copied to clipboard');
-      });
-    } catch {
-      if (fallbackCopy(tsv)) {
-        toast.success('Table copied to clipboard');
-      } else {
-        toast.error('Failed to copy table to clipboard');
-      }
-    }
+    copyToClipboard(tsv);
   };
 
   return (
