@@ -57,73 +57,102 @@
   font-weight: bold;
 }
 
-/* Node Add Buttons - High Specificity to beat SheetEditor.css overrides */
-.editor-bar .toolbar-group .btn-add-constant {
-  background-color: #ec407a;
-  color: white;
-  border: 1px solid #c2185b;
-}
-.editor-bar .toolbar-group .btn-add-constant:hover {
-  background-color: #d81b60;
-  border-color: #ad1457;
+/* Add Menu Styles */
+.node-actions-group {
+  position: relative;
 }
 
-.editor-bar .toolbar-group .btn-add-input {
-  background-color: #ff9800;
-  color: white;
-  border: 1px solid #f57c00;
-}
-.editor-bar .toolbar-group .btn-add-input:hover {
-  background-color: #fb8c00;
-  border-color: #ef6c00;
-}
-
-.editor-bar .toolbar-group .btn-add-output {
-  background-color: #4caf50;
-  color: white;
-  border: 1px solid #388e3c;
-}
-.editor-bar .toolbar-group .btn-add-output:hover {
-  background-color: #43a047;
-  border-color: #2e7d32;
+.btn-add-menu-trigger {
+  background-color: var(--button-bg);
+  border: 1px solid var(--border-color);
+  color: var(--text-color);
+  padding: 0 12px;
+  min-width: auto;
+  font-weight: 500;
+  transition: all 0.2s ease;
 }
 
-.editor-bar .toolbar-group .btn-add-function {
-  background-color: #2196f3;
-  color: white;
-  border: 1px solid #1976d2;
-}
-.editor-bar .toolbar-group .btn-add-function:hover {
-  background-color: #1e88e5;
-  border-color: #1565c0;
+.btn-add-menu-trigger:hover,
+.btn-add-menu-trigger.active {
+  background-color: var(--panel-bg-translucent);
+  border-color: var(--primary-color);
 }
 
-.editor-bar .toolbar-group .btn-add-sheet {
-  background-color: #00bcd4;
-  color: white;
-  border: 1px solid #0097a7;
-}
-.editor-bar .toolbar-group .btn-add-sheet:hover {
-  background-color: #00acc1;
-  border-color: #00838f;
+.add-node-dropdown {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  margin-top: 8px;
+  background-color: var(--panel-bg);
+  border: 1px solid var(--border-color);
+  border-radius: 6px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  z-index: 1000;
+  min-width: 180px;
+  padding: 4px;
+  display: flex;
+  flex-direction: column;
 }
 
-.editor-bar .toolbar-group .btn-add-comment {
-  background-color: #bdbdbd;
+.editor-bar .add-node-dropdown .add-menu-item {
+  display: flex;
+  align-items: center;
+  justify-content: flex-start; /* Override .toolbar button center */
+  gap: 10px;
+  padding: 10px 14px;
+  border: 1px solid transparent;
+  background-color: transparent;
+  color: var(--text-color);
+  cursor: pointer;
+  border-radius: 4px;
+  font-size: 0.95rem;
+  font-weight: 600;
+  transition: all 0.2s ease;
+  width: 100%;
+  height: auto;
+  line-height: 1.2;
+  margin-bottom: 2px;
+  text-align: left;
+}
+
+.add-menu-item:last-child {
+  margin-bottom: 0;
+}
+
+.menu-separator {
+  height: 1px;
+  background-color: var(--border-color-translucent);
+  margin: 6px 4px;
+}
+
+/* Node Type Specific Coloring - Higher Specificity to override container styles */
+.editor-bar .add-node-dropdown .item-constant { background-color: #ec407a; border-color: #c2185b; color: white; }
+.editor-bar .add-node-dropdown .item-constant:hover { background-color: #d81b60; }
+
+.editor-bar .add-node-dropdown .item-input { background-color: #ff9800; border-color: #f57c00; color: white; }
+.editor-bar .add-node-dropdown .item-input:hover { background-color: #fb8c00; }
+
+.editor-bar .add-node-dropdown .item-function { background-color: #2196f3; border-color: #1976d2; color: white; }
+.editor-bar .add-node-dropdown .item-function:hover { background-color: #1e88e5; }
+
+.editor-bar .add-node-dropdown .item-output { background-color: #4caf50; border-color: #388e3c; color: white; }
+.editor-bar .add-node-dropdown .item-output:hover { background-color: #43a047; }
+
+.editor-bar .add-node-dropdown .item-sheet { background-color: #00bcd4; border-color: #0097a7; color: white; }
+.editor-bar .add-node-dropdown .item-sheet:hover { background-color: #00acc1; }
+
+.editor-bar .add-node-dropdown .item-lut { background-color: #673ab7; border-color: #512da8; color: white; }
+.editor-bar .add-node-dropdown .item-lut:hover { background-color: #5e35b1; }
+
+.editor-bar .add-node-dropdown .item-comment { 
+  background-color: #bdbdbd; 
+  border-color: #9e9e9e; 
   color: #424242;
-  border: 1px solid #9e9e9e;
 }
-.editor-bar .toolbar-group .btn-add-comment:hover {
-  background-color: #9e9e9e;
-  border-color: #757575;
-}
+.editor-bar .add-node-dropdown .item-comment:hover { background-color: #9e9e9e; }
 
-.editor-bar .toolbar-group .btn-add-lut {
-  background-color: #673ab7;
-  color: white;
-  border: 1px solid #512da8;
-}
-.editor-bar .toolbar-group .btn-add-lut:hover {
-  background-color: #5e35b1;
-  border-color: #4527a0;
+/* Icon tweak */
+.add-menu-item svg {
+  stroke-width: 2.5px;
+  flex-shrink: 0;
 }

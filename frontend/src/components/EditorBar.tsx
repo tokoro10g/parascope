@@ -1,10 +1,12 @@
 import {
   CaseLower,
+  ChevronDown,
   Import,
   LogIn,
   LogOut,
   MessageSquare,
   Milestone,
+  Plus,
   Redo,
   Save,
   Share2,
@@ -13,7 +15,7 @@ import {
   Undo,
 } from 'lucide-react';
 import type React from 'react';
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import type { NodeType } from '../rete/types';
 import './EditorBar.css';
 
@@ -43,10 +45,31 @@ export const EditorBar: React.FC<EditorBarProps> = ({
   onCheckUsage,
 }) => {
   const [name, setName] = useState(sheetName || '');
+  const [isAddMenuOpen, setIsAddMenuOpen] = useState(false);
+  const addMenuRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     setName(sheetName || '');
   }, [sheetName]);
+
+  // Close menu when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (
+        addMenuRef.current &&
+        !addMenuRef.current.contains(event.target as Node)
+      ) {
+        setIsAddMenuOpen(false);
+      }
+    };
+
+    if (isAddMenuOpen) {
+      document.addEventListener('mousedown', handleClickOutside);
+    }
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, [isAddMenuOpen]);
 
   const handleBlur = () => {
     if (name !== sheetName) {
@@ -58,6 +81,11 @@ export const EditorBar: React.FC<EditorBarProps> = ({
     if (e.key === 'Enter') {
       e.currentTarget.blur();
     }
+  };
+
+  const handleAddNode = (type: NodeType) => {
+    onAddNode(type);
+    setIsAddMenuOpen(false);
   };
 
   return (
@@ -98,84 +126,73 @@ export const EditorBar: React.FC<EditorBarProps> = ({
           Unsaved
         </span>
       </div>
-      <div className="toolbar-group node-actions-group">
+      <div className="toolbar-group node-actions-group" ref={addMenuRef}>
         <button
           type="button"
-          onClick={(e) => {
-            onAddNode('constant');
-            e.currentTarget.blur();
-          }}
-          title="Add Constant"
-          className="btn-add-constant"
+          onClick={() => setIsAddMenuOpen(!isAddMenuOpen)}
+          className={`btn-add-menu-trigger ${isAddMenuOpen ? 'active' : ''}`}
+          title="Add Node"
         >
-          <CaseLower size={18} />
+          <Plus size={18} />
+          <span style={{ marginLeft: '4px', fontSize: '0.9em' }}>Add Node</span>
+          <ChevronDown size={14} style={{ marginLeft: '4px' }} />
         </button>
-        <button
-          type="button"
-          onClick={(e) => {
-            onAddNode('input');
-            e.currentTarget.blur();
-          }}
-          title="Add Input Node"
-          className="btn-add-input"
-        >
-          <LogIn size={18} />
-        </button>
-        <button
-          type="button"
-          onClick={(e) => {
-            onAddNode('output');
-            e.currentTarget.blur();
-          }}
-          title="Add Output Node"
-          className="btn-add-output"
-        >
-          <LogOut size={18} />
-        </button>
-        <button
-          type="button"
-          onClick={(e) => {
-            onAddNode('function');
-            e.currentTarget.blur();
-          }}
-          title="Add Function"
-          className="btn-add-function"
-        >
-          <Sigma size={18} />
-        </button>
-        <button
-          type="button"
-          onClick={(e) => {
-            onAddNode('sheet');
-            e.currentTarget.blur();
-          }}
-          title="Import Sheet"
-          className="btn-add-sheet"
-        >
-          <Import size={18} />
-        </button>
-        <button
-          type="button"
-          onClick={(e) => {
-            onAddNode('lut');
-            e.currentTarget.blur();
-          }}
-          title="Add LUT"
-          className="btn-add-lut"
-        >
-          <Table size={18} />
-        </button>
-        <button
-          type="button"
-          onClick={(e) => {
-            onAddNode('comment');
-            e.currentTarget.blur();
-          }}
-          title="Add Comment"
-          className="btn-add-comment"
-        >
-          <MessageSquare size={18} />
-        </button>
+
+        {isAddMenuOpen && (
+          <div className="add-node-dropdown">
+            <button
+              type="button"
+              onClick={() => handleAddNode('constant')}
+              className="add-menu-item item-constant"
+            >
+              <CaseLower size={16} /> Constant
+            </button>
+            <button
+              type="button"
+              onClick={() => handleAddNode('input')}
+              className="add-menu-item item-input"
+            >
+              <LogIn size={16} /> Input
+            </button>
+            <button
+              type="button"
+              onClick={() => handleAddNode('function')}
+              className="add-menu-item item-function"
+            >
+              <Sigma size={16} /> Function
+            </button>
+            <button
+              type="button"
+              onClick={() => handleAddNode('output')}
+              className="add-menu-item item-output"
+            >
+              <LogOut size={16} /> Output
+            </button>
+            <div className="menu-separator" />
+            <button
+              type="button"
+              onClick={() => handleAddNode('sheet')}
+              className="add-menu-item item-sheet"
+            >
+              <Import size={16} /> Import Sheet
+            </button>
+            <button
+              type="button"
+              onClick={() => handleAddNode('lut')}
+              className="add-menu-item item-lut"
+            >
+              <Table size={16} /> Lookup Table
+            </button>
+            <div className="menu-separator" />
+            <button
+              type="button"
+              onClick={() => handleAddNode('comment')}
+              className="add-menu-item item-comment"
+            >
+              <MessageSquare size={16} /> Comment
+            </button>
+          </div>
+        )}
       </div>
 
       <div className="toolbar-group history-group">
