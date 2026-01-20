@@ -439,5 +439,11 @@ export async function createEditor(container: HTMLElement) {
         .getNodes()
         .filter((n) => selector.isSelected({ id: n.id, label: 'node' }));
     },
+    selectNode: (nodeId: string, accumulate: boolean) => {
+      selector.select({ id: nodeId, label: 'node' }, accumulate);
+    },
+    clearSelection: () => {
+      selector.unselectAll();
+    },
   };
 }

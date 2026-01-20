@@ -62,12 +62,17 @@ export function useSheetClipboard(
 
       // ID Mapping for connections
       const idMap = new Map<string, string>();
+      const newNodes = [];
+
+      if (editor) {
+        editor.clearSelection();
+      }
 
       for (const nodeData of nodesToPaste) {
         const inputs = nodeData.inputs;
         const outputs = nodeData.outputs;
         const data = { ...nodeData.data };
-        
+
         if (nodeData.controls && nodeData.controls.value !== undefined) {
           data.value = nodeData.controls.value;
         }
@@ -79,9 +84,17 @@ export function useSheetClipboard(
           y: nodeData.position.y + offsetY,
         };
 
-        const newNode = await addNode(nodeData.type, label, inputs, outputs, data, position);
+        const newNode = await addNode(
+          nodeData.type,
+          label,
+          inputs,
+          outputs,
+          data,
+          position,
+        );
         if (newNode && nodeData.id) {
           idMap.set(nodeData.id, newNode.id);
+          newNodes.push(newNode);
         }
       }
 
@@ -109,6 +122,13 @@ export function useSheetClipboard(
               }
             }
           }
+        }
+      }
+
+      // Select all new nodes
+      if (editor) {
+        for (const node of newNodes) {
+          editor.selectNode(node.id, true);
         }
       }
     },
