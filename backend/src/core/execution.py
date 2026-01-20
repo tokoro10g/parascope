@@ -4,10 +4,11 @@ import queue as pyqueue
 import sys
 import threading
 import traceback
-from typing import Any, Dict, Optional
+from typing import Any, Dict, Optional, List
 
 from pydantic import BaseModel
 
+from .config import settings
 from .runtime import (
     SheetBase,
     NodeError,
@@ -31,13 +32,7 @@ class ExecutionResult(BaseModel):
     success: bool = False
 
 
-# --- Persistent Worker Implementation ---
-
-_worker_process: Optional[multiprocessing.Process] = None
-_task_queue: Optional[multiprocessing.Queue] = None
-_result_queue: Optional[multiprocessing.Queue] = None
-_worker_lock = threading.Lock()
-
+# --- Persistent Worker Pool Implementation ---
 
 def _persistent_worker_loop(task_queue, result_queue, runtime_classes):
     """
@@ -92,9 +87,6 @@ def _persistent_worker_loop(task_queue, result_queue, runtime_classes):
                 # If the script defines a 'sheet' instance (Root), extract its recursive state
                 root_sheet = global_vars.get("sheet")
                 if root_sheet and isinstance(root_sheet, SheetBase):
-                    # We need to enrich 'results' with internal state of nested sheets
-                    # The simple 'results' dict only flatly maps node_id -> output
-                    
                     # Helper to traverse
                     def extract_nodes_state(instance: SheetBase):
                         state = {}
@@ -131,55 +123,87 @@ def _persistent_worker_loop(task_queue, result_queue, runtime_classes):
                 pass
 
 
-def _ensure_worker():
-    global _worker_process, _task_queue, _result_queue
-    if _worker_process is None or not _worker_process.is_alive():
-        _task_queue = multiprocessing.Queue()
-        _result_queue = multiprocessing.Queue()
-        _worker_process = multiprocessing.Process(
-            target=_persistent_worker_loop,
-            args=(_task_queue, _result_queue, (
-                SheetBase, NodeError, ParascopeError, ValueValidationError, node, sheet,
-                function_node, constant_node, input_node, output_node, sheet_node, lut_node
-            )),
-            daemon=True
-        )
-        _worker_process.start()
+class WorkerHandle:
+    """Manages a single persistent worker process and its queues."""
+    def __init__(self, index: int):
+        self.index = index
+        self.task_queue = multiprocessing.Queue()
+        self.result_queue = multiprocessing.Queue()
+        self.process: Optional[multiprocessing.Process] = None
+        self.lock = threading.Lock() # Ensures only one thread uses this worker at a time
+        self._ensure_alive()
+
+    def _ensure_alive(self):
+        if self.process is None or not self.process.is_alive():
+            self.process = multiprocessing.Process(
+                target=_persistent_worker_loop,
+                args=(self.task_queue, self.result_queue, (
+                    SheetBase, NodeError, ParascopeError, ValueValidationError, node, sheet,
+                    function_node, constant_node, input_node, output_node, sheet_node, lut_node
+                )),
+                daemon=True
+            )
+            self.process.start()
+
+    def execute(self, script: str, timeout: float) -> Dict[str, Any]:
+        with self.lock:
+            self._ensure_alive()
+            
+            # Clear result queue just in case of stale data from a previous crash/timeout
+            while not self.result_queue.empty():
+                try:
+                    self.result_queue.get_nowait()
+                except pyqueue.Empty:
+                    break
+
+            try:
+                self.task_queue.put(script)
+            except Exception:
+                self.process.terminate()
+                self._ensure_alive()
+                self.task_queue.put(script)
+
+            try:
+                result = self.result_queue.get(timeout=timeout)
+                return result
+            except pyqueue.Empty:
+                # Timeout: Kill and restart worker
+                self.process.terminate()
+                self.process.join()
+                self.process = None
+                return {"success": False, "error": "Execution timed out"}
+
+
+class WorkerPool:
+    def __init__(self, count: int):
+        self.workers = [WorkerHandle(i) for i in range(count)]
+        self.current_index = 0
+        self.pool_lock = threading.Lock()
+
+    def execute(self, script: str, timeout: float = 5.0) -> Dict[str, Any]:
+        # Simple Round-Robin distribution
+        with self.pool_lock:
+            worker = self.workers[self.current_index]
+            self.current_index = (self.current_index + 1) % len(self.workers)
+        
+        return worker.execute(script, timeout)
+
+
+# Global Pool Instance
+_worker_pool: Optional[WorkerPool] = None
+_init_lock = threading.Lock()
+
+def _get_worker_pool() -> WorkerPool:
+    global _worker_pool
+    if _worker_pool is None:
+        with _init_lock:
+            if _worker_pool is None:
+                _worker_pool = WorkerPool(settings.WORKER_COUNT)
+    return _worker_pool
 
 
 def execute_full_script(script: str, timeout: float = 5.0) -> Dict[str, Any]:
     """
-    Executes the script using the persistent worker.
-    Restarts the worker if it times out.
-    Thread-safe (serialized execution).
+    Executes the script using a pool of persistent workers.
     """
-    global _worker_process, _task_queue, _result_queue
-
-    with _worker_lock:
-        _ensure_worker()
-        
-        # Send task
-        try:
-            _task_queue.put(script)
-        except Exception:
-            # Queue might be broken/closed
-            if _worker_process:
-                _worker_process.terminate()
-            _worker_process = None
-            _ensure_worker()
-            _task_queue.put(script)
-
-        # Wait for result
-        try:
-            result = _result_queue.get(timeout=timeout)
-            return result
-        except pyqueue.Empty:
-            # Timeout: Kill the worker to stop the infinite loop/long task
-            if _worker_process:
-                _worker_process.terminate()
-                _worker_process.join()
-                _worker_process = None # Force restart
-                _task_queue = None
-                _result_queue = None
-            
-            return {"success": False, "error": "Execution timed out"}
+    return _get_worker_pool().execute(script, timeout)
