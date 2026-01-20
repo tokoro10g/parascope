@@ -1,7 +1,6 @@
 import {
   CaseLower,
   ChevronDown,
-  FileText,
   Import,
   LogIn,
   LogOut,
@@ -27,7 +26,6 @@ interface EditorBarProps {
   readOnly?: boolean;
   onRenameSheet: (name: string) => void;
   onSaveSheet: () => void;
-  onCreateVersion?: () => void;
   onOpenVersionList?: () => void;
   onAddNode: (type: NodeType) => void;
   onUndo: () => void;
@@ -41,7 +39,6 @@ export const EditorBar: React.FC<EditorBarProps> = ({
   readOnly = false,
   onRenameSheet,
   onSaveSheet,
-  onCreateVersion,
   onOpenVersionList,
   onAddNode,
   onUndo,
@@ -247,23 +244,7 @@ export const EditorBar: React.FC<EditorBarProps> = ({
           </button>
 
           {isSheetMenuOpen && (
-            <div
-              className="add-node-dropdown"
-              style={{ right: 0, left: 'auto' }}
-            >
-              {onCreateVersion && (
-                <button
-                  type="button"
-                  onClick={() => {
-                    onCreateVersion();
-                    setIsSheetMenuOpen(false);
-                  }}
-                  className="add-menu-item"
-                  style={{ color: 'var(--text-color)' }}
-                >
-                  <Milestone size={16} /> Create Version
-                </button>
-              )}
+            <div className="add-node-dropdown" style={{ right: 0, left: 'auto' }}>
               {onOpenVersionList && (
                 <button
                   type="button"
@@ -274,7 +255,7 @@ export const EditorBar: React.FC<EditorBarProps> = ({
                   className="add-menu-item"
                   style={{ color: 'var(--text-color)' }}
                 >
-                  <FileText size={16} /> Version History
+                  <Milestone size={16} /> Version Control
                 </button>
               )}
               {onCheckUsage && (

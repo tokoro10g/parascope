@@ -25,7 +25,6 @@ import { NodeInspector } from '../node-inspector';
 import { SheetPickerModal } from '../SheetPickerModal';
 import { SheetUsageModal } from '../SheetUsageModal';
 import { SheetTable } from '../sheet-table';
-import { VersionCreateModal } from '../VersionCreateModal';
 import { VersionListModal } from '../VersionListModal';
 import { TooltipLayer } from '../TooltipLayer';
 import './SheetEditor.css';
@@ -51,7 +50,6 @@ export const SheetEditor: React.FC = () => {
   const [isDirty, setIsDirty] = useState(false);
   const [isSheetPickerOpen, setIsSheetPickerOpen] = useState(false);
   const [isUsageModalOpen, setIsUsageModalOpen] = useState(false);
-  const [isVersionModalOpen, setIsVersionModalOpen] = useState(false);
   const [isVersionListOpen, setIsVersionListOpen] = useState(false);
   const [initialLoadDone, setInitialLoadDone] = useState(false);
 
@@ -271,33 +269,17 @@ export const SheetEditor: React.FC = () => {
       editor.updateNodeValues(calculationInputsRef.current, lastResult || {});
     }
     handleSaveSheet(getExportData());
-  }, [handleSaveSheet, getExportData, editor, lastResult]);
-
-  const handleCreateVersion = useCallback(
-    async (tag: string, description: string) => {
-      if (!sheetId) return;
-      try {
-        await api.createSheetVersion(sheetId, tag, description);
-        toast.success(`Version ${tag} created successfully`);
-      } catch (e: any) {
-        console.error(e);
-        toast.error(`Failed to create version: ${e.message}`);
-      }
-    },
-    [sheetId],
-  );
+  }, [handleSaveSheet, getExportData, isReadOnly, editor, lastResult]);
 
   const handleRestoreVersion = useCallback(
     async (version: any) => {
       // 1. Load version data
       if (editor && version.data) {
-        // version.data matches the structure expected by loadSheet
-        // We need to construct a Sheet object from it
         const tempSheet = {
           ...currentSheet,
           ...version.data,
-          id: currentSheet?.id, // Keep current ID
-          name: currentSheet?.name, // Keep current name? Or revert name too? Let's keep name.
+          id: currentSheet?.id,
+          name: currentSheet?.name,
         };
 
         await editor.loadSheet(tempSheet as any);
@@ -311,7 +293,7 @@ export const SheetEditor: React.FC = () => {
         });
         setNodes(nodes);
 
-        // 2. Mark as dirty so user knows they need to save to commit the revert
+        // 2. Mark as dirty
         setIsDirty(true);
 
         // 3. Trigger calc
@@ -320,7 +302,7 @@ export const SheetEditor: React.FC = () => {
         toast.success(`Restored to version ${version.version_tag}`);
       }
     },
-    [editor, currentSheet, triggerAutoCalculation],
+    [editor, currentSheet, triggerAutoCalculation, setIsDirty],
   );
 
   useReteEvents(
@@ -734,7 +716,6 @@ export const SheetEditor: React.FC = () => {
                 readOnly={isReadOnly}
                 onRenameSheet={handleRenameSheet}
                 onSaveSheet={onSave}
-                onCreateVersion={() => setIsVersionModalOpen(true)}
                 onOpenVersionList={() => setIsVersionListOpen(true)}
                 onAddNode={handleAddNode}
                 onUndo={() => editor?.undo()}
@@ -783,11 +764,6 @@ export const SheetEditor: React.FC = () => {
           onImportInputs={handleImportInputs}
         />
       )}
-      <VersionCreateModal
-        isOpen={isVersionModalOpen}
-        onClose={() => setIsVersionModalOpen(false)}
-        onSave={handleCreateVersion}
-      />
       {currentSheet && (
         <VersionListModal
           isOpen={isVersionListOpen}

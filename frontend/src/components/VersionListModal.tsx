@@ -20,6 +20,9 @@ export const VersionListModal: React.FC<VersionListModalProps> = ({
 }) => {
   const [versions, setVersions] = useState<SheetVersion[]>([]);
   const [isLoading, setIsLoading] = useState(false);
+  const [newTag, setNewTag] = useState('');
+  const [newDescription, setNewDescription] = useState('');
+  const [isCreating, setIsCreating] = useState(false);
 
   const loadVersions = useCallback(async () => {
     if (!sheetId) return;
@@ -34,6 +37,26 @@ export const VersionListModal: React.FC<VersionListModalProps> = ({
       setIsLoading(false);
     }
   }, [sheetId]);
+
+  const handleCreate = async () => {
+    if (!newTag.trim()) {
+      toast.error('Version tag is required');
+      return;
+    }
+    setIsCreating(true);
+    try {
+      await api.createSheetVersion(sheetId, newTag, newDescription);
+      toast.success(`Version ${newTag} created successfully`);
+      setNewTag('');
+      setNewDescription('');
+      loadVersions(); // Refresh list
+    } catch (e: any) {
+      console.error(e);
+      toast.error(`Failed to create version: ${e.message}`);
+    } finally {
+      setIsCreating(false);
+    }
+  };
 
   useEffect(() => {
     if (isOpen) {
@@ -51,7 +74,7 @@ export const VersionListModal: React.FC<VersionListModalProps> = ({
       {/* biome-ignore lint/a11y/noStaticElementInteractions: simple modal */}
       <div className="modal-content" onClick={(e) => e.stopPropagation()}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '15px' }}>
-          <h2>Version History</h2>
+          <h2>Version Control</h2>
           <button
             type="button"
             onClick={onClose}
@@ -67,9 +90,46 @@ export const VersionListModal: React.FC<VersionListModalProps> = ({
           </button>
         </div>
 
+        {/* Creation Form */}
+        <div style={{ marginBottom: '20px', paddingBottom: '20px', borderBottom: '1px solid var(--border-color)' }}>
+          <h3 style={{ fontSize: '1rem', marginTop: 0, marginBottom: '10px' }}>Create New Version</h3>
+          <div style={{ display: 'flex', gap: '10px', marginBottom: '10px' }}>
+            <input
+              value={newTag}
+              onChange={(e) => setNewTag(e.target.value)}
+              placeholder="Tag (e.g. v1.0)"
+              style={{ flex: 1, padding: '8px', border: '1px solid var(--border-color)', borderRadius: '4px' }}
+            />
+            <button
+              type="button"
+              onClick={handleCreate}
+              disabled={isCreating}
+              style={{
+                padding: '8px 16px',
+                backgroundColor: 'var(--primary-color)',
+                color: 'white',
+                border: 'none',
+                borderRadius: '4px',
+                cursor: isCreating ? 'not-allowed' : 'pointer',
+                opacity: isCreating ? 0.7 : 1,
+              }}
+            >
+              {isCreating ? 'Creating...' : 'Create'}
+            </button>
+          </div>
+          <textarea
+            value={newDescription}
+            onChange={(e) => setNewDescription(e.target.value)}
+            placeholder="Description (optional)"
+            rows={2}
+            style={{ width: '100%', padding: '8px', border: '1px solid var(--border-color)', borderRadius: '4px', boxSizing: 'border-box', resize: 'vertical' }}
+          />
+        </div>
+
+        <h3 style={{ fontSize: '1rem', marginTop: 0, marginBottom: '10px' }}>History</h3>
         <div
           className="version-list"
-          style={{ maxHeight: '60vh', overflowY: 'auto' }}
+          style={{ maxHeight: '50vh', overflowY: 'auto' }}
         >
           {isLoading ? (
             <div
