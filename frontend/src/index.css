@@ -140,7 +140,11 @@ h1 {
 }
 
 .katex-display {
-  overflow-x: auto;
+  overflow: scroll hidden;
+}
+
+.katex {
+  padding: 5px;
 }
 
 button.danger {
