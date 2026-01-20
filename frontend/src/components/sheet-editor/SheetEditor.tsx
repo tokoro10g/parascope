@@ -24,6 +24,7 @@ import { NavBar } from '../NavBar';
 import { NodeInspector } from '../node-inspector';
 import { SheetPickerModal } from '../SheetPickerModal';
 import { SheetUsageModal } from '../SheetUsageModal';
+import { VersionCreateModal } from '../VersionCreateModal';
 import { SheetTable } from '../sheet-table';
 import { TooltipLayer } from '../TooltipLayer';
 import './SheetEditor.css';
@@ -49,6 +50,7 @@ export const SheetEditor: React.FC = () => {
   const [isDirty, setIsDirty] = useState(false);
   const [isSheetPickerOpen, setIsSheetPickerOpen] = useState(false);
   const [isUsageModalOpen, setIsUsageModalOpen] = useState(false);
+  const [isVersionModalOpen, setIsVersionModalOpen] = useState(false);
   const [initialLoadDone, setInitialLoadDone] = useState(false);
 
   const lastResultRef = useRef(lastResult);
@@ -258,12 +260,26 @@ export const SheetEditor: React.FC = () => {
   }, [location.pathname, location.search, navigate]);
 
   const onSave = useCallback(() => {
-    if (isReadOnly) {
-      toast.error('Cannot save (Read-Only)');
-      return;
+    // Sync current results to node data so they are included in the export/save
+    if (editor) {
+      editor.updateNodeValues(calculationInputsRef.current, lastResult || {});
     }
     handleSaveSheet(getExportData());
-  }, [handleSaveSheet, getExportData, isReadOnly]);
+  }, [handleSaveSheet, getExportData, isReadOnly, editor, lastResult]);
+
+  const handleCreateVersion = useCallback(
+    async (tag: string, description: string) => {
+      if (!sheetId) return;
+      try {
+        await api.createSheetVersion(sheetId, tag, description);
+        toast.success(`Version ${tag} created successfully`);
+      } catch (e: any) {
+        console.error(e);
+        toast.error(`Failed to create version: ${e.message}`);
+      }
+    },
+    [sheetId],
+  );
 
   useReteEvents(
     editor || undefined,
@@ -625,6 +641,7 @@ export const SheetEditor: React.FC = () => {
                 readOnly={isReadOnly}
                 onRenameSheet={handleRenameSheet}
                 onSaveSheet={onSave}
+                onCreateVersion={() => setIsVersionModalOpen(true)}
                 onAddNode={handleAddNode}
                 onUndo={() => editor?.undo()}
                 onRedo={() => editor?.redo()}
@@ -672,6 +689,11 @@ export const SheetEditor: React.FC = () => {
           onImportInputs={handleImportInputs}
         />
       )}
+      <VersionCreateModal
+        isOpen={isVersionModalOpen}
+        onClose={() => setIsVersionModalOpen(false)}
+        onSave={handleCreateVersion}
+      />
     </div>
   );
 };
