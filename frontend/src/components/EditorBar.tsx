@@ -244,7 +244,10 @@ export const EditorBar: React.FC<EditorBarProps> = ({
           </button>
 
           {isSheetMenuOpen && (
-            <div className="add-node-dropdown" style={{ right: 0, left: 'auto' }}>
+            <div
+              className="add-node-dropdown"
+              style={{ right: 0, left: 'auto' }}
+            >
               {onOpenVersionList && (
                 <button
                   type="button"

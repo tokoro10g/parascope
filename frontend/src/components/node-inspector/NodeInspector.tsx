@@ -191,104 +191,103 @@ export const NodeInspector: React.FC<NodeInspectorProps> = ({
       title={`Edit Node: ${node.type}`}
       footer={footer}
     >
-        {node.type === 'function' && (
-          <AIGenerator
-            aiPrompt={aiPrompt}
-            setAiPrompt={setAiPrompt}
-            aiUrls={aiUrls}
-            setAiUrls={setAiUrls}
-            aiImage={aiImage}
-            setAiImage={setAiImage}
-            isGenerating={isGenerating}
-            handleGenerate={handleGenerate}
-            aiEnabled={aiEnabled}
-          />
-        )}
+      {node.type === 'function' && (
+        <AIGenerator
+          aiPrompt={aiPrompt}
+          setAiPrompt={setAiPrompt}
+          aiUrls={aiUrls}
+          setAiUrls={setAiUrls}
+          aiImage={aiImage}
+          setAiImage={setAiImage}
+          isGenerating={isGenerating}
+          handleGenerate={handleGenerate}
+          aiEnabled={aiEnabled}
+        />
+      )}
 
+      <div className="form-group">
+        <label htmlFor="node-label">Label:</label>
+        <input
+          id="node-label"
+          value={label}
+          onChange={(e) => setLabel(e.target.value)}
+          disabled={isGenerating}
+        />
+      </div>
+
+      {node.type === 'sheet' && (
         <div className="form-group">
-          <label htmlFor="node-label">Label:</label>
-          <input
-            id="node-label"
-            value={label}
-            onChange={(e) => setLabel(e.target.value)}
-            disabled={isGenerating}
-          />
+          <label htmlFor="sheet-version">Logic Version:</label>
+          <select
+            id="sheet-version"
+            value={data.versionId || ''}
+            onChange={(e) =>
+              setData({ ...data, versionId: e.target.value || null })
+            }
+          >
+            <option value="">Live (Latest Draft)</option>
+            {versions.map((v) => (
+              <option key={v.id} value={v.id}>
+                {v.version_tag} ({new Date(v.created_at).toLocaleDateString()})
+              </option>
+            ))}
+          </select>
+          <p
+            className="help-text"
+            style={{ fontSize: '0.8rem', color: '#666', marginTop: '4px' }}
+          >
+            Choose "Live" for agile concurrent work, or a specific version to
+            freeze the logic.
+          </p>
         </div>
+      )}
 
-        {node.type === 'sheet' && (
-          <div className="form-group">
-            <label htmlFor="sheet-version">Logic Version:</label>
-            <select
-              id="sheet-version"
-              value={data.versionId || ''}
-              onChange={(e) =>
-                setData({ ...data, versionId: e.target.value || null })
-              }
-            >
-              <option value="">Live (Latest Draft)</option>
-              {versions.map((v) => (
-                <option key={v.id} value={v.id}>
-                  {v.version_tag} ({new Date(v.created_at).toLocaleDateString()}
-                  )
-                </option>
-              ))}
-            </select>
-            <p
-              className="help-text"
-              style={{ fontSize: '0.8rem', color: '#666', marginTop: '4px' }}
-            >
-              Choose "Live" for agile concurrent work, or a specific version to
-              freeze the logic.
-            </p>
-          </div>
-        )}
+      {dataLoaded && (
+        <>
+          {node.type !== 'sheet' && (
+            <DescriptionEditor
+              data={data}
+              setData={setData}
+              showPreview={showPreview}
+              setShowPreview={setShowPreview}
+              isGenerating={isGenerating}
+              transformUrl={transformUrl}
+              getAttachmentUrl={getAttachmentUrl}
+              handleFileUpload={handleFileUpload}
+              handleInsertToDescription={handleInsertToDescription}
+              handleRemoveAttachment={handleRemoveAttachment}
+            />
+          )}
 
-        {dataLoaded && (
-          <>
-            {node.type !== 'sheet' && (
-              <DescriptionEditor
-                data={data}
-                setData={setData}
-                showPreview={showPreview}
-                setShowPreview={setShowPreview}
-                isGenerating={isGenerating}
-                transformUrl={transformUrl}
-                getAttachmentUrl={getAttachmentUrl}
-                handleFileUpload={handleFileUpload}
-                handleInsertToDescription={handleInsertToDescription}
-                handleRemoveAttachment={handleRemoveAttachment}
-              />
-            )}
+          {(node.type === 'constant' ||
+            node.type === 'input' ||
+            node.type === 'output') && (
+            <TypeConfig nodeType={node.type} data={data} setData={setData} />
+          )}
 
-            {(node.type === 'constant' ||
-              node.type === 'input' ||
-              node.type === 'output') && (
-              <TypeConfig nodeType={node.type} data={data} setData={setData} />
-            )}
+          {node.type === 'function' && (
+            <FunctionEditor
+              data={data}
+              setData={setData}
+              inputs={inputs}
+              setInputs={setInputs}
+              outputs={outputs}
+              setOutputs={setOutputs}
+              isGenerating={isGenerating}
+            />
+          )}
 
-            {node.type === 'function' && (
-              <FunctionEditor
-                data={data}
-                setData={setData}
-                inputs={inputs}
-                setInputs={setInputs}
-                outputs={outputs}
-                setOutputs={setOutputs}
-                isGenerating={isGenerating}
-              />
-            )}
-
-            {node.type === 'lut' && (
-              <LUTEditor
-                data={data}
-                setData={setData}
-                outputs={outputs}
-                setOutputs={setOutputs}
-                setInputs={setInputs}
-              />
-            )}
-          </>
-        )}
+          {node.type === 'lut' && (
+            <LUTEditor
+              data={data}
+              setData={setData}
+              outputs={outputs}
+              setOutputs={setOutputs}
+              setInputs={setInputs}
+            />
+          )}
+        </>
+      )}
     </Modal>
   );
 };

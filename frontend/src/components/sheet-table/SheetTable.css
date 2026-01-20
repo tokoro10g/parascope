@@ -259,8 +259,8 @@
 
 .sheet-table-tab:focus,
 .sheet-table-tab:active {
-  box-shadow: none !important;
-  outline: none !important;
+  box-shadow: none;
+  outline: none;
   background-color: var(--panel-bg);
   border-top: none;
   border-left: none;

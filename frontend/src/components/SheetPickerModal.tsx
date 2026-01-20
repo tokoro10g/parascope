@@ -93,115 +93,115 @@ export const SheetPickerModal: React.FC<SheetPickerModalProps> = ({
     >
       <div
         className="breadcrumbs"
+        style={{
+          marginBottom: 15,
+          display: 'flex',
+          alignItems: 'center',
+          gap: 8,
+          fontSize: '1em',
+        }}
+      >
+        <button
+          type="button"
+          onClick={() => setCurrentFolderId(undefined)}
           style={{
-            marginBottom: 15,
+            cursor: 'pointer',
+            color: currentFolderId
+              ? 'var(--primary-color, #007bff)'
+              : 'inherit',
+            fontWeight: !currentFolderId ? 'bold' : 'normal',
             display: 'flex',
             alignItems: 'center',
-            gap: 8,
-            fontSize: '1em',
+            gap: 4,
+            background: 'none',
+            border: 'none',
+            padding: 0,
+            fontFamily: 'inherit',
+            fontSize: 'inherit',
           }}
         >
-          <button
-            type="button"
-            onClick={() => setCurrentFolderId(undefined)}
-            style={{
-              cursor: 'pointer',
-              color: currentFolderId
-                ? 'var(--primary-color, #007bff)'
-                : 'inherit',
-              fontWeight: !currentFolderId ? 'bold' : 'normal',
-              display: 'flex',
-              alignItems: 'center',
-              gap: 4,
-              background: 'none',
-              border: 'none',
-              padding: 0,
-              fontFamily: 'inherit',
-              fontSize: 'inherit',
-            }}
-          >
-            <Home size={16} /> Home
-          </button>
-          {breadcrumbs.map((folder, index) => (
-            <React.Fragment key={folder.id}>
-              <span style={{ color: 'var(--text-color-secondary, #999)' }}>
-                /
-              </span>
-              <button
-                type="button"
-                onClick={() => setCurrentFolderId(folder.id)}
-                style={{
-                  cursor: 'pointer',
-                  color:
-                    index === breadcrumbs.length - 1
-                      ? 'inherit'
-                      : 'var(--primary-color, #007bff)',
-                  fontWeight:
-                    index === breadcrumbs.length - 1 ? 'bold' : 'normal',
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: 4,
-                  background: 'none',
-                  border: 'none',
-                  padding: 0,
-                  fontFamily: 'inherit',
-                  fontSize: 'inherit',
-                }}
-              >
-                <FolderIcon size={16} /> {folder.name}
-              </button>
-            </React.Fragment>
-          ))}
-        </div>
+          <Home size={16} /> Home
+        </button>
+        {breadcrumbs.map((folder, index) => (
+          <React.Fragment key={folder.id}>
+            <span style={{ color: 'var(--text-color-secondary, #999)' }}>
+              /
+            </span>
+            <button
+              type="button"
+              onClick={() => setCurrentFolderId(folder.id)}
+              style={{
+                cursor: 'pointer',
+                color:
+                  index === breadcrumbs.length - 1
+                    ? 'inherit'
+                    : 'var(--primary-color, #007bff)',
+                fontWeight:
+                  index === breadcrumbs.length - 1 ? 'bold' : 'normal',
+                display: 'flex',
+                alignItems: 'center',
+                gap: 4,
+                background: 'none',
+                border: 'none',
+                padding: 0,
+                fontFamily: 'inherit',
+                fontSize: 'inherit',
+              }}
+            >
+              <FolderIcon size={16} /> {folder.name}
+            </button>
+          </React.Fragment>
+        ))}
+      </div>
 
-        {loading ? (
-          <p>Loading...</p>
-        ) : (
-          <div className="sheet-list">
-            {currentFolderId && (
-              <button
-                type="button"
-                className="sheet-item folder-item"
-                onClick={handleUp}
-              >
-                <div className="sheet-info">
-                  <ArrowLeft size={20} />
-                  <strong>.. (Up)</strong>
-                </div>
-              </button>
-            )}
-            {currentFolders.map((folder) => (
-              <button
-                type="button"
-                key={folder.id}
-                className="sheet-item folder-item"
-                onClick={() => setCurrentFolderId(folder.id)}
-              >
-                <div className="sheet-info">
-                  <FolderIcon size={20} />
-                  <strong>{folder.name}</strong>
-                </div>
-              </button>
-            ))}
-            {currentSheets.map((sheet) => (
-              <button
-                type="button"
-                key={sheet.id}
-                className="sheet-item"
-                onClick={() => onSelect(sheet)}
-              >
-                <div className="sheet-info">
-                  <Workflow size={20} />
-                  <strong>{sheet.name}</strong>
-                </div>
-                <span className="sheet-id">{sheet.id}</span>
-              </button>
-            ))}
-            {currentSheets.length === 0 && currentFolders.length === 0 && (
-              <p>No items in this folder.</p>
-            )}
-          </div>
-        )}
+      {loading ? (
+        <p>Loading...</p>
+      ) : (
+        <div className="sheet-list">
+          {currentFolderId && (
+            <button
+              type="button"
+              className="sheet-item folder-item"
+              onClick={handleUp}
+            >
+              <div className="sheet-info">
+                <ArrowLeft size={20} />
+                <strong>.. (Up)</strong>
+              </div>
+            </button>
+          )}
+          {currentFolders.map((folder) => (
+            <button
+              type="button"
+              key={folder.id}
+              className="sheet-item folder-item"
+              onClick={() => setCurrentFolderId(folder.id)}
+            >
+              <div className="sheet-info">
+                <FolderIcon size={20} />
+                <strong>{folder.name}</strong>
+              </div>
+            </button>
+          ))}
+          {currentSheets.map((sheet) => (
+            <button
+              type="button"
+              key={sheet.id}
+              className="sheet-item"
+              onClick={() => onSelect(sheet)}
+            >
+              <div className="sheet-info">
+                <Workflow size={20} />
+                <strong>{sheet.name}</strong>
+              </div>
+              <span className="sheet-id">{sheet.id}</span>
+            </button>
+          ))}
+          {currentSheets.length === 0 && currentFolders.length === 0 && (
+            <p>No items in this folder.</p>
+          )}
+        </div>
+      )}
     </Modal>
   );
 };

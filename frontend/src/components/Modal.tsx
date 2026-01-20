@@ -27,11 +27,11 @@ export const Modal: React.FC<ModalProps> = ({
   if (!isOpen) return null;
 
   return (
-    // biome-ignore lint/a11y/noStaticElementInteractions: modal backdrop
-    // biome-ignore lint/a11y/useKeyWithClickEvents: modal backdrop
     <div className="modal-overlay">
-      <div 
-        className="modal-content" 
+      {/* biome-ignore lint/a11y/useKeyWithClickEvents: simple modal */}
+      {/* biome-ignore lint/a11y/noStaticElementInteractions: simple modal */}
+      <div
+        className="modal-content"
         onClick={(e) => e.stopPropagation()}
         style={{ width: width, maxWidth: maxWidth }}
       >
@@ -46,16 +46,8 @@ export const Modal: React.FC<ModalProps> = ({
             <X size={20} />
           </button>
         </div>
-
-        <div className="modal-body">
-          {children}
-        </div>
-
-        {footer && (
-          <div className="modal-actions">
-            {footer}
-          </div>
-        )}
+        <div className="modal-body">{children}</div>
+        {footer && <div className="modal-actions">{footer}</div>}
       </div>
     </div>
   );

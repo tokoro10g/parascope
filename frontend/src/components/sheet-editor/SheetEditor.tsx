@@ -25,8 +25,8 @@ import { NodeInspector } from '../node-inspector';
 import { SheetPickerModal } from '../SheetPickerModal';
 import { SheetUsageModal } from '../SheetUsageModal';
 import { SheetTable } from '../sheet-table';
-import { VersionListModal } from '../VersionListModal';
 import { TooltipLayer } from '../TooltipLayer';
+import { VersionListModal } from '../VersionListModal';
 import './SheetEditor.css';
 import type { CalculationInputDefinition } from './types';
 import { useEditorSetup } from './useEditorSetup';
@@ -269,7 +269,7 @@ export const SheetEditor: React.FC = () => {
       editor.updateNodeValues(calculationInputsRef.current, lastResult || {});
     }
     handleSaveSheet(getExportData());
-  }, [handleSaveSheet, getExportData, isReadOnly, editor, lastResult]);
+  }, [handleSaveSheet, getExportData, editor, lastResult]);
 
   const handleRestoreVersion = useCallback(
     async (version: any) => {
@@ -302,7 +302,7 @@ export const SheetEditor: React.FC = () => {
         toast.success(`Restored to version ${version.version_tag}`);
       }
     },
-    [editor, currentSheet, triggerAutoCalculation, setIsDirty],
+    [editor, currentSheet, triggerAutoCalculation],
   );
 
   useReteEvents(
@@ -354,7 +354,14 @@ export const SheetEditor: React.FC = () => {
         setInitialLoadDone(false);
       }
     }
-  }, [sheetId, handleLoadSheet, searchParams, editor, setIsLoading, setCurrentSheet]);
+  }, [
+    sheetId,
+    handleLoadSheet,
+    searchParams,
+    editor,
+    setIsLoading,
+    setCurrentSheet,
+  ]);
 
   useUrlSync({
     nodes,

@@ -92,89 +92,88 @@ export const FolderPickerModal: React.FC<FolderPickerModalProps> = ({
     >
       <div
         className="breadcrumbs"
+        style={{
+          marginBottom: 15,
+          display: 'flex',
+          alignItems: 'center',
+          gap: 8,
+          fontSize: '1em',
+        }}
+      >
+        <button
+          type="button"
+          onClick={() => setCurrentFolderId(undefined)}
           style={{
-            marginBottom: 15,
-            display: 'flex',
-            alignItems: 'center',
-            gap: 8,
-            fontSize: '1em',
+            cursor: 'pointer',
+            color: currentFolderId ? '#007bff' : 'inherit',
+            fontWeight: !currentFolderId ? 'bold' : 'normal',
+            background: 'none',
+            border: 'none',
+            padding: 0,
+            fontFamily: 'inherit',
+            fontSize: 'inherit',
           }}
         >
-          <button
-            type="button"
-            onClick={() => setCurrentFolderId(undefined)}
-            style={{
-              cursor: 'pointer',
-              color: currentFolderId ? '#007bff' : 'inherit',
-              fontWeight: !currentFolderId ? 'bold' : 'normal',
-              background: 'none',
-              border: 'none',
-              padding: 0,
-              fontFamily: 'inherit',
-              fontSize: 'inherit',
-            }}
-          >
-            Home
-          </button>
-          {breadcrumbs.map((folder, index) => (
-            <React.Fragment key={folder.id}>
-              <span style={{ color: '#999' }}>/</span>
-              <button
-                type="button"
-                onClick={() => setCurrentFolderId(folder.id)}
-                style={{
-                  cursor: 'pointer',
-                  color:
-                    index === breadcrumbs.length - 1 ? 'inherit' : '#007bff',
-                  fontWeight:
-                    index === breadcrumbs.length - 1 ? 'bold' : 'normal',
-                  background: 'none',
-                  border: 'none',
-                  padding: 0,
-                  fontFamily: 'inherit',
-                  fontSize: 'inherit',
-                }}
-              >
-                {folder.name}
-              </button>
-            </React.Fragment>
-          ))}
-        </div>
+          Home
+        </button>
+        {breadcrumbs.map((folder, index) => (
+          <React.Fragment key={folder.id}>
+            <span style={{ color: '#999' }}>/</span>
+            <button
+              type="button"
+              onClick={() => setCurrentFolderId(folder.id)}
+              style={{
+                cursor: 'pointer',
+                color: index === breadcrumbs.length - 1 ? 'inherit' : '#007bff',
+                fontWeight:
+                  index === breadcrumbs.length - 1 ? 'bold' : 'normal',
+                background: 'none',
+                border: 'none',
+                padding: 0,
+                fontFamily: 'inherit',
+                fontSize: 'inherit',
+              }}
+            >
+              {folder.name}
+            </button>
+          </React.Fragment>
+        ))}
+      </div>
 
-        {loading ? (
-          <p>Loading...</p>
-        ) : (
-          <div className="sheet-list">
-            {currentFolderId && (
-              <button
-                type="button"
-                className="sheet-item folder-item"
-                onClick={handleUp}
-              >
-                <div className="sheet-info">
-                  <ArrowLeft size={20} />
-                  <span className="sheet-name">.. (Up)</span>
-                </div>
-              </button>
-            )}
-            {currentFolders.map((folder) => (
-              <button
-                type="button"
-                key={folder.id}
-                className="sheet-item folder-item"
-                onClick={() => setCurrentFolderId(folder.id)}
-              >
-                <div className="sheet-info">
-                  <FolderIcon size={20} />
-                  <span className="sheet-name">{folder.name}</span>
-                </div>
-              </button>
-            ))}
-            {currentFolders.length === 0 && (
-              <p style={{ padding: 20, color: '#666' }}>No subfolders.</p>
-            )}
-          </div>
-        )}
+      {loading ? (
+        <p>Loading...</p>
+      ) : (
+        <div className="sheet-list">
+          {currentFolderId && (
+            <button
+              type="button"
+              className="sheet-item folder-item"
+              onClick={handleUp}
+            >
+              <div className="sheet-info">
+                <ArrowLeft size={20} />
+                <span className="sheet-name">.. (Up)</span>
+              </div>
+            </button>
+          )}
+          {currentFolders.map((folder) => (
+            <button
+              type="button"
+              key={folder.id}
+              className="sheet-item folder-item"
+              onClick={() => setCurrentFolderId(folder.id)}
+            >
+              <div className="sheet-info">
+                <FolderIcon size={20} />
+                <span className="sheet-name">{folder.name}</span>
+              </div>
+            </button>
+          ))}
+          {currentFolders.length === 0 && (
+            <p style={{ padding: 20, color: '#666' }}>No subfolders.</p>
+          )}
+        </div>
+      )}
     </Modal>
   );
 };

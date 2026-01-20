@@ -2,11 +2,11 @@ import {
   CheckCheck,
   ChevronDown,
   Copy,
+  FileText,
   History,
   LineChart,
   List,
   Play,
-  FileText,
 } from 'lucide-react';
 import type React from 'react';
 import { useCallback, useEffect, useRef, useState } from 'react';
@@ -87,7 +87,9 @@ export const SheetTable: React.FC<SheetTableProps> = ({
   isCalculating,
 }) => {
   const { sheetId } = useParams<{ sheetId: string }>();
-  const [activeTab, setActiveTab] = useState<'table' | 'history' | 'descriptions'>('table');
+  const [activeTab, setActiveTab] = useState<
+    'table' | 'history' | 'descriptions'
+  >('table');
   const [history, setHistory] = useState<AuditLog[]>([]);
   const [isHistoryLoading, setIsHistoryLoading] = useState(false);
 
@@ -281,9 +283,25 @@ export const SheetTable: React.FC<SheetTableProps> = ({
   return (
     <div className="sheet-table">
       {/* Content Area */}
-      <div className="sheet-table-content" style={{ flex: 1, overflowY: 'hidden', display: 'flex', flexDirection: 'column' }}>
+      <div
+        className="sheet-table-content"
+        style={{
+          flex: 1,
+          overflowY: 'hidden',
+          display: 'flex',
+          flexDirection: 'column',
+        }}
+      >
         {activeTab === 'table' && (
-          <div className="sheet-table-constants-section" style={{ flex: 1, display: 'flex', flexDirection: 'column', borderBottom: 'none' }}>
+          <div
+            className="sheet-table-constants-section"
+            style={{
+              flex: 1,
+              display: 'flex',
+              flexDirection: 'column',
+              borderBottom: 'none',
+            }}
+          >
             <div className="sheet-table-controls">
               <button
                 type="button"
@@ -366,7 +384,8 @@ export const SheetTable: React.FC<SheetTableProps> = ({
                           <td>{name}</td>
                           <td>{node.type}</td>
                           <td
-                            className={`sheet-table-cell-value ${hasError && !isCalculating
+                            className={`sheet-table-cell-value ${
+                              hasError && !isCalculating
                                 ? 'value-error'
                                 : !isEditable && displayValue !== '?'
                                   ? 'value-blink'
@@ -416,7 +435,15 @@ export const SheetTable: React.FC<SheetTableProps> = ({
         )}
 
         {activeTab === 'descriptions' && (
-          <div className="description-panel" style={{ flex: 1, display: 'flex', flexDirection: 'column', minHeight: 0 }}>
+          <div
+            className="description-panel"
+            style={{
+              flex: 1,
+              display: 'flex',
+              flexDirection: 'column',
+              minHeight: 0,
+            }}
+          >
             <div className="description-panel-header">
               <h3>Descriptions</h3>
             </div>
@@ -513,7 +540,15 @@ export const SheetTable: React.FC<SheetTableProps> = ({
         )}
 
         {activeTab === 'history' && (
-          <div className="history-panel" style={{ flex: 1, display: 'flex', flexDirection: 'column', minHeight: 0 }}>
+          <div
+            className="history-panel"
+            style={{
+              flex: 1,
+              display: 'flex',
+              flexDirection: 'column',
+              minHeight: 0,
+            }}
+          >
             <div className="history-header">
               <h3>Edit History</h3>
               <button
@@ -569,7 +604,13 @@ export const SheetTable: React.FC<SheetTableProps> = ({
         )}
       </div>
 
-      <div className="sheet-table-tabs" style={{ borderTop: '1px solid var(--border-color)', borderBottom: 'none' }}>
+      <div
+        className="sheet-table-tabs"
+        style={{
+          borderTop: '1px solid var(--border-color)',
+          borderBottom: 'none',
+        }}
+      >
         <button
           type="button"
           className={`sheet-table-tab ${activeTab === 'table' ? 'active' : ''}`}
