@@ -345,14 +345,17 @@ export const SheetEditor: React.FC = () => {
     if (sheetId) {
       if (versionId) {
         setIsLoading(true);
-        api
-          .getVersion(sheetId, versionId)
-          .then((v) => {
+        Promise.all([
+          api.getVersion(sheetId, versionId),
+          api.getSheet(sheetId)
+        ])
+          .then(([v, liveSheet]) => {
             if (editor && v.data) {
               const tempSheet = {
                 ...v.data,
                 id: sheetId,
-                name: `${v.data.name || 'Sheet'} (v${v.version_tag})`,
+                name: `${liveSheet.name} (${v.version_tag})`,
+                version_tag: v.version_tag,
               };
               setCurrentSheet(tempSheet);
               editor.loadSheet(tempSheet).then(() => {
@@ -669,16 +672,9 @@ export const SheetEditor: React.FC = () => {
     <div className="sheet-editor">
       <NavBar user={user} onBack={handleBackClick} onLogout={logout} />
       {isVersionView && (
-        <div
-          className="lock-banner"
-          style={{
-            backgroundColor: '#e3f2fd',
-            color: '#0d47a1',
-            borderColor: '#90caf9',
-          }}
-        >
+        <div className="lock-banner" style={{ backgroundColor: '#e3f2fd', color: '#0d47a1', borderColor: '#90caf9' }}>
           <span>
-            Viewing <strong>Version Snapshot</strong>. Read-Only Mode.
+            Viewing <strong>Version Snapshot ({(currentSheet as any)?.version_tag})</strong>. Read-Only Mode.
           </span>
           <button
             type="button"
