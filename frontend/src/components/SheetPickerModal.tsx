@@ -1,6 +1,7 @@
 import { ArrowLeft, Folder as FolderIcon, Home, Workflow } from 'lucide-react';
 import React, { useEffect, useState } from 'react';
 import { api, type Folder, type Sheet } from '../api';
+import { useModalKeyEvents } from '../hooks/useModalKeyEvents';
 import './Modal.css';
 
 interface SheetPickerModalProps {
@@ -20,6 +21,8 @@ export const SheetPickerModal: React.FC<SheetPickerModalProps> = ({
     undefined,
   );
   const [loading, setLoading] = useState(false);
+
+  useModalKeyEvents(isOpen, onClose);
 
   useEffect(() => {
     const loadData = async () => {
@@ -81,7 +84,12 @@ export const SheetPickerModal: React.FC<SheetPickerModalProps> = ({
   return (
     <div className="modal-overlay">
       <div className="modal-content">
-        <h2>Import Sheet</h2>
+        <div className="modal-header">
+          <h2>Import Sheet</h2>
+          <button type="button" onClick={onClose} className="modal-close-btn">
+            &times;
+          </button>
+        </div>
 
         <div
           className="breadcrumbs"
@@ -194,9 +202,11 @@ export const SheetPickerModal: React.FC<SheetPickerModalProps> = ({
             )}
           </div>
         )}
-        <button type="button" onClick={onClose} style={{ marginTop: '20px' }}>
-          Cancel
-        </button>
+        <div className="modal-actions">
+          <button type="button" onClick={onClose}>
+            Cancel
+          </button>
+        </div>
       </div>
     </div>
   );

@@ -3,6 +3,7 @@ import type React from 'react';
 import { useEffect, useState } from 'react';
 import toast from 'react-hot-toast';
 import { api, type SheetUsage } from '../api';
+import { useModalKeyEvents } from '../hooks/useModalKeyEvents';
 import './Modal.css';
 
 interface SheetUsageModalProps {
@@ -21,6 +22,8 @@ export const SheetUsageModal: React.FC<SheetUsageModalProps> = ({
   const [usages, setUsages] = useState<SheetUsage[]>([]);
   const [loading, setLoading] = useState(false);
   const [importingId, setImportingId] = useState<string | null>(null);
+
+  useModalKeyEvents(isOpen, onClose);
 
   useEffect(() => {
     if (isOpen && sheetId) {
@@ -114,7 +117,12 @@ export const SheetUsageModal: React.FC<SheetUsageModalProps> = ({
         className="modal-content"
         style={{ maxWidth: '800px', width: '90%' }}
       >
-        <h2>Parent Sheets</h2>
+        <div className="modal-header">
+          <h2>Parent Sheets</h2>
+          <button type="button" onClick={onClose} className="modal-close-btn">
+            &times;
+          </button>
+        </div>
         <p>This sheet is used in the following upper-level sheets:</p>
         {loading ? (
           <div style={{ padding: '20px', textAlign: 'center' }}>Loading...</div>

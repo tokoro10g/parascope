@@ -3,7 +3,7 @@ import type React from 'react';
 import { useCallback, useEffect, useState } from 'react';
 import toast from 'react-hot-toast';
 import { api, type SheetVersion } from '../api';
-import './Modal.css';
+import { Modal } from './Modal';
 
 interface VersionListModalProps {
   isOpen: boolean;
@@ -64,32 +64,8 @@ export const VersionListModal: React.FC<VersionListModalProps> = ({
     }
   }, [isOpen, loadVersions]);
 
-  if (!isOpen) return null;
-
   return (
-    // biome-ignore lint/a11y/useKeyWithClickEvents: simple modal
-    // biome-ignore lint/a11y/noStaticElementInteractions: simple modal
-    <div className="modal-overlay" onClick={onClose}>
-      {/* biome-ignore lint/a11y/useKeyWithClickEvents: simple modal */}
-      {/* biome-ignore lint/a11y/noStaticElementInteractions: simple modal */}
-      <div className="modal-content" onClick={(e) => e.stopPropagation()}>
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '15px' }}>
-          <h2>Version Control</h2>
-          <button
-            type="button"
-            onClick={onClose}
-            style={{
-              background: 'none',
-              border: 'none',
-              fontSize: '1.5rem',
-              cursor: 'pointer',
-              color: 'var(--text-secondary)',
-            }}
-          >
-            &times;
-          </button>
-        </div>
-
+    <Modal isOpen={isOpen} onClose={onClose} title="Version Control">
         {/* Creation Form */}
         <div style={{ marginBottom: '20px', paddingBottom: '20px', borderBottom: '1px solid var(--border-color)' }}>
           <h3 style={{ fontSize: '1rem', marginTop: 0, marginBottom: '10px' }}>Create New Version</h3>
@@ -258,7 +234,6 @@ export const VersionListModal: React.FC<VersionListModalProps> = ({
             </div>
           )}
         </div>
-      </div>
-    </div>
+    </Modal>
   );
 };
