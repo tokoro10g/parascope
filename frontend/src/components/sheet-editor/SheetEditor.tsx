@@ -281,6 +281,42 @@ export const SheetEditor: React.FC = () => {
     [sheetId],
   );
 
+  const handleRestoreVersion = useCallback(
+    async (version: any) => {
+      // 1. Load version data
+      if (editor && version.data) {
+        // version.data matches the structure expected by loadSheet
+        // We need to construct a Sheet object from it
+        const tempSheet = {
+          ...currentSheet,
+          ...version.data,
+          id: currentSheet?.id, // Keep current ID
+          name: currentSheet?.name, // Keep current name? Or revert name too? Let's keep name.
+        };
+
+        await editor.loadSheet(tempSheet as any);
+        const nodes = [...editor.instance.getNodes()];
+        nodes.forEach((n) => {
+          const pos = editor.area.nodeViews.get(n.id)?.position;
+          if (pos) {
+            n.x = pos.x;
+            n.y = pos.y;
+          }
+        });
+        setNodes(nodes);
+
+        // 2. Mark as dirty so user knows they need to save to commit the revert
+        setIsDirty(true);
+
+        // 3. Trigger calc
+        triggerAutoCalculation();
+
+        toast.success(`Restored to version ${version.version_tag}`);
+      }
+    },
+    [editor, currentSheet, triggerAutoCalculation, setIsDirty],
+  );
+
   useReteEvents(
     editor || undefined,
     {
@@ -665,6 +701,7 @@ export const SheetEditor: React.FC = () => {
               onSelectNode={handleSelectNode}
               onCalculate={handleCalculate}
               onSweep={() => window.open(`/sheet/${sheetId}/sweep`, '_blank')}
+              onRestoreVersion={handleRestoreVersion}
               isCalculating={isCalculating}
             />
           </Panel>
