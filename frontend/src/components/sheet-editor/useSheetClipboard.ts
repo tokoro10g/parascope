@@ -1,20 +1,53 @@
 import { useCallback } from 'react';
-import { createSocket } from '../../utils';
+import { Connection } from '../../rete/types';
 
 export function useSheetClipboard(
-  addNode: any, // Typed as any in original to facilitate quick move
+  addNode: any,
   calcCenterPosition: () => { x: number; y: number },
+  editor: any, // NodeEditorWrapper
 ) {
+  const handleCopy = useCallback((clipboardData: { nodes: any[]; connections: any[] }) => {
+    if (!clipboardData.nodes.length) return;
+
+    const dataToStore = {
+      type: 'parascope-nodes',
+      ...clipboardData,
+    };
+
+    localStorage.setItem('parascope-clipboard', JSON.stringify(dataToStore));
+  }, []);
+
   const handlePaste = useCallback(
-    async (clipboardNodes: any[]) => {
-      if (!clipboardNodes.length) return;
+    async (providedData?: any) => {
+      let clipboardData = providedData;
+
+      // If no data provided via event, try localStorage (cross-tab)
+      if (!clipboardData) {
+        const stored = localStorage.getItem('parascope-clipboard');
+        if (stored) {
+          try {
+            const data = JSON.parse(stored);
+            if (data.type === 'parascope-nodes') {
+              clipboardData = data;
+            }
+          } catch (e) {
+            console.error('Failed to parse clipboard data', e);
+          }
+        }
+      }
+
+      if (!clipboardData) return;
+      const nodesToPaste = Array.isArray(clipboardData) ? clipboardData : clipboardData.nodes;
+      const connectionsToPaste = clipboardData.connections || [];
+
+      if (!nodesToPaste || nodesToPaste.length === 0) return;
 
       // Calculate center of clipboard nodes
       let minX = Infinity;
       let minY = Infinity;
       let maxX = -Infinity;
       let maxY = -Infinity;
-      clipboardNodes.forEach((n) => {
+      nodesToPaste.forEach((n: any) => {
         minX = Math.min(minX, n.position.x);
         minY = Math.min(minY, n.position.y);
         maxX = Math.max(maxX, n.position.x);
@@ -27,17 +60,14 @@ export function useSheetClipboard(
       const offsetX = screenCenter.x - centerX;
       const offsetY = screenCenter.y - centerY;
 
-      for (const nodeData of clipboardNodes) {
-        const inputs = nodeData.inputs.map((label: string) =>
-          createSocket(label),
-        ); // Original used createSocket callback logic differently?
-        // Wait, original: const inputs = nodeData.inputs.map(createSocket);
-        // createSocket takes a label string.
+      // ID Mapping for connections
+      const idMap = new Map<string, string>();
 
-        const outputs = nodeData.outputs.map((label: string) =>
-          createSocket(label),
-        );
-        const data = nodeData.data;
+      for (const nodeData of nodesToPaste) {
+        const inputs = nodeData.inputs;
+        const outputs = nodeData.outputs;
+        const data = { ...nodeData.data };
+        
         if (nodeData.controls && nodeData.controls.value !== undefined) {
           data.value = nodeData.controls.value;
         }
@@ -49,11 +79,41 @@ export function useSheetClipboard(
           y: nodeData.position.y + offsetY,
         };
 
-        await addNode(nodeData.type, label, inputs, outputs, data, position);
+        const newNode = await addNode(nodeData.type, label, inputs, outputs, data, position);
+        if (newNode && nodeData.id) {
+          idMap.set(nodeData.id, newNode.id);
+        }
+      }
+
+      // Recreate internal connections
+      if (editor && connectionsToPaste.length > 0) {
+        for (const connData of connectionsToPaste) {
+          const newSourceId = idMap.get(connData.source);
+          const newTargetId = idMap.get(connData.target);
+
+          if (newSourceId && newTargetId) {
+            const sourceNode = editor.instance.getNode(newSourceId);
+            const targetNode = editor.instance.getNode(newTargetId);
+
+            if (sourceNode && targetNode) {
+              try {
+                const connection = new Connection(
+                  sourceNode,
+                  connData.sourceOutput,
+                  targetNode,
+                  connData.targetInput
+                );
+                await editor.addConnection(connection);
+              } catch (e) {
+                console.error("Failed to restore connection during paste", e);
+              }
+            }
+          }
+        }
       }
     },
-    [addNode, calcCenterPosition],
+    [addNode, calcCenterPosition, editor],
   );
 
-  return { handlePaste };
+  return { handleCopy, handlePaste };
 }

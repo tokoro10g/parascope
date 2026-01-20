@@ -1,4 +1,4 @@
-import { useEffect, useRef } from 'react';
+import { useEffect } from 'react';
 import toast from 'react-hot-toast';
 import { api } from '../api';
 import type { NodeEditorWrapper, ParascopeNode } from '../rete';
@@ -14,7 +14,8 @@ export function useReteEvents(
     setNodes: (nodes: ParascopeNode[]) => void;
     triggerAutoCalculation: () => void;
     handleCalculationInputChange: (id: string, value: string) => void;
-    onPaste: (data: any) => void;
+    onCopy: (data: any) => void;
+    onPaste: (data?: any[]) => void;
     onDelete: (nodeIds: string[]) => void;
     onSave?: () => void;
     onViewportChange?: () => void;
@@ -32,6 +33,7 @@ export function useReteEvents(
     setNodes,
     triggerAutoCalculation,
     handleCalculationInputChange,
+    onCopy,
     onPaste,
     onDelete,
     onSave,
@@ -39,7 +41,6 @@ export function useReteEvents(
   } = callbacks;
 
   const { lastResultRef, calculationInputsRef } = refs;
-  const clipboardRef = useRef<any[]>([]);
 
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
@@ -79,13 +80,21 @@ export function useReteEvents(
           if (editor?.getSelectedNodes) {
             const selected = editor.getSelectedNodes();
             if (selected.length > 0) {
-              clipboardRef.current = selected.map((n) => {
+              const selectedIds = new Set(selected.map((n) => n.id));
+              const nodesData = selected.map((n) => {
                 const view = editor.area.nodeViews.get(n.id);
                 return {
+                  id: n.id, // Store original ID for connection mapping
                   type: n.type,
                   label: n.label,
-                  inputs: Object.keys(n.inputs),
-                  outputs: Object.keys(n.outputs),
+                  inputs: Object.keys(n.inputs).map((key) => ({
+                    key,
+                    socket_type: 'any',
+                  })),
+                  outputs: Object.keys(n.outputs).map((key) => ({
+                    key,
+                    socket_type: 'any',
+                  })),
                   data: JSON.parse(JSON.stringify(n.data)),
                   controls: n.controls.value
                     ? { value: (n.controls.value as any).value }
@@ -95,13 +104,25 @@ export function useReteEvents(
                     : { x: 0, y: 0 },
                 };
               });
+
+              const internalConnections = editor.instance
+                .getConnections()
+                .filter(
+                  (c) => selectedIds.has(c.source) && selectedIds.has(c.target),
+                )
+                .map((c) => ({
+                  source: c.source,
+                  sourceOutput: c.sourceOutput,
+                  target: c.target,
+                  targetInput: c.targetInput,
+                }));
+
+              onCopy({ nodes: nodesData, connections: internalConnections });
             }
           }
         }
         if (e.key === 'v') {
-          if (clipboardRef.current.length > 0) {
-            onPaste(clipboardRef.current);
-          }
+          onPaste();
         }
       }
 
@@ -120,7 +141,7 @@ export function useReteEvents(
 
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [editor, onDelete, onSave, onPaste]);
+  }, [editor, onDelete, onSave, onPaste, onCopy]);
 
   useEffect(() => {
     if (editor) {

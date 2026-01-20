@@ -222,7 +222,6 @@ export const SheetEditor: React.FC = () => {
   );
 
   // Trigger auto-calculation when calculation inputs change (e.g. from URL source)
-  // biome-ignore lint/correctness/useExhaustiveDependencies: Calculation should be triggered by calculationInputs
   useEffect(() => {
     // Only trigger if we are past the initial load phase
     if (initialLoadDone) {
@@ -230,7 +229,11 @@ export const SheetEditor: React.FC = () => {
     }
   }, [calculationInputs, triggerAutoCalculation, initialLoadDone]);
 
-  const { handlePaste } = useSheetClipboard(addNode, calcCenterPosition);
+  const { handleCopy, handlePaste } = useSheetClipboard(
+    addNode,
+    calcCenterPosition,
+    editor,
+  );
 
   const handleDelete = useCallback(
     async (nodeIds: string[]) => {
@@ -315,6 +318,7 @@ export const SheetEditor: React.FC = () => {
       setNodes,
       triggerAutoCalculation,
       handleCalculationInputChange,
+      onCopy: handleCopy,
       onPaste: handlePaste,
       onDelete: handleDelete,
       onViewportChange: handleViewportChange,

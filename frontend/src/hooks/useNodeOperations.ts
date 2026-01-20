@@ -41,7 +41,7 @@ export function useNodeOperations(
       position: { x: number; y: number },
       shouldEdit = false,
       setEditingNode?: (node: ParascopeNode) => void,
-    ) => {
+    ): Promise<ParascopeNode | undefined> => {
       if (!editor || !area) return;
       const id = uuidv4();
 
@@ -72,6 +72,7 @@ export function useNodeOperations(
 
       // No manual setNodes/setCurrentSheet here - handled by Rete events
       setIsDirty(true);
+      return node;
     },
     [editor, area, handleCalculationInputChange, setIsDirty, wrapper],
   );
