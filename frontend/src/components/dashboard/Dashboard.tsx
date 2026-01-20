@@ -242,18 +242,28 @@ export const Dashboard: React.FC = () => {
   const currentSheets = sheets
     .filter((s) => {
       if (searchQuery) {
-        return s.name.toLowerCase().includes(query) || s.id.toLowerCase().includes(query);
+        return (
+          s.name.toLowerCase().includes(query) ||
+          s.id.toLowerCase().includes(query)
+        );
       }
-      return s.folder_id === currentFolderId || (!s.folder_id && !currentFolderId);
+      return (
+        s.folder_id === currentFolderId || (!s.folder_id && !currentFolderId)
+      );
     })
     .sort((a, b) => a.name.localeCompare(b.name));
 
   const currentFolders = folders
     .filter((f) => {
       if (searchQuery) {
-        return f.name.toLowerCase().includes(query) || f.id.toLowerCase().includes(query);
+        return (
+          f.name.toLowerCase().includes(query) ||
+          f.id.toLowerCase().includes(query)
+        );
       }
-      return f.parent_id === currentFolderId || (!f.parent_id && !currentFolderId);
+      return (
+        f.parent_id === currentFolderId || (!f.parent_id && !currentFolderId)
+      );
     })
     .sort((a, b) => a.name.localeCompare(b.name));
 
@@ -460,105 +470,113 @@ export const Dashboard: React.FC = () => {
               <div style={{ display: 'flex', flexDirection: 'column' }}>
                 <span className="sheet-name">{folder.name}</span>
                 {searchQuery && (
-                  <span style={{ fontSize: '0.8em', color: 'var(--text-secondary)' }}>
+                  <span
+                    style={{
+                      fontSize: '0.8em',
+                      color: 'var(--text-secondary)',
+                    }}
+                  >
                     {getItemBreadcrumbs(folder.parent_id)}
                   </span>
                 )}
               </div>
             </div>
-                        <div className="sheet-actions">
-                          <button
-                            type="button"
-                            onClick={(e) => handleRenameFolder(e, folder.id, folder.name)}
-                            title="Rename Folder"
-                            className="btn"
-                          >
-                            <Edit2 size={16} />
-                          </button>
-                          <button
-                            type="button"
-                            onClick={(e) => handleDeleteFolder(e, folder.id)}
-                            title="Delete Folder"
-                            className="btn danger"
-                          >
-                            <Trash2 size={16} />
-                          </button>
-                        </div>
-                      </div>
-                    ))}
-            
-                    {currentSheets.map((sheet) => (
-                      <div key={sheet.id} className="sheet-item">
-                        <Link to={`/sheet/${sheet.id}`} className="sheet-link">
-                          <div
-                            className="sheet-info"
-                            style={{ justifyContent: 'flex-start' }}
-                          >
-                            <Workflow size={20} />
-                            <div style={{ display: 'flex', flexDirection: 'column' }}>
-                              <div style={{ display: 'flex', alignItems: 'center' }}>
-                                <span className="sheet-name">{sheet.name}</span>
-                                {sheet.has_updates && (
-                                  <span
-                                    className="update-indicator"
-                                    title="New updates available"
-                                    style={{
-                                      width: '8px',
-                                      height: '8px',
-                                      backgroundColor: '#007bff',
-                                      borderRadius: '50%',
-                                      marginLeft: '8px',
-                                      display: 'inline-block',
-                                      boxShadow: '0 0 4px rgba(0,123,255,0.5)',
-                                    }}
-                                  />
-                                )}
-                              </div>
-                              {searchQuery && (
-                                <span
-                                  style={{ fontSize: '0.8em', color: 'var(--text-secondary)' }}
-                                >
-                                  {getItemBreadcrumbs(sheet.folder_id)}
-                                </span>
-                              )}
-                            </div>
-                          </div>
-                        </Link>
-                        <span className="sheet-id">{sheet.id}</span>
-                        <div className="sheet-actions">
-                          <button
-                            type="button"
-                            onClick={(e) => handleCopyLink(e, sheet.id)}
-                            title="Copy Sharable Link"
-                            className="btn"
-                          >
-                            <LinkIcon size={16} />
-                          </button>
-                          <button
-                            type="button"
-                            onClick={(e) => handleMoveClick(e, sheet.id)}
-                            title="Move to Folder"
-                            className="btn"
-                          >
-                            <FolderInput size={16} />
-                          </button>
-                          <button
-                            type="button"
-                            onClick={(e) => handleDuplicate(e, sheet.id)}
-                            title="Duplicate"
-                            className="btn"
-                          >
-                            <Copy size={16} />
-                          </button>
-                          <button
-                            type="button"
-                            onClick={(e) => handleDelete(e, sheet.id)}
-                            title="Delete"
-                            className="btn danger"
-                          >
-                            <Trash2 size={16} />
-                          </button>
-                        </div>
+            <div className="sheet-actions">
+              <button
+                type="button"
+                onClick={(e) => handleRenameFolder(e, folder.id, folder.name)}
+                title="Rename Folder"
+                className="btn"
+              >
+                <Edit2 size={16} />
+              </button>
+              <button
+                type="button"
+                onClick={(e) => handleDeleteFolder(e, folder.id)}
+                title="Delete Folder"
+                className="btn danger"
+              >
+                <Trash2 size={16} />
+              </button>
+            </div>
+          </div>
+        ))}
+
+        {currentSheets.map((sheet) => (
+          <div key={sheet.id} className="sheet-item">
+            <Link to={`/sheet/${sheet.id}`} className="sheet-link">
+              <div
+                className="sheet-info"
+                style={{ justifyContent: 'flex-start' }}
+              >
+                <Workflow size={20} />
+                <div style={{ display: 'flex', flexDirection: 'column' }}>
+                  <div style={{ display: 'flex', alignItems: 'center' }}>
+                    <span className="sheet-name">{sheet.name}</span>
+                    {sheet.has_updates && (
+                      <span
+                        className="update-indicator"
+                        title="New updates available"
+                        style={{
+                          width: '8px',
+                          height: '8px',
+                          backgroundColor: '#007bff',
+                          borderRadius: '50%',
+                          marginLeft: '8px',
+                          display: 'inline-block',
+                          boxShadow: '0 0 4px rgba(0,123,255,0.5)',
+                        }}
+                      />
+                    )}
+                  </div>
+                  {searchQuery && (
+                    <span
+                      style={{
+                        fontSize: '0.8em',
+                        color: 'var(--text-secondary)',
+                      }}
+                    >
+                      {getItemBreadcrumbs(sheet.folder_id)}
+                    </span>
+                  )}
+                </div>
+              </div>
+            </Link>
+            <span className="sheet-id">{sheet.id}</span>
+            <div className="sheet-actions">
+              <button
+                type="button"
+                onClick={(e) => handleCopyLink(e, sheet.id)}
+                title="Copy Sharable Link"
+                className="btn"
+              >
+                <LinkIcon size={16} />
+              </button>
+              <button
+                type="button"
+                onClick={(e) => handleMoveClick(e, sheet.id)}
+                title="Move to Folder"
+                className="btn"
+              >
+                <FolderInput size={16} />
+              </button>
+              <button
+                type="button"
+                onClick={(e) => handleDuplicate(e, sheet.id)}
+                title="Duplicate"
+                className="btn"
+              >
+                <Copy size={16} />
+              </button>
+              <button
+                type="button"
+                onClick={(e) => handleDelete(e, sheet.id)}
+                title="Delete"
+                className="btn danger"
+              >
+                <Trash2 size={16} />
+              </button>
+            </div>
           </div>
         ))}
 

@@ -307,7 +307,7 @@ export const SheetTable: React.FC<SheetTableProps> = ({
                 type="button"
                 onClick={onCalculate}
                 disabled={isCalculating}
-                className="run-button"
+                className="btn run-button"
                 title="Run Calculation"
               >
                 {isCalculating ? '...' : <Play size={14} fill="currentColor" />}
@@ -316,7 +316,7 @@ export const SheetTable: React.FC<SheetTableProps> = ({
               <button
                 type="button"
                 onClick={onSweep}
-                className="sweep-button"
+                className="btn sweep-button"
                 title="Sweep"
               >
                 <LineChart size={14} />
@@ -329,7 +329,8 @@ export const SheetTable: React.FC<SheetTableProps> = ({
                 <button
                   type="button"
                   onClick={handleCopyTable}
-                  className="copy-button"
+                  className="btn copy-button"
+                  style={{ minWidth: 'unset' }}
                 >
                   <Copy size={14} />
                   Copy Table
@@ -553,9 +554,10 @@ export const SheetTable: React.FC<SheetTableProps> = ({
               <h3>Edit History</h3>
               <button
                 type="button"
-                className="mark-read-btn"
+                className="btn mark-read-btn"
                 onClick={handleMarkAsRead}
                 title="Mark all as seen"
+                style={{ minWidth: 'unset' }}
               >
                 <CheckCheck size={16} /> Mark all seen
               </button>
@@ -613,15 +615,17 @@ export const SheetTable: React.FC<SheetTableProps> = ({
       >
         <button
           type="button"
-          className={`sheet-table-tab ${activeTab === 'table' ? 'active' : ''}`}
+          className={`btn sheet-table-tab ${activeTab === 'table' ? 'active' : ''}`}
           onClick={() => setActiveTab('table')}
+          style={{ minWidth: 'unset' }}
         >
           <List size={16} /> Table
         </button>
         <button
           type="button"
-          className={`sheet-table-tab ${activeTab === 'descriptions' ? 'active' : ''}`}
+          className={`btn sheet-table-tab ${activeTab === 'descriptions' ? 'active' : ''}`}
           onClick={() => setActiveTab('descriptions')}
+          style={{ minWidth: 'unset' }}
         >
           <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
             <FileText size={16} />
@@ -630,8 +634,9 @@ export const SheetTable: React.FC<SheetTableProps> = ({
         </button>
         <button
           type="button"
-          className={`sheet-table-tab ${activeTab === 'history' ? 'active' : ''}`}
+          className={`btn sheet-table-tab ${activeTab === 'history' ? 'active' : ''}`}
           onClick={() => setActiveTab('history')}
+          style={{ minWidth: 'unset' }}
         >
           <History size={16} /> History
         </button>
