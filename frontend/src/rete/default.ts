@@ -71,7 +71,7 @@ export async function createEditor(container: HTMLElement) {
     }
   };
 
-  AreaExtensions.selectableNodes(area, selector, {
+  const selectableNodes = AreaExtensions.selectableNodes(area, selector, {
     accumulating: AreaExtensions.accumulateOnCtrl(),
   });
   const pathPlugin = new ConnectionPathPlugin<Schemes, Area2D<Schemes>>({
@@ -440,7 +440,7 @@ export async function createEditor(container: HTMLElement) {
         .filter((n) => selector.isSelected({ id: n.id, label: 'node' }));
     },
     selectNode: (nodeId: string, accumulate: boolean) => {
-      selector.select({ id: nodeId, label: 'node' }, accumulate);
+      selectableNodes.select(nodeId, accumulate);
     },
     clearSelection: () => {
       selector.unselectAll();

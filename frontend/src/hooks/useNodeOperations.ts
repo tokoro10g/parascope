@@ -31,6 +31,17 @@ export function useNodeOperations(
     return { x: x, y: y };
   }, [editor, area]);
 
+  const calcCursorPosition = useCallback(() => {
+    if (!area) return { x: 0, y: 0 };
+    const { x, y } = area.area.pointer;
+    // If pointer has never entered the area, x and y might be 0 or NaN depending on Rete version.
+    // We check if they are valid numbers.
+    if (Number.isNaN(x) || Number.isNaN(y) || (x === 0 && y === 0)) {
+      return calcCenterPosition();
+    }
+    return { x, y };
+  }, [area, calcCenterPosition]);
+
   const addNode = useCallback(
     async (
       type: NodeType,
@@ -315,5 +326,6 @@ export function useNodeOperations(
     handleDuplicateNode,
     handleNodeUpdate,
     calcCenterPosition,
+    calcCursorPosition,
   };
 }

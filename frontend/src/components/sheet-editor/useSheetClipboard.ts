@@ -3,7 +3,7 @@ import { Connection } from '../../rete/types';
 
 export function useSheetClipboard(
   addNode: any,
-  calcCenterPosition: () => { x: number; y: number },
+  getTargetPosition: () => { x: number; y: number },
   editor: any, // NodeEditorWrapper
 ) {
   const handleCopy = useCallback((clipboardData: { nodes: any[]; connections: any[] }) => {
@@ -56,9 +56,9 @@ export function useSheetClipboard(
       const centerX = (minX + maxX) / 2;
       const centerY = (minY + maxY) / 2;
 
-      const screenCenter = calcCenterPosition();
-      const offsetX = screenCenter.x - centerX;
-      const offsetY = screenCenter.y - centerY;
+      const targetPosition = getTargetPosition();
+      const offsetX = targetPosition.x - centerX;
+      const offsetY = targetPosition.y - centerY;
 
       // ID Mapping for connections
       const idMap = new Map<string, string>();
@@ -126,13 +126,13 @@ export function useSheetClipboard(
       }
 
       // Select all new nodes
-      if (editor) {
+      if (editor && newNodes.length > 0) {
         for (const node of newNodes) {
           editor.selectNode(node.id, true);
         }
       }
     },
-    [addNode, calcCenterPosition, editor],
+    [addNode, getTargetPosition, editor],
   );
 
   return { handleCopy, handlePaste };
