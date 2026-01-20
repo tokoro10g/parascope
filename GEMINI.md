@@ -40,6 +40,7 @@ The project is a **Monorepo**.
 -   Make it clear if you are waiting for the user's feedback
 -   Make a commit once in a while. Use Conventional Commits.
 -   Do not leave any intermediate code or workaround before making a commit
+-   As the formatter will change the code, please read the file before making changes.
 -   Do not attempt to edit a large chunk of code at once. The tool does not understand ellipsis as smart as you are.
 -   Do not leave comments describing your detailed thought process in the code. Instead, ask the user if you are unsure about what to do.
 -   Prefer modularization over monolithic code.

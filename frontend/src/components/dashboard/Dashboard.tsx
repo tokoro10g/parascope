@@ -7,6 +7,7 @@ import {
   FolderPlus,
   Link as LinkIcon,
   LogOut,
+  Search,
   Trash2,
   Workflow,
 } from 'lucide-react';
@@ -44,6 +45,7 @@ export const Dashboard: React.FC = () => {
   const [currentFolderId, setCurrentFolderId] = useState<string | undefined>(
     folderId,
   );
+  const [searchQuery, setSearchQuery] = useState('');
   const [moveModalOpen, setMoveModalOpen] = useState(false);
   const [sheetToMove, setSheetToMove] = useState<string | null>(null);
   const navigate = useNavigate();
@@ -235,18 +237,24 @@ export const Dashboard: React.FC = () => {
 
   const breadcrumbs = getBreadcrumbs();
 
+  const query = searchQuery.toLowerCase();
+
   const currentSheets = sheets
-    .filter(
-      (s) =>
-        s.folder_id === currentFolderId || (!s.folder_id && !currentFolderId),
-    )
+    .filter((s) => {
+      if (searchQuery) {
+        return s.name.toLowerCase().includes(query) || s.id.toLowerCase().includes(query);
+      }
+      return s.folder_id === currentFolderId || (!s.folder_id && !currentFolderId);
+    })
     .sort((a, b) => a.name.localeCompare(b.name));
 
   const currentFolders = folders
-    .filter(
-      (f) =>
-        f.parent_id === currentFolderId || (!f.parent_id && !currentFolderId),
-    )
+    .filter((f) => {
+      if (searchQuery) {
+        return f.name.toLowerCase().includes(query) || f.id.toLowerCase().includes(query);
+      }
+      return f.parent_id === currentFolderId || (!f.parent_id && !currentFolderId);
+    })
     .sort((a, b) => a.name.localeCompare(b.name));
 
   const handleUp = () => {
@@ -297,57 +305,104 @@ export const Dashboard: React.FC = () => {
       </div>
 
       <div
-        className="breadcrumbs"
+        className="search-bar"
         style={{
           marginBottom: 20,
           display: 'flex',
           alignItems: 'center',
-          gap: 8,
-          fontSize: '1.1em',
+          gap: 10,
+          padding: '8px 12px',
+          backgroundColor: 'var(--panel-bg-secondary)',
+          border: '1px solid var(--border-color)',
+          borderRadius: 8,
         }}
       >
-        <button
-          type="button"
-          onClick={() => navigate('/')}
+        <Search size={18} color="var(--text-secondary)" />
+        <input
+          type="text"
+          value={searchQuery}
+          onChange={(e) => setSearchQuery(e.target.value)}
+          placeholder="Search sheets and folders by name or ID..."
           style={{
-            cursor: 'pointer',
-            color: currentFolderId ? '#007bff' : 'inherit',
-            fontWeight: !currentFolderId ? 'bold' : 'normal',
+            flex: 1,
             background: 'none',
             border: 'none',
-            padding: 0,
-            fontFamily: 'inherit',
-            fontSize: 'inherit',
+            color: 'var(--text-color)',
+            fontSize: '1em',
+            outline: 'none',
           }}
-        >
-          Home
-        </button>
-        {breadcrumbs.map((folder, index) => (
-          <React.Fragment key={folder.id}>
-            <span style={{ color: '#999' }}>/</span>
-            <button
-              type="button"
-              onClick={() => navigate(`/folder/${folder.id}`)}
-              style={{
-                cursor: 'pointer',
-                color: index === breadcrumbs.length - 1 ? 'inherit' : '#007bff',
-                fontWeight:
-                  index === breadcrumbs.length - 1 ? 'bold' : 'normal',
-                background: 'none',
-                border: 'none',
-                padding: 0,
-                fontFamily: 'inherit',
-                fontSize: 'inherit',
-              }}
-            >
-              {folder.name}
-            </button>
-          </React.Fragment>
-        ))}
+        />
+        {searchQuery && (
+          <button
+            type="button"
+            onClick={() => setSearchQuery('')}
+            style={{
+              background: 'none',
+              border: 'none',
+              cursor: 'pointer',
+              color: 'var(--text-secondary)',
+            }}
+          >
+            &times;
+          </button>
+        )}
       </div>
 
+      {!searchQuery && (
+        <div
+          className="breadcrumbs"
+          style={{
+            marginBottom: 20,
+            display: 'flex',
+            alignItems: 'center',
+            gap: 8,
+            fontSize: '1.1em',
+          }}
+        >
+          <button
+            type="button"
+            onClick={() => navigate('/')}
+            style={{
+              cursor: 'pointer',
+              color: currentFolderId ? '#007bff' : 'inherit',
+              fontWeight: !currentFolderId ? 'bold' : 'normal',
+              background: 'none',
+              border: 'none',
+              padding: 0,
+              fontFamily: 'inherit',
+              fontSize: 'inherit',
+            }}
+          >
+            Home
+          </button>
+          {breadcrumbs.map((folder, index) => (
+            <React.Fragment key={folder.id}>
+              <span style={{ color: '#999' }}>/</span>
+              <button
+                type="button"
+                onClick={() => navigate(`/folder/${folder.id}`)}
+                style={{
+                  cursor: 'pointer',
+                  color:
+                    index === breadcrumbs.length - 1 ? 'inherit' : '#007bff',
+                  fontWeight:
+                    index === breadcrumbs.length - 1 ? 'bold' : 'normal',
+                  background: 'none',
+                  border: 'none',
+                  padding: 0,
+                  fontFamily: 'inherit',
+                  fontSize: 'inherit',
+                }}
+              >
+                {folder.name}
+              </button>
+            </React.Fragment>
+          ))}
+        </div>
+      )}
+
       <div className="sheet-list">
-        {currentFolderId && (
+        {!searchQuery && currentFolderId && (
           <button
             type="button"
             className="sheet-item folder-item"
