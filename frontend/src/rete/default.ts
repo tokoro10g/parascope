@@ -233,7 +233,9 @@ export async function createEditor(container: HTMLElement) {
     ) => {
       onConnectionCreated = cb;
     },
-    addConnection: async (connection: Connection<ParascopeNode, ParascopeNode>) => {
+    addConnection: async (
+      connection: Connection<ParascopeNode, ParascopeNode>,
+    ) => {
       await instance.addConnection(connection);
     },
     undo: async () => {

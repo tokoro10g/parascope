@@ -302,226 +302,166 @@ export const Dashboard: React.FC = () => {
             marginBottom: '20px',
           }}
         >
-        <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-          <ParascopeLogo size={48} strokeColor="var(--text-color, #333)" />
-          <h1 style={{ margin: 0 }}>Parascope</h1>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+            <ParascopeLogo size={48} strokeColor="var(--text-color, #333)" />
+            <h1 style={{ margin: 0 }}>Parascope</h1>
+          </div>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+            <span>
+              Hello, <b>{user}</b>
+            </span>
+            <button
+              type="button"
+              onClick={logout}
+              title="Change User"
+              className="link-button"
+              style={{ color: 'var(--text-color, #333)' }}
+            >
+              <LogOut size={16} /> Change User
+            </button>
+          </div>
         </div>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-          <span>
-            Hello, <b>{user}</b>
-          </span>
-          <button
-            type="button"
-            onClick={logout}
-            title="Change User"
-            className="link-button"
-            style={{ color: 'var(--text-color, #333)' }}
-          >
-            <LogOut size={16} /> Change User
-          </button>
-        </div>
-      </div>
 
-      <div
-        className="search-bar"
-        style={{
-          marginBottom: 20,
-          display: 'flex',
-          alignItems: 'center',
-          gap: 10,
-          padding: '8px 12px',
-          backgroundColor: 'var(--panel-bg-secondary)',
-          border: '1px solid var(--border-color)',
-          borderRadius: 8,
-        }}
-      >
-        <Search size={18} color="var(--text-secondary)" />
-        <input
-          type="text"
-          value={searchQuery}
-          onChange={(e) => setSearchQuery(e.target.value)}
-          placeholder="Search sheets and folders by name or ID..."
-          style={{
-            flex: 1,
-            background: 'none',
-            border: 'none',
-            color: 'var(--text-color)',
-            fontSize: '1em',
-            outline: 'none',
-          }}
-        />
-        {searchQuery && (
-          <button
-            type="button"
-            onClick={() => setSearchQuery('')}
-            style={{
-              background: 'none',
-              border: 'none',
-              cursor: 'pointer',
-              color: 'var(--text-secondary)',
-            }}
-          >
-            &times;
-          </button>
-        )}
-      </div>
-
-      {!searchQuery && (
         <div
-          className="breadcrumbs"
+          className="search-bar"
           style={{
             marginBottom: 20,
             display: 'flex',
             alignItems: 'center',
-            gap: 8,
-            fontSize: '1.1em',
+            gap: 10,
+            padding: '8px 12px',
+            backgroundColor: 'var(--panel-bg-secondary)',
+            border: '1px solid var(--border-color)',
+            borderRadius: 8,
           }}
         >
-          <button
-            type="button"
-            onClick={() => navigate('/')}
+          <Search size={18} color="var(--text-secondary)" />
+          <input
+            type="text"
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            placeholder="Search sheets and folders by name or ID..."
             style={{
-              cursor: 'pointer',
-              color: currentFolderId ? '#007bff' : 'inherit',
-              fontWeight: !currentFolderId ? 'bold' : 'normal',
+              flex: 1,
               background: 'none',
               border: 'none',
-              padding: 0,
-              fontFamily: 'inherit',
-              fontSize: 'inherit',
+              color: 'var(--text-color)',
+              fontSize: '1em',
+              outline: 'none',
             }}
-          >
-            Home
-          </button>
-          {breadcrumbs.map((folder, index) => (
-            <React.Fragment key={folder.id}>
-              <span style={{ color: '#999' }}>/</span>
-              <button
-                type="button"
-                onClick={() => navigate(`/folder/${folder.id}`)}
-                style={{
-                  cursor: 'pointer',
-                  color:
-                    index === breadcrumbs.length - 1 ? 'inherit' : '#007bff',
-                  fontWeight:
-                    index === breadcrumbs.length - 1 ? 'bold' : 'normal',
-                  background: 'none',
-                  border: 'none',
-                  padding: 0,
-                  fontFamily: 'inherit',
-                  fontSize: 'inherit',
-                }}
-              >
-                {folder.name}
-              </button>
-            </React.Fragment>
-          ))}
+          />
+          {searchQuery && (
+            <button
+              type="button"
+              onClick={() => setSearchQuery('')}
+              style={{
+                background: 'none',
+                border: 'none',
+                cursor: 'pointer',
+                color: 'var(--text-secondary)',
+              }}
+            >
+              &times;
+            </button>
+          )}
         </div>
-      )}
 
-      <div className="sheet-list">
-        {!searchQuery && currentFolderId && (
-          <button
-            type="button"
-            className="sheet-item folder-item"
-            onClick={handleUp}
+        {!searchQuery && (
+          <div
+            className="breadcrumbs"
             style={{
-              width: '100%',
-              textAlign: 'left',
-              font: 'inherit',
-              cursor: 'pointer',
+              marginBottom: 20,
+              display: 'flex',
+              alignItems: 'center',
+              gap: 8,
+              fontSize: '1.1em',
             }}
           >
-            <div className="sheet-info">
-              <ArrowLeft size={20} />
-              <span className="sheet-name" style={{ marginLeft: 10 }}>
-                .. (Up)
-              </span>
-            </div>
-          </button>
+            <button
+              type="button"
+              onClick={() => navigate('/')}
+              style={{
+                cursor: 'pointer',
+                color: currentFolderId ? '#007bff' : 'inherit',
+                fontWeight: !currentFolderId ? 'bold' : 'normal',
+                background: 'none',
+                border: 'none',
+                padding: 0,
+                fontFamily: 'inherit',
+                fontSize: 'inherit',
+              }}
+            >
+              Home
+            </button>
+            {breadcrumbs.map((folder, index) => (
+              <React.Fragment key={folder.id}>
+                <span style={{ color: '#999' }}>/</span>
+                <button
+                  type="button"
+                  onClick={() => navigate(`/folder/${folder.id}`)}
+                  style={{
+                    cursor: 'pointer',
+                    color:
+                      index === breadcrumbs.length - 1 ? 'inherit' : '#007bff',
+                    fontWeight:
+                      index === breadcrumbs.length - 1 ? 'bold' : 'normal',
+                    background: 'none',
+                    border: 'none',
+                    padding: 0,
+                    fontFamily: 'inherit',
+                    fontSize: 'inherit',
+                  }}
+                >
+                  {folder.name}
+                </button>
+              </React.Fragment>
+            ))}
+          </div>
         )}
 
-        {currentFolders.map((folder) => (
-          /* biome-ignore lint/a11y/useSemanticElements: Cannot use <button> because it contains nested interactive elements */
-          <div
-            key={folder.id}
-            className="sheet-item folder-item"
-            onClick={() => navigate(`/folder/${folder.id}`)}
-            role="button"
-            tabIndex={0}
-            onKeyDown={(e) => {
-              if (e.key === 'Enter' || e.key === ' ') {
-                navigate(`/folder/${folder.id}`);
-              }
-            }}
-          >
-            <div
-              className="sheet-info"
-              style={{ justifyContent: 'flex-start' }}
+        <div className="sheet-list">
+          {!searchQuery && currentFolderId && (
+            <button
+              type="button"
+              className="sheet-item folder-item"
+              onClick={handleUp}
+              style={{
+                width: '100%',
+                textAlign: 'left',
+                font: 'inherit',
+                cursor: 'pointer',
+              }}
             >
-              <FolderIcon size={20} />
-              <div style={{ display: 'flex', flexDirection: 'column' }}>
-                <span className="sheet-name">{folder.name}</span>
-                {searchQuery && (
-                  <span
-                    style={{
-                      fontSize: '0.8em',
-                      color: 'var(--text-secondary)',
-                    }}
-                  >
-                    {getItemBreadcrumbs(folder.parent_id)}
-                  </span>
-                )}
+              <div className="sheet-info">
+                <ArrowLeft size={20} />
+                <span className="sheet-name" style={{ marginLeft: 10 }}>
+                  .. (Up)
+                </span>
               </div>
-            </div>
-            <div className="sheet-actions">
-              <button
-                type="button"
-                onClick={(e) => handleRenameFolder(e, folder.id, folder.name)}
-                title="Rename Folder"
-                className="btn"
-              >
-                <Edit2 size={16} />
-              </button>
-              <button
-                type="button"
-                onClick={(e) => handleDeleteFolder(e, folder.id)}
-                title="Delete Folder"
-                className="btn danger"
-              >
-                <Trash2 size={16} />
-              </button>
-            </div>
-          </div>
-        ))}
+            </button>
+          )}
 
-        {currentSheets.map((sheet) => (
-          <div key={sheet.id} className="sheet-item">
-            <Link to={`/sheet/${sheet.id}`} className="sheet-link">
+          {currentFolders.map((folder) => (
+            /* biome-ignore lint/a11y/useSemanticElements: Cannot use <button> because it contains nested interactive elements */
+            <div
+              key={folder.id}
+              className="sheet-item folder-item"
+              onClick={() => navigate(`/folder/${folder.id}`)}
+              role="button"
+              tabIndex={0}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter' || e.key === ' ') {
+                  navigate(`/folder/${folder.id}`);
+                }
+              }}
+            >
               <div
                 className="sheet-info"
                 style={{ justifyContent: 'flex-start' }}
               >
-                <Workflow size={20} />
+                <FolderIcon size={20} />
                 <div style={{ display: 'flex', flexDirection: 'column' }}>
-                  <div style={{ display: 'flex', alignItems: 'center' }}>
-                    <span className="sheet-name">{sheet.name}</span>
-                    {sheet.has_updates && (
-                      <span
-                        className="update-indicator"
-                        title="New updates available"
-                        style={{
-                          width: '8px',
-                          height: '8px',
-                          backgroundColor: '#007bff',
-                          borderRadius: '50%',
-                          marginLeft: '8px',
-                          display: 'inline-block',
-                          boxShadow: '0 0 4px rgba(0,123,255,0.5)',
-                        }}
-                      />
-                    )}
-                  </div>
+                  <span className="sheet-name">{folder.name}</span>
                   {searchQuery && (
                     <span
                       style={{
@@ -529,93 +469,153 @@ export const Dashboard: React.FC = () => {
                         color: 'var(--text-secondary)',
                       }}
                     >
-                      {getItemBreadcrumbs(sheet.folder_id)}
+                      {getItemBreadcrumbs(folder.parent_id)}
                     </span>
                   )}
                 </div>
               </div>
-            </Link>
-            <span className="sheet-id">{sheet.id}</span>
-            <div className="sheet-actions">
-              <button
-                type="button"
-                onClick={(e) => handleCopyLink(e, sheet.id)}
-                title="Copy Sharable Link"
-                className="btn"
-              >
-                <LinkIcon size={16} />
-              </button>
-              <button
-                type="button"
-                onClick={(e) => handleMoveClick(e, sheet.id)}
-                title="Move to Folder"
-                className="btn"
-              >
-                <FolderInput size={16} />
-              </button>
-              <button
-                type="button"
-                onClick={(e) => handleDuplicate(e, sheet.id)}
-                title="Duplicate"
-                className="btn"
-              >
-                <Copy size={16} />
-              </button>
-              <button
-                type="button"
-                onClick={(e) => handleDelete(e, sheet.id)}
-                title="Delete"
-                className="btn danger"
-              >
-                <Trash2 size={16} />
-              </button>
+              <div className="sheet-actions">
+                <button
+                  type="button"
+                  onClick={(e) => handleRenameFolder(e, folder.id, folder.name)}
+                  title="Rename Folder"
+                  className="btn"
+                >
+                  <Edit2 size={16} />
+                </button>
+                <button
+                  type="button"
+                  onClick={(e) => handleDeleteFolder(e, folder.id)}
+                  title="Delete Folder"
+                  className="btn danger"
+                >
+                  <Trash2 size={16} />
+                </button>
+              </div>
+            </div>
+          ))}
+
+          {currentSheets.map((sheet) => (
+            <div key={sheet.id} className="sheet-item">
+              <Link to={`/sheet/${sheet.id}`} className="sheet-link">
+                <div
+                  className="sheet-info"
+                  style={{ justifyContent: 'flex-start' }}
+                >
+                  <Workflow size={20} />
+                  <div style={{ display: 'flex', flexDirection: 'column' }}>
+                    <div style={{ display: 'flex', alignItems: 'center' }}>
+                      <span className="sheet-name">{sheet.name}</span>
+                      {sheet.has_updates && (
+                        <span
+                          className="update-indicator"
+                          title="New updates available"
+                          style={{
+                            width: '8px',
+                            height: '8px',
+                            backgroundColor: '#007bff',
+                            borderRadius: '50%',
+                            marginLeft: '8px',
+                            display: 'inline-block',
+                            boxShadow: '0 0 4px rgba(0,123,255,0.5)',
+                          }}
+                        />
+                      )}
+                    </div>
+                    {searchQuery && (
+                      <span
+                        style={{
+                          fontSize: '0.8em',
+                          color: 'var(--text-secondary)',
+                        }}
+                      >
+                        {getItemBreadcrumbs(sheet.folder_id)}
+                      </span>
+                    )}
+                  </div>
+                </div>
+              </Link>
+              <span className="sheet-id">{sheet.id}</span>
+              <div className="sheet-actions">
+                <button
+                  type="button"
+                  onClick={(e) => handleCopyLink(e, sheet.id)}
+                  title="Copy Sharable Link"
+                  className="btn"
+                >
+                  <LinkIcon size={16} />
+                </button>
+                <button
+                  type="button"
+                  onClick={(e) => handleMoveClick(e, sheet.id)}
+                  title="Move to Folder"
+                  className="btn"
+                >
+                  <FolderInput size={16} />
+                </button>
+                <button
+                  type="button"
+                  onClick={(e) => handleDuplicate(e, sheet.id)}
+                  title="Duplicate"
+                  className="btn"
+                >
+                  <Copy size={16} />
+                </button>
+                <button
+                  type="button"
+                  onClick={(e) => handleDelete(e, sheet.id)}
+                  title="Delete"
+                  className="btn danger"
+                >
+                  <Trash2 size={16} />
+                </button>
+              </div>
+            </div>
+          ))}
+
+          {currentSheets.length === 0 && currentFolders.length === 0 && (
+            <p style={{ padding: 20, color: '#666' }}>This folder is empty.</p>
+          )}
+        </div>
+
+        <div className="actions-bottom">
+          <button type="button" onClick={handleCreateSheet} className="btn">
+            + Create New Sheet
+          </button>
+          <button type="button" onClick={handleCreateFolder} className="btn">
+            <FolderPlus size={16} style={{ marginRight: 5 }} /> New Folder
+          </button>
+        </div>
+
+        {sessions.length > 0 && (
+          <div className="active-sessions-panel" style={{ marginTop: 40 }}>
+            <h3>Active Sessions</h3>
+            <div className="session-list">
+              {sessions.map((s) => (
+                <div key={s.sheet_id} className="session-item">
+                  <Workflow size={16} style={{ marginRight: 8 }} />
+                  <Link to={`/sheet/${s.sheet_id}`} style={{ marginRight: 12 }}>
+                    {s.sheet_name}
+                  </Link>
+                  <span style={{ color: '#666', marginRight: 12 }}>
+                    Locked by <strong>{s.user_id}</strong>
+                  </span>
+                  <span style={{ fontSize: '0.9em', color: '#888' }}>
+                    {s.last_save_at
+                      ? `Saved ${formatTimeAgo(s.last_save_at)}`
+                      : `Started ${formatTimeAgo(s.acquired_at)}`}
+                  </span>
+                </div>
+              ))}
             </div>
           </div>
-        ))}
-
-        {currentSheets.length === 0 && currentFolders.length === 0 && (
-          <p style={{ padding: 20, color: '#666' }}>This folder is empty.</p>
         )}
-      </div>
 
-      <div className="actions-bottom">
-        <button type="button" onClick={handleCreateSheet} className="btn">
-          + Create New Sheet
-        </button>
-        <button type="button" onClick={handleCreateFolder} className="btn">
-          <FolderPlus size={16} style={{ marginRight: 5 }} /> New Folder
-        </button>
-      </div>
-
-      {sessions.length > 0 && (
-        <div className="active-sessions-panel" style={{ marginTop: 40 }}>
-          <h3>Active Sessions</h3>
-          <div className="session-list">
-            {sessions.map((s) => (
-              <div key={s.sheet_id} className="session-item">
-                <Workflow size={16} style={{ marginRight: 8 }} />
-                <Link to={`/sheet/${s.sheet_id}`} style={{ marginRight: 12 }}>
-                  {s.sheet_name}
-                </Link>
-                <span style={{ color: '#666', marginRight: 12 }}>
-                  Locked by <strong>{s.user_id}</strong>
-                </span>
-                <span style={{ fontSize: '0.9em', color: '#888' }}>
-                  {s.last_save_at
-                    ? `Saved ${formatTimeAgo(s.last_save_at)}`
-                    : `Started ${formatTimeAgo(s.acquired_at)}`}
-                </span>
-              </div>
-            ))}
-          </div>
-        </div>
-      )}
-
-      <FolderPickerModal
-        isOpen={moveModalOpen}
-        onClose={() => setMoveModalOpen(false)}
-        onSelect={handleMoveSelect}
-      />
+        <FolderPickerModal
+          isOpen={moveModalOpen}
+          onClose={() => setMoveModalOpen(false)}
+          onSelect={handleMoveSelect}
+        />
       </div>
     </div>
   );

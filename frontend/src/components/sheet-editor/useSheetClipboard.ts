@@ -6,16 +6,19 @@ export function useSheetClipboard(
   getTargetPosition: () => { x: number; y: number },
   editor: any, // NodeEditorWrapper
 ) {
-  const handleCopy = useCallback((clipboardData: { nodes: any[]; connections: any[] }) => {
-    if (!clipboardData.nodes.length) return;
+  const handleCopy = useCallback(
+    (clipboardData: { nodes: any[]; connections: any[] }) => {
+      if (!clipboardData.nodes.length) return;
 
-    const dataToStore = {
-      type: 'parascope-nodes',
-      ...clipboardData,
-    };
+      const dataToStore = {
+        type: 'parascope-nodes',
+        ...clipboardData,
+      };
 
-    localStorage.setItem('parascope-clipboard', JSON.stringify(dataToStore));
-  }, []);
+      localStorage.setItem('parascope-clipboard', JSON.stringify(dataToStore));
+    },
+    [],
+  );
 
   const handlePaste = useCallback(
     async (providedData?: any) => {
@@ -37,7 +40,9 @@ export function useSheetClipboard(
       }
 
       if (!clipboardData) return;
-      const nodesToPaste = Array.isArray(clipboardData) ? clipboardData : clipboardData.nodes;
+      const nodesToPaste = Array.isArray(clipboardData)
+        ? clipboardData
+        : clipboardData.nodes;
       const connectionsToPaste = clipboardData.connections || [];
 
       if (!nodesToPaste || nodesToPaste.length === 0) return;
@@ -114,11 +119,11 @@ export function useSheetClipboard(
                   sourceNode,
                   connData.sourceOutput,
                   targetNode,
-                  connData.targetInput
+                  connData.targetInput,
                 );
                 await editor.addConnection(connection);
               } catch (e) {
-                console.error("Failed to restore connection during paste", e);
+                console.error('Failed to restore connection during paste', e);
               }
             }
           }
