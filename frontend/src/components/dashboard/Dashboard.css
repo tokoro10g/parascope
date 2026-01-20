@@ -16,8 +16,15 @@
   margin-bottom: 20px;
 }
 
-.dashboard .actions {
-  margin-bottom: 20px;
+.actions-bottom {
+  margin-top: 20px;
+  display: flex;
+  gap: 10px;
+}
+
+.actions-bottom .btn {
+  flex: 1;
+  min-width: 0;
 }
 
 .sheet-list {

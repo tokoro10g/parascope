@@ -321,14 +321,6 @@ export const Dashboard: React.FC = () => {
           </button>
         </div>
       </div>
-      <div className="actions">
-        <button type="button" onClick={handleCreateSheet} className="btn">
-          + Create New Sheet
-        </button>
-        <button type="button" onClick={handleCreateFolder} className="btn">
-          <FolderPlus size={16} style={{ marginRight: 5 }} /> New Folder
-        </button>
-      </div>
 
       <div
         className="search-bar"
@@ -584,6 +576,15 @@ export const Dashboard: React.FC = () => {
         {currentSheets.length === 0 && currentFolders.length === 0 && (
           <p style={{ padding: 20, color: '#666' }}>This folder is empty.</p>
         )}
+      </div>
+
+      <div className="actions-bottom">
+        <button type="button" onClick={handleCreateSheet} className="btn">
+          + Create New Sheet
+        </button>
+        <button type="button" onClick={handleCreateFolder} className="btn">
+          <FolderPlus size={16} style={{ marginRight: 5 }} /> New Folder
+        </button>
       </div>
 
       {sessions.length > 0 && (
