@@ -64,6 +64,16 @@ class FolderRead(FolderBase):
     model_config = ConfigDict(from_attributes=True)
 
 
+class FolderUpdate(BaseModel):
+    name: Optional[str] = None
+    parent_id: Optional[UUID] = None
+
+
+class FolderUpdate(BaseModel):
+    name: Optional[str] = None
+    parent_id: Optional[UUID] = None
+
+
 class SheetBase(BaseModel):
     name: str
     owner_name: Optional[str] = None

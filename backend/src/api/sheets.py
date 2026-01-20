@@ -15,6 +15,7 @@ from ..schemas.sheet import (
     AuditLogRead,
     FolderCreate,
     FolderRead,
+    FolderUpdate,
     SheetCreate,
     SheetRead,
     SheetSummary,
@@ -48,6 +49,25 @@ async def list_folders(db: AsyncSession = Depends(get_db)):
     query = select(Folder)
     result = await db.execute(query)
     return result.scalars().all()
+
+
+@router.put("/folders/{folder_id}", response_model=FolderRead)
+async def update_folder(folder_id: UUID, folder_in: FolderUpdate, db: AsyncSession = Depends(get_db)):
+    query = select(Folder).where(Folder.id == folder_id)
+    result = await db.execute(query)
+    folder = result.scalar_one_or_none()
+
+    if not folder:
+        raise HTTPException(status_code=404, detail="Folder not found")
+
+    update_data = folder_in.model_dump(exclude_unset=True)
+    for key, value in update_data.items():
+        setattr(folder, key, value)
+
+    db.add(folder)
+    await db.commit()
+    await db.refresh(folder)
+    return folder
 
 
 @router.delete("/folders/{folder_id}")

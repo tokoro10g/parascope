@@ -222,6 +222,14 @@ export const api = {
     });
   },
 
+  async updateFolder(id: string, folder: Partial<Folder>): Promise<Folder> {
+    return request(`${API_BASE}/sheets/folders/${id}`, {
+      method: 'PUT',
+      headers: getHeaders({ 'Content-Type': 'application/json' }),
+      body: JSON.stringify(folder),
+    });
+  },
+
   async createSheet(
     name: string = 'Untitled',
     folder_id?: string,

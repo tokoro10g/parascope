@@ -1,6 +1,7 @@
 import {
   ArrowLeft,
   Copy,
+  Edit2,
   Folder as FolderIcon,
   FolderInput,
   FolderPlus,
@@ -155,6 +156,26 @@ export const Dashboard: React.FC = () => {
     }
   };
 
+  const handleRenameFolder = async (
+    e: React.MouseEvent,
+    id: string,
+    currentName: string,
+  ) => {
+    e.preventDefault();
+    e.stopPropagation();
+    const newName = prompt('Enter new folder name:', currentName);
+    if (newName && newName !== currentName) {
+      try {
+        await api.updateFolder(id, { name: newName });
+        toast.success('Folder renamed successfully');
+        loadData();
+      } catch (e: any) {
+        console.error(e);
+        toast.error(`Error renaming folder: ${e.message || e}`);
+      }
+    }
+  };
+
   const handleDeleteFolder = async (e: React.MouseEvent, id: string) => {
     e.preventDefault();
     e.stopPropagation();
@@ -214,14 +235,19 @@ export const Dashboard: React.FC = () => {
 
   const breadcrumbs = getBreadcrumbs();
 
-  const currentSheets = sheets.filter(
-    (s) =>
-      s.folder_id === currentFolderId || (!s.folder_id && !currentFolderId),
-  );
-  const currentFolders = folders.filter(
-    (f) =>
-      f.parent_id === currentFolderId || (!f.parent_id && !currentFolderId),
-  );
+  const currentSheets = sheets
+    .filter(
+      (s) =>
+        s.folder_id === currentFolderId || (!s.folder_id && !currentFolderId),
+    )
+    .sort((a, b) => a.name.localeCompare(b.name));
+
+  const currentFolders = folders
+    .filter(
+      (f) =>
+        f.parent_id === currentFolderId || (!f.parent_id && !currentFolderId),
+    )
+    .sort((a, b) => a.name.localeCompare(b.name));
 
   const handleUp = () => {
     const current = folders.find((f) => f.id === currentFolderId);
@@ -364,6 +390,13 @@ export const Dashboard: React.FC = () => {
               <span className="sheet-name">{folder.name}</span>
             </div>
             <div className="sheet-actions">
+              <button
+                type="button"
+                onClick={(e) => handleRenameFolder(e, folder.id, folder.name)}
+                title="Rename Folder"
+              >
+                <Edit2 size={16} />
+              </button>
               <button
                 type="button"
                 onClick={(e) => handleDeleteFolder(e, folder.id)}
