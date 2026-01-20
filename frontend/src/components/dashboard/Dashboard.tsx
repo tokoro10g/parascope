@@ -293,14 +293,15 @@ export const Dashboard: React.FC = () => {
 
   return (
     <div className="dashboard">
-      <div
-        style={{
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'space-between',
-          marginBottom: '20px',
-        }}
-      >
+      <div className="dashboard-inner">
+        <div
+          style={{
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            marginBottom: '20px',
+          }}
+        >
         <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
           <ParascopeLogo size={48} strokeColor="var(--text-color, #333)" />
           <h1 style={{ margin: 0 }}>Parascope</h1>
@@ -614,6 +615,7 @@ export const Dashboard: React.FC = () => {
         onClose={() => setMoveModalOpen(false)}
         onSelect={handleMoveSelect}
       />
+      </div>
     </div>
   );
 };
