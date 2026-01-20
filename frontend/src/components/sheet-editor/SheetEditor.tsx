@@ -783,6 +783,7 @@ export const SheetEditor: React.FC = () => {
           onClose={() => setIsVersionListOpen(false)}
           sheetId={currentSheet.id}
           onRestore={handleRestoreVersion}
+          isDirty={isDirty}
         />
       )}
     </div>

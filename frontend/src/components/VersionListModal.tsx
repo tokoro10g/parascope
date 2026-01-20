@@ -10,6 +10,7 @@ interface VersionListModalProps {
   onClose: () => void;
   sheetId: string;
   onRestore: (version: SheetVersion) => void;
+  isDirty: boolean;
 }
 
 export const VersionListModal: React.FC<VersionListModalProps> = ({
@@ -17,6 +18,7 @@ export const VersionListModal: React.FC<VersionListModalProps> = ({
   onClose,
   sheetId,
   onRestore,
+  isDirty,
 }) => {
   const [versions, setVersions] = useState<SheetVersion[]>([]);
   const [isLoading, setIsLoading] = useState(false);
@@ -92,20 +94,35 @@ export const VersionListModal: React.FC<VersionListModalProps> = ({
           <button
             type="button"
             onClick={handleCreate}
-            disabled={isCreating}
+            disabled={isCreating || isDirty}
+            className="btn"
             style={{
               padding: '8px 16px',
-              backgroundColor: 'var(--primary-color)',
+              backgroundColor: isDirty
+                ? 'var(--text-muted)'
+                : 'var(--primary-color)',
               color: 'white',
               border: 'none',
               borderRadius: '4px',
-              cursor: isCreating ? 'not-allowed' : 'pointer',
-              opacity: isCreating ? 0.7 : 1,
+              cursor: isCreating || isDirty ? 'not-allowed' : 'pointer',
+              opacity: isCreating || isDirty ? 0.7 : 1,
+              minWidth: 'unset',
             }}
           >
             {isCreating ? 'Creating...' : 'Create'}
           </button>
         </div>
+        {isDirty && (
+          <p
+            style={{
+              color: 'var(--danger-color)',
+              fontSize: '0.85em',
+              margin: '5px 0 0 0',
+            }}
+          >
+            Please save your changes before creating a new version.
+          </p>
+        )}
         <textarea
           value={newDescription}
           onChange={(e) => setNewDescription(e.target.value)}
