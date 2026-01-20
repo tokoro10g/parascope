@@ -28,12 +28,77 @@ const ScrollButton: React.FC<ScrollButtonProps> = ({ onClick }) => (
   <button
     type="button"
     onClick={onClick}
-    className="scroll-indicator-button"
+    className="btn scroll-indicator-button"
     title="Scroll to bottom"
+    style={{ minWidth: 'unset' }}
   >
     <ChevronDown size={20} />
   </button>
 );
+
+interface ScrollablePanelProps {
+  children: React.ReactNode;
+  className?: string;
+  dependencies?: any[];
+}
+
+const ScrollablePanel: React.FC<ScrollablePanelProps> = ({
+  children,
+  className,
+  dependencies = [],
+}) => {
+  const containerRef = useRef<HTMLDivElement>(null);
+  const [showIndicator, setShowIndicator] = useState(false);
+
+  const checkScroll = useCallback(() => {
+    const el = containerRef.current;
+    if (el) {
+      const canScroll = el.scrollHeight > el.clientHeight;
+      const isAtBottom = el.scrollHeight - el.scrollTop <= el.clientHeight + 5;
+      setShowIndicator(canScroll && !isAtBottom);
+    }
+  }, []);
+
+  useEffect(() => {
+    checkScroll();
+    window.addEventListener('resize', checkScroll);
+    return () => window.removeEventListener('resize', checkScroll);
+  }, [checkScroll]);
+
+  // biome-ignore lint/correctness/useExhaustiveDependencies: User provided dependencies
+  useEffect(() => {
+    checkScroll();
+  }, [checkScroll, ...dependencies]);
+
+  const scrollToBottom = () => {
+    containerRef.current?.scrollTo({
+      top: containerRef.current.scrollHeight,
+      behavior: 'smooth',
+    });
+  };
+
+  return (
+    <div
+      style={{
+        flex: 1,
+        display: 'flex',
+        flexDirection: 'column',
+        minHeight: 0,
+        position: 'relative',
+      }}
+    >
+      <div
+        ref={containerRef}
+        onScroll={checkScroll}
+        className={className}
+        style={{ flex: 1, overflowY: 'auto' }}
+      >
+        {children}
+      </div>
+      {showIndicator && <ScrollButton onClick={scrollToBottom} />}
+    </div>
+  );
+};
 
 interface SheetTableProps {
   nodes: ParascopeNode[];
@@ -93,12 +158,6 @@ export const SheetTable: React.FC<SheetTableProps> = ({
   const [history, setHistory] = useState<AuditLog[]>([]);
   const [isHistoryLoading, setIsHistoryLoading] = useState(false);
 
-  const tableContainerRef = useRef<HTMLDivElement>(null);
-  const descriptionContainerRef = useRef<HTMLDivElement>(null);
-  const [showScrollIndicator, setShowScrollIndicator] = useState(false);
-  const [showDescriptionScrollIndicator, setShowDescriptionScrollIndicator] =
-    useState(false);
-
   const loadHistory = useCallback(async () => {
     if (!sheetId) return;
     setIsHistoryLoading(true);
@@ -126,69 +185,6 @@ export const SheetTable: React.FC<SheetTableProps> = ({
       loadHistory(); // Refresh the list to clear highlights
     } catch (e) {
       console.error(e);
-    }
-  };
-
-  const checkScroll = useCallback(() => {
-    const el = tableContainerRef.current;
-    if (el) {
-      const canScroll = el.scrollHeight > el.clientHeight;
-      const isAtBottom = el.scrollHeight - el.scrollTop <= el.clientHeight + 5;
-      setShowScrollIndicator(canScroll && !isAtBottom);
-    }
-  }, []);
-
-  const checkDescriptionScroll = useCallback(() => {
-    const el = descriptionContainerRef.current;
-    if (el) {
-      const canScroll = el.scrollHeight > el.clientHeight;
-      const isAtBottom = el.scrollHeight - el.scrollTop <= el.clientHeight + 5;
-      setShowDescriptionScrollIndicator(canScroll && !isAtBottom);
-    }
-  }, []);
-
-  useEffect(() => {
-    checkScroll();
-    checkDescriptionScroll();
-    window.addEventListener('resize', checkScroll);
-    window.addEventListener('resize', checkDescriptionScroll);
-    return () => {
-      window.removeEventListener('resize', checkScroll);
-      window.removeEventListener('resize', checkDescriptionScroll);
-    };
-  }, [checkScroll, checkDescriptionScroll]);
-
-  // biome-ignore lint/correctness/useExhaustiveDependencies: Re-check scroll when nodes change
-  useEffect(() => {
-    checkScroll();
-    checkDescriptionScroll();
-  }, [nodes]);
-
-  const handleScroll = () => {
-    checkScroll();
-  };
-
-  const handleDescriptionScroll = () => {
-    checkDescriptionScroll();
-  };
-
-  const scrollToBottom = () => {
-    const el = tableContainerRef.current;
-    if (el) {
-      el.scrollTo({
-        top: el.scrollHeight,
-        behavior: 'smooth',
-      });
-    }
-  };
-
-  const scrollToDescriptionBottom = () => {
-    const el = descriptionContainerRef.current;
-    if (el) {
-      el.scrollTo({
-        top: el.scrollHeight,
-        behavior: 'smooth',
-      });
     }
   };
 
@@ -337,101 +333,97 @@ export const SheetTable: React.FC<SheetTableProps> = ({
                 </button>
               </div>
             </div>
-            <div className="sheet-table-list-container">
-              <div
-                ref={tableContainerRef}
-                onScroll={handleScroll}
-                className="sheet-table-scroll-area"
-              >
-                <table style={{ width: '100%', borderCollapse: 'collapse' }}>
-                  <thead>
-                    <tr>
-                      <th>Name</th>
-                      <th>Type</th>
-                      <th className="sheet-table-header-right">Value</th>
-                    </tr>
-                  </thead>
+            <ScrollablePanel
+              className="sheet-table-scroll-area"
+              dependencies={[nodes]}
+            >
+              <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+                <thead>
+                  <tr>
+                    <th>Name</th>
+                    <th>Type</th>
+                    <th className="sheet-table-header-right">Value</th>
+                  </tr>
+                </thead>
 
-                  <tbody>
-                    {tableNodes.map((node) => {
-                      const isEditable =
-                        node.type === 'constant' || node.type === 'input';
-                      const isDropdown =
-                        isEditable && node.data.dataType === 'option';
-                      const nameControl = node.controls.name as any;
-                      const valueControl = node.controls.value as any;
+                <tbody>
+                  {tableNodes.map((node) => {
+                    const isEditable =
+                      node.type === 'constant' || node.type === 'input';
+                    const isDropdown =
+                      isEditable && node.data.dataType === 'option';
+                    const nameControl = node.controls.name as any;
+                    const valueControl = node.controls.value as any;
 
-                      const name = nameControl?.value || node.label;
-                      const value = valueControl?.value;
-                      let displayValue = value;
+                    const name = nameControl?.value || node.label;
+                    const value = valueControl?.value;
+                    let displayValue = value;
 
-                      if (!isEditable) {
-                        if (
-                          isCalculating ||
-                          value === undefined ||
-                          value === null ||
-                          value === ''
-                        ) {
-                          displayValue = '?';
-                        } else {
-                          displayValue = formatHumanReadableValue(value);
-                        }
+                    if (!isEditable) {
+                      if (
+                        isCalculating ||
+                        value === undefined ||
+                        value === null ||
+                        value === ''
+                      ) {
+                        displayValue = '?';
+                      } else {
+                        displayValue = formatHumanReadableValue(value);
                       }
+                    }
 
-                      const hasError = !!node.error;
+                    const hasError = !!node.error;
 
-                      return (
-                        <tr key={node.id} onClick={() => onSelectNode(node.id)}>
-                          <td>{name}</td>
-                          <td>{node.type}</td>
-                          <td
-                            className={`sheet-table-cell-value ${
-                              hasError && !isCalculating
-                                ? 'value-error'
-                                : !isEditable && displayValue !== '?'
-                                  ? 'value-blink'
-                                  : ''
-                            }`}
-                            data-error={hasError ? node.error : undefined}
-                          >
-                            {isDropdown ? (
-                              <select
-                                value={value}
-                                onChange={(e) => {
-                                  onUpdateValue(node.id, e.target.value);
-                                }}
-                                onClick={(e) => e.stopPropagation()} // Prevent row selection when editing
-                                className="sheet-table-input"
-                              >
-                                <option key="" value=""></option>
-                                {node.data.options.map((opt: string) => (
-                                  <option key={opt} value={opt}>
-                                    {opt}
-                                  </option>
-                                ))}
-                              </select>
-                            ) : isEditable ? (
-                              <input
-                                size={9}
-                                value={value}
-                                onChange={(e) =>
-                                  onUpdateValue(node.id, e.target.value)
-                                }
-                                onClick={(e) => e.stopPropagation()} // Prevent row selection when editing
-                                className="sheet-table-input"
-                              />
-                            ) : (
-                              <span>{displayValue}</span>
-                            )}
-                          </td>
-                        </tr>
-                      );
-                    })}
-                  </tbody>
-                </table>
-              </div>
-              {showScrollIndicator && <ScrollButton onClick={scrollToBottom} />}
-            </div>
+                    return (
+                      <tr key={node.id} onClick={() => onSelectNode(node.id)}>
+                        <td>{name}</td>
+                        <td>{node.type}</td>
+                        <td
+                          className={`sheet-table-cell-value ${
+                            hasError && !isCalculating
+                              ? 'value-error'
+                              : !isEditable && displayValue !== '?'
+                                ? 'value-blink'
+                                : ''
+                          }`}
+                          data-error={hasError ? node.error : undefined}
+                        >
+                          {isDropdown ? (
+                            <select
+                              value={value}
+                              onChange={(e) => {
+                                onUpdateValue(node.id, e.target.value);
+                              }}
+                              onClick={(e) => e.stopPropagation()} // Prevent row selection when editing
+                              className="sheet-table-input"
+                            >
+                              <option key="" value=""></option>
+                              {node.data.options.map((opt: string) => (
+                                <option key={opt} value={opt}>
+                                  {opt}
+                                </option>
+                              ))}
+                            </select>
+                          ) : isEditable ? (
+                            <input
+                              size={9}
+                              value={value}
+                              onChange={(e) =>
+                                onUpdateValue(node.id, e.target.value)
+                              }
+                              onClick={(e) => e.stopPropagation()} // Prevent row selection when editing
+                              className="sheet-table-input"
+                            />
+                          ) : (
+                            <span>{displayValue}</span>
+                          )}
+                        </td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
+            </ScrollablePanel>
           </div>
         )}
 
@@ -448,10 +440,9 @@ export const SheetTable: React.FC<SheetTableProps> = ({
             <div className="description-panel-header">
               <h3>Descriptions</h3>
             </div>
-            <div
-              ref={descriptionContainerRef}
-              onScroll={handleDescriptionScroll}
+            <ScrollablePanel
               className="description-list"
+              dependencies={[nodes]}
             >
               {descriptionNodes.map((node) => {
                 const nameControl = node.controls.name as any;
@@ -533,10 +524,7 @@ export const SheetTable: React.FC<SheetTableProps> = ({
                   No descriptions available
                 </div>
               )}
-            </div>
-            {showDescriptionScrollIndicator && (
-              <ScrollButton onClick={scrollToDescriptionBottom} />
-            )}
+            </ScrollablePanel>
           </div>
         )}
 
@@ -562,7 +550,10 @@ export const SheetTable: React.FC<SheetTableProps> = ({
                 <CheckCheck size={16} /> Mark all seen
               </button>
             </div>
-            <div className="history-list">
+            <ScrollablePanel
+              className="history-list"
+              dependencies={[nodes, history]}
+            >
               {isHistoryLoading ? (
                 <div className="history-empty">Loading history...</div>
               ) : history.length === 0 ? (
@@ -601,7 +592,7 @@ export const SheetTable: React.FC<SheetTableProps> = ({
                   </div>
                 ))
               )}
-            </div>
+            </ScrollablePanel>
           </div>
         )}
       </div>
