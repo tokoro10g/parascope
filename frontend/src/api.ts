@@ -297,6 +297,12 @@ export const api = {
     });
   },
 
+  async getVersion(sheetId: string, versionId: string): Promise<SheetVersion> {
+    return request(`${API_BASE}/sheets/${sheetId}/versions/${versionId}`, {
+      headers: getHeaders(),
+    });
+  },
+
   async calculate(
     sheetId: string,
     inputs: Record<string, { value: any }>,

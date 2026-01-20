@@ -110,6 +110,7 @@ export function useSheetManager(
     currentSheet,
     setCurrentSheet,
     isLoading,
+    setIsLoading,
     handleLoadSheet,
     handleSaveSheet,
     handleRenameSheet,

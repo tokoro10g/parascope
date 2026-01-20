@@ -67,7 +67,8 @@ export const SheetEditor: React.FC = () => {
   } = useSheetLock(sheetId || null);
 
   // Derive Read only state.
-  const isReadOnly = !isLockedByMe || isLockLoading;
+  const isVersionView = searchParams.has('versionId');
+  const isReadOnly = !isLockedByMe || isLockLoading || isVersionView;
 
   const calculateTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(
     null,
@@ -107,7 +108,9 @@ export const SheetEditor: React.FC = () => {
 
   const {
     currentSheet,
+    setCurrentSheet,
     isLoading,
+    setIsLoading,
     handleLoadSheet,
     handleSaveSheet,
     handleRenameSheet,
@@ -130,6 +133,7 @@ export const SheetEditor: React.FC = () => {
           }
         });
         setNodes(nodes);
+        setInitialLoadDone(true);
       },
       [editor, setLastResult],
     ),
@@ -314,7 +318,7 @@ export const SheetEditor: React.FC = () => {
         toast.success(`Restored to version ${version.version_tag}`);
       }
     },
-    [editor, currentSheet, triggerAutoCalculation, setIsDirty],
+    [editor, currentSheet, triggerAutoCalculation],
   );
 
   useReteEvents(
@@ -337,11 +341,41 @@ export const SheetEditor: React.FC = () => {
 
   // Load the specific sheet when sheetId changes
   useEffect(() => {
+    const versionId = searchParams.get('versionId');
     if (sheetId) {
-      handleLoadSheet(sheetId);
-      setInitialLoadDone(false); // Reset load state
+      if (versionId) {
+        setIsLoading(true);
+        api
+          .getVersion(sheetId, versionId)
+          .then((v) => {
+            if (editor && v.data) {
+              const tempSheet = {
+                ...v.data,
+                id: sheetId,
+                name: `${v.data.name || 'Sheet'} (v${v.version_tag})`,
+              };
+              setCurrentSheet(tempSheet);
+              editor.loadSheet(tempSheet).then(() => {
+                setNodes([...editor.instance.getNodes()]);
+                setInitialLoadDone(true);
+                setIsLoading(false);
+              });
+            } else {
+              setIsLoading(false);
+            }
+          })
+          .catch(() => setIsLoading(false));
+      } else {
+        handleLoadSheet(sheetId);
+        setInitialLoadDone(false);
+      }
     }
-  }, [sheetId, handleLoadSheet]);
+  }, [
+    sheetId,
+    handleLoadSheet,
+    searchParams,
+    editor,
+  ]);
 
   useUrlSync({
     nodes,
@@ -634,7 +668,29 @@ export const SheetEditor: React.FC = () => {
   return (
     <div className="sheet-editor">
       <NavBar user={user} onBack={handleBackClick} onLogout={logout} />
-      {lockedByOther && (
+      {isVersionView && (
+        <div
+          className="lock-banner"
+          style={{
+            backgroundColor: '#e3f2fd',
+            color: '#0d47a1',
+            borderColor: '#90caf9',
+          }}
+        >
+          <span>
+            Viewing <strong>Version Snapshot</strong>. Read-Only Mode.
+          </span>
+          <button
+            type="button"
+            onClick={() => navigate(`/sheet/${sheetId}`)}
+            className="take-over-btn"
+            style={{ backgroundColor: '#1976d2' }}
+          >
+            Back to Live
+          </button>
+        </div>
+      )}
+      {!isVersionView && lockedByOther && (
         <div className="lock-banner">
           <span>
             Currently being edited by <strong>{lockedByOther}</strong>. You are
@@ -644,8 +700,8 @@ export const SheetEditor: React.FC = () => {
             Take Over
           </button>
         </div>
-      )}{' '}
-      {!lockedByOther && isReadOnly && !isLockLoading && (
+      )}
+      {!isVersionView && !lockedByOther && isReadOnly && !isLockLoading && (
         <div className="lock-banner">
           <span>You are in Read-Only mode. Reload to acquire lock.</span>
           <button

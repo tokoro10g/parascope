@@ -15,7 +15,7 @@ import ReactMarkdown from 'react-markdown';
 import { useParams } from 'react-router-dom';
 import rehypeKatex from 'rehype-katex';
 import remarkMath from 'remark-math';
-import { API_BASE, type AuditLog, type SheetVersion, api } from '../../api';
+import { API_BASE, type AuditLog, api, type SheetVersion } from '../../api';
 import type { ParascopeNode } from '../../rete';
 import './SheetTable.css';
 import toast from 'react-hot-toast';
@@ -90,7 +90,9 @@ export const SheetTable: React.FC<SheetTableProps> = ({
   isCalculating,
 }) => {
   const { sheetId } = useParams<{ sheetId: string }>();
-  const [activeTab, setActiveTab] = useState<'table' | 'history' | 'versions'>('table');
+  const [activeTab, setActiveTab] = useState<'table' | 'history' | 'versions'>(
+    'table',
+  );
   const [history, setHistory] = useState<AuditLog[]>([]);
   const [versions, setVersions] = useState<SheetVersion[]>([]);
   const [isHistoryLoading, setIsHistoryLoading] = useState(false);
@@ -409,11 +411,12 @@ export const SheetTable: React.FC<SheetTableProps> = ({
                           <td>{name}</td>
                           <td>{node.type}</td>
                           <td
-                            className={`sheet-table-cell-value ${hasError && !isCalculating
-                              ? 'value-error'
-                              : !isEditable && displayValue !== '?'
-                                ? 'value-blink'
-                                : ''
+                            className={`sheet-table-cell-value ${
+                              hasError && !isCalculating
+                                ? 'value-error'
+                                : !isEditable && displayValue !== '?'
+                                  ? 'value-blink'
+                                  : ''
                             }`}
                             data-error={hasError ? node.error : undefined}
                           >
@@ -638,22 +641,34 @@ export const SheetTable: React.FC<SheetTableProps> = ({
                     }}
                   >
                     <span>By {v.created_by}</span>
-                    <button
-                      type="button"
-                      className="mark-read-btn" // Reuse style
-                      onClick={() => {
-                        if (
-                          window.confirm(
-                            `Are you sure you want to restore version "${v.version_tag}"? This will overwrite your current sheet state.`,
-                          )
-                        ) {
-                          onRestoreVersion(v);
-                        }
-                      }}
-                      title="Restore this version"
-                    >
-                      <RotateCcw size={14} /> Restore
-                    </button>
+                    <div style={{ display: 'flex', gap: '8px' }}>
+                      <a
+                        href={`/sheet/${sheetId}?versionId=${v.id}`}
+                        target="_blank"
+                        rel="noreferrer"
+                        className="mark-read-btn"
+                        style={{ textDecoration: 'none', color: 'inherit' }}
+                        title="Open in new tab (Read-Only)"
+                      >
+                        View
+                      </a>
+                      <button
+                        type="button"
+                        className="mark-read-btn" // Reuse style
+                        onClick={() => {
+                          if (
+                            window.confirm(
+                              `Are you sure you want to restore version "${v.version_tag}"? This will overwrite your current sheet state.`,
+                            )
+                          ) {
+                            onRestoreVersion(v);
+                          }
+                        }}
+                        title="Restore this version"
+                      >
+                        <RotateCcw size={14} /> Restore
+                      </button>
+                    </div>
                   </div>
                 </div>
               ))

@@ -625,3 +625,13 @@ async def list_versions(sheet_id: UUID, db: AsyncSession = Depends(get_db)):
     query = select(SheetVersion).where(SheetVersion.sheet_id == sheet_id).order_by(SheetVersion.created_at.desc())
     result = await db.execute(query)
     return result.scalars().all()
+
+
+@router.get("/{sheet_id}/versions/{version_id}", response_model=SheetVersionRead)
+async def get_version(sheet_id: UUID, version_id: UUID, db: AsyncSession = Depends(get_db)):
+    query = select(SheetVersion).where(SheetVersion.id == version_id, SheetVersion.sheet_id == sheet_id)
+    result = await db.execute(query)
+    version = result.scalar_one_or_none()
+    if not version:
+        raise HTTPException(status_code=404, detail="Version not found")
+    return version
