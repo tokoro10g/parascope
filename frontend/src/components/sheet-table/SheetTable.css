@@ -240,15 +240,31 @@
   font-size: 0.9rem;
   font-weight: 600;
   transition: all 0.2s ease;
-  border-top: 2px solid transparent; /* Move active indicator to top */
-  border-bottom: none;
+  border-radius: 0;
+  border-bottom: 2px solid transparent;
+  outline: none;
+  -webkit-tap-highlight-color: transparent; /* Remove touch highlight */
+}
+
+.sheet-table-tab:hover {
+  background-color: var(--panel-bg-translucent);
+  color: var(--text-color);
 }
 
 .sheet-table-tab.active {
   color: var(--primary-color);
-  border-top-color: var(--primary-color);
-  border-bottom: none;
+  border-bottom-color: var(--primary-color);
   background-color: var(--panel-bg);
+}
+
+.sheet-table-tab:focus,
+.sheet-table-tab:active {
+  box-shadow: none !important;
+  outline: none !important;
+  background-color: var(--panel-bg);
+  border-top: none;
+  border-left: none;
+  border-right: none;
 }
 
 .history-panel {
@@ -370,13 +386,13 @@
 }
 
 .sheet-table-constants-section {
-  flex: 0 0 auto;
-  max-height: 50%;
+  flex: 1;
   display: flex;
   flex-direction: column;
   border-bottom: 1px solid var(--border-color);
   padding-bottom: 10px;
   margin-bottom: 10px;
+  min-height: 0;
 }
 
 .sheet-table-controls {

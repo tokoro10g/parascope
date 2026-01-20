@@ -416,7 +416,7 @@ export const SheetTable: React.FC<SheetTableProps> = ({
         )}
 
         {activeTab === 'descriptions' && (
-          <div className="description-panel">
+          <div className="description-panel" style={{ flex: 1, display: 'flex', flexDirection: 'column', minHeight: 0 }}>
             <div className="description-panel-header">
               <h3>Descriptions</h3>
             </div>
@@ -513,7 +513,7 @@ export const SheetTable: React.FC<SheetTableProps> = ({
         )}
 
         {activeTab === 'history' && (
-          <div className="history-panel">
+          <div className="history-panel" style={{ flex: 1, display: 'flex', flexDirection: 'column', minHeight: 0 }}>
             <div className="history-header">
               <h3>Edit History</h3>
               <button
