@@ -48,7 +48,6 @@ export const ScrollablePanel: React.FC<ScrollablePanelProps> = ({
     return () => window.removeEventListener('resize', checkScroll);
   }, [checkScroll]);
 
-  // biome-ignore lint/correctness/useExhaustiveDependencies: User provided dependencies
   useEffect(() => {
     checkScroll();
   }, [checkScroll, ...dependencies]);

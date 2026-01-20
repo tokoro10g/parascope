@@ -1,6 +1,8 @@
 import {
   CaseLower,
   ChevronDown,
+  ClipboardPaste,
+  Copy,
   Import,
   LogIn,
   LogOut,
@@ -30,6 +32,8 @@ interface EditorBarProps {
   onAddNode: (type: NodeType) => void;
   onUndo: () => void;
   onRedo: () => void;
+  onCopy: () => void;
+  onPaste: () => void;
   onCheckUsage?: () => void;
 }
 
@@ -43,6 +47,8 @@ export const EditorBar: React.FC<EditorBarProps> = ({
   onAddNode,
   onUndo,
   onRedo,
+  onCopy,
+  onPaste,
   onCheckUsage,
 }) => {
   const [name, setName] = useState(sheetName || '');
@@ -225,9 +231,45 @@ export const EditorBar: React.FC<EditorBarProps> = ({
         >
           <Redo size={18} />
         </button>
+        <div
+          style={{
+            width: '1px',
+            height: '20px',
+            backgroundColor: 'var(--border-color)',
+            margin: '0 4px',
+          }}
+        />
+        <button
+          type="button"
+          onClick={(e) => {
+            onCopy();
+            e.currentTarget.blur();
+          }}
+          title="Copy Selected Nodes (Ctrl+C)"
+        >
+          <Copy size={18} />
+        </button>
+        <button
+          type="button"
+          onClick={(e) => {
+            onPaste();
+            e.currentTarget.blur();
+          }}
+          title="Paste Nodes (Ctrl+V)"
+        >
+          <ClipboardPaste size={18} />
+        </button>
       </div>
 
       <div className="toolbar-group save-group">
+        <div
+          style={{
+            width: '1px',
+            height: '20px',
+            backgroundColor: 'var(--border-color)',
+            margin: '0 4px',
+          }}
+        />
         <div
           className="sheet-actions-group"
           ref={sheetMenuRef}

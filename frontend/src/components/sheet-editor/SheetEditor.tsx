@@ -733,6 +733,55 @@ export const SheetEditor: React.FC = () => {
                 onAddNode={handleAddNode}
                 onUndo={() => editor?.undo()}
                 onRedo={() => editor?.redo()}
+                onCopy={() => {
+                  if (editor) {
+                    const selected = editor.getSelectedNodes();
+                    const selectedIds = new Set(selected.map((n) => n.id));
+                    const nodesData = selected.map((n) => {
+                      const view = editor.area.nodeViews.get(n.id);
+                      return {
+                        id: n.id,
+                        type: n.type,
+                        label: n.label,
+                        inputs: Object.keys(n.inputs).map((key) => ({
+                          key,
+                          socket_type: 'any',
+                        })),
+                        outputs: Object.keys(n.outputs).map((key) => ({
+                          key,
+                          socket_type: 'any',
+                        })),
+                        data: JSON.parse(JSON.stringify(n.data)),
+                        controls: n.controls.value
+                          ? { value: (n.controls.value as any).value }
+                          : {},
+                        position: view
+                          ? { x: view.position.x, y: view.position.y }
+                          : { x: 0, y: 0 },
+                      };
+                    });
+
+                    const internalConnections = editor.instance
+                      .getConnections()
+                      .filter(
+                        (c) =>
+                          selectedIds.has(c.source) &&
+                          selectedIds.has(c.target),
+                      )
+                      .map((c) => ({
+                        source: c.source,
+                        sourceOutput: c.sourceOutput,
+                        target: c.target,
+                        targetInput: c.targetInput,
+                      }));
+
+                    handleCopy({
+                      nodes: nodesData,
+                      connections: internalConnections,
+                    });
+                  }
+                }}
+                onPaste={handlePaste}
                 onCheckUsage={() => setIsUsageModalOpen(true)}
               />
               <div
