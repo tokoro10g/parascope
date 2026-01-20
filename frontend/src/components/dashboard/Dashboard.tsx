@@ -266,6 +266,21 @@ export const Dashboard: React.FC = () => {
     }
   };
 
+  const getItemBreadcrumbs = (parentId?: string | null) => {
+    const crumbs = [];
+    let currentId = parentId;
+    while (currentId) {
+      const folder = folders.find((f) => f.id === currentId);
+      if (folder) {
+        crumbs.unshift(folder.name);
+        currentId = folder.parent_id;
+      } else {
+        break;
+      }
+    }
+    return ['Home', ...crumbs].join(' / ');
+  };
+
   return (
     <div className="dashboard">
       <div
@@ -442,7 +457,14 @@ export const Dashboard: React.FC = () => {
               style={{ justifyContent: 'flex-start' }}
             >
               <FolderIcon size={20} />
-              <span className="sheet-name">{folder.name}</span>
+              <div style={{ display: 'flex', flexDirection: 'column' }}>
+                <span className="sheet-name">{folder.name}</span>
+                {searchQuery && (
+                  <span style={{ fontSize: '0.8em', color: 'var(--text-secondary)' }}>
+                    {getItemBreadcrumbs(folder.parent_id)}
+                  </span>
+                )}
+              </div>
             </div>
             <div className="sheet-actions">
               <button
@@ -472,22 +494,31 @@ export const Dashboard: React.FC = () => {
                 style={{ justifyContent: 'flex-start' }}
               >
                 <Workflow size={20} />
-                <span className="sheet-name">{sheet.name}</span>
-                {sheet.has_updates && (
-                  <span
-                    className="update-indicator"
-                    title="New updates available"
-                    style={{
-                      width: '8px',
-                      height: '8px',
-                      backgroundColor: '#007bff',
-                      borderRadius: '50%',
-                      marginLeft: '8px',
-                      display: 'inline-block',
-                      boxShadow: '0 0 4px rgba(0,123,255,0.5)',
-                    }}
-                  />
-                )}
+                <div style={{ display: 'flex', flexDirection: 'column' }}>
+                  <div style={{ display: 'flex', alignItems: 'center' }}>
+                    <span className="sheet-name">{sheet.name}</span>
+                    {sheet.has_updates && (
+                      <span
+                        className="update-indicator"
+                        title="New updates available"
+                        style={{
+                          width: '8px',
+                          height: '8px',
+                          backgroundColor: '#007bff',
+                          borderRadius: '50%',
+                          marginLeft: '8px',
+                          display: 'inline-block',
+                          boxShadow: '0 0 4px rgba(0,123,255,0.5)',
+                        }}
+                      />
+                    )}
+                  </div>
+                  {searchQuery && (
+                    <span style={{ fontSize: '0.8em', color: 'var(--text-secondary)' }}>
+                      {getItemBreadcrumbs(sheet.folder_id)}
+                    </span>
+                  )}
+                </div>
               </div>
             </Link>
             <span className="sheet-id">{sheet.id}</span>
