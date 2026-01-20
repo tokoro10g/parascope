@@ -6,6 +6,7 @@ import {
   LineChart,
   List,
   Play,
+  FileText,
 } from 'lucide-react';
 import type React from 'react';
 import { useCallback, useEffect, useRef, useState } from 'react';
@@ -86,7 +87,7 @@ export const SheetTable: React.FC<SheetTableProps> = ({
   isCalculating,
 }) => {
   const { sheetId } = useParams<{ sheetId: string }>();
-  const [activeTab, setActiveTab] = useState<'table' | 'history'>('table');
+  const [activeTab, setActiveTab] = useState<'table' | 'history' | 'descriptions'>('table');
   const [history, setHistory] = useState<AuditLog[]>([]);
   const [isHistoryLoading, setIsHistoryLoading] = useState(false);
 
@@ -279,26 +280,10 @@ export const SheetTable: React.FC<SheetTableProps> = ({
 
   return (
     <div className="sheet-table">
-      <div className="sheet-table-tabs">
-        <button
-          type="button"
-          className={`sheet-table-tab ${activeTab === 'table' ? 'active' : ''}`}
-          onClick={() => setActiveTab('table')}
-        >
-          <List size={16} /> Table
-        </button>
-        <button
-          type="button"
-          className={`sheet-table-tab ${activeTab === 'history' ? 'active' : ''}`}
-          onClick={() => setActiveTab('history')}
-        >
-          <History size={16} /> History
-        </button>
-      </div>
-
-      {activeTab === 'table' ? (
-        <>
-          <div className="sheet-table-constants-section">
+      {/* Content Area */}
+      <div className="sheet-table-content" style={{ flex: 1, overflowY: 'hidden', display: 'flex', flexDirection: 'column' }}>
+        {activeTab === 'table' && (
+          <div className="sheet-table-constants-section" style={{ flex: 1, display: 'flex', flexDirection: 'column', borderBottom: 'none' }}>
             <div className="sheet-table-controls">
               <button
                 type="button"
@@ -381,8 +366,7 @@ export const SheetTable: React.FC<SheetTableProps> = ({
                           <td>{name}</td>
                           <td>{node.type}</td>
                           <td
-                            className={`sheet-table-cell-value ${
-                              hasError && !isCalculating
+                            className={`sheet-table-cell-value ${hasError && !isCalculating
                                 ? 'value-error'
                                 : !isEditable && displayValue !== '?'
                                   ? 'value-blink'
@@ -429,7 +413,9 @@ export const SheetTable: React.FC<SheetTableProps> = ({
               {showScrollIndicator && <ScrollButton onClick={scrollToBottom} />}
             </div>
           </div>
+        )}
 
+        {activeTab === 'descriptions' && (
           <div className="description-panel">
             <div className="description-panel-header">
               <h3>Descriptions</h3>
@@ -524,62 +510,91 @@ export const SheetTable: React.FC<SheetTableProps> = ({
               <ScrollButton onClick={scrollToDescriptionBottom} />
             )}
           </div>
-        </>
-      ) : (
-        <div className="history-panel">
-          <div className="history-header">
-            <h3>Edit History</h3>
-            <button
-              type="button"
-              className="mark-read-btn"
-              onClick={handleMarkAsRead}
-              title="Mark all as seen"
-            >
-              <CheckCheck size={16} /> Mark all seen
-            </button>
-          </div>
-          <div className="history-list">
-            {isHistoryLoading ? (
-              <div className="history-empty">Loading history...</div>
-            ) : history.length === 0 ? (
-              <div className="history-empty">No changes recorded yet</div>
-            ) : (
-              groupHistoryByNode(history, nodes).map((group) => (
-                <div key={group.label} className="history-node-section">
-                  <div className="history-node-header">
-                    <strong>{group.label}</strong>
-                  </div>
-                  <div className="history-node-timeline">
-                    {group.changes.map((change, i) => (
-                      <div
-                        // biome-ignore lint/suspicious/noArrayIndexKey: timeline display
-                        key={i}
-                        className={`history-timeline-item ${change.is_unread ? 'unread' : ''}`}
-                      >
-                        <div className="history-timeline-meta">
-                          <span className="history-user">
-                            {change.user_name}
-                          </span>
-                          <span className="history-time">
-                            {new Date(change.timestamp).toLocaleString()}
-                          </span>
+        )}
+
+        {activeTab === 'history' && (
+          <div className="history-panel">
+            <div className="history-header">
+              <h3>Edit History</h3>
+              <button
+                type="button"
+                className="mark-read-btn"
+                onClick={handleMarkAsRead}
+                title="Mark all as seen"
+              >
+                <CheckCheck size={16} /> Mark all seen
+              </button>
+            </div>
+            <div className="history-list">
+              {isHistoryLoading ? (
+                <div className="history-empty">Loading history...</div>
+              ) : history.length === 0 ? (
+                <div className="history-empty">No changes recorded yet</div>
+              ) : (
+                groupHistoryByNode(history, nodes).map((group) => (
+                  <div key={group.label} className="history-node-section">
+                    <div className="history-node-header">
+                      <strong>{group.label}</strong>
+                    </div>
+                    <div className="history-node-timeline">
+                      {group.changes.map((change, i) => (
+                        <div
+                          // biome-ignore lint/suspicious/noArrayIndexKey: timeline display
+                          key={i}
+                          className={`history-timeline-item ${change.is_unread ? 'unread' : ''}`}
+                        >
+                          <div className="history-timeline-meta">
+                            <span className="history-user">
+                              {change.user_name}
+                            </span>
+                            <span className="history-time">
+                              {new Date(change.timestamp).toLocaleString()}
+                            </span>
+                          </div>
+                          <div className="history-timeline-delta">
+                            <span className="delta-field">{change.field}</span>
+                            <span className="delta-values">
+                              {formatValue(change.old)} →{' '}
+                              {formatValue(change.new)}
+                            </span>
+                          </div>
                         </div>
-                        <div className="history-timeline-delta">
-                          <span className="delta-field">{change.field}</span>
-                          <span className="delta-values">
-                            {formatValue(change.old)} →{' '}
-                            {formatValue(change.new)}
-                          </span>
-                        </div>
-                      </div>
-                    ))}
+                      ))}
+                    </div>
                   </div>
-                </div>
-              ))
-            )}
+                ))
+              )}
+            </div>
           </div>
-        </div>
-      )}
+        )}
+      </div>
+
+      <div className="sheet-table-tabs" style={{ borderTop: '1px solid var(--border-color)', borderBottom: 'none' }}>
+        <button
+          type="button"
+          className={`sheet-table-tab ${activeTab === 'table' ? 'active' : ''}`}
+          onClick={() => setActiveTab('table')}
+        >
+          <List size={16} /> Table
+        </button>
+        <button
+          type="button"
+          className={`sheet-table-tab ${activeTab === 'descriptions' ? 'active' : ''}`}
+          onClick={() => setActiveTab('descriptions')}
+        >
+          <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
+            <FileText size={16} />
+            <span>Descriptions</span>
+          </div>
+        </button>
+        <button
+          type="button"
+          className={`sheet-table-tab ${activeTab === 'history' ? 'active' : ''}`}
+          onClick={() => setActiveTab('history')}
+        >
+          <History size={16} /> History
+        </button>
+      </div>
     </div>
   );
 };
