@@ -175,10 +175,10 @@ export const NodeInspector: React.FC<NodeInspectorProps> = ({
 
   const footer = (
     <>
-      <button type="button" onClick={onClose}>
+      <button type="button" onClick={onClose} className="btn">
         Cancel
       </button>
-      <button type="button" onClick={handleSave} className="primary">
+      <button type="button" onClick={handleSave} className="btn primary">
         Save
       </button>
     </>

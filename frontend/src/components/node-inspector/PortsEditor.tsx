@@ -103,7 +103,8 @@ export const PortsEditor: React.FC<PortsEditorProps> = ({
               type="button"
               onClick={() => handleMove(idx, 'up')}
               disabled={isDisabled || idx === 0}
-              style={{ padding: '2px' }}
+              className="btn"
+              style={{ padding: '2px', minWidth: 'unset' }}
             >
               <ArrowUp size={12} />
             </button>
@@ -111,15 +112,16 @@ export const PortsEditor: React.FC<PortsEditorProps> = ({
               type="button"
               onClick={() => handleMove(idx, 'down')}
               disabled={isDisabled || idx === items.length - 1}
-              style={{ padding: '2px' }}
+              className="btn"
+              style={{ padding: '2px', minWidth: 'unset' }}
             >
               <ArrowDown size={12} />
             </button>
             <button
               type="button"
               onClick={() => handleRemove(idx)}
-              className="danger"
-              style={{ padding: '2px' }}
+              className="btn danger"
+              style={{ padding: '2px', minWidth: 'unset' }}
               disabled={isDisabled}
             >
               <Trash2 size={12} />
@@ -127,7 +129,13 @@ export const PortsEditor: React.FC<PortsEditorProps> = ({
           </li>
         ))}
       </ul>
-      <button type="button" onClick={handleAdd} disabled={isDisabled}>
+      <button
+        type="button"
+        onClick={handleAdd}
+        disabled={isDisabled}
+        className="btn"
+        style={{ width: '100%', minWidth: 'unset' }}
+      >
         + {addButtonLabel}
       </button>
     </div>

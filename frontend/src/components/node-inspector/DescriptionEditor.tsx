@@ -48,10 +48,12 @@ export const DescriptionEditor: React.FC<DescriptionEditorProps> = ({
             type="button"
             onClick={() => setShowPreview(!showPreview)}
             disabled={isGenerating}
+            className="btn"
             style={{
               fontSize: '0.8em',
               padding: '2px 8px',
               cursor: 'pointer',
+              minWidth: 'unset',
             }}
           >
             {showPreview ? 'Edit' : 'Preview'}
@@ -134,6 +136,8 @@ export const DescriptionEditor: React.FC<DescriptionEditorProps> = ({
                 type="button"
                 onClick={handleInsertToDescription}
                 disabled={isGenerating}
+                className="btn"
+                style={{ minWidth: 'unset', padding: '4px 8px' }}
               >
                 Insert into Description
               </button>
@@ -141,6 +145,8 @@ export const DescriptionEditor: React.FC<DescriptionEditorProps> = ({
                 type="button"
                 onClick={handleRemoveAttachment}
                 disabled={isGenerating}
+                className="btn danger"
+                style={{ minWidth: 'unset', padding: '4px 8px' }}
               >
                 Remove
               </button>

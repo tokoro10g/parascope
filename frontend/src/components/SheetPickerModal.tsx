@@ -79,7 +79,7 @@ export const SheetPickerModal: React.FC<SheetPickerModalProps> = ({
   const breadcrumbs = getBreadcrumbs();
 
   const footer = (
-    <button type="button" onClick={onClose}>
+    <button type="button" onClick={onClose} className="btn">
       Cancel
     </button>
   );

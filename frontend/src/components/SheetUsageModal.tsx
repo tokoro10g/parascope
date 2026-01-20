@@ -109,7 +109,7 @@ export const SheetUsageModal: React.FC<SheetUsageModalProps> = ({
   };
 
   const footer = (
-    <button type="button" onClick={onClose}>
+    <button type="button" onClick={onClose} className="btn">
       Close
     </button>
   );

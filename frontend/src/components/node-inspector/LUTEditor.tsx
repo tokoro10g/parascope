@@ -253,27 +253,30 @@ export const LUTEditor: React.FC<LUTEditorProps> = ({
                     <div className="lut-header-actions">
                       <button
                         type="button"
-                        className="lut-icon-btn"
+                        className="btn lut-icon-btn"
                         onClick={() => handleMoveOutput(idx, 'left')}
                         disabled={idx === 0}
                         title="Move Left"
+                        style={{ minWidth: 'unset' }}
                       >
                         <ArrowLeft size={12} />
                       </button>
                       <button
                         type="button"
-                        className="lut-icon-btn"
+                        className="btn lut-icon-btn"
                         onClick={() => handleMoveOutput(idx, 'right')}
                         disabled={idx === outputs.length - 1}
                         title="Move Right"
+                        style={{ minWidth: 'unset' }}
                       >
                         <ArrowRight size={12} />
                       </button>
                       <button
                         type="button"
-                        className="lut-remove-btn"
+                        className="btn lut-remove-btn"
                         onClick={() => handleRemoveOutput(out.key)}
                         title="Remove Column"
+                        style={{ minWidth: 'unset' }}
                       >
                         <Trash2 size={12} />
                       </button>
@@ -297,9 +300,10 @@ export const LUTEditor: React.FC<LUTEditorProps> = ({
               <th style={{ width: '32px', borderRight: 'none', padding: 0 }}>
                 <button
                   type="button"
-                  className="lut-add-inline-btn"
+                  className="btn lut-add-inline-btn"
                   onClick={handleAddOutput}
                   title="Add Column"
+                  style={{ minWidth: 'unset' }}
                 >
                   <Plus size={14} />
                 </button>
@@ -334,27 +338,30 @@ export const LUTEditor: React.FC<LUTEditorProps> = ({
                   <div className="lut-row-actions">
                     <button
                       type="button"
-                      className="lut-icon-btn"
+                      className="btn lut-icon-btn"
                       onClick={() => handleMoveRow(rowIndex, 'up')}
                       disabled={rowIndex === 0}
                       title="Move Up"
+                      style={{ minWidth: 'unset' }}
                     >
                       <ArrowUp size={12} />
                     </button>
                     <button
                       type="button"
-                      className="lut-icon-btn"
+                      className="btn lut-icon-btn"
                       onClick={() => handleMoveRow(rowIndex, 'down')}
                       disabled={rowIndex === rows.length - 1}
                       title="Move Down"
+                      style={{ minWidth: 'unset' }}
                     >
                       <ArrowDown size={12} />
                     </button>
                     <button
                       type="button"
-                      className="lut-remove-btn"
+                      className="btn lut-remove-btn"
                       onClick={() => handleRemoveRow(rowIndex)}
                       title="Remove Row"
+                      style={{ minWidth: 'unset' }}
                     >
                       <Trash2 size={12} />
                     </button>
@@ -369,8 +376,9 @@ export const LUTEditor: React.FC<LUTEditorProps> = ({
               >
                 <button
                   type="button"
-                  className="lut-add-row-inline-btn"
+                  className="btn lut-add-row-inline-btn"
                   onClick={handleAddRow}
+                  style={{ minWidth: 'unset' }}
                 >
                   <Plus size={14} /> Add Row
                 </button>

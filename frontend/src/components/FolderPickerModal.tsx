@@ -70,13 +70,13 @@ export const FolderPickerModal: React.FC<FolderPickerModalProps> = ({
 
   const footer = (
     <>
-      <button type="button" onClick={onClose}>
+      <button type="button" onClick={onClose} className="btn">
         Cancel
       </button>
       <button
         type="button"
         onClick={() => onSelect(currentFolderId)}
-        className="primary"
+        className="btn primary"
       >
         Move Here
       </button>

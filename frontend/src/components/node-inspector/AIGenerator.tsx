@@ -127,12 +127,14 @@ export const AIGenerator: React.FC<AIGeneratorProps> = ({
               <button
                 type="button"
                 onClick={() => setAiImage(null)}
+                className="btn"
                 style={{
                   fontSize: '0.8em',
                   padding: '2px',
                   color: 'var(--danger-color)',
                   border: 'none',
                   background: 'transparent',
+                  minWidth: 'unset',
                 }}
               >
                 Clear Image
@@ -145,7 +147,8 @@ export const AIGenerator: React.FC<AIGeneratorProps> = ({
           type="button"
           onClick={handleGenerate}
           disabled={isGenerating || !aiPrompt.trim()}
-          style={{ width: '100%', marginTop: '4px' }}
+          className="btn primary"
+          style={{ width: '100%', marginTop: '4px', minWidth: 'unset' }}
         >
           Generate
         </button>
