@@ -10,7 +10,7 @@ import type {
   StrategyContext,
   VisualizationStrategy,
 } from './types';
-import { checkIsNumeric } from './utils';
+import { addAlphaToRgb, checkIsNumeric } from './utils';
 
 // Re-export shared types for consumers
 export type { ChartTheme, StrategyContext, VisualizationStrategy };
@@ -107,9 +107,8 @@ export const getSweepChartOption = (
       confine: true,
       trigger: 'axis',
       axisPointer: { type: 'cross' },
-      backgroundColor: theme.background,
+      backgroundColor: addAlphaToRgb(theme.background, 0.5),
       textStyle: { color: theme.text },
-      borderColor: theme.text,
       valueFormatter: (value: any) => {
         if (!value && value !== 0) return '-';
         return formatHumanReadableValue(value?.toString());

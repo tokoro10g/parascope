@@ -15,6 +15,22 @@ export const getColor = (s: string) => {
   return `hsl(${hue}, 70%, 50%)`;
 };
 
+export const addAlphaToRgb = (rgbString: string, alpha: number) => {
+  if (rgbString.startsWith('#')) {
+    const r = parseInt(rgbString.substring(1, 3), 16);
+    const g = parseInt(rgbString.substring(3, 5), 16);
+    const b = parseInt(rgbString.substring(5, 7), 16);
+    return `rgba(${r}, ${g}, ${b}, ${alpha})`;
+  }
+  // "rgb(r, g, b)" or "rgb(r g b)"
+  const rgbValues = rgbString.match(/\d+/g);
+  if (rgbValues && rgbValues.length === 3) {
+    return `rgba(${rgbValues[0]}, ${rgbValues[1]}, ${rgbValues[2]}, ${alpha})`;
+  }
+  // invalid format
+  return rgbString;
+};
+
 export const renderTimelineItem = (_params: any, api: any) => {
   const categoryIndex = api.value(0);
   const start = api.coord([api.value(1), categoryIndex]);
