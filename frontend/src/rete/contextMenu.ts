@@ -1,7 +1,7 @@
 import type { NodeEditor } from 'rete';
 import { ContextMenuPlugin } from 'rete-context-menu-plugin';
-import type { Schemes } from './types';
 import { copyToClipboard } from '../utils';
+import type { Schemes } from './types';
 
 export interface ContextMenuCallbacks {
   onNodeEdit?: (nodeId: string) => void;
