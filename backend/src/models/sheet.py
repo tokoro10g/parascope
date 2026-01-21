@@ -1,5 +1,5 @@
 import uuid
-from datetime import datetime
+from datetime import datetime, timezone
 from typing import Any, List, Optional
 
 from sqlalchemy import DateTime, Float, ForeignKey, String
@@ -7,6 +7,16 @@ from sqlalchemy.dialects.postgresql import JSONB, UUID
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from ..core.database import Base
+
+
+def make_aware(dt: datetime) -> datetime:
+    if dt.tzinfo is None:
+        return dt.replace(tzinfo=timezone.utc)
+    return dt
+
+
+def utcnow():
+    return datetime.now(timezone.utc)
 
 
 class Folder(Base):
@@ -84,9 +94,9 @@ class Lock(Base):
     sheet_id: Mapped[uuid.UUID] = mapped_column(ForeignKey("sheets.id", ondelete="CASCADE"), primary_key=True)
     user_id: Mapped[str] = mapped_column(String, nullable=False)
     tab_id: Mapped[Optional[str]] = mapped_column(String, nullable=True)
-    acquired_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow)
-    last_heartbeat_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow)
-    last_save_at: Mapped[Optional[datetime]] = mapped_column(DateTime, nullable=True)
+    acquired_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=utcnow)
+    last_heartbeat_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=utcnow)
+    last_save_at: Mapped[Optional[datetime]] = mapped_column(DateTime(timezone=True), nullable=True)
 
     sheet: Mapped["Sheet"] = relationship("Sheet", back_populates="locks")
 
@@ -97,7 +107,7 @@ class AuditLog(Base):
     id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
     sheet_id: Mapped[uuid.UUID] = mapped_column(ForeignKey("sheets.id", ondelete="CASCADE"), index=True)
     user_name: Mapped[str] = mapped_column(String, index=True)
-    timestamp: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow, index=True)
+    timestamp: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=utcnow, index=True)
     delta: Mapped[List[Any]] = mapped_column(JSONB, default=list)
 
     sheet: Mapped["Sheet"] = relationship("Sheet", back_populates="audit_logs")
@@ -108,7 +118,7 @@ class UserReadState(Base):
 
     user_name: Mapped[str] = mapped_column(String, primary_key=True)
     sheet_id: Mapped[uuid.UUID] = mapped_column(ForeignKey("sheets.id", ondelete="CASCADE"), primary_key=True)
-    last_read_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow)
+    last_read_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=utcnow)
 
     sheet: Mapped["Sheet"] = relationship("Sheet", back_populates="read_states")
 
@@ -121,7 +131,7 @@ class SheetVersion(Base):
     version_tag: Mapped[str] = mapped_column(String, index=True)
     description: Mapped[Optional[str]] = mapped_column(String, nullable=True)
     data: Mapped[dict[str, Any]] = mapped_column(JSONB)
-    created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow)
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=utcnow)
     created_by: Mapped[str] = mapped_column(String)
 
     sheet: Mapped["Sheet"] = relationship("Sheet", back_populates="versions")

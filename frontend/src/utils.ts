@@ -35,6 +35,21 @@ export const extractValuesFromResult = (
 
 export const createSocket = (key: string) => ({ key, socket_type: 'any' });
 
+export const formatLocalTime = (
+  dateStr: string,
+  options: Intl.DateTimeFormatOptions = {
+    year: 'numeric',
+    month: 'numeric',
+    day: 'numeric',
+    hour: 'numeric',
+    minute: 'numeric',
+    second: 'numeric',
+  },
+) => {
+  const time = dateStr.endsWith('Z') ? dateStr : `${dateStr}Z`;
+  return new Date(time).toLocaleString(undefined, options);
+};
+
 export const syncNestedSheets = async (
   sheet: Sheet,
 ): Promise<{

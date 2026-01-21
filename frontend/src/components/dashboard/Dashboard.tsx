@@ -19,9 +19,7 @@ import { ParascopeLogo } from '../ParascopeLogo';
 import './Dashboard.css';
 
 export const formatTimeAgo = (dateStr: string) => {
-  // Backend returns generic UTC timestamp without 'Z'. Ensure it's treated as UTC.
-  const time = dateStr.endsWith('Z') ? dateStr : `${dateStr}Z`;
-  const date = new Date(time);
+  const date = new Date(dateStr);
   const now = new Date();
   const seconds = Math.max(
     0,

@@ -12,7 +12,7 @@ from sqlalchemy.orm import joinedload
 from ..core.auth import get_current_user
 from ..core.config import settings
 from ..core.database import get_db
-from ..models.sheet import Lock, Sheet
+from ..models.sheet import Lock, Sheet, utcnow, make_aware
 from ..schemas.lock import LockAcquire, LockRead, SessionRead
 
 router = APIRouter(tags=["concurrency"])
@@ -34,7 +34,7 @@ async def get_lock_status(
     
     # Hide expired locks (effectively free)
     if lock:
-        now = datetime.utcnow()
+        now = utcnow()
         timeout = timedelta(seconds=settings.LOCK_TIMEOUT_SECONDS)
         if now - lock.last_heartbeat_at > timeout:
             return None
@@ -64,7 +64,7 @@ async def acquire_or_refresh_lock(
     result = await db.execute(query)
     existing_lock = result.scalar_one_or_none()
 
-    now = datetime.utcnow()
+    now = utcnow()
 
     if existing_lock:
         try:
@@ -174,7 +174,7 @@ async def force_takeover_lock(
     result = await db.execute(query)
     existing_lock = result.scalar_one_or_none()
 
-    now = datetime.utcnow()
+    now = utcnow()
 
     if existing_lock:
         existing_lock.user_id = user_id
@@ -241,25 +241,25 @@ async def list_sessions(db: AsyncSession = Depends(get_db)):
     result = await db.execute(query)
     locks = result.scalars().all()
     
-    now = datetime.utcnow()
+    now = utcnow()
     timeout = timedelta(seconds=settings.LOCK_TIMEOUT_SECONDS)
     
     sessions = []
     for lock in locks:
         # Filter stale locks in python for simplicity
-        if now - lock.last_heartbeat_at > timeout:
+        if now - make_aware(lock.last_heartbeat_at) > timeout:
             continue
             
         duration = None
         if lock.last_save_at:
-             duration = (now - lock.last_save_at).total_seconds()
+             duration = (now - make_aware(lock.last_save_at)).total_seconds()
         
         sessions.append({
             "sheet_id": lock.sheet_id,
             "sheet_name": lock.sheet.name,
             "user_id": lock.user_id,
-            "acquired_at": lock.acquired_at,
-            "last_save_at": lock.last_save_at,
+            "acquired_at": make_aware(lock.acquired_at),
+            "last_save_at": make_aware(lock.last_save_at) if lock.last_save_at else None,
             "duration_since_save": duration
         })
         

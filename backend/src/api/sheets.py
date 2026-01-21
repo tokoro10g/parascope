@@ -10,7 +10,7 @@ from sqlalchemy.orm import selectinload
 from ..core.auth import get_current_user
 from ..core.config import settings
 from ..core.database import get_db
-from ..models.sheet import AuditLog, Connection, Folder, Lock, Node, Sheet, SheetVersion, UserReadState
+from ..models.sheet import AuditLog, Connection, Folder, Lock, Node, Sheet, SheetVersion, UserReadState, utcnow
 from ..schemas.sheet import (
     AuditLogRead,
     FolderCreate,
@@ -239,11 +239,11 @@ async def update_sheet(
         if lock:
             if lock.user_id != user_id:
                 # Check if lock is active
-                if datetime.utcnow() - lock.last_heartbeat_at <= timedelta(seconds=settings.LOCK_TIMEOUT_SECONDS):
+                if utcnow() - lock.last_heartbeat_at <= timedelta(seconds=settings.LOCK_TIMEOUT_SECONDS):
                     raise HTTPException(status_code=403, detail=f"Sheet is locked by {lock.user_id}")
             else:
                 # Update last save time
-                lock.last_save_at = datetime.utcnow()
+                lock.last_save_at = utcnow()
 
     # --- Phase 2: Audit Logging (Diffing) ---
     delta = []
@@ -316,10 +316,10 @@ async def update_sheet(
         read_state_stmt = insert(UserReadState).values(
             user_name=user_id,
             sheet_id=sheet_id,
-            last_read_at=datetime.utcnow()
+            last_read_at=utcnow()
         ).on_conflict_do_update(
             index_elements=['user_name', 'sheet_id'],
-            set_={'last_read_at': datetime.utcnow()}
+            set_={'last_read_at': utcnow()}
         )
         await db.execute(read_state_stmt)
     # ----------------------------------------
@@ -573,8 +573,8 @@ async def mark_sheet_as_read(
 
     stmt = (
         insert(UserReadState)
-        .values(user_name=user_id, sheet_id=sheet_id, last_read_at=datetime.utcnow())
-        .on_conflict_do_update(index_elements=["user_name", "sheet_id"], set_={"last_read_at": datetime.utcnow()})
+        .values(user_name=user_id, sheet_id=sheet_id, last_read_at=utcnow())
+        .on_conflict_do_update(index_elements=["user_name", "sheet_id"], set_={"last_read_at": utcnow()})
     )
     await db.execute(stmt)
     await db.commit()
