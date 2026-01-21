@@ -186,13 +186,6 @@ export const EditorBar: React.FC<EditorBarProps> = ({
             <div className="menu-separator" />
             <button
               type="button"
-              onClick={() => handleAddNode('sheet')}
-              className="add-menu-item item-sheet"
-            >
-              <Import size={16} /> Import Sheet
-            </button>
-            <button
-              type="button"
               onClick={() => handleAddNode('lut')}
               className="add-menu-item item-lut"
             >
@@ -208,6 +201,19 @@ export const EditorBar: React.FC<EditorBarProps> = ({
             </button>
           </div>
         )}
+
+        <button
+          type="button"
+          onClick={() => onAddNode('sheet')}
+          className="btn-add-menu-trigger"
+          title="Import Sheet"
+          style={{ marginLeft: '4px' }}
+        >
+          <Import size={18} />
+          <span style={{ marginLeft: '4px', fontSize: '0.9em' }}>
+            Import Sheet
+          </span>
+        </button>
 
         <div
           className="sheet-actions-group"
