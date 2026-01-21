@@ -10,7 +10,7 @@ from sqlalchemy.orm import selectinload
 from ..core.auth import get_current_user
 from ..core.config import settings
 from ..core.database import get_db
-from ..models.sheet import AuditLog, Connection, Folder, Lock, Node, Sheet, SheetVersion, UserReadState, utcnow
+from ..models.sheet import AuditLog, Connection, Folder, Lock, Node, Sheet, SheetVersion, UserReadState, utcnow, make_aware
 from ..schemas.sheet import (
     AuditLogRead,
     FolderCreate,
@@ -556,8 +556,9 @@ async def get_sheet_history(
     # 3. Enrich with is_unread
     enriched_logs = []
     for log in logs:
-        is_unread = log.timestamp > last_read and log.user_name != user_id
+        is_unread = make_aware(log.timestamp) > make_aware(last_read) and log.user_name != user_id
         enriched_log = AuditLogRead.model_validate(log)
+        enriched_log.timestamp = make_aware(log.timestamp)
         enriched_log.is_unread = is_unread
         enriched_logs.append(enriched_log)
 
@@ -644,7 +645,10 @@ async def create_version(
 async def list_versions(sheet_id: UUID, db: AsyncSession = Depends(get_db)):
     query = select(SheetVersion).where(SheetVersion.sheet_id == sheet_id).order_by(SheetVersion.created_at.desc())
     result = await db.execute(query)
-    return result.scalars().all()
+    versions = result.scalars().all()
+    for v in versions:
+        v.created_at = make_aware(v.created_at)
+    return versions
 
 
 @router.get("/{sheet_id}/versions/{version_id}", response_model=SheetVersionRead)
@@ -654,4 +658,5 @@ async def get_version(sheet_id: UUID, version_id: UUID, db: AsyncSession = Depen
     version = result.scalar_one_or_none()
     if not version:
         raise HTTPException(status_code=404, detail="Version not found")
+    version.created_at = make_aware(version.created_at)
     return version

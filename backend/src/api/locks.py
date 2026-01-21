@@ -36,7 +36,7 @@ async def get_lock_status(
     if lock:
         now = utcnow()
         timeout = timedelta(seconds=settings.LOCK_TIMEOUT_SECONDS)
-        if now - lock.last_heartbeat_at > timeout:
+        if now - make_aware(lock.last_heartbeat_at) > timeout:
             return None
             
     return lock
@@ -79,7 +79,7 @@ async def acquire_or_refresh_lock(
                 else:
                     # Same user, different tab
                     timeout = timedelta(seconds=settings.LOCK_TIMEOUT_SECONDS)
-                    if now - existing_lock.last_heartbeat_at > timeout:
+                    if now - make_aware(existing_lock.last_heartbeat_at) > timeout:
                         # Steal expired
                         existing_lock.tab_id = body.tab_id
                         existing_lock.last_heartbeat_at = now
@@ -96,7 +96,7 @@ async def acquire_or_refresh_lock(
             else:
                 # Check expiration
                 timeout = timedelta(seconds=settings.LOCK_TIMEOUT_SECONDS)
-                if now - existing_lock.last_heartbeat_at > timeout:
+                if now - make_aware(existing_lock.last_heartbeat_at) > timeout:
                     # Steal lock if expired
                     existing_lock.user_id = user_id
                     existing_lock.tab_id = body.tab_id
