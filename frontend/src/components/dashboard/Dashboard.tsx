@@ -13,6 +13,7 @@ import toast from 'react-hot-toast';
 import { Link, useNavigate, useParams } from 'react-router-dom';
 import { api, type Folder, type Session, type SheetSummary } from '../../api';
 import { useAuth } from '../../contexts/AuthContext';
+import { DeleteConfirmationModal } from '../DeleteConfirmationModal';
 import { FolderPickerModal } from '../FolderPickerModal';
 import { ItemExplorer } from '../ItemExplorer';
 import { ParascopeLogo } from '../ParascopeLogo';
@@ -43,6 +44,15 @@ export const Dashboard: React.FC = () => {
   );
   const [moveModalOpen, setMoveModalOpen] = useState(false);
   const [sheetToMove, setSheetToMove] = useState<string | null>(null);
+
+  // Deletion state
+  const [deleteModalOpen, setDeleteModalOpen] = useState(false);
+  const [itemToDelete, setItemToDelete] = useState<{
+    id: string;
+    name: string;
+    type: 'sheet' | 'folder';
+  } | null>(null);
+
   const navigate = useNavigate();
   const { user, logout } = useAuth();
 
@@ -138,19 +148,22 @@ export const Dashboard: React.FC = () => {
     toast.success('Link copied to clipboard');
   };
 
-  const handleDelete = async (e: React.MouseEvent, id: string) => {
+  const handleDeleteClick = (e: React.MouseEvent, id: string, name: string) => {
     e.preventDefault();
     e.stopPropagation();
-    if (!confirm('Are you sure you want to delete this sheet?')) return;
+    setItemToDelete({ id, name, type: 'sheet' });
+    setDeleteModalOpen(true);
+  };
 
-    try {
-      await api.deleteSheet(id);
-      toast.success('Sheet deleted successfully');
-      loadData();
-    } catch (e: any) {
-      console.error(e);
-      toast.error(`Error deleting sheet: ${e.message || e}`);
-    }
+  const handleDeleteFolderClick = (
+    e: React.MouseEvent,
+    id: string,
+    name: string,
+  ) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setItemToDelete({ id, name, type: 'folder' });
+    setDeleteModalOpen(true);
   };
 
   const handleRenameFolder = async (
@@ -173,23 +186,24 @@ export const Dashboard: React.FC = () => {
     }
   };
 
-  const handleDeleteFolder = async (e: React.MouseEvent, id: string) => {
-    e.preventDefault();
-    e.stopPropagation();
-    if (
-      !confirm(
-        'Are you sure you want to delete this folder? Sheets inside will be moved to the parent.',
-      )
-    )
-      return;
+  const handleConfirmDelete = async () => {
+    if (!itemToDelete) return;
 
     try {
-      await api.deleteFolder(id);
-      toast.success('Folder deleted successfully');
+      if (itemToDelete.type === 'sheet') {
+        await api.deleteSheet(itemToDelete.id);
+        toast.success('Sheet deleted successfully');
+      } else {
+        await api.deleteFolder(itemToDelete.id);
+        toast.success('Folder deleted successfully');
+      }
       loadData();
     } catch (e: any) {
       console.error(e);
-      toast.error(`Error deleting folder: ${e.message || e}`);
+      toast.error(`Error deleting ${itemToDelete.type}: ${e.message || e}`);
+    } finally {
+      setDeleteModalOpen(false);
+      setItemToDelete(null);
     }
   };
 
@@ -275,7 +289,9 @@ export const Dashboard: React.FC = () => {
               </button>
               <button
                 type="button"
-                onClick={(e) => handleDeleteFolder(e, folder.id)}
+                onClick={(e) =>
+                  handleDeleteFolderClick(e, folder.id, folder.name)
+                }
                 title="Delete Folder"
                 className="btn danger"
               >
@@ -311,7 +327,7 @@ export const Dashboard: React.FC = () => {
               </button>
               <button
                 type="button"
-                onClick={(e) => handleDelete(e, sheet.id)}
+                onClick={(e) => handleDeleteClick(e, sheet.id, sheet.name)}
                 title="Delete"
                 className="btn danger"
               >
@@ -375,6 +391,19 @@ export const Dashboard: React.FC = () => {
           isOpen={moveModalOpen}
           onClose={() => setMoveModalOpen(false)}
           onSelect={handleMoveSelect}
+        />
+
+        <DeleteConfirmationModal
+          isOpen={deleteModalOpen}
+          onClose={() => setDeleteModalOpen(false)}
+          onConfirm={handleConfirmDelete}
+          itemName={itemToDelete?.name || ''}
+          itemType={itemToDelete?.type || 'sheet'}
+          warningMessage={
+            itemToDelete?.type === 'folder'
+              ? 'Sheets inside will be moved to the parent.'
+              : undefined
+          }
         />
       </div>
     </div>
