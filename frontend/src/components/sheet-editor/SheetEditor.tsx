@@ -442,7 +442,7 @@ export const SheetEditor: React.FC = () => {
         break;
       case 'comment':
         label = 'Comment';
-        data = { description: 'Add your comment here...' };
+        data = {};
         break;
       case 'lut':
         label = 'LUT';
