@@ -354,11 +354,18 @@ except Exception as e:
             try:
                 ast.parse(code)
             except SyntaxError as e:
-                err_msg = str(e).replace('"', '\\"').replace("'", "\\'")
+                full_msg = str(e)
+                if e.text:
+                    full_msg += f"\n{e.text.strip()}\n" + " " * (e.offset - 1 if e.offset else 0) + "^"
+                
+                # Use repr() to ensure the string is safely escaped for the f-string
+                safe_msg = repr(full_msg)
+                
                 return f"""
 @function_node("{nid}", inputs={dict_str}, label="{label_safe}")
 def {method_name}(self, {args_str}):
-    raise SyntaxError("{err_msg}")
+    # NODE_ID:{nid}
+    raise SyntaxError({safe_msg})
 """
             indented_code = textwrap.indent(code, "    ")
             

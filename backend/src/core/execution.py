@@ -116,8 +116,13 @@ def _persistent_worker_loop(task_queue, result_queue, runtime_classes):
                     results = full_state
 
                 success = True
-            except Exception:
-                error = traceback.format_exc()
+            except Exception as e:
+                # If it's a SyntaxError that we've already registered at the node level,
+                # we don't want to show it as a global toast.
+                if isinstance(e, SyntaxError) and "\n" in str(e):
+                    error = None
+                else:
+                    error = traceback.format_exc()
             finally:
                 sys.stdout = old_stdout
 

@@ -382,6 +382,7 @@ class SheetBase:
                 # Capture method-level errors (these are always visible)
                 # We try to reformat the traceback to show relative line numbers for the node
                 import linecache
+                
                 stack = traceback.extract_tb(e.__traceback__)
                 new_stack = []
                 
@@ -417,8 +418,13 @@ class SheetBase:
                         new_stack.append(frame)
 
                 if new_stack:
-                    formatted_tb = "".join(traceback.format_list(new_stack))
-                    error_msg = f"{formatted_tb}\n{type(e).__name__}: {str(e)}"
+                    # If it's a pre-formatted SyntaxError from our generator, 
+                    # we only want the final message block, not the "raise" frame.
+                    if isinstance(e, SyntaxError) and "\n" in str(e):
+                        error_msg = f"SyntaxError: {str(e)}"
+                    else:
+                        formatted_tb = "".join(traceback.format_list(new_stack))
+                        error_msg = f"{formatted_tb}\n{type(e).__name__}: {str(e)}"
                 else:
                     error_msg = f"{str(e)}\n\n{traceback.format_exc()}"
 
