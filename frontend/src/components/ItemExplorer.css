@@ -1,0 +1,152 @@
+.item-explorer {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+}
+
+.item-explorer-search-bar {
+  margin-bottom: 20px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 12px;
+  background-color: var(--panel-bg-secondary);
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+}
+
+.item-explorer-search-bar input {
+  flex: 1;
+  background: none;
+  border: none;
+  color: var(--text-color);
+  font-size: 1em;
+  outline: none;
+}
+
+.item-explorer-search-bar .clear-search {
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: var(--text-secondary);
+}
+
+.item-explorer-breadcrumbs {
+  margin-bottom: 20px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 1.1em;
+}
+
+.breadcrumb-item {
+  cursor: pointer;
+  color: var(--primary-color, #007bff);
+  background: none;
+  border: none;
+  padding: 0;
+  font-family: inherit;
+  font-size: inherit;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.breadcrumb-item.active {
+  color: inherit;
+  font-weight: bold;
+  cursor: default;
+}
+
+.breadcrumb-separator {
+  color: var(--text-secondary, #999);
+  margin: 0 8px;
+}
+
+.item-explorer-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.explorer-item {
+  border: 1px solid var(--border-light);
+  border-radius: 4px;
+  padding: 10px;
+  background: var(--item-bg);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  text-decoration: none;
+  color: var(--text-color);
+}
+
+.explorer-item.clickable {
+  cursor: pointer;
+}
+
+.explorer-item:hover {
+  background: var(--item-hover);
+}
+
+.explorer-item.folder-item {
+  cursor: pointer;
+  background-color: var(--panel-bg);
+}
+
+.explorer-item-info {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex: 1;
+}
+
+.explorer-item-text {
+  display: flex;
+  flex-direction: column;
+}
+
+.explorer-item-name-row {
+  display: flex;
+  align-items: center;
+}
+
+.explorer-item-name {
+  font-weight: 600;
+}
+
+.explorer-item-subtext {
+  font-size: 0.8em;
+  color: var(--text-secondary);
+}
+
+.explorer-item-id {
+  color: var(--text-muted);
+  font-size: 0.7em;
+  font-family: monospace;
+  margin: 0 10px;
+}
+
+.explorer-item-actions {
+  display: flex;
+  gap: 8px;
+  margin-left: 16px;
+}
+
+.explorer-item-actions button {
+  padding: 4px;
+  font-size: 0.8em;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  line-height: 1;
+  width: 28px;
+  height: 28px;
+  min-width: unset;
+}
+
+.explorer-empty-message {
+  padding: 20px;
+  color: #666;
+  text-align: center;
+}
