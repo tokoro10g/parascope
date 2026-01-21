@@ -10,6 +10,7 @@ interface AIGeneratorProps {
   isGenerating: boolean;
   handleGenerate: () => void;
   aiEnabled: boolean;
+  hasExistingContent: boolean;
 }
 
 export const AIGenerator: React.FC<AIGeneratorProps> = ({
@@ -22,6 +23,7 @@ export const AIGenerator: React.FC<AIGeneratorProps> = ({
   isGenerating,
   handleGenerate,
   aiEnabled,
+  hasExistingContent,
 }) => {
   if (!aiEnabled) return null;
 
@@ -69,7 +71,11 @@ export const AIGenerator: React.FC<AIGeneratorProps> = ({
           id="ai-prompt"
           value={aiPrompt}
           onChange={(e) => setAiPrompt(e.target.value)}
-          placeholder="e.g. Calculate the hypotenuse of a right angle triangle"
+          placeholder={
+            hasExistingContent
+              ? 'e.g. Add the triangle area to the output. Write the description based on the code.'
+              : 'e.g. Calculate the hypotenuse of a right angle triangle'
+          }
           style={{ width: '100%' }}
           onKeyDown={(e) => {
             if (e.key === 'Enter' && !isGenerating) {
@@ -150,7 +156,7 @@ export const AIGenerator: React.FC<AIGeneratorProps> = ({
           className="btn primary"
           style={{ width: '100%', marginTop: '4px', minWidth: 'unset' }}
         >
-          Generate
+          {hasExistingContent ? 'Edit with AI' : 'Generate'}
         </button>
       </div>
     </div>

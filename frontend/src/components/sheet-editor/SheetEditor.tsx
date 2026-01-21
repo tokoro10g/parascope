@@ -429,7 +429,7 @@ export const SheetEditor: React.FC = () => {
         label = 'Function';
         inputs = [createSocket('x')];
         outputs = [createSocket('result')];
-        data = { code: 'result = x' };
+        data = {};
         break;
       case 'input':
         label = 'Input';

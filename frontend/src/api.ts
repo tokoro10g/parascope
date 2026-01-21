@@ -182,6 +182,7 @@ export const api = {
     existingCode: string = '',
     urls: string[] = [],
     image?: string,
+    existingDescription: string = '',
   ): Promise<GenerateFunctionResponse> {
     return request(`${API_BASE}/api/genai/generate_function`, {
       method: 'POST',
@@ -191,6 +192,7 @@ export const api = {
         existing_code: existingCode,
         urls,
         image,
+        existing_description: existingDescription,
       }),
     });
   },

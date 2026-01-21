@@ -14,6 +14,7 @@ logger = logging.getLogger(__name__)
 class GenerateFunctionRequest(BaseModel):
     prompt: str
     existing_code: str = ""
+    existing_description: str = ""
     urls: list[str] = []
     image: str | None = None
 
@@ -91,7 +92,11 @@ async def generate_function(request: GenerateFunctionRequest):
 
         if request.existing_code:
             user_prompt += f"Existing Code:\n{request.existing_code}\n"
-            user_prompt += "Update the existing code based on the prompt, or rewrite it if requested."
+            user_prompt += "Update the existing code based on the prompt, or rewrite it if requested.\n"
+
+        if request.existing_description:
+            user_prompt += f"\nExisting Description:\n{request.existing_description}\n"
+            user_prompt += "Ensure the new description remains consistent with existing background info unless otherwise instructed.\n"
 
         parts = [genai.types.Part.from_text(text=user_prompt)]
         

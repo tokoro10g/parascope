@@ -156,6 +156,7 @@ export const NodeInspector: React.FC<NodeInspectorProps> = ({
         data.code,
         urls,
         aiImage || undefined,
+        data.description,
       );
       setData((prev) => ({
         ...prev,
@@ -202,6 +203,7 @@ export const NodeInspector: React.FC<NodeInspectorProps> = ({
           isGenerating={isGenerating}
           handleGenerate={handleGenerate}
           aiEnabled={aiEnabled}
+          hasExistingContent={!!(data.code || data.description)}
         />
       )}
 
