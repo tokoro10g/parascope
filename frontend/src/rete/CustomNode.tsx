@@ -36,6 +36,7 @@ export function CustomNode(props: any) {
   const type = data.type;
   const typeClass = `node-${type}`;
   const ref = useRef<HTMLDivElement>(null);
+  const inputRef = useRef<HTMLInputElement>(null);
   const [isEditing, setIsEditing] = useState(false);
   const [tempLabel, setTempLabel] = useState(data.label);
   const lastClickRef = useRef(0);
@@ -43,6 +44,16 @@ export function CustomNode(props: any) {
   useEffect(() => {
     setTempLabel(data.label);
   }, [data.label]);
+
+  useEffect(() => {
+    if (isEditing && inputRef.current) {
+      const el = inputRef.current;
+      requestAnimationFrame(() => {
+        el.focus();
+        el.select();
+      });
+    }
+  }, [isEditing]);
 
   const commitEdit = () => {
     setIsEditing(false);
@@ -171,6 +182,7 @@ export function CustomNode(props: any) {
       )}
       {isEditing && (
         <input
+          ref={inputRef}
           value={tempLabel}
           onChange={(e) => setTempLabel(e.target.value)}
           onBlur={commitEdit}
