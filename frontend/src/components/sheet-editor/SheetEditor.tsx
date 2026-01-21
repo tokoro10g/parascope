@@ -38,7 +38,7 @@ export const SheetEditor: React.FC = () => {
   const location = useLocation();
   const navigate = useNavigate();
   const { user, logout } = useAuth();
-  const [searchParams, setSearchParams] = useSearchParams();
+  const [searchParams] = useSearchParams();
   const [ref, editor] = useRete(createEditor);
   const [nodes, setNodes] = useState<ParascopeNode[]>([]);
   const { isCalculating, lastResult, setLastResult, calculatePreview } =
@@ -372,7 +372,6 @@ export const SheetEditor: React.FC = () => {
   useUrlSync({
     nodes,
     searchParams,
-    setSearchParams,
     calculationInputs,
     setCalculationInputs,
   });
