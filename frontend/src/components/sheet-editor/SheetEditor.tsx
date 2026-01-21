@@ -271,7 +271,10 @@ export const SheetEditor: React.FC = () => {
   const onSave = useCallback(() => {
     // Sync current results to node data so they are included in the export/save
     if (editor) {
-      editor.updateNodeValues(calculationInputsRef.current, lastResult || {});
+      editor.updateNodeValues(
+        calculationInputsRef.current,
+        extractValuesFromResult(lastResult || {}),
+      );
     }
     handleSaveSheet(getExportData());
   }, [handleSaveSheet, getExportData, editor, lastResult]);
@@ -387,7 +390,10 @@ export const SheetEditor: React.FC = () => {
   // Sync Calculation Inputs back to Graph Nodes and Table View
   useEffect(() => {
     if (editor) {
-      editor.updateNodeValues(calculationInputs, lastResult || {});
+      editor.updateNodeValues(
+        calculationInputs,
+        extractValuesFromResult(lastResult || {}),
+      );
       const nodes = [...editor.instance.getNodes()];
       nodes.forEach((n) => {
         const pos = editor.area.nodeViews.get(n.id)?.position;
