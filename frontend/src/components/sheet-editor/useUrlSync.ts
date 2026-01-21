@@ -1,4 +1,4 @@
-import { useEffect } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import type { SetURLSearchParams } from 'react-router-dom';
 import type { ParascopeNode } from '../../rete';
 
@@ -10,8 +10,6 @@ interface UseUrlSyncProps {
   setCalculationInputs: React.Dispatch<
     React.SetStateAction<Record<string, string>>
   >;
-  initialLoadDone: boolean;
-  setInitialLoadDone: (done: boolean) => void;
 }
 
 export function useUrlSync({
@@ -20,12 +18,13 @@ export function useUrlSync({
   setSearchParams,
   calculationInputs,
   setCalculationInputs,
-  initialLoadDone,
-  setInitialLoadDone,
 }: UseUrlSyncProps) {
+  const [isUrlRead, setIsUrlRead] = useState(false);
+  const timeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
   // Sync URL Query Params to Calculation Inputs (ONLY ON INITIAL LOAD)
   useEffect(() => {
-    if (nodes.length === 0 || initialLoadDone) return;
+    if (isUrlRead || nodes.length === 0) return;
 
     const overrides: Record<string, string> = {};
     let hasOverrides = false;
@@ -39,49 +38,49 @@ export function useUrlSync({
     });
 
     if (hasOverrides) {
-      setCalculationInputs(overrides);
+      setCalculationInputs((prev) => ({ ...prev, ...overrides }));
     }
-    setInitialLoadDone(true);
-  }, [
-    searchParams,
-    nodes,
-    initialLoadDone,
-    setCalculationInputs,
-    setInitialLoadDone,
-  ]);
+    setIsUrlRead(true);
+  }, [searchParams, nodes, isUrlRead, setCalculationInputs]);
 
   // Update URL Query Params when Calculation Inputs change (Value Sink)
   useEffect(() => {
-    if (!initialLoadDone) return;
+    if (!isUrlRead) return;
 
-    setSearchParams(
-      (prev: URLSearchParams) => {
-        const newParams = new URLSearchParams(prev);
+    if (timeoutRef.current) {
+      clearTimeout(timeoutRef.current);
+    }
 
-        const nodesMap = new Map(nodes.map((n) => [n.id, n.label]));
+    timeoutRef.current = setTimeout(() => {
+      setSearchParams(
+        (prev: URLSearchParams) => {
+          const newParams = new URLSearchParams(prev);
 
-        Object.entries(calculationInputs).forEach(([id, value]) => {
-          const label = nodesMap.get(id);
-          if (label) {
-            if (value) newParams.set(label, value);
-            else newParams.delete(label);
-          }
-        });
+          const nodesMap = new Map(nodes.map((n) => [n.id, n.label]));
 
-        // Also remove params for inputs that were cleared
-        nodes.forEach((n) => {
-          if (
-            n.type === 'input' &&
-            !calculationInputs[n.id] &&
-            newParams.has(n.label)
-          ) {
-            newParams.delete(n.label);
-          }
-        });
+          // First, clear all existing input-related params to handle renames or removals
+          nodes.forEach((n) => {
+            if (n.type === 'input') {
+              newParams.delete(n.label);
+            }
+          });
 
-        return newParams;
-      },
-      { replace: true },
-    );
-  }, [calculationInputs, nodes, initialLoadDone, setSearchParams]);
+          // Then, set current values
+          Object.entries(calculationInputs).forEach(([id, value]) => {
+            const label = nodesMap.get(id);
+            if (label && value) {
+              newParams.set(label, value);
+            }
+          });
+
+          return newParams;
+        },
+        { replace: true },
+      );
+    }, 500); // 500ms debounce
+
+    return () => {
+      if (timeoutRef.current) clearTimeout(timeoutRef.current);
+    };
+  }, [calculationInputs, nodes, isUrlRead, setSearchParams]);
 }

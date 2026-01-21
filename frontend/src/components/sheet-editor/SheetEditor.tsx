@@ -375,8 +375,6 @@ export const SheetEditor: React.FC = () => {
     setSearchParams,
     calculationInputs,
     setCalculationInputs,
-    initialLoadDone,
-    setInitialLoadDone,
   });
 
   // Handle Hash Changes for Focus
