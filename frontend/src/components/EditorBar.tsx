@@ -183,7 +183,6 @@ export const EditorBar: React.FC<EditorBarProps> = ({
             >
               <LogOut size={16} /> Output
             </button>
-            <div className="menu-separator" />
             <button
               type="button"
               onClick={() => handleAddNode('lut')}
@@ -191,7 +190,6 @@ export const EditorBar: React.FC<EditorBarProps> = ({
             >
               <Table size={16} /> Lookup Table
             </button>
-            <div className="menu-separator" />
             <button
               type="button"
               onClick={() => handleAddNode('comment')}
