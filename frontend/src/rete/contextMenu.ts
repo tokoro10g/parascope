@@ -10,7 +10,14 @@ export interface ContextMenuCallbacks {
   onNodeDuplicate?: (nodeId: string) => void;
   onNodeRemove?: (nodeId: string) => Promise<void>;
   onAddNode?: (
-    type: 'constant' | 'function' | 'input' | 'output' | 'comment',
+    type:
+      | 'constant'
+      | 'function'
+      | 'input'
+      | 'output'
+      | 'comment'
+      | 'lut'
+      | 'sheet',
   ) => void;
 }
 
@@ -48,6 +55,16 @@ export function createContextMenuPlugin(
               label: 'Add Comment',
               key: 'add-comment',
               handler: () => callbacks.onAddNode?.('comment'),
+            },
+            {
+              label: 'Add Lookup Table',
+              key: 'add-lut',
+              handler: () => callbacks.onAddNode?.('lut'),
+            },
+            {
+              label: 'Import Sheet',
+              key: 'import-sheet',
+              handler: () => callbacks.onAddNode?.('sheet'),
             },
           ],
         };
