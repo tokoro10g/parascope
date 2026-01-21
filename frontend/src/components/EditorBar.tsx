@@ -208,6 +208,56 @@ export const EditorBar: React.FC<EditorBarProps> = ({
             </button>
           </div>
         )}
+
+        <div
+          className="sheet-actions-group"
+          ref={sheetMenuRef}
+          style={{ position: 'relative', marginLeft: '4px' }}
+        >
+          <button
+            type="button"
+            onClick={() => setIsSheetMenuOpen(!isSheetMenuOpen)}
+            className={`btn-sheet-menu-trigger ${isSheetMenuOpen ? 'active' : ''}`}
+            title="Sheet Actions"
+            style={{ padding: '6px', minWidth: '32px' }}
+          >
+            <MoreHorizontal size={18} />
+          </button>
+
+          {isSheetMenuOpen && (
+            <div
+              className="add-node-dropdown"
+              style={{ left: 0, right: 'auto' }}
+            >
+              {onOpenVersionList && (
+                <button
+                  type="button"
+                  onClick={() => {
+                    onOpenVersionList();
+                    setIsSheetMenuOpen(false);
+                  }}
+                  className="add-menu-item"
+                  style={{ color: 'var(--text-color)' }}
+                >
+                  <Milestone size={16} /> Version Control
+                </button>
+              )}
+              {onCheckUsage && (
+                <button
+                  type="button"
+                  onClick={() => {
+                    onCheckUsage();
+                    setIsSheetMenuOpen(false);
+                  }}
+                  className="add-menu-item"
+                  style={{ color: 'var(--text-color)' }}
+                >
+                  <Share2 size={16} /> Check Usage
+                </button>
+              )}
+            </div>
+          )}
+        </div>
       </div>
 
       <div className="toolbar-group history-group">
@@ -231,14 +281,6 @@ export const EditorBar: React.FC<EditorBarProps> = ({
         >
           <Redo size={18} />
         </button>
-        <div
-          style={{
-            width: '1px',
-            height: '20px',
-            backgroundColor: 'var(--border-color)',
-            margin: '0 4px',
-          }}
-        />
         <button
           type="button"
           onClick={(e) => {
@@ -270,56 +312,6 @@ export const EditorBar: React.FC<EditorBarProps> = ({
             margin: '0 4px',
           }}
         />
-        <div
-          className="sheet-actions-group"
-          ref={sheetMenuRef}
-          style={{ position: 'relative' }}
-        >
-          <button
-            type="button"
-            onClick={() => setIsSheetMenuOpen(!isSheetMenuOpen)}
-            className={`btn-sheet-menu-trigger ${isSheetMenuOpen ? 'active' : ''}`}
-            title="Sheet Actions"
-            style={{ padding: '6px', minWidth: '32px' }}
-          >
-            <MoreHorizontal size={18} />
-          </button>
-
-          {isSheetMenuOpen && (
-            <div
-              className="add-node-dropdown"
-              style={{ right: 0, left: 'auto' }}
-            >
-              {onOpenVersionList && (
-                <button
-                  type="button"
-                  onClick={() => {
-                    onOpenVersionList();
-                    setIsSheetMenuOpen(false);
-                  }}
-                  className="add-menu-item"
-                  style={{ color: 'var(--text-color)' }}
-                >
-                  <Milestone size={16} /> Version Control
-                </button>
-              )}
-              {onCheckUsage && (
-                <button
-                  type="button"
-                  onClick={() => {
-                    onCheckUsage();
-                    setIsSheetMenuOpen(false);
-                  }}
-                  className="add-menu-item"
-                  style={{ color: 'var(--text-color)' }}
-                >
-                  <Share2 size={16} /> Check Usage
-                </button>
-              )}
-            </div>
-          )}
-        </div>
-
         <button
           type="button"
           onClick={(e) => {
