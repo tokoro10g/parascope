@@ -61,27 +61,28 @@ export class Surface3DStrategy implements VisualizationStrategy {
     const maxZ = Math.max(...zValues);
 
     return {
-      visualMap: {
-        show: true,
-        dimension: 2,
-        min: minZ,
-        max: maxZ,
-        inRange: {
-          color: [
-            '#313695',
-            '#4575b4',
-            '#74add1',
-            '#abd9e9',
-            '#e0f3f8',
-            '#ffffbf',
-            '#fee090',
-            '#fdae61',
-            '#f46d43',
-            '#d73027',
-            '#a50026',
-          ],
+      visualMap: [
+        {
+          show: true,
+          dimension: 2,
+          min: minZ,
+          max: maxZ,
+          seriesIndex: ctx.index,
+          inRange: {
+            color: [
+              '#00008F',
+              '#0000FF',
+              '#007FFF',
+              '#00FFFF',
+              '#7FFF7F',
+              '#FFFF00',
+              '#FF7F00',
+              '#FF0000',
+              '#800000',
+            ],
+          },
         },
-      },
+      ],
       grid3D: {
         boxWidth: 100,
         boxDepth: 100,

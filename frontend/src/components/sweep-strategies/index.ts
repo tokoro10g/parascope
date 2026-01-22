@@ -68,6 +68,7 @@ export const getSweepChartOption = (
   const xAxes: any[] = [];
   const yAxes: any[] = [];
   const series: any[] = [];
+  const visualMaps: any[] = [];
   let extraOptions: any = {};
 
   // 2. Iterate Outputs and Delegate
@@ -128,10 +129,16 @@ export const getSweepChartOption = (
 
       // Extra Options (Merge logic)
       if (strategy.getExtraOptions) {
-        extraOptions = {
-          ...extraOptions,
-          ...strategy.getExtraOptions(context),
-        };
+        const opts = strategy.getExtraOptions(context);
+        if (opts.visualMap) {
+          if (Array.isArray(opts.visualMap)) {
+            visualMaps.push(...opts.visualMap);
+          } else {
+            visualMaps.push(opts.visualMap);
+          }
+          delete opts.visualMap;
+        }
+        extraOptions = { ...extraOptions, ...opts };
       }
     } else {
       console.warn(`No strategy found for output ${label}`);
@@ -182,6 +189,7 @@ export const getSweepChartOption = (
       bottom: 0,
       textStyle: { color: theme.text },
     },
+    visualMap: visualMaps.length > 0 ? visualMaps : undefined,
     grid: grids.length > 0 ? grids : undefined,
     xAxis: xAxes.length > 0 ? xAxes : undefined,
     yAxis: yAxes.length > 0 ? yAxes : undefined,

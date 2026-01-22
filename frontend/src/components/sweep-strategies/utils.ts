@@ -93,7 +93,7 @@ export function createBaseGrid(ctx: StrategyContext) {
     top: `${top}%`,
     height: `${ctx.gridHeight}%`,
     left: 60,
-    right: 40,
+    right: 100,
     containLabel: true,
   };
 }

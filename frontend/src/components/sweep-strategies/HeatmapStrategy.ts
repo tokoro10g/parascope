@@ -75,7 +75,7 @@ export class HeatmapStrategy implements VisualizationStrategy {
   }
 
   getExtraOptions(ctx: StrategyContext) {
-    const { results, headers, id } = ctx;
+    const { results, headers, id, gridHeight, topMargin, gap } = ctx;
     const colIndex = headers.findIndex((h) => h.id === id);
     const values = results
       .map((row) => parseFloat(String(row[colIndex])))
@@ -84,16 +84,36 @@ export class HeatmapStrategy implements VisualizationStrategy {
     const minV = values.length > 0 ? Math.min(...values) : 0;
     const maxV = values.length > 0 ? Math.max(...values) : 100;
 
+    const top = topMargin + ctx.index * (gridHeight + gap);
+
     return {
-      visualMap: {
-        min: minV,
-        max: maxV,
-        calculable: true,
-        orient: 'horizontal',
-        left: 'center',
-        bottom: '15%',
-        textStyle: { color: ctx.theme.text },
-      },
+      visualMap: [
+        {
+          min: minV,
+          max: maxV,
+          calculable: true,
+          orient: 'vertical',
+          right: 10,
+          top: `${top}%`,
+          height: `${gridHeight}%`,
+          textStyle: { color: ctx.theme.text, fontSize: 10 },
+          seriesIndex: ctx.index,
+          dimension: 2,
+          inRange: {
+            color: [
+              '#00008F',
+              '#0000FF',
+              '#007FFF',
+              '#00FFFF',
+              '#7FFF7F',
+              '#FFFF00',
+              '#FF7F00',
+              '#FF0000',
+              '#800000',
+            ],
+          },
+        },
+      ],
     };
   }
 }
