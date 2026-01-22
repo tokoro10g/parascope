@@ -163,7 +163,7 @@ export const useSweepState = () => {
     const node = nodes.find((n) => n.id === id);
     const currentVal = parseFloat(inputOverrides[id] || '0');
 
-    if (node && node.data) {
+    if (node?.data) {
       const min = parseFloat(node.data.min);
       const max = parseFloat(node.data.max);
       const hasMin = !Number.isNaN(min);
