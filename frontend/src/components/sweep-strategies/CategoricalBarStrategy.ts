@@ -8,7 +8,7 @@ import {
 
 export class CategoricalBarStrategy implements VisualizationStrategy {
   canHandle(ctx: StrategyContext) {
-    return !ctx.isXNumeric && ctx.isOutputNumeric;
+    return !ctx.is2D && !ctx.isXNumeric && ctx.isOutputNumeric;
   }
 
   getGrid(ctx: StrategyContext) {

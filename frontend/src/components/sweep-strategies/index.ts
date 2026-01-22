@@ -3,6 +3,7 @@ import 'echarts-gl';
 import type { SweepHeader } from '../../api';
 import { formatHumanReadableValue } from '../../utils';
 import { CategoricalBarStrategy } from './CategoricalBarStrategy';
+import { MultiLineStrategy } from './MultiLineStrategy';
 import { NumericLineStrategy } from './NumericLineStrategy';
 import { ScatterStrategy } from './ScatterStrategy';
 import { Surface3DStrategy } from './Surface3DStrategy';
@@ -21,6 +22,7 @@ export { getColor, strHash } from './utils';
 // Registry
 const strategies: VisualizationStrategy[] = [
   new Surface3DStrategy(),
+  new MultiLineStrategy(),
   new NumericLineStrategy(),
   new CategoricalBarStrategy(),
   new TimelineStrategy(),
@@ -112,7 +114,12 @@ export const getSweepChartOption = (
       if (axes.zAxis3D) extraOptions.zAxis3D = axes.zAxis3D;
 
       // Series
-      series.push(strategy.getSeries(context));
+      const s = strategy.getSeries(context);
+      if (Array.isArray(s)) {
+        series.push(...s);
+      } else {
+        series.push(s);
+      }
 
       // Extra Options (Merge logic)
       if (strategy.getExtraOptions) {
