@@ -152,113 +152,16 @@ export const SweepSidebar: React.FC<SweepSidebarProps> = ({
 
   return (
     <aside className="sweep-sidebar">
-      <h3>Primary Variable</h3>
-      <div className="sweep-table-container">
-        <table className="sweep-table">
-          <thead>
-            <tr>
-              <th className="checkbox-col">Sweep</th>
-              <th className="name-col">Name</th>
-              <th>Value / Range</th>
-            </tr>
-          </thead>
-          <tbody>
-            {inputOptions.map((n) => {
-              const isSweeping = primaryInput.nodeId === n.id;
-              const isSecondary = secondaryInput.nodeId === n.id;
-              return (
-                <tr key={n.id}>
-                  <td className="checkbox-cell">
-                    <input
-                      type="radio"
-                      name="sweep-input-primary"
-                      checked={isSweeping}
-                      disabled={isSecondary}
-                      onChange={() => onInputChange(n.id!, false)}
-                    />
-                  </td>
-                  <td className="name-cell">{n.label}</td>
-                  <td>
-                    {isSweeping ? (
-                      renderInputConfig(n.id!, primaryInput, updatePrimary)
-                    ) : isSecondary ? (
-                      <div
-                        style={{
-                          fontStyle: 'italic',
-                          color: 'var(--primary-color)',
-                        }}
-                      >
-                        (Secondary Sweep Variable)
-                      </div>
-                    ) : n.data?.dataType === 'option' ? (
-                      <select
-                        value={inputOverrides[n.id!] || ''}
-                        onChange={(e) =>
-                          setInputOverrides((prev) => ({
-                            ...prev,
-                            [n.id!]: e.target.value,
-                          }))
-                        }
-                        className="sweep-input-full"
-                        style={{
-                          background: 'var(--bg-color)',
-                          color: 'var(--text-color)',
-                          border: '1px solid var(--border-color)',
-                          padding: '4px',
-                        }}
-                      >
-                        {inputOverrides[n.id!] &&
-                          !n.data.options.includes(inputOverrides[n.id!]) && (
-                            <option value={inputOverrides[n.id!]}>
-                              {inputOverrides[n.id!]}
-                            </option>
-                          )}
-                        {n.data.options.map((opt: string) => (
-                          <option key={opt} value={opt}>
-                            {opt}
-                          </option>
-                        ))}
-                      </select>
-                    ) : (
-                      <input
-                        type="text"
-                        value={inputOverrides[n.id!] || ''}
-                        onChange={(e) =>
-                          setInputOverrides((prev) => ({
-                            ...prev,
-                            [n.id!]: e.target.value,
-                          }))
-                        }
-                        className="sweep-input-full"
-                      />
-                    )}
-                  </td>
-                </tr>
-              );
-            })}
-          </tbody>
-        </table>
-      </div>
-
-      <div style={{ marginTop: '15px' }}>
-        <label
-          style={{
-            display: 'flex',
-            alignItems: 'center',
-            gap: '8px',
-            cursor: 'pointer',
-          }}
-        >
-          <input
-            type="checkbox"
-            checked={showSecondary}
-            onChange={handleToggleSecondary}
-          />
-          <h3 style={{ margin: 0 }}>Secondary Variable</h3>
-        </label>
-      </div>
-
-      {showSecondary && (
+      <div
+        style={{
+          flex: 2,
+          display: 'flex',
+          flexDirection: 'column',
+          gap: '10px',
+          minHeight: 0,
+        }}
+      >
+        <h3>Primary Variable</h3>
         <div className="sweep-table-container">
           <table className="sweep-table">
             <thead>
@@ -270,38 +173,73 @@ export const SweepSidebar: React.FC<SweepSidebarProps> = ({
             </thead>
             <tbody>
               {inputOptions.map((n) => {
-                const isSweeping = secondaryInput.nodeId === n.id;
-                const isPrimary = primaryInput.nodeId === n.id;
+                const isSweeping = primaryInput.nodeId === n.id;
+                const isSecondary = secondaryInput.nodeId === n.id;
                 return (
                   <tr key={n.id}>
                     <td className="checkbox-cell">
                       <input
                         type="radio"
-                        name="sweep-input-secondary"
+                        name="sweep-input-primary"
                         checked={isSweeping}
-                        disabled={isPrimary}
-                        onChange={() => onInputChange(n.id!, true)}
+                        disabled={isSecondary}
+                        onChange={() => onInputChange(n.id!, false)}
                       />
                     </td>
                     <td className="name-cell">{n.label}</td>
                     <td>
                       {isSweeping ? (
-                        renderInputConfig(
-                          n.id!,
-                          secondaryInput,
-                          updateSecondary,
-                        )
-                      ) : isPrimary ? (
+                        renderInputConfig(n.id!, primaryInput, updatePrimary)
+                      ) : isSecondary ? (
                         <div
                           style={{
                             fontStyle: 'italic',
                             color: 'var(--primary-color)',
                           }}
                         >
-                          (Primary Sweep Variable)
+                          (Secondary Sweep Variable)
                         </div>
+                      ) : n.data?.dataType === 'option' ? (
+                        <select
+                          value={inputOverrides[n.id!] || ''}
+                          onChange={(e) =>
+                            setInputOverrides((prev) => ({
+                              ...prev,
+                              [n.id!]: e.target.value,
+                            }))
+                          }
+                          className="sweep-input-full"
+                          style={{
+                            background: 'var(--bg-color)',
+                            color: 'var(--text-color)',
+                            border: '1px solid var(--border-color)',
+                            padding: '4px',
+                          }}
+                        >
+                          {inputOverrides[n.id!] &&
+                            !n.data.options.includes(inputOverrides[n.id!]) && (
+                              <option value={inputOverrides[n.id!]}>
+                                {inputOverrides[n.id!]}
+                              </option>
+                            )}
+                          {n.data.options.map((opt: string) => (
+                            <option key={opt} value={opt}>
+                              {opt}
+                            </option>
+                          ))}
+                        </select>
                       ) : (
-                        <div style={{ color: 'var(--text-muted)' }}>-</div>
+                        <input
+                          type="text"
+                          value={inputOverrides[n.id!] || ''}
+                          onChange={(e) =>
+                            setInputOverrides((prev) => ({
+                              ...prev,
+                              [n.id!]: e.target.value,
+                            }))
+                          }
+                          className="sweep-input-full"
+                        />
                       )}
                     </td>
                   </tr>
@@ -310,49 +248,131 @@ export const SweepSidebar: React.FC<SweepSidebarProps> = ({
             </tbody>
           </table>
         </div>
-      )}
 
-      <h3>Outputs</h3>
-      <div className="sweep-table-container sweep-outputs-container">
-        <table className="sweep-table">
-          <thead>
-            <tr>
-              <th className="checkbox-col">Plot</th>
-              <th>Name</th>
-            </tr>
-          </thead>
-          <tbody>
-            {outputOptions.map((n) => (
-              <tr
-                key={n.id}
-                onClick={() => toggleOutput(n.id!)}
-                className="sweep-output-row"
-              >
-                <td className="checkbox-cell">
-                  <input
-                    type="checkbox"
-                    checked={outputNodeIds.includes(n.id!)}
-                    onChange={() => toggleOutput(n.id!)}
-                    onClick={(e) => e.stopPropagation()}
-                  />
-                </td>
-                <td>{n.label}</td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
+        <div style={{ marginTop: '5px' }}>
+          <label
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: '8px',
+              cursor: 'pointer',
+            }}
+          >
+            <input
+              type="checkbox"
+              checked={showSecondary}
+              onChange={handleToggleSecondary}
+            />
+            <h3 style={{ margin: 0 }}>Secondary Variable</h3>
+          </label>
+        </div>
+
+        {showSecondary && (
+          <div className="sweep-table-container">
+            <table className="sweep-table">
+              <thead>
+                <tr>
+                  <th className="checkbox-col">Sweep</th>
+                  <th className="name-col">Name</th>
+                  <th>Value / Range</th>
+                </tr>
+              </thead>
+              <tbody>
+                {inputOptions.map((n) => {
+                  const isSweeping = secondaryInput.nodeId === n.id;
+                  const isPrimary = primaryInput.nodeId === n.id;
+                  return (
+                    <tr key={n.id}>
+                      <td className="checkbox-cell">
+                        <input
+                          type="radio"
+                          name="sweep-input-secondary"
+                          checked={isSweeping}
+                          disabled={isPrimary}
+                          onChange={() => onInputChange(n.id!, true)}
+                        />
+                      </td>
+                      <td className="name-cell">{n.label}</td>
+                      <td>
+                        {isSweeping ? (
+                          renderInputConfig(
+                            n.id!,
+                            secondaryInput,
+                            updateSecondary,
+                          )
+                        ) : isPrimary ? (
+                          <div
+                            style={{
+                              fontStyle: 'italic',
+                              color: 'var(--primary-color)',
+                            }}
+                          >
+                            (Primary Sweep Variable)
+                          </div>
+                        ) : (
+                          <div style={{ color: 'var(--text-muted)' }}>-</div>
+                        )}
+                      </td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          </div>
+        )}
       </div>
 
-      {error && <div className="error-message">{error}</div>}
-
-      <button
-        type="button"
-        className="btn-primary sweep-run-button"
-        onClick={onRun}
-        disabled={loading}
+      <div
+        style={{
+          flex: 1,
+          display: 'flex',
+          flexDirection: 'column',
+          gap: '10px',
+          minHeight: 0,
+        }}
       >
-        {loading ? 'Running...' : 'Run Sweep'}
-      </button>
+        <h3>Outputs</h3>
+        <div className="sweep-table-container sweep-outputs-container">
+          <table className="sweep-table">
+            <thead>
+              <tr>
+                <th className="checkbox-col">Plot</th>
+                <th>Name</th>
+              </tr>
+            </thead>
+            <tbody>
+              {outputOptions.map((n) => (
+                <tr
+                  key={n.id}
+                  onClick={() => toggleOutput(n.id!)}
+                  className="sweep-output-row"
+                >
+                  <td className="checkbox-cell">
+                    <input
+                      type="checkbox"
+                      checked={outputNodeIds.includes(n.id!)}
+                      onChange={() => toggleOutput(n.id!)}
+                      onClick={(e) => e.stopPropagation()}
+                    />
+                  </td>
+                  <td>{n.label}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+
+        {error && <div className="error-message">{error}</div>}
+
+        <button
+          type="button"
+          className="btn-primary sweep-run-button"
+          onClick={onRun}
+          disabled={loading}
+        >
+          {loading ? 'Running...' : 'Run Sweep'}
+        </button>
+      </div>
     </aside>
   );
 };

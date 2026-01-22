@@ -46,7 +46,8 @@
   border: 1px solid var(--border-color);
   background: var(--bg-color);
   overflow-y: auto;
-  max-height: 400px;
+  flex: 1;
+  min-height: 100px;
 }
 
 .sweep-table th.checkbox-col {
