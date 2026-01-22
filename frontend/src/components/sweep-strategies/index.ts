@@ -3,6 +3,7 @@ import 'echarts-gl';
 import type { SweepHeader } from '../../api';
 import { formatHumanReadableValue } from '../../utils';
 import { CategoricalBarStrategy } from './CategoricalBarStrategy';
+import { HeatmapStrategy } from './HeatmapStrategy';
 import { MultiLineStrategy } from './MultiLineStrategy';
 import { NumericLineStrategy } from './NumericLineStrategy';
 import { ScatterStrategy } from './ScatterStrategy';
@@ -23,6 +24,7 @@ export { getColor, strHash } from './utils';
 const strategies: VisualizationStrategy[] = [
   new Surface3DStrategy(),
   new MultiLineStrategy(),
+  new HeatmapStrategy(),
   new NumericLineStrategy(),
   new CategoricalBarStrategy(),
   new TimelineStrategy(),
