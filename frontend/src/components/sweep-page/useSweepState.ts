@@ -125,12 +125,67 @@ export const useSweepState = () => {
     setSearchParams,
   ]);
 
+  const handleSweepInputChange = useCallback(
+    (id: string) => {
+      setInputNodeId(id);
+      const node = nodes.find((n) => n.id === id);
+      const currentVal = parseFloat(inputOverrides[id] || '0');
+
+      if (node?.data) {
+        const min = parseFloat(node.data.min);
+        const max = parseFloat(node.data.max);
+        const hasMin = !Number.isNaN(min);
+        const hasMax = !Number.isNaN(max);
+
+        if (hasMin && hasMax) {
+          setStartValue(String(min));
+          setEndValue(String(max));
+          setIncrement(((max - min) / 20).toPrecision(2));
+          return;
+        }
+
+        if (hasMin) {
+          setStartValue(String(min));
+          // Estimate end: max(current * 2, min + 10)
+          const estimatedEnd = Math.max(currentVal * 2, min + 10);
+          setEndValue(String(estimatedEnd));
+          setIncrement(((estimatedEnd - min) / 20).toPrecision(2));
+          return;
+        }
+
+        if (hasMax) {
+          setEndValue(String(max));
+          // Estimate start: min(current / 2, max - 10)
+          const estimatedStart = Math.min(currentVal / 2, max - 10);
+          setStartValue(String(estimatedStart));
+          setIncrement(((max - estimatedStart) / 20).toPrecision(2));
+          return;
+        }
+      }
+
+      if (!Number.isNaN(currentVal)) {
+        if (currentVal === 0) {
+          setStartValue('0');
+          setEndValue('10');
+          setIncrement('1');
+        } else {
+          const start = currentVal > 0 ? currentVal * 0.5 : currentVal * 1.5;
+          const end = currentVal > 0 ? currentVal * 1.5 : currentVal * 0.5;
+          setStartValue(start.toString());
+          setEndValue(end.toString());
+          setIncrement(((end - start) / 20).toPrecision(2));
+        }
+      }
+    },
+    [nodes, inputOverrides],
+  );
+
   // Auto-select first input
   useEffect(() => {
     if (inputOptions.length > 0 && !inputNodeId) {
-      setInputNodeId(inputOptions[0].id || '');
+      handleSweepInputChange(inputOptions[0].id || '');
     }
-  }, [inputOptions, inputNodeId]);
+  }, [inputOptions, inputNodeId, handleSweepInputChange]);
 
   // Handle Option Type selection
   useEffect(() => {
@@ -157,58 +212,6 @@ export const useSweepState = () => {
       }
     }
   }, [inputNodeId, nodes, selectedOptions.length, searchParams]);
-
-  const handleSweepInputChange = (id: string) => {
-    setInputNodeId(id);
-    const node = nodes.find((n) => n.id === id);
-    const currentVal = parseFloat(inputOverrides[id] || '0');
-
-    if (node?.data) {
-      const min = parseFloat(node.data.min);
-      const max = parseFloat(node.data.max);
-      const hasMin = !Number.isNaN(min);
-      const hasMax = !Number.isNaN(max);
-
-      if (hasMin && hasMax) {
-        setStartValue(String(min));
-        setEndValue(String(max));
-        setIncrement(((max - min) / 20).toPrecision(2));
-        return;
-      }
-
-      if (hasMin) {
-        setStartValue(String(min));
-        // Estimate end: max(current * 2, min + 10)
-        const estimatedEnd = Math.max(currentVal * 2, min + 10);
-        setEndValue(String(estimatedEnd));
-        setIncrement(((estimatedEnd - min) / 20).toPrecision(2));
-        return;
-      }
-
-      if (hasMax) {
-        setEndValue(String(max));
-        // Estimate start: min(current / 2, max - 10)
-        const estimatedStart = Math.min(currentVal / 2, max - 10);
-        setStartValue(String(estimatedStart));
-        setIncrement(((max - estimatedStart) / 20).toPrecision(2));
-        return;
-      }
-    }
-
-    if (!Number.isNaN(currentVal)) {
-      if (currentVal === 0) {
-        setStartValue('0');
-        setEndValue('10');
-        setIncrement('1');
-      } else {
-        const start = currentVal > 0 ? currentVal * 0.5 : currentVal * 1.5;
-        const end = currentVal > 0 ? currentVal * 1.5 : currentVal * 0.5;
-        setStartValue(start.toString());
-        setEndValue(end.toString());
-        setIncrement(((end - start) / 20).toPrecision(2));
-      }
-    }
-  };
 
   const toggleOutput = (id: string) => {
     if (!id) return;
