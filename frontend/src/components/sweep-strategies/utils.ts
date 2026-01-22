@@ -73,7 +73,7 @@ export const renderTimelineItem = (_params: any, api: any) => {
 
 export function checkIsNumeric(values: any[]) {
   return values.every((v) => {
-    if (v === null || v === undefined) return true;
+    if (v === null || v === undefined || v === '') return true;
     if (typeof v === 'number') return true;
     if (typeof v === 'string') {
       if (v === 'inf' || v === '-inf' || v.toLowerCase() === 'nan') return true;
@@ -81,6 +81,10 @@ export function checkIsNumeric(values: any[]) {
     }
     return false;
   });
+}
+
+export function checkIsCategorical(values: any[]) {
+  return !checkIsNumeric(values);
 }
 
 export function createBaseGrid(ctx: StrategyContext) {

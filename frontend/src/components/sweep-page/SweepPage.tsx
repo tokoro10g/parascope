@@ -29,6 +29,17 @@ export const SweepPage: React.FC = () => {
     setIncrement,
     selectedOptions,
     setSelectedOptions,
+    // Secondary
+    secondaryInputNodeId,
+    setSecondaryInputNodeId,
+    secondaryStartValue,
+    setSecondaryStartValue,
+    secondaryEndValue,
+    setSecondaryEndValue,
+    secondaryIncrement,
+    setSecondaryIncrement,
+    secondarySelectedOptions,
+    setSecondarySelectedOptions,
     inputOverrides,
     setInputOverrides,
     outputNodeIds,
@@ -109,6 +120,17 @@ export const SweepPage: React.FC = () => {
               setIncrement={setIncrement}
               selectedOptions={selectedOptions}
               setSelectedOptions={setSelectedOptions}
+              // Secondary
+              secondaryInputNodeId={secondaryInputNodeId}
+              setSecondaryInputNodeId={setSecondaryInputNodeId}
+              secondaryStartValue={secondaryStartValue}
+              setSecondaryStartValue={setSecondaryStartValue}
+              secondaryEndValue={secondaryEndValue}
+              setSecondaryEndValue={setSecondaryEndValue}
+              secondaryIncrement={secondaryIncrement}
+              setSecondaryIncrement={setSecondaryIncrement}
+              secondarySelectedOptions={secondarySelectedOptions}
+              setSecondarySelectedOptions={setSecondarySelectedOptions}
               inputOverrides={inputOverrides}
               setInputOverrides={setInputOverrides}
               outputNodeIds={outputNodeIds}

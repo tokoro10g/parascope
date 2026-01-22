@@ -1,4 +1,5 @@
 import type { EChartsOption } from 'echarts';
+import 'echarts-gl';
 import type { SweepHeader } from '../../api';
 import { formatHumanReadableValue } from '../../utils';
 import { CategoricalBarStrategy } from './CategoricalBarStrategy';
@@ -33,8 +34,89 @@ export const getSweepChartOption = (
 ): EChartsOption => {
   if (!results || results.length === 0 || headers.length === 0) return {};
 
-  // 1. Context Preparation
+  const inputHeaders = headers.filter((h) => h.type === 'input');
   const outputHeaders = headers.filter((h) => h.type === 'output');
+  const is2D = inputHeaders.length === 2;
+
+  if (is2D && outputHeaders.length > 0) {
+    const firstOutput = outputHeaders[0];
+    const colIndex = headers.findIndex((h) => h.id === firstOutput.id);
+
+    const isXNumeric = checkIsNumeric(results.map((row) => row[0]));
+    const isYNumeric = checkIsNumeric(results.map((row) => row[1]));
+    const isZNumeric = checkIsNumeric(results.map((row) => row[colIndex]));
+
+    if (isXNumeric && isYNumeric && isZNumeric) {
+      // 3D Surface for Numeric-Numeric-Numeric
+      const zValues = results.map((row) => parseFloat(String(row[colIndex])));
+      const minZ = Math.min(...zValues);
+      const maxZ = Math.max(...zValues);
+
+      return {
+        backgroundColor: theme.background,
+        tooltip: {},
+        visualMap: {
+          show: true,
+          dimension: 2,
+          min: minZ,
+          max: maxZ,
+          inRange: {
+            color: [
+              '#313695',
+              '#4575b4',
+              '#74add1',
+              '#abd9e9',
+              '#e0f3f8',
+              '#ffffbf',
+              '#fee090',
+              '#fdae61',
+              '#f46d43',
+              '#d73027',
+              '#a50026',
+            ],
+          },
+        },
+        xAxis3D: {
+          name: inputHeaders[0].label,
+          type: 'value',
+          textStyle: { color: theme.text },
+        },
+        yAxis3D: {
+          name: inputHeaders[1].label,
+          type: 'value',
+          textStyle: { color: theme.text },
+        },
+        zAxis3D: {
+          name: firstOutput.label,
+          type: 'value',
+          textStyle: { color: theme.text },
+        },
+        grid3D: {
+          boxWidth: 100,
+          boxDepth: 100,
+          viewControl: {
+            // rotation and zoom
+          },
+          light: {
+            main: { intensity: 1.2, shadow: true },
+            ambient: { intensity: 0.3 },
+          },
+        },
+        series: [
+          {
+            type: 'surface',
+            data: results.map((row) => [
+              parseFloat(String(row[0])),
+              parseFloat(String(row[1])),
+              parseFloat(String(row[colIndex])),
+            ]),
+          },
+        ] as any,
+      };
+    }
+  }
+
+  // 1. Context Preparation (1D Logic)
   const count = outputHeaders.length;
 
   // Layout Constants
