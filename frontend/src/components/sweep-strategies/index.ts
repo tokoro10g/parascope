@@ -79,17 +79,23 @@ export const getSweepChartOption = (
         xAxis3D: {
           name: inputHeaders[0].label,
           type: 'value',
-          textStyle: { color: theme.text },
+          nameTextStyle: { color: theme.text },
+          axisLabel: { textStyle: { color: theme.text } },
+          axisLine: { lineStyle: { color: theme.text } },
         },
         yAxis3D: {
           name: inputHeaders[1].label,
           type: 'value',
-          textStyle: { color: theme.text },
+          nameTextStyle: { color: theme.text },
+          axisLabel: { textStyle: { color: theme.text } },
+          axisLine: { lineStyle: { color: theme.text } },
         },
         zAxis3D: {
           name: firstOutput.label,
           type: 'value',
-          textStyle: { color: theme.text },
+          nameTextStyle: { color: theme.text },
+          axisLabel: { textStyle: { color: theme.text } },
+          axisLine: { lineStyle: { color: theme.text } },
         },
         grid3D: {
           boxWidth: 100,
