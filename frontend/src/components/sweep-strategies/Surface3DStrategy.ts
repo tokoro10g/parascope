@@ -109,6 +109,7 @@ export class Surface3DStrategy implements VisualizationStrategy {
         height: `${gridHeight}%`,
         viewControl: {
           projection: 'orthographic',
+          rotateSensitivity: 3,
         },
         light: {
           main: { intensity: 1.2, shadow: true },
