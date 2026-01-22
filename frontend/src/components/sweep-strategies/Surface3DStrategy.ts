@@ -160,6 +160,13 @@ export class Surface3DStrategy implements VisualizationStrategy {
         boxDepth: 100,
         top: `${top - 5}%`, // Offset slightly to center the 3D box
         height: `${gridHeight}%`,
+        axisPointer: {
+          show: true,
+          lineStyle: { color: theme.text },
+          label: {
+            textStyle: { color: theme.text },
+          },
+        },
         viewControl: {
           projection: 'orthographic',
           rotateSensitivity: 3,

@@ -199,7 +199,10 @@ export const getSweepChartOption = (
     },
     axisPointer: {
       link: [{ xAxisIndex: 'all' }],
-      label: { backgroundColor: '#777' },
+      label: {
+        backgroundColor: '#777',
+        textStyle: { color: theme.text },
+      },
     },
     tooltip: {
       confine: true,
