@@ -69,6 +69,7 @@ export const getSweepChartOption = (
   const yAxes: any[] = [];
   const series: any[] = [];
   const visualMaps: any[] = [];
+  let currentSeriesIndex = 0;
 
   // 3D Specific Containers
   const xAxis3D: any[] = [];
@@ -92,6 +93,7 @@ export const getSweepChartOption = (
     const context: StrategyContext = {
       id,
       index,
+      seriesIndex: currentSeriesIndex,
       label,
       results,
       headers,
@@ -136,8 +138,10 @@ export const getSweepChartOption = (
       const s = strategy.getSeries(context);
       if (Array.isArray(s)) {
         series.push(...s);
+        currentSeriesIndex += s.length;
       } else {
         series.push(s);
+        currentSeriesIndex += 1;
       }
 
       // Extra Options (Merge logic)

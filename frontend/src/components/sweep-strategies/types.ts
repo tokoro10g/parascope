@@ -10,6 +10,7 @@ export interface ChartTheme {
 export interface StrategyContext {
   id: string;
   index: number;
+  seriesIndex: number; // The starting index in the series array for this output
   label: string;
   results: any[][];
   headers: SweepHeader[];

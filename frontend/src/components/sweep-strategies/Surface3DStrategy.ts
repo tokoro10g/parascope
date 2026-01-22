@@ -110,8 +110,17 @@ export class Surface3DStrategy implements VisualizationStrategy {
   }
 
   getExtraOptions(ctx: StrategyContext) {
-    const { results, headers, id, theme, index, topMargin, gridHeight, gap } =
-      ctx;
+    const {
+      results,
+      headers,
+      id,
+      theme,
+      index,
+      seriesIndex,
+      topMargin,
+      gridHeight,
+      gap,
+    } = ctx;
     const colIndex = headers.findIndex((h) => h.id === id);
     const zValues = results.map((row) => parseFloat(String(row[colIndex])));
     const minZ = Math.min(...zValues);
@@ -126,7 +135,7 @@ export class Surface3DStrategy implements VisualizationStrategy {
           dimension: 2,
           min: minZ,
           max: maxZ,
-          seriesIndex: index,
+          seriesIndex: seriesIndex,
           right: 10,
           top: `${top}%`,
           height: `${gridHeight}%`,

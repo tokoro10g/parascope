@@ -75,7 +75,8 @@ export class HeatmapStrategy implements VisualizationStrategy {
   }
 
   getExtraOptions(ctx: StrategyContext) {
-    const { results, headers, id, gridHeight, topMargin, gap } = ctx;
+    const { results, headers, id, gridHeight, topMargin, gap, seriesIndex } =
+      ctx;
     const colIndex = headers.findIndex((h) => h.id === id);
     const values = results
       .map((row) => parseFloat(String(row[colIndex])))
@@ -97,7 +98,7 @@ export class HeatmapStrategy implements VisualizationStrategy {
           top: `${top}%`,
           height: `${gridHeight}%`,
           textStyle: { color: ctx.theme.text, fontSize: 10 },
-          seriesIndex: ctx.index,
+          seriesIndex: seriesIndex,
           dimension: 2,
           inRange: {
             color: [
