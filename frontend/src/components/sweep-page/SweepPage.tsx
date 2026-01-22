@@ -37,6 +37,7 @@ export const SweepPage: React.FC = () => {
     error,
     handleRun,
     results,
+    headers,
   } = useSweepState();
 
   // State to track theme colors
@@ -125,8 +126,8 @@ export const SweepPage: React.FC = () => {
               sheetName={sheet?.name || 'Loading...'}
               sheetId={sheetId}
               results={results}
+              headers={headers}
               nodes={nodes}
-              outputNodeIds={outputNodeIds}
               inputNodeId={inputNodeId}
               theme={theme}
             />

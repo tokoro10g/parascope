@@ -11,8 +11,9 @@ export class ScatterStrategy implements VisualizationStrategy {
 
   getAxes(ctx: StrategyContext) {
     // Y Axis is dynamic categories from results
+    const colIndex = ctx.headers.findIndex((h) => h.id === ctx.id);
     const uniqueY = Array.from(
-      new Set(ctx.results.map((r) => String(r.outputs[ctx.id]))),
+      new Set(ctx.results.map((row) => String(row[colIndex]))),
     );
     const yAxis = {
       type: 'category',
@@ -31,9 +32,10 @@ export class ScatterStrategy implements VisualizationStrategy {
   }
 
   getSeries(ctx: StrategyContext) {
-    const data = ctx.results.map((r) => [
-      String(r.input_value),
-      String(r.outputs[ctx.id]),
+    const colIndex = ctx.headers.findIndex((h) => h.id === ctx.id);
+    const data = ctx.results.map((row) => [
+      String(row[0]),
+      String(row[colIndex]),
     ]);
     return {
       type: 'scatter',

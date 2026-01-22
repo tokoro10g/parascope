@@ -1,5 +1,5 @@
 import type { EChartsOption } from 'echarts';
-import type { SweepResultStep } from '../../api';
+import type { SweepHeader } from '../../api';
 import { formatHumanReadableValue } from '../../utils';
 import { CategoricalBarStrategy } from './CategoricalBarStrategy';
 import { NumericLineStrategy } from './NumericLineStrategy';
@@ -25,16 +25,17 @@ const strategies: VisualizationStrategy[] = [
 ];
 
 export const getSweepChartOption = (
-  results: SweepResultStep[] | null,
+  results: any[][] | null,
+  headers: SweepHeader[],
   nodes: any[],
   theme: ChartTheme,
   selectedInputLabel: string,
 ): EChartsOption => {
-  if (!results || results.length === 0) return {};
+  if (!results || results.length === 0 || headers.length === 0) return {};
 
   // 1. Context Preparation
-  const plottedIds = Object.keys(results[0].outputs);
-  const count = plottedIds.length;
+  const outputHeaders = headers.filter((h) => h.type === 'output');
+  const count = outputHeaders.length;
 
   // Layout Constants
   const gap = 5;
@@ -45,7 +46,8 @@ export const getSweepChartOption = (
     count > 1 ? (availableHeight - gap * (count - 1)) / count : availableHeight;
 
   // Global Data Analysis
-  const isXNumeric = checkIsNumeric(results.map((r) => r.input_value));
+  // First column is always the primary input
+  const isXNumeric = checkIsNumeric(results.map((row) => row[0]));
 
   // Containers
   const grids: any[] = [];
@@ -54,10 +56,15 @@ export const getSweepChartOption = (
   const series: any[] = [];
 
   // 2. Iterate Outputs and Delegate
-  plottedIds.forEach((id, index) => {
+  outputHeaders.forEach((header, index) => {
+    const id = header.id;
     const node = nodes.find((n) => n.id === id);
-    const label = node ? node.label : id;
-    const outputValues = results.map((r) => r.outputs[id]);
+    const label = header.label;
+
+    // Find index of this output in the results row
+    // Column 0 is input, columns 1+ are outputs in headers order
+    const colIndex = headers.findIndex((h) => h.id === id);
+    const outputValues = results.map((row) => row[colIndex]);
     const isOutputNumeric = checkIsNumeric(outputValues);
 
     const context: StrategyContext = {
@@ -65,6 +72,7 @@ export const getSweepChartOption = (
       index,
       label,
       results,
+      headers,
       node,
       theme,
       isXNumeric,

@@ -1,4 +1,4 @@
-import type { SweepResultStep } from '../../api';
+import type { SweepHeader } from '../../api';
 
 export interface ChartTheme {
   text: string;
@@ -11,7 +11,8 @@ export interface StrategyContext {
   id: string;
   index: number;
   label: string;
-  results: SweepResultStep[];
+  results: any[][];
+  headers: SweepHeader[];
   node: any;
   theme: ChartTheme;
   isXNumeric: boolean;

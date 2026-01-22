@@ -453,13 +453,14 @@ export interface NodeResult {
   nodes?: Record<string, NodeResult>;
 }
 
-export interface SweepResultStep {
-  input_value: string | number;
-  outputs: Record<string, any>;
-  error?: string | null;
+export interface SweepHeader {
+  id: string;
+  label: string;
+  type: 'input' | 'output';
 }
 
 export interface SweepResponse {
-  results: SweepResultStep[];
+  headers: SweepHeader[];
+  results: any[][];
   error?: string;
 }

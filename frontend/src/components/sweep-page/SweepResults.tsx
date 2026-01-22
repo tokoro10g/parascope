@@ -5,7 +5,7 @@ import type React from 'react';
 import { useMemo, useRef } from 'react';
 import toast from 'react-hot-toast';
 import { Link } from 'react-router-dom';
-import type { NodeData, SweepResultStep } from '../../api';
+import type { NodeData, SweepHeader } from '../../api';
 import { copyToClipboard } from '../../utils';
 import { getSweepChartOption } from '../sweep-strategies';
 import './SweepPage.css';
@@ -13,9 +13,9 @@ import './SweepPage.css';
 interface SweepResultsProps {
   sheetName: string;
   sheetId?: string;
-  results: SweepResultStep[] | null;
+  results: any[][] | null;
+  headers: SweepHeader[];
   nodes: NodeData[];
-  outputNodeIds: string[];
   inputNodeId: string;
   theme: {
     text: string;
@@ -29,8 +29,8 @@ export const SweepResults: React.FC<SweepResultsProps> = ({
   sheetName,
   sheetId,
   results,
+  headers,
   nodes,
-  outputNodeIds,
   inputNodeId,
   theme,
 }) => {
@@ -41,8 +41,14 @@ export const SweepResults: React.FC<SweepResultsProps> = ({
 
   // Prepare ECharts Option
   const echartsOption: EChartsOption = useMemo(() => {
-    return getSweepChartOption(results, nodes, theme, selectedInputLabel);
-  }, [results, nodes, theme, selectedInputLabel]);
+    return getSweepChartOption(
+      results,
+      headers,
+      nodes,
+      theme,
+      selectedInputLabel,
+    );
+  }, [results, headers, nodes, theme, selectedInputLabel]);
 
   const handleCopyPlot = async () => {
     if (!chartRef.current) return;
@@ -78,31 +84,16 @@ export const SweepResults: React.FC<SweepResultsProps> = ({
   };
 
   const handleCopyTable = async () => {
-    if (!results || results.length === 0) return;
-
-    // Find valid output nodes for header
-    const validOutputIds = results[0]?.outputs
-      ? Object.keys(results[0].outputs).filter((id) =>
-          outputNodeIds.includes(id),
-        )
-      : [];
+    if (!results || results.length === 0 || !headers) return;
 
     // Create header row: InputName <tab> OutputName1 <tab> OutputName2 ...
-    const header = [
-      selectedInputLabel,
-      ...validOutputIds.map(
-        (id) => nodes.find((n) => n.id === id)?.label || id,
-      ),
-    ].join('\t');
+    const header = headers.map((h) => h.label).join('\t');
 
     // Create data rows
-    const rows = results.map((step) => {
-      const inputVal = step.input_value;
-      const outputVals = validOutputIds.map((id) => {
-        const val = step.outputs?.[id];
-        return val === undefined || val === null ? '' : String(val);
-      });
-      return [inputVal, ...outputVals].join('\t');
+    const rows = results.map((row) => {
+      return row
+        .map((val) => (val === undefined || val === null ? '' : String(val)))
+        .join('\t');
     });
 
     const text = [header, ...rows].join('\n');

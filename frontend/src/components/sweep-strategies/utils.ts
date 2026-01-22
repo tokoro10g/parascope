@@ -121,7 +121,7 @@ export function createBaseXAxis(
 export function createCategoricalXAxis(ctx: StrategyContext) {
   return {
     type: 'category',
-    data: ctx.results.map((r) => String(r.input_value)),
+    data: ctx.results.map((row) => String(row[0])),
     name: ctx.selectedInputLabel,
     nameLocation: 'middle',
     nameGap: 30,

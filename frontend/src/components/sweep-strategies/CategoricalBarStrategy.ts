@@ -24,7 +24,8 @@ export class CategoricalBarStrategy implements VisualizationStrategy {
 
   getSeries(ctx: StrategyContext) {
     // For Bar with Category X, logic handles mapping automatically if X axis has data[]
-    const data = ctx.results.map((r) => parseFloat(String(r.outputs[ctx.id])));
+    const colIndex = ctx.headers.findIndex((h) => h.id === ctx.id);
+    const data = ctx.results.map((row) => parseFloat(String(row[colIndex])));
     return {
       name: ctx.label,
       type: 'bar',

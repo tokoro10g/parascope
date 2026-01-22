@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import toast from 'react-hot-toast';
 import { useParams, useSearchParams } from 'react-router-dom';
-import { api, type Sheet, type SweepResultStep } from '../../api';
+import { api, type Sheet, type SweepHeader } from '../../api';
 
 export const useSweepState = () => {
   const { sheetId } = useParams<{ sheetId: string }>();
@@ -47,7 +47,8 @@ export const useSweepState = () => {
     const opts = searchParams.get('options');
     return opts ? opts.split(',') : [];
   });
-  const [results, setResults] = useState<SweepResultStep[] | null>(null);
+  const [results, setResults] = useState<any[][] | null>(null);
+  const [headers, setHeaders] = useState<SweepHeader[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -283,6 +284,7 @@ export const useSweepState = () => {
         toast.error(msg);
       }
       setResults(res.results);
+      setHeaders(res.headers);
     } catch (e: any) {
       const msg = e.message || 'An error occurred during sweep.';
       setError(msg);
@@ -329,6 +331,7 @@ export const useSweepState = () => {
     selectedOptions,
     setSelectedOptions,
     results,
+    headers,
     loading,
     error,
     handleSweepInputChange,

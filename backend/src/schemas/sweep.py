@@ -1,5 +1,5 @@
 from uuid import UUID
-from typing import List, Dict, Any
+from typing import List, Dict, Any, Optional
 from pydantic import BaseModel
 
 
@@ -13,12 +13,14 @@ class SweepRequest(BaseModel):
     input_overrides: Dict[UUID, str] = {}
 
 
-class SweepResultStep(BaseModel):
-    input_value: Any  # Changed from float to Any to support strings
-    outputs: Dict[UUID, Any]
-    error: str | None = None
+class SweepHeader(BaseModel):
+    id: UUID
+    label: str
+    type: str # "input" or "output"
 
 
 class SweepResponse(BaseModel):
-    results: List[SweepResultStep]
+    headers: List[SweepHeader]
+    # results is a list of rows, where each row is a list of values matching the headers
+    results: List[List[Any]]
     error: str | None = None

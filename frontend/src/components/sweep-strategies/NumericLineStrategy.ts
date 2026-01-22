@@ -23,9 +23,10 @@ export class NumericLineStrategy implements VisualizationStrategy {
   }
 
   getSeries(ctx: StrategyContext) {
-    const data = ctx.results.map((r) => [
-      parseFloat(String(r.input_value)),
-      parseFloat(String(r.outputs[ctx.id])),
+    const colIndex = ctx.headers.findIndex((h) => h.id === ctx.id);
+    const data = ctx.results.map((row) => [
+      parseFloat(String(row[0])),
+      parseFloat(String(row[colIndex])),
     ]);
     return {
       name: ctx.label,

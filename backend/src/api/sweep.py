@@ -11,7 +11,7 @@ from ..core.database import get_db
 from ..core.generator import CodeGenerator
 from ..core.execution import execute_full_script
 from ..models.sheet import Sheet
-from ..schemas.sweep import SweepRequest, SweepResponse, SweepResultStep
+from ..schemas.sweep import SweepRequest, SweepResponse, SweepHeader
 
 
 def serialize_result(val: Any) -> Any:
@@ -47,16 +47,24 @@ async def sweep_sheet(
         raise HTTPException(status_code=404, detail="Sheet not found")
 
     # Validate that all requested nodes exist in the sheet
-    all_node_ids = {str(n.id) for n in sheet.nodes}
-    if str(body.input_node_id) not in all_node_ids:
+    node_map = {str(n.id): n for n in sheet.nodes}
+    if str(body.input_node_id) not in node_map:
         raise HTTPException(status_code=400, detail=f"Input node {body.input_node_id} not found in sheet.")
     for out_id in body.output_node_ids:
-        if str(out_id) not in all_node_ids:
+        if str(out_id) not in node_map:
             raise HTTPException(status_code=400, detail=f"Output node {out_id} not found in sheet.")
 
-
-    sweep_results: List[SweepResultStep] = []
+    # Prepare Headers
+    headers = []
+    # Primary Input Header
+    primary_input_node = node_map[str(body.input_node_id)]
+    headers.append(SweepHeader(id=body.input_node_id, label=primary_input_node.label, type="input"))
     
+    # Output Headers
+    for oid in body.output_node_ids:
+        out_node = node_map[str(oid)]
+        headers.append(SweepHeader(id=oid, label=out_node.label, type="output"))
+
     if body.manual_values is not None:
         input_values_list = body.manual_values
         if len(input_values_list) > 1000:
@@ -78,38 +86,31 @@ async def sweep_sheet(
         else:
             increment_val = abs(increment_val)
 
-        # Calculate number of steps: floor((end - start) / inc) + 1
-        # Add epsilon to handle floating point inaccuracies
+        # Calculate number of steps
         num_steps = int(np.floor((end_val - start_val) / increment_val + 1e-10)) + 1
         
         if num_steps > 1000:
             raise HTTPException(status_code=400, detail=f"Sweep generates too many steps ({num_steps}). Limit is 1000.")
             
         if num_steps <= 0:
-            # Should not happen if logic is correct, but safe fallback
             input_values = np.array([start_val])
         else:
-            # Generate values with fixed increment
-            # We calculate the exact last value that fits in the range
             last_val = start_val + (num_steps - 1) * increment_val
             input_values = np.linspace(start_val, last_val, num_steps)
 
-        # If inputs are integers, cast the result to integers for cleaner output
         if start_val.is_integer() and end_val.is_integer() and increment_val.is_integer():
             input_values = np.round(input_values).astype(int)
 
-        # Convert numpy array to generic python list for repr() serialization
         input_values_list = input_values.tolist()
     else:
         raise HTTPException(status_code=400, detail="Must provide either numeric range (start/end/increment) or manual_values.")
 
     generator = CodeGenerator(db)
-    
-    # Prepare static overrides
     static_overrides = {str(k): v for k, v in body.input_overrides.items()}
     output_ids_str = [str(oid) for oid in body.output_node_ids]
 
     global_error = None
+    results_rows: List[List[Any]] = []
 
     try:
         script = await generator.generate_sweep_script(
@@ -120,30 +121,29 @@ async def sweep_sheet(
             output_node_ids=output_ids_str
         )
         
-        exec_result = execute_full_script(script, timeout=30.0) # Extend timeout for sweeps
+        exec_result = execute_full_script(script, timeout=30.0)
         
         if not exec_result.get("success"):
             global_error = exec_result.get("error")
 
-        results_list = exec_result.get("results", [])
-        if not isinstance(results_list, list):
-             # Fallback if execution completely failed globally
-             results_list = []
+        raw_results = exec_result.get("results", [])
+        if not isinstance(raw_results, list):
+             raw_results = []
              
-        for item in results_list:
-            step_result = SweepResultStep(
-                input_value=serialize_result(item.get("input_value")), 
-                outputs=serialize_result(item.get("outputs", {}))
-            )
-            if "error" in item:
-                step_result.error = item["error"]
-            sweep_results.append(step_result)
+        for step in raw_results:
+            # Construct a row matching the headers order
+            row = []
+            # 1. Primary input value
+            row.append(serialize_result(step.get("input_value")))
+            # 2. Output values
+            step_outputs = step.get("outputs", {})
+            for oid in output_ids_str:
+                row.append(serialize_result(step_outputs.get(oid)))
+            
+            results_rows.append(row)
 
     except Exception as e:
-         # Global generation error
          global_error = str(e)
          print(f"Sweep generation failed: {e}")
 
-    return SweepResponse(results=sweep_results, error=global_error)
-
-    
+    return SweepResponse(headers=headers, results=results_rows, error=global_error)

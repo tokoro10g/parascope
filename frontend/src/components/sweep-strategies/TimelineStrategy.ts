@@ -32,13 +32,15 @@ export class TimelineStrategy implements VisualizationStrategy {
   getSeries(ctx: StrategyContext) {
     // Compute Segments
     const segments: any[] = [];
-    const { results, id } = ctx;
-    let currentStart = parseFloat(String(results[0].input_value));
-    let currentVal = String(results[0].outputs[id] ?? '');
+    const { results, id, headers } = ctx;
+    const colIndex = headers.findIndex((h) => h.id === id);
+
+    let currentStart = parseFloat(String(results[0][0]));
+    let currentVal = String(results[0][colIndex] ?? '');
 
     for (let i = 1; i < results.length; i++) {
-      const nextVal = String(results[i].outputs[id] ?? '');
-      const nextInput = parseFloat(String(results[i].input_value));
+      const nextVal = String(results[i][colIndex] ?? '');
+      const nextInput = parseFloat(String(results[i][0]));
 
       if (nextVal !== currentVal) {
         segments.push([0, currentStart, nextInput, currentVal]);
@@ -50,11 +52,9 @@ export class TimelineStrategy implements VisualizationStrategy {
     // Final Segment Logic
     let finalEnd = currentStart;
     if (results.length > 1) {
-      const lastInput = parseFloat(
-        String(results[results.length - 1].input_value),
-      );
+      const lastInput = parseFloat(String(results[results.length - 1][0]));
       const secondLastInput = parseFloat(
-        String(results[results.length - 2].input_value),
+        String(results[results.length - 2][0]),
       );
       finalEnd = lastInput + (lastInput - secondLastInput);
     } else {
