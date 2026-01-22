@@ -6,14 +6,15 @@ export class Surface3DStrategy implements VisualizationStrategy {
   }
 
   getGrid(_ctx: StrategyContext) {
-    // 3D doesn't use standard grid, but we need to return something or handled specially
+    // 3D doesn't use standard grid, we return {show: false} to avoid standard grid logic
     return { show: false };
   }
 
   getAxes(ctx: StrategyContext) {
-    const { theme, headers, label } = ctx;
+    const { theme, headers, label, index } = ctx;
     return {
       xAxis3D: {
+        grid3DIndex: index,
         name: headers[0].label,
         type: 'value',
         nameTextStyle: { color: theme.text },
@@ -21,6 +22,7 @@ export class Surface3DStrategy implements VisualizationStrategy {
         axisLine: { lineStyle: { color: theme.text } },
       },
       yAxis3D: {
+        grid3DIndex: index,
         name: headers[1].label,
         type: 'value',
         nameTextStyle: { color: theme.text },
@@ -28,6 +30,7 @@ export class Surface3DStrategy implements VisualizationStrategy {
         axisLine: { lineStyle: { color: theme.text } },
       },
       zAxis3D: {
+        grid3DIndex: index,
         name: label,
         type: 'value',
         nameTextStyle: { color: theme.text },
@@ -38,12 +41,13 @@ export class Surface3DStrategy implements VisualizationStrategy {
   }
 
   getSeries(ctx: StrategyContext) {
-    const { results, headers, id } = ctx;
+    const { results, headers, id, index, label } = ctx;
     const colIndex = headers.findIndex((h) => h.id === id);
 
     return {
-      name: ctx.label,
+      name: label,
       type: 'surface',
+      grid3DIndex: index,
       wireframe: { show: true },
       data: results.map((row) => [
         parseFloat(String(row[0])),
@@ -55,11 +59,14 @@ export class Surface3DStrategy implements VisualizationStrategy {
   }
 
   getExtraOptions(ctx: StrategyContext) {
-    const { results, headers, id } = ctx;
+    const { results, headers, id, theme, index, topMargin, gridHeight, gap } =
+      ctx;
     const colIndex = headers.findIndex((h) => h.id === id);
     const zValues = results.map((row) => parseFloat(String(row[colIndex])));
     const minZ = Math.min(...zValues);
     const maxZ = Math.max(...zValues);
+
+    const top = topMargin + index * (gridHeight + gap);
 
     return {
       visualMap: [
@@ -68,7 +75,11 @@ export class Surface3DStrategy implements VisualizationStrategy {
           dimension: 2,
           min: minZ,
           max: maxZ,
-          seriesIndex: ctx.index,
+          seriesIndex: index,
+          right: 10,
+          top: `${top}%`,
+          height: `${gridHeight}%`,
+          textStyle: { color: theme.text, fontSize: 10 },
           inRange: {
             color: [
               '#00008F',
@@ -87,6 +98,8 @@ export class Surface3DStrategy implements VisualizationStrategy {
       grid3D: {
         boxWidth: 100,
         boxDepth: 100,
+        top: `${top - 5}%`, // Offset slightly to center the 3D box
+        height: `${gridHeight}%`,
         viewControl: {
           // rotation and zoom
         },

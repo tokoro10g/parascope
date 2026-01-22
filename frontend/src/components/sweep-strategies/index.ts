@@ -55,7 +55,7 @@ export const getSweepChartOption = (
 
   const count = outputHeaders.length;
 
-  // Layout Constants (for 1D charts primarily)
+  // Layout Constants
   const gap = 5;
   const topMargin = 10;
   const bottomMargin = 10;
@@ -69,6 +69,13 @@ export const getSweepChartOption = (
   const yAxes: any[] = [];
   const series: any[] = [];
   const visualMaps: any[] = [];
+
+  // 3D Specific Containers
+  const xAxis3D: any[] = [];
+  const yAxis3D: any[] = [];
+  const zAxis3D: any[] = [];
+  const grid3D: any[] = [];
+
   let extraOptions: any = {};
 
   // 2. Iterate Outputs and Delegate
@@ -111,13 +118,19 @@ export const getSweepChartOption = (
 
       // Axes
       const axes = strategy.getAxes(context);
-      if (axes.xAxis) xAxes.push(axes.xAxis);
-      if (axes.yAxis) yAxes.push(axes.yAxis);
+      if (axes.xAxis) {
+        if (Array.isArray(axes.xAxis)) xAxes.push(...axes.xAxis);
+        else xAxes.push(axes.xAxis);
+      }
+      if (axes.yAxis) {
+        if (Array.isArray(axes.yAxis)) yAxes.push(...axes.yAxis);
+        else yAxes.push(axes.yAxis);
+      }
 
-      // Collect 3D axes into extraOptions (they are root level)
-      if (axes.xAxis3D) extraOptions.xAxis3D = axes.xAxis3D;
-      if (axes.yAxis3D) extraOptions.yAxis3D = axes.yAxis3D;
-      if (axes.zAxis3D) extraOptions.zAxis3D = axes.zAxis3D;
+      // Collect 3D axes
+      if (axes.xAxis3D) xAxis3D.push(axes.xAxis3D);
+      if (axes.yAxis3D) yAxis3D.push(axes.yAxis3D);
+      if (axes.zAxis3D) zAxis3D.push(axes.zAxis3D);
 
       // Series
       const s = strategy.getSeries(context);
@@ -137,6 +150,10 @@ export const getSweepChartOption = (
             visualMaps.push(opts.visualMap);
           }
           delete opts.visualMap;
+        }
+        if (opts.grid3D) {
+          grid3D.push(opts.grid3D);
+          delete opts.grid3D;
         }
         extraOptions = { ...extraOptions, ...opts };
       }
@@ -193,6 +210,10 @@ export const getSweepChartOption = (
     grid: grids.length > 0 ? grids : undefined,
     xAxis: xAxes.length > 0 ? xAxes : undefined,
     yAxis: yAxes.length > 0 ? yAxes : undefined,
+    xAxis3D: xAxis3D.length > 0 ? xAxis3D : undefined,
+    yAxis3D: yAxis3D.length > 0 ? yAxis3D : undefined,
+    zAxis3D: zAxis3D.length > 0 ? zAxis3D : undefined,
+    grid3D: grid3D.length > 0 ? grid3D : undefined,
     series: series as any[],
     ...extraOptions,
   };
