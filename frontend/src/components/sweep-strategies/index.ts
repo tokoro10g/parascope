@@ -50,6 +50,9 @@ export const getSweepChartOption = (
     ? checkIsNumeric(results.map((row) => row[1]))
     : false;
 
+  const is3D = is2D && isXNumeric && isYNumeric;
+  const isHeatmap = is2D && !isXNumeric && !isYNumeric;
+
   const count = outputHeaders.length;
 
   // Layout Constants (for 1D charts primarily)
@@ -147,15 +150,33 @@ export const getSweepChartOption = (
     },
     tooltip: {
       confine: true,
-      trigger: is2D ? 'item' : 'axis',
+      trigger: is3D || isHeatmap ? 'item' : 'axis',
       axisPointer: { type: 'cross' },
-      backgroundColor: addAlphaToRgb(theme.background, 0.5),
-      textStyle: { color: theme.text },
-      valueFormatter: (value: any) => {
-        if (!value && value !== 0) return '-';
-        return formatHumanReadableValue(value?.toString());
+      backgroundColor: addAlphaToRgb(theme.background, 0.8),
+      borderColor: theme.grid,
+      borderWidth: 1,
+      textStyle: { color: theme.text, fontSize: 12 },
+      formatter: (params: any) => {
+        const items = Array.isArray(params) ? params : [params];
+        let res = '';
+        items.forEach((item, i) => {
+          if (i === 0 && !is2D) {
+            res += `<div style="margin-bottom: 4px; font-weight: bold; border-bottom: 1px solid ${theme.grid}">${item.axisValueLabel}</div>`;
+          }
+          const val = Array.isArray(item.value)
+            ? item.value[item.value.length - 1]
+            : item.value;
+          const displayVal = formatHumanReadableValue(val?.toString());
+          res += `
+            <div style="display: flex; align-items: center; gap: 8px;">
+              ${item.marker}
+              <span style="flex: 1">${item.seriesName}</span>
+              <span style="font-weight: bold">${displayVal}</span>
+            </div>
+          `;
+        });
+        return res;
       },
-      position: (point: any) => [point[0] + 10, '10%'],
     },
     legend: {
       bottom: 0,
