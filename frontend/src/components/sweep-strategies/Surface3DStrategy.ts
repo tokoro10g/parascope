@@ -100,7 +100,7 @@ export class Surface3DStrategy implements VisualizationStrategy {
     });
 
     if (minZ !== undefined) {
-      extraSeries.push(createPlane('Min', minZ, '#ff4d4f'));
+      extraSeries.push(createPlane('Min', minZ, '#1890ff'));
     }
     if (maxZ !== undefined) {
       extraSeries.push(createPlane('Max', maxZ, '#ff4d4f'));
