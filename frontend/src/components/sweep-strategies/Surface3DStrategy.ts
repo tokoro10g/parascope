@@ -41,20 +41,27 @@ export class Surface3DStrategy implements VisualizationStrategy {
   }
 
   getSeries(ctx: StrategyContext) {
-    const { results, headers, id, index, label } = ctx;
+    const { results, headers, id, label } = ctx;
     const colIndex = headers.findIndex((h) => h.id === id);
+
+    const xCount = Array.from(new Set(results.map((row) => row[0]))).length;
+    const yCount = Array.from(new Set(results.map((row) => row[1]))).length;
 
     return {
       name: label,
       type: 'surface',
-      grid3DIndex: index,
+      grid3DIndex: ctx.index,
       wireframe: { show: true },
+      shading: 'color',
       data: results.map((row) => [
         parseFloat(String(row[0])),
         parseFloat(String(row[1])),
         parseFloat(String(row[colIndex])),
       ]),
-      shading: 'color',
+      // Help echarts-gl determine the grid dimensions
+      // The Cartesian product in the backend is: for y in secondary: for x in primary:
+      // So x (row[0]) varies faster.
+      dataShape: [yCount, xCount],
     };
   }
 
