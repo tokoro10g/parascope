@@ -207,6 +207,12 @@
 
 .sweep-input-flex {
   flex: 1;
+  min-width: 0;
+}
+
+.sweep-input-flex input {
+  width: 100%;
+  min-width: 0;
 }
 
 .sweep-input-full {

@@ -94,7 +94,7 @@ export const SweepPage: React.FC = () => {
           orientation="horizontal"
           style={{ width: '100%', height: '100%' }}
         >
-          <Panel defaultSize="35%" minSize="25%" maxSize="70%">
+          <Panel defaultSize="35%" minSize="450px" maxSize="70%">
             <SweepSidebar
               inputOptions={inputOptions}
               outputOptions={outputOptions}
