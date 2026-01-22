@@ -23,8 +23,14 @@ export class MultiLineStrategy implements VisualizationStrategy {
   }
 
   getAxes(ctx: StrategyContext) {
+    const { headers, isXNumeric } = ctx;
+    const numericInput = isXNumeric ? headers[0] : headers[1];
+
     return {
-      xAxis: createBaseXAxis(ctx, 'value'),
+      xAxis: {
+        ...createBaseXAxis(ctx, 'value'),
+        name: ctx.showXLabel ? numericInput.label : '',
+      },
       yAxis: createBaseYAxis(ctx, 'value', true),
     };
   }
