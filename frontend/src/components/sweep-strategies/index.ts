@@ -215,10 +215,30 @@ export const getSweepChartOption = (
       formatter: (params: any) => {
         const items = Array.isArray(params) ? params : [params];
         let res = '';
-        items.forEach((item, i) => {
-          if (i === 0 && !is2D && item.axisValueLabel) {
-            res += `<div style="margin-bottom: 4px; font-weight: bold; border-bottom: 1px solid ${theme.grid}">${item.axisValueLabel}</div>`;
+
+        // 1. Header showing input values
+        if (is2D) {
+          // For 2D, we show both inputs
+          // If triggered by item (3D/Heatmap), value is [x, y, z]
+          const first = items[0];
+          if (first && Array.isArray(first.value)) {
+            const xVal = formatHumanReadableValue(first.value[0]?.toString());
+            const yVal = formatHumanReadableValue(first.value[1]?.toString());
+            res += `<div style="margin-bottom: 4px; font-weight: bold; border-bottom: 1px solid ${theme.grid}">
+              ${inputHeaders[0].label}: ${xVal}<br/>
+              ${inputHeaders[1].label}: ${yVal}
+            </div>`;
           }
+        } else {
+          // 1D Header
+          const first = items[0];
+          if (first && first.axisValueLabel) {
+            res += `<div style="margin-bottom: 4px; font-weight: bold; border-bottom: 1px solid ${theme.grid}">${first.axisValueLabel}</div>`;
+          }
+        }
+
+        // 2. Series values
+        items.forEach((item) => {
           const val = Array.isArray(item.value)
             ? item.value[item.value.length - 1]
             : item.value;
