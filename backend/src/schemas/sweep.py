@@ -9,6 +9,14 @@ class SweepRequest(BaseModel):
     end_value: str | None = None
     increment: str | None = None
     manual_values: List[str] | None = None
+    
+    # Secondary Input (Optional)
+    secondary_input_node_id: UUID | None = None
+    secondary_start_value: str | None = None
+    secondary_end_value: str | None = None
+    secondary_increment: str | None = None
+    secondary_manual_values: List[str] | None = None
+
     output_node_ids: List[UUID]
     input_overrides: Dict[UUID, str] = {}
 

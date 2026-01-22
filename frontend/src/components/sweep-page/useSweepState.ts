@@ -15,7 +15,7 @@ export const useSweepState = () => {
   );
   const hasAutoRun = useRef(false);
 
-  // Initialize state from URL params if available
+  // --- Primary Input State ---
   const [inputNodeId, setInputNodeId] = useState<string>(
     searchParams.get('input') || '',
   );
@@ -28,6 +28,31 @@ export const useSweepState = () => {
   const [increment, setIncrement] = useState<string>(
     searchParams.get('step') || '1',
   );
+  const [selectedOptions, setSelectedOptions] = useState<string[]>(() => {
+    const opts = searchParams.get('options');
+    return opts ? opts.split(',') : [];
+  });
+
+  // --- Secondary Input State ---
+  const [secondaryInputNodeId, setSecondaryInputNodeId] = useState<string>(
+    searchParams.get('sec_input') || '',
+  );
+  const [secondaryStartValue, setSecondaryStartValue] = useState<string>(
+    searchParams.get('sec_start') || '0',
+  );
+  const [secondaryEndValue, setSecondaryEndValue] = useState<string>(
+    searchParams.get('sec_end') || '10',
+  );
+  const [secondaryIncrement, setSecondaryIncrement] = useState<string>(
+    searchParams.get('sec_step') || '1',
+  );
+  const [secondarySelectedOptions, setSecondarySelectedOptions] = useState<
+    string[]
+  >(() => {
+    const opts = searchParams.get('sec_options');
+    return opts ? opts.split(',') : [];
+  });
+
   const [outputNodeIds, setOutputNodeIds] = useState<string[]>(() => {
     const outputs = searchParams.get('outputs');
     return outputs ? outputs.split(',') : [];
@@ -43,10 +68,6 @@ export const useSweepState = () => {
     },
   );
 
-  const [selectedOptions, setSelectedOptions] = useState<string[]>(() => {
-    const opts = searchParams.get('options');
-    return opts ? opts.split(',') : [];
-  });
   const [results, setResults] = useState<any[][] | null>(null);
   const [headers, setHeaders] = useState<SweepHeader[]>([]);
   const [loading, setLoading] = useState(false);
@@ -61,6 +82,7 @@ export const useSweepState = () => {
 
   // Track the last input node to prevent overwriting URL state on load
   const lastInputNodeId = useRef(inputNodeId);
+  const lastSecondaryInputNodeId = useRef(secondaryInputNodeId);
 
   // Load Sheet
   useEffect(() => {
@@ -104,6 +126,17 @@ export const useSweepState = () => {
       if (selectedOptions.length > 0) {
         params.set('options', selectedOptions.join(','));
       }
+
+      if (secondaryInputNodeId) {
+        params.set('sec_input', secondaryInputNodeId);
+        params.set('sec_start', secondaryStartValue);
+        params.set('sec_end', secondaryEndValue);
+        params.set('sec_step', secondaryIncrement);
+        if (secondarySelectedOptions.length > 0) {
+          params.set('sec_options', secondarySelectedOptions.join(','));
+        }
+      }
+
       if (outputNodeIds.length > 0) {
         params.set('outputs', outputNodeIds.join(','));
       }
@@ -121,14 +154,32 @@ export const useSweepState = () => {
     endValue,
     increment,
     selectedOptions,
+    secondaryInputNodeId,
+    secondaryStartValue,
+    secondaryEndValue,
+    secondaryIncrement,
+    secondarySelectedOptions,
     outputNodeIds,
     inputOverrides,
     setSearchParams,
   ]);
 
   const handleSweepInputChange = useCallback(
-    (id: string) => {
-      setInputNodeId(id);
+    (id: string, isSecondary = false) => {
+      const targetSetId = isSecondary
+        ? setSecondaryInputNodeId
+        : setInputNodeId;
+      const targetSetStart = isSecondary
+        ? setSecondaryStartValue
+        : setStartValue;
+      const targetSetEnd = isSecondary ? setSecondaryEndValue : setEndValue;
+      const targetSetIncrement = isSecondary
+        ? setSecondaryIncrement
+        : setIncrement;
+
+      targetSetId(id);
+      if (!id) return; // Deselection
+
       const node = nodes.find((n) => n.id === id);
       const currentVal = parseFloat(inputOverrides[id] || '0');
 
@@ -139,42 +190,42 @@ export const useSweepState = () => {
         const hasMax = !Number.isNaN(max);
 
         if (hasMin && hasMax) {
-          setStartValue(String(min));
-          setEndValue(String(max));
-          setIncrement(((max - min) / 20).toPrecision(2));
+          targetSetStart(String(min));
+          targetSetEnd(String(max));
+          targetSetIncrement(((max - min) / 20).toPrecision(2));
           return;
         }
 
         if (hasMin) {
-          setStartValue(String(min));
+          targetSetStart(String(min));
           // Estimate end: max(current * 2, min + 10)
           const estimatedEnd = Math.max(currentVal * 2, min + 10);
-          setEndValue(String(estimatedEnd));
-          setIncrement(((estimatedEnd - min) / 20).toPrecision(2));
+          targetSetEnd(String(estimatedEnd));
+          targetSetIncrement(((estimatedEnd - min) / 20).toPrecision(2));
           return;
         }
 
         if (hasMax) {
-          setEndValue(String(max));
+          targetSetEnd(String(max));
           // Estimate start: min(current / 2, max - 10)
           const estimatedStart = Math.min(currentVal / 2, max - 10);
-          setStartValue(String(estimatedStart));
-          setIncrement(((max - estimatedStart) / 20).toPrecision(2));
+          targetSetStart(String(estimatedStart));
+          targetSetIncrement(((max - estimatedStart) / 20).toPrecision(2));
           return;
         }
       }
 
       if (!Number.isNaN(currentVal)) {
         if (currentVal === 0) {
-          setStartValue('0');
-          setEndValue('10');
-          setIncrement('1');
+          targetSetStart('0');
+          targetSetEnd('10');
+          targetSetIncrement('1');
         } else {
           const start = currentVal > 0 ? currentVal * 0.5 : currentVal * 1.5;
           const end = currentVal > 0 ? currentVal * 1.5 : currentVal * 0.5;
-          setStartValue(start.toString());
-          setEndValue(end.toString());
-          setIncrement(((end - start) / 20).toPrecision(2));
+          targetSetStart(start.toString());
+          targetSetEnd(end.toString());
+          targetSetIncrement(((end - start) / 20).toPrecision(2));
         }
       }
     },
@@ -188,12 +239,10 @@ export const useSweepState = () => {
     }
   }, [inputOptions, inputNodeId, handleSweepInputChange]);
 
-  // Handle Option Type selection
+  // Handle Option Type selection (Primary)
   useEffect(() => {
     const node = nodes.find((n) => n.id === inputNodeId);
-
     if (inputNodeId !== lastInputNodeId.current) {
-      // Input changed manually, reset/default behavior
       lastInputNodeId.current = inputNodeId;
       if (node && node.data?.dataType === 'option') {
         setSelectedOptions(node.data.options);
@@ -201,8 +250,6 @@ export const useSweepState = () => {
         setSelectedOptions([]);
       }
     } else {
-      // Same input (e.g. nodes loaded), check if we need to hydrate defaults
-      // Only set if we have NO selection and NO URL param
       if (
         node &&
         node.data?.dataType === 'option' &&
@@ -213,6 +260,33 @@ export const useSweepState = () => {
       }
     }
   }, [inputNodeId, nodes, selectedOptions.length, searchParams]);
+
+  // Handle Option Type selection (Secondary)
+  useEffect(() => {
+    const node = nodes.find((n) => n.id === secondaryInputNodeId);
+    if (secondaryInputNodeId !== lastSecondaryInputNodeId.current) {
+      lastSecondaryInputNodeId.current = secondaryInputNodeId;
+      if (node && node.data?.dataType === 'option') {
+        setSecondarySelectedOptions(node.data.options);
+      } else {
+        setSecondarySelectedOptions([]);
+      }
+    } else {
+      if (
+        node &&
+        node.data?.dataType === 'option' &&
+        secondarySelectedOptions.length === 0 &&
+        !searchParams.has('sec_options')
+      ) {
+        setSecondarySelectedOptions(node.data.options);
+      }
+    }
+  }, [
+    secondaryInputNodeId,
+    nodes,
+    secondarySelectedOptions.length,
+    searchParams,
+  ]);
 
   const toggleOutput = (id: string) => {
     if (!id) return;
@@ -227,43 +301,81 @@ export const useSweepState = () => {
     setError(null);
     setResults(null);
     try {
-      if (!inputNodeId) throw new Error('Please select an input or constant.');
+      if (!inputNodeId) throw new Error('Please select a primary input.');
       if (outputNodeIds.length === 0)
         throw new Error('Please select at least one output.');
 
-      const node = nodes.find((n) => n.id === inputNodeId);
-      const isOptionType = node && node.data?.dataType === 'option';
+      // --- Helper to prepare params for an input ---
+      const prepareInputParams = (
+        id: string,
+        sVal: string,
+        eVal: string,
+        incVal: string,
+        selOpts: string[],
+      ) => {
+        const node = nodes.find((n) => n.id === id);
+        const isOptionType = node && node.data?.dataType === 'option';
+        let start = null;
+        let end = null;
+        let step = null;
+        let manualValues: string[] | null = null;
 
-      let start = null;
-      let end = null;
-      let step = null;
-      let manualValues: string[] | null = null;
+        if (isOptionType) {
+          if (selOpts.length === 0) {
+            throw new Error(
+              `Please select at least one option for ${node?.label || 'input'}.`,
+            );
+          }
+          manualValues = selOpts;
+        } else {
+          start = parseFloat(sVal);
+          end = parseFloat(eVal);
+          step = parseFloat(incVal);
 
-      if (isOptionType) {
-        if (selectedOptions.length === 0) {
-          throw new Error('Please select at least one option to sweep.');
+          if (
+            Number.isNaN(start) ||
+            Number.isNaN(end) ||
+            Number.isNaN(step) ||
+            step === 0
+          ) {
+            throw new Error(
+              `Invalid numeric inputs for ${node?.label || 'input'}. Increment must be non-zero.`,
+            );
+          }
         }
-        manualValues = selectedOptions;
-      } else {
-        start = parseFloat(startValue);
-        end = parseFloat(endValue);
-        step = parseFloat(increment);
+        return {
+          start: start !== null ? String(start) : null,
+          end: end !== null ? String(end) : null,
+          step: step !== null ? String(step) : null,
+          manualValues,
+        };
+      };
 
-        if (
-          Number.isNaN(start) ||
-          Number.isNaN(end) ||
-          Number.isNaN(step) ||
-          step === 0
-        ) {
-          throw new Error(
-            'Invalid numeric inputs. Increment must be non-zero.',
-          );
-        }
+      // 1. Primary Input
+      const primary = prepareInputParams(
+        inputNodeId,
+        startValue,
+        endValue,
+        increment,
+        selectedOptions,
+      );
+
+      // 2. Secondary Input
+      let secondary: any = {};
+      if (secondaryInputNodeId) {
+        secondary = prepareInputParams(
+          secondaryInputNodeId,
+          secondaryStartValue,
+          secondaryEndValue,
+          secondaryIncrement,
+          secondarySelectedOptions,
+        );
       }
 
+      // 3. Overrides (exclude swept inputs)
       const currentOverrides: Record<string, string> = {};
       Object.entries(inputOverrides).forEach(([id, val]) => {
-        if (id !== inputNodeId) {
+        if (id !== inputNodeId && id !== secondaryInputNodeId) {
           currentOverrides[id] = val;
         }
       });
@@ -271,13 +383,20 @@ export const useSweepState = () => {
       const res = await api.sweepSheet(
         sheetId,
         inputNodeId,
-        start !== null ? String(start) : null,
-        end !== null ? String(end) : null,
-        step !== null ? String(step) : null,
-        manualValues,
+        primary.start,
+        primary.end,
+        primary.step,
+        primary.manualValues,
         outputNodeIds,
         currentOverrides,
+        // Secondary
+        secondaryInputNodeId || undefined,
+        secondary.start,
+        secondary.end,
+        secondary.step,
+        secondary.manualValues,
       );
+
       if (res.error) {
         const msg = `Sweep Error: ${res.error}`;
         setError(msg);
@@ -299,8 +418,15 @@ export const useSweepState = () => {
     startValue,
     endValue,
     increment,
-    inputOverrides,
     selectedOptions,
+    // Secondary
+    secondaryInputNodeId,
+    secondaryStartValue,
+    secondaryEndValue,
+    secondaryIncrement,
+    secondarySelectedOptions,
+    // Other
+    inputOverrides,
     nodes,
   ]);
 
@@ -318,6 +444,7 @@ export const useSweepState = () => {
     nodes,
     inputOptions,
     outputOptions,
+    // Primary
     inputNodeId,
     startValue,
     setStartValue,
@@ -325,11 +452,23 @@ export const useSweepState = () => {
     setEndValue,
     increment,
     setIncrement,
+    selectedOptions,
+    setSelectedOptions,
+    // Secondary
+    secondaryInputNodeId,
+    setSecondaryInputNodeId,
+    secondaryStartValue,
+    setSecondaryStartValue,
+    secondaryEndValue,
+    setSecondaryEndValue,
+    secondaryIncrement,
+    setSecondaryIncrement,
+    secondarySelectedOptions,
+    setSecondarySelectedOptions,
+    // Common
     outputNodeIds,
     inputOverrides,
     setInputOverrides,
-    selectedOptions,
-    setSelectedOptions,
     results,
     headers,
     loading,

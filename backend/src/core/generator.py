@@ -51,8 +51,7 @@ finally:
     async def generate_sweep_script(
         self, 
         root_sheet: Sheet, 
-        input_values: List[Any], 
-        input_node_id: str, 
+        scenarios: List[Dict[str, Any]], 
         static_overrides: Dict[str, Any],
         output_node_ids: List[str]
     ) -> str:
@@ -71,18 +70,17 @@ finally:
         entry_point = f"""
 # --- Sweep Execution Entry Point ---
 try:
-    input_values = {repr(input_values)}
+    scenarios = {repr(scenarios)}
     static_overrides = {repr(static_overrides)}
-    input_node_id = {repr(input_node_id)}
     output_node_ids = {repr(output_node_ids)}
     
     sweep_results = []
     
-    for val in input_values:
+    for scenario in scenarios:
         current_overrides = static_overrides.copy()
-        current_overrides[input_node_id] = val
+        current_overrides.update(scenario)
         
-        step_res = {{ "input_value": val, "outputs": {{}} }}
+        step_res = {{ "inputs": scenario, "outputs": {{}} }}
         
         try:
             _sweep_sheet_instance = {root_class_name}(input_overrides=current_overrides)

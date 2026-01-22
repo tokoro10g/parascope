@@ -377,11 +377,19 @@ export const api = {
     increment: string | null,
     manualValues: string[] | null,
     outputNodeIds: string[],
-    inputOverrides?: Record<string, any>,
+    inputOverrides: Record<string, string>,
+    // Secondary Input
+    secondaryInputNodeId?: string,
+    secondaryStartValue?: string | null,
+    secondaryEndValue?: string | null,
+    secondaryIncrement?: string | null,
+    secondaryManualValues?: string[] | null,
   ): Promise<SweepResponse> {
-    return request(`${API_BASE}/sheets/${sheetId}/sweep`, {
+    const res = await fetch(`${API_BASE}/sheets/${sheetId}/sweep`, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: getHeaders({
+        'Content-Type': 'application/json',
+      }),
       body: JSON.stringify({
         input_node_id: inputNodeId,
         start_value: startValue,
@@ -390,8 +398,15 @@ export const api = {
         manual_values: manualValues,
         output_node_ids: outputNodeIds,
         input_overrides: inputOverrides,
+        // Secondary
+        secondary_input_node_id: secondaryInputNodeId,
+        secondary_start_value: secondaryStartValue,
+        secondary_end_value: secondaryEndValue,
+        secondary_increment: secondaryIncrement,
+        secondary_manual_values: secondaryManualValues,
       }),
     });
+    return res.json();
   },
 
   // CONCURRENCY

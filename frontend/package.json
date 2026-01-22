@@ -15,6 +15,7 @@
     "d3-shape": "^3.2.0",
     "echarts": "^6.0.0",
     "echarts-for-react": "^3.0.5",
+    "echarts-gl": "^2.0.9",
     "elkjs": "^0.8.2",
     "js-cookie": "^3.0.5",
     "katex": "^0.16.27",
