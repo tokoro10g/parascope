@@ -101,7 +101,7 @@ export class Surface3DStrategy implements VisualizationStrategy {
         top: `${top - 5}%`, // Offset slightly to center the 3D box
         height: `${gridHeight}%`,
         viewControl: {
-          // rotation and zoom
+          projection: 'orthographic',
         },
         light: {
           main: { intensity: 1.2, shadow: true },
