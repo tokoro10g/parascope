@@ -41,13 +41,15 @@ export class Surface3DStrategy implements VisualizationStrategy {
   }
 
   getSeries(ctx: StrategyContext) {
-    const { results, headers, id, label } = ctx;
+    const { results, headers, id, label, node } = ctx;
     const colIndex = headers.findIndex((h) => h.id === id);
 
-    const xCount = Array.from(new Set(results.map((row) => row[0]))).length;
-    const yCount = Array.from(new Set(results.map((row) => row[1]))).length;
+    const xUnique = Array.from(new Set(results.map((row) => row[0])));
+    const yUnique = Array.from(new Set(results.map((row) => row[1])));
+    const xCount = xUnique.length;
+    const yCount = yUnique.length;
 
-    return {
+    const mainSeries = {
       name: label,
       type: 'surface',
       grid3DIndex: ctx.index,
@@ -58,11 +60,53 @@ export class Surface3DStrategy implements VisualizationStrategy {
         parseFloat(String(row[1])),
         parseFloat(String(row[colIndex])),
       ]),
-      // Help echarts-gl determine the grid dimensions
-      // The Cartesian product in the backend is: for y in secondary: for x in primary:
-      // So x (row[0]) varies faster.
       dataShape: [yCount, xCount],
     };
+
+    const extraSeries: any[] = [mainSeries];
+
+    // Reference planes for min/max
+    const minZ =
+      node?.data?.min !== undefined && node.data.min !== ''
+        ? Number(node.data.min)
+        : undefined;
+    const maxZ =
+      node?.data?.max !== undefined && node.data.max !== ''
+        ? Number(node.data.max)
+        : undefined;
+
+    const xValues = xUnique.map((v) => parseFloat(String(v)));
+    const yValues = yUnique.map((v) => parseFloat(String(v)));
+    const minX = Math.min(...xValues);
+    const maxX = Math.max(...xValues);
+    const minY = Math.min(...yValues);
+    const maxY = Math.max(...yValues);
+
+    const createPlane = (name: string, z: number, color: string) => ({
+      name: `${label} ${name}`,
+      type: 'surface',
+      grid3DIndex: ctx.index,
+      silent: true,
+      wireframe: { show: false },
+      shading: 'color',
+      itemStyle: { color, opacity: 0.2 },
+      data: [
+        [minX, minY, z],
+        [maxX, minY, z],
+        [minX, maxY, z],
+        [maxX, maxY, z],
+      ],
+      dataShape: [2, 2],
+    });
+
+    if (minZ !== undefined) {
+      extraSeries.push(createPlane('Min', minZ, '#ff4d4f'));
+    }
+    if (maxZ !== undefined) {
+      extraSeries.push(createPlane('Max', maxZ, '#ff4d4f'));
+    }
+
+    return extraSeries;
   }
 
   getExtraOptions(ctx: StrategyContext) {
