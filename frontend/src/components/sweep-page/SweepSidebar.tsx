@@ -3,31 +3,17 @@ import { useState } from 'react';
 import type { NodeData } from '../../api';
 import './SweepPage.css';
 
+import type { SweepAxisState } from './useSweepState';
+
 interface SweepSidebarProps {
   inputOptions: NodeData[];
   outputOptions: NodeData[];
-  // Primary
-  inputNodeId: string;
+  // Consolidated State
+  primaryInput: SweepAxisState;
+  updatePrimary: (updates: Partial<SweepAxisState>) => void;
+  secondaryInput: SweepAxisState;
+  updateSecondary: (updates: Partial<SweepAxisState>) => void;
   onInputChange: (id: string, isSecondary?: boolean) => void;
-  startValue: string;
-  setStartValue: (v: string) => void;
-  endValue: string;
-  setEndValue: (v: string) => void;
-  increment: string;
-  setIncrement: (v: string) => void;
-  selectedOptions: string[];
-  setSelectedOptions: (v: string[]) => void;
-  // Secondary
-  secondaryInputNodeId: string;
-  setSecondaryInputNodeId: (id: string) => void;
-  secondaryStartValue: string;
-  setSecondaryStartValue: (v: string) => void;
-  secondaryEndValue: string;
-  setSecondaryEndValue: (v: string) => void;
-  secondaryIncrement: string;
-  setSecondaryIncrement: (v: string) => void;
-  secondarySelectedOptions: string[];
-  setSecondarySelectedOptions: (v: string[]) => void;
   // Common
   inputOverrides: Record<string, string>;
   setInputOverrides: React.Dispatch<
@@ -43,26 +29,11 @@ interface SweepSidebarProps {
 export const SweepSidebar: React.FC<SweepSidebarProps> = ({
   inputOptions,
   outputOptions,
-  inputNodeId,
+  primaryInput,
+  updatePrimary,
+  secondaryInput,
+  updateSecondary,
   onInputChange,
-  startValue,
-  setStartValue,
-  endValue,
-  setEndValue,
-  increment,
-  setIncrement,
-  selectedOptions,
-  setSelectedOptions,
-  secondaryInputNodeId,
-  setSecondaryInputNodeId,
-  secondaryStartValue,
-  setSecondaryStartValue,
-  secondaryEndValue,
-  setSecondaryEndValue,
-  secondaryIncrement,
-  setSecondaryIncrement,
-  secondarySelectedOptions,
-  setSecondarySelectedOptions,
   inputOverrides,
   setInputOverrides,
   outputNodeIds,
@@ -71,20 +42,13 @@ export const SweepSidebar: React.FC<SweepSidebarProps> = ({
   error,
   onRun,
 }) => {
-  const [showSecondary, setShowSecondary] = useState(!!secondaryInputNodeId);
+  const [showSecondary, setShowSecondary] = useState(!!secondaryInput.nodeId);
 
   // Helper to render input config
   const renderInputConfig = (
-    _isSecondary: boolean,
     nodeId: string,
-    start: string,
-    setStart: (v: string) => void,
-    end: string,
-    setEnd: (v: string) => void,
-    step: string,
-    setStep: (v: string) => void,
-    selOpts: string[],
-    setSelOpts: (v: string[]) => void,
+    state: SweepAxisState,
+    update: (updates: Partial<SweepAxisState>) => void,
   ) => {
     const node = inputOptions.find((n) => n.id === nodeId);
     if (!node) return null;
@@ -95,10 +59,10 @@ export const SweepSidebar: React.FC<SweepSidebarProps> = ({
           <div style={{ marginBottom: 5 }}>Select Options:</div>
           <select
             multiple
-            value={selOpts}
+            value={state.selectedOptions}
             onChange={(e) => {
               const vals = Array.from(e.target.selectedOptions, (o) => o.value);
-              setSelOpts(vals);
+              update({ selectedOptions: vals });
             }}
             style={{
               width: '100%',
@@ -137,8 +101,8 @@ export const SweepSidebar: React.FC<SweepSidebarProps> = ({
             <div className="sweep-input-flex">
               <input
                 type="text"
-                value={start}
-                onChange={(e) => setStart(e.target.value)}
+                value={state.start}
+                onChange={(e) => update({ start: e.target.value })}
               />
             </div>
           </label>
@@ -149,8 +113,8 @@ export const SweepSidebar: React.FC<SweepSidebarProps> = ({
             <div className="sweep-input-flex">
               <input
                 type="text"
-                value={end}
-                onChange={(e) => setEnd(e.target.value)}
+                value={state.end}
+                onChange={(e) => update({ end: e.target.value })}
               />
             </div>
           </label>
@@ -161,8 +125,8 @@ export const SweepSidebar: React.FC<SweepSidebarProps> = ({
             <div className="sweep-input-flex">
               <input
                 type="text"
-                value={step}
-                onChange={(e) => setStep(e.target.value)}
+                value={state.step}
+                onChange={(e) => update({ step: e.target.value })}
               />
             </div>
           </label>
@@ -174,12 +138,12 @@ export const SweepSidebar: React.FC<SweepSidebarProps> = ({
   const handleToggleSecondary = () => {
     if (showSecondary) {
       // Turn off
-      setSecondaryInputNodeId('');
+      updateSecondary({ nodeId: '' });
       setShowSecondary(false);
     } else {
       setShowSecondary(true);
       // Try to auto-select something other than primary
-      const other = inputOptions.find((n) => n.id !== inputNodeId);
+      const other = inputOptions.find((n) => n.id !== primaryInput.nodeId);
       if (other) {
         onInputChange(other.id!, true);
       }
@@ -200,8 +164,8 @@ export const SweepSidebar: React.FC<SweepSidebarProps> = ({
           </thead>
           <tbody>
             {inputOptions.map((n) => {
-              const isSweeping = inputNodeId === n.id;
-              const isSecondary = secondaryInputNodeId === n.id;
+              const isSweeping = primaryInput.nodeId === n.id;
+              const isSecondary = secondaryInput.nodeId === n.id;
               return (
                 <tr key={n.id}>
                   <td className="checkbox-cell">
@@ -216,18 +180,7 @@ export const SweepSidebar: React.FC<SweepSidebarProps> = ({
                   <td className="name-cell">{n.label}</td>
                   <td>
                     {isSweeping ? (
-                      renderInputConfig(
-                        false,
-                        n.id!,
-                        startValue,
-                        setStartValue,
-                        endValue,
-                        setEndValue,
-                        increment,
-                        setIncrement,
-                        selectedOptions,
-                        setSelectedOptions,
-                      )
+                      renderInputConfig(n.id!, primaryInput, updatePrimary)
                     ) : isSecondary ? (
                       <div
                         style={{
@@ -317,8 +270,8 @@ export const SweepSidebar: React.FC<SweepSidebarProps> = ({
             </thead>
             <tbody>
               {inputOptions.map((n) => {
-                const isSweeping = secondaryInputNodeId === n.id;
-                const isPrimary = inputNodeId === n.id;
+                const isSweeping = secondaryInput.nodeId === n.id;
+                const isPrimary = primaryInput.nodeId === n.id;
                 return (
                   <tr key={n.id}>
                     <td className="checkbox-cell">
@@ -334,16 +287,9 @@ export const SweepSidebar: React.FC<SweepSidebarProps> = ({
                     <td>
                       {isSweeping ? (
                         renderInputConfig(
-                          true,
                           n.id!,
-                          secondaryStartValue,
-                          setSecondaryStartValue,
-                          secondaryEndValue,
-                          setSecondaryEndValue,
-                          secondaryIncrement,
-                          setSecondaryIncrement,
-                          secondarySelectedOptions,
-                          setSecondarySelectedOptions,
+                          secondaryInput,
+                          updateSecondary,
                         )
                       ) : isPrimary ? (
                         <div

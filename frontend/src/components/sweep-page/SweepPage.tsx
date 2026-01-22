@@ -19,27 +19,12 @@ export const SweepPage: React.FC = () => {
     nodes,
     inputOptions,
     outputOptions,
-    inputNodeId,
-    handleSweepInputChange,
-    startValue,
-    setStartValue,
-    endValue,
-    setEndValue,
-    increment,
-    setIncrement,
-    selectedOptions,
-    setSelectedOptions,
-    // Secondary
-    secondaryInputNodeId,
-    setSecondaryInputNodeId,
-    secondaryStartValue,
-    setSecondaryStartValue,
-    secondaryEndValue,
-    setSecondaryEndValue,
-    secondaryIncrement,
-    setSecondaryIncrement,
-    secondarySelectedOptions,
-    setSecondarySelectedOptions,
+    // Consolidated State
+    primaryInput,
+    updatePrimary,
+    secondaryInput,
+    updateSecondary,
+    // Common
     inputOverrides,
     setInputOverrides,
     outputNodeIds,
@@ -49,6 +34,7 @@ export const SweepPage: React.FC = () => {
     handleRun,
     results,
     headers,
+    handleSweepInputChange,
   } = useSweepState();
 
   // State to track theme colors
@@ -106,31 +92,15 @@ export const SweepPage: React.FC = () => {
           orientation="horizontal"
           style={{ width: '100%', height: '100%' }}
         >
-          <Panel defaultSize="35%" minSize="450px" maxSize="70%">
+          <Panel defaultSize="35%" minSize="25%" maxSize="70%">
             <SweepSidebar
               inputOptions={inputOptions}
               outputOptions={outputOptions}
-              inputNodeId={inputNodeId}
+              primaryInput={primaryInput}
+              updatePrimary={updatePrimary}
+              secondaryInput={secondaryInput}
+              updateSecondary={updateSecondary}
               onInputChange={handleSweepInputChange}
-              startValue={startValue}
-              setStartValue={setStartValue}
-              endValue={endValue}
-              setEndValue={setEndValue}
-              increment={increment}
-              setIncrement={setIncrement}
-              selectedOptions={selectedOptions}
-              setSelectedOptions={setSelectedOptions}
-              // Secondary
-              secondaryInputNodeId={secondaryInputNodeId}
-              setSecondaryInputNodeId={setSecondaryInputNodeId}
-              secondaryStartValue={secondaryStartValue}
-              setSecondaryStartValue={setSecondaryStartValue}
-              secondaryEndValue={secondaryEndValue}
-              setSecondaryEndValue={setSecondaryEndValue}
-              secondaryIncrement={secondaryIncrement}
-              setSecondaryIncrement={setSecondaryIncrement}
-              secondarySelectedOptions={secondarySelectedOptions}
-              setSecondarySelectedOptions={setSecondarySelectedOptions}
               inputOverrides={inputOverrides}
               setInputOverrides={setInputOverrides}
               outputNodeIds={outputNodeIds}
@@ -150,7 +120,7 @@ export const SweepPage: React.FC = () => {
               results={results}
               headers={headers}
               nodes={nodes}
-              inputNodeId={inputNodeId}
+              inputNodeId={primaryInput.nodeId}
               theme={theme}
             />
           </Panel>
