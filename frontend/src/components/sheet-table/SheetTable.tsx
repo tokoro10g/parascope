@@ -207,22 +207,27 @@ export const SheetTable: React.FC<SheetTableProps> = ({
               borderBottom: 'none',
             }}
           >
-            <div className="sheet-table-controls">
+            <div
+              className="sheet-table-controls"
+              style={{ display: 'flex', gap: '8px' }}
+            >
               <button
                 type="button"
                 onClick={onCalculate}
                 disabled={isCalculating}
                 className="btn run-button"
                 title="Run Calculation"
+                style={{ flex: 1 }}
               >
                 {isCalculating ? '...' : <Play size={14} fill="currentColor" />}
-                Run Calculation
+                Run
               </button>
               <button
                 type="button"
                 onClick={onSweep}
                 className="btn sweep-button"
                 title="Sweep"
+                style={{ flex: 1, marginTop: 0 }}
               >
                 <LineChart size={14} />
                 Sweep

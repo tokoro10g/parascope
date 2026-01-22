@@ -76,8 +76,8 @@
   background-color: #28a745;
   color: white;
   border: none;
-  padding: 4px 8px;
-  font-size: 0.8em;
+  padding: 8px;
+  font-size: 0.9em;
   display: flex;
   align-items: center;
   gap: 4px;
@@ -98,8 +98,8 @@
   background-color: #2196f3;
   color: white;
   border: none;
-  padding: 4px 8px;
-  font-size: 0.8em;
+  padding: 8px;
+  font-size: 0.9em;
   display: flex;
   align-items: center;
   gap: 4px;
@@ -397,15 +397,6 @@
 
 .sheet-table-controls {
   margin-bottom: 10px;
-}
-
-.sheet-table .run-button {
-  width: 100%;
-}
-
-.sheet-table .sweep-button {
-  width: 100%;
-  margin-top: 5px;
 }
 
 .sheet-table-list-container {
