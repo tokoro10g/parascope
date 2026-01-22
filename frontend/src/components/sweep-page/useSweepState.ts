@@ -160,7 +160,41 @@ export const useSweepState = () => {
 
   const handleSweepInputChange = (id: string) => {
     setInputNodeId(id);
+    const node = nodes.find((n) => n.id === id);
     const currentVal = parseFloat(inputOverrides[id] || '0');
+
+    if (node && node.data) {
+      const min = parseFloat(node.data.min);
+      const max = parseFloat(node.data.max);
+      const hasMin = !Number.isNaN(min);
+      const hasMax = !Number.isNaN(max);
+
+      if (hasMin && hasMax) {
+        setStartValue(String(min));
+        setEndValue(String(max));
+        setIncrement(((max - min) / 20).toPrecision(2));
+        return;
+      }
+
+      if (hasMin) {
+        setStartValue(String(min));
+        // Estimate end: max(current * 2, min + 10)
+        const estimatedEnd = Math.max(currentVal * 2, min + 10);
+        setEndValue(String(estimatedEnd));
+        setIncrement(((estimatedEnd - min) / 20).toPrecision(2));
+        return;
+      }
+
+      if (hasMax) {
+        setEndValue(String(max));
+        // Estimate start: min(current / 2, max - 10)
+        const estimatedStart = Math.min(currentVal / 2, max - 10);
+        setStartValue(String(estimatedStart));
+        setIncrement(((max - estimatedStart) / 20).toPrecision(2));
+        return;
+      }
+    }
+
     if (!Number.isNaN(currentVal)) {
       if (currentVal === 0) {
         setStartValue('0');
