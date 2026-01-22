@@ -1,5 +1,6 @@
 import type React from 'react';
 import { useEffect, useState } from 'react';
+import { Group, Panel, Separator } from 'react-resizable-panels';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
 import { NavBar } from '../NavBar';
@@ -89,37 +90,48 @@ export const SweepPage: React.FC = () => {
       <NavBar user={user} onBack={handleBack} onLogout={logout} />
 
       <div className="sweep-content">
-        <SweepSidebar
-          inputOptions={inputOptions}
-          outputOptions={outputOptions}
-          inputNodeId={inputNodeId}
-          onInputChange={handleSweepInputChange}
-          startValue={startValue}
-          setStartValue={setStartValue}
-          endValue={endValue}
-          setEndValue={setEndValue}
-          increment={increment}
-          setIncrement={setIncrement}
-          selectedOptions={selectedOptions}
-          setSelectedOptions={setSelectedOptions}
-          inputOverrides={inputOverrides}
-          setInputOverrides={setInputOverrides}
-          outputNodeIds={outputNodeIds}
-          toggleOutput={toggleOutput}
-          loading={loading}
-          error={error}
-          onRun={handleRun}
-        />
-
-        <SweepResults
-          sheetName={sheet?.name || 'Loading...'}
-          sheetId={sheetId}
-          results={results}
-          nodes={nodes}
-          outputNodeIds={outputNodeIds}
-          inputNodeId={inputNodeId}
-          theme={theme}
-        />
+        <Group
+          orientation="horizontal"
+          style={{ width: '100%', height: '100%' }}
+        >
+          <Panel defaultSize="35%" minSize="25%" maxSize="70%">
+            <SweepSidebar
+              inputOptions={inputOptions}
+              outputOptions={outputOptions}
+              inputNodeId={inputNodeId}
+              onInputChange={handleSweepInputChange}
+              startValue={startValue}
+              setStartValue={setStartValue}
+              endValue={endValue}
+              setEndValue={setEndValue}
+              increment={increment}
+              setIncrement={setIncrement}
+              selectedOptions={selectedOptions}
+              setSelectedOptions={setSelectedOptions}
+              inputOverrides={inputOverrides}
+              setInputOverrides={setInputOverrides}
+              outputNodeIds={outputNodeIds}
+              toggleOutput={toggleOutput}
+              loading={loading}
+              error={error}
+              onRun={handleRun}
+            />
+          </Panel>
+          <Separator
+            style={{ width: '4px', background: '#ccc', cursor: 'col-resize' }}
+          />
+          <Panel defaultSize="65%" minSize="30%">
+            <SweepResults
+              sheetName={sheet?.name || 'Loading...'}
+              sheetId={sheetId}
+              results={results}
+              nodes={nodes}
+              outputNodeIds={outputNodeIds}
+              inputNodeId={inputNodeId}
+              theme={theme}
+            />
+          </Panel>
+        </Group>
       </div>
     </div>
   );

@@ -14,16 +14,14 @@
 }
 
 .sweep-sidebar {
-  width: 600px;
+  height: 100%;
   background-color: var(--bg-color);
-  border-right: 1px solid var(--border-color);
   padding: 10px;
   overflow-y: auto;
   display: flex;
   flex-direction: column;
   gap: 10px;
   color: var(--text-color);
-  flex-shrink: 0; /* Prevent sidebar from shrinking */
 }
 
 .sweep-main {

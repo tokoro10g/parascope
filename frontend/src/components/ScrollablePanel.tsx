@@ -44,8 +44,15 @@ export const ScrollablePanel: React.FC<ScrollablePanelProps> = ({
 
   useEffect(() => {
     checkScroll();
-    window.addEventListener('resize', checkScroll);
-    return () => window.removeEventListener('resize', checkScroll);
+    const el = containerRef.current;
+    if (!el) return;
+
+    const observer = new ResizeObserver(() => {
+      checkScroll();
+    });
+    observer.observe(el);
+
+    return () => observer.disconnect();
   }, [checkScroll]);
 
   useEffect(() => {
