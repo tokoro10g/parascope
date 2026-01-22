@@ -42,6 +42,7 @@ export class Surface3DStrategy implements VisualizationStrategy {
     const colIndex = headers.findIndex((h) => h.id === id);
 
     return {
+      name: ctx.label,
       type: 'surface',
       wireframe: { show: true },
       data: results.map((row) => [
