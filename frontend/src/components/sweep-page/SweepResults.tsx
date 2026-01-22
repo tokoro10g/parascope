@@ -4,6 +4,7 @@ import { ChartArea, Table } from 'lucide-react';
 import type React from 'react';
 import { useMemo, useRef } from 'react';
 import toast from 'react-hot-toast';
+import { Link } from 'react-router-dom';
 import type { NodeData, SweepResultStep } from '../../api';
 import { copyToClipboard } from '../../utils';
 import { getSweepChartOption } from '../sweep-strategies';
@@ -11,6 +12,7 @@ import './SweepPage.css';
 
 interface SweepResultsProps {
   sheetName: string;
+  sheetId?: string;
   results: SweepResultStep[] | null;
   nodes: NodeData[];
   outputNodeIds: string[];
@@ -25,6 +27,7 @@ interface SweepResultsProps {
 
 export const SweepResults: React.FC<SweepResultsProps> = ({
   sheetName,
+  sheetId,
   results,
   nodes,
   outputNodeIds,
@@ -110,7 +113,19 @@ export const SweepResults: React.FC<SweepResultsProps> = ({
     <main className="sweep-main">
       <div className="sweep-header-row">
         <h2 className="sweep-header sweep-header-title">
-          {sheetName || 'Loading...'}
+          {sheetId ? (
+            <Link
+              to={`/sheet/${sheetId}`}
+              target="_blank"
+              rel="noreferrer"
+              style={{ color: 'inherit', textDecoration: 'none' }}
+              title="Open Sheet Editor in New Tab"
+            >
+              {sheetName || 'Loading...'}
+            </Link>
+          ) : (
+            sheetName || 'Loading...'
+          )}
         </h2>
         {results && (
           <div className="sweep-copy-actions">

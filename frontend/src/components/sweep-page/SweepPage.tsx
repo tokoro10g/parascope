@@ -81,11 +81,7 @@ export const SweepPage: React.FC = () => {
 
   const handleBack = (e: React.MouseEvent) => {
     e.preventDefault();
-    if (sheetId) {
-      navigate(`/sheet/${sheetId}`);
-    } else {
-      navigate('/');
-    }
+    navigate('/');
   };
 
   return (
@@ -117,6 +113,7 @@ export const SweepPage: React.FC = () => {
 
         <SweepResults
           sheetName={sheet?.name || 'Loading...'}
+          sheetId={sheetId}
           results={results}
           nodes={nodes}
           outputNodeIds={outputNodeIds}
