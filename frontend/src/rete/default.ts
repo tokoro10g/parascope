@@ -436,6 +436,9 @@ export async function createEditor(container: HTMLElement) {
         AreaExtensions.zoomAt(area, [node]);
       }
     },
+    zoomToFit: async () => {
+      await AreaExtensions.zoomAt(area, instance.getNodes());
+    },
     getSelectedNodes: () => {
       return instance
         .getNodes()

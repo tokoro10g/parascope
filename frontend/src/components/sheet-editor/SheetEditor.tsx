@@ -736,6 +736,7 @@ export const SheetEditor: React.FC = () => {
                 onAddNode={handleAddNode}
                 onUndo={() => editor?.undo()}
                 onRedo={() => editor?.redo()}
+                onZoomToFit={() => editor?.zoomToFit()}
                 onCopy={() => {
                   if (editor) {
                     const selected = editor.getSelectedNodes();

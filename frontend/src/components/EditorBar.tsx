@@ -6,6 +6,7 @@ import {
   Import,
   LogIn,
   LogOut,
+  Maximize,
   MessageSquare,
   Milestone,
   MoreHorizontal,
@@ -34,6 +35,7 @@ interface EditorBarProps {
   onRedo: () => void;
   onCopy: () => void;
   onPaste: () => void;
+  onZoomToFit?: () => void;
   onCheckUsage?: () => void;
 }
 
@@ -49,6 +51,7 @@ export const EditorBar: React.FC<EditorBarProps> = ({
   onRedo,
   onCopy,
   onPaste,
+  onZoomToFit,
   onCheckUsage,
 }) => {
   const [name, setName] = useState(sheetName || '');
@@ -265,6 +268,16 @@ export const EditorBar: React.FC<EditorBarProps> = ({
       </div>
 
       <div className="toolbar-group history-group">
+        <button
+          type="button"
+          onClick={(e) => {
+            onZoomToFit?.();
+            e.currentTarget.blur();
+          }}
+          title="Fit to view"
+        >
+          <Maximize size={18} />
+        </button>
         <button
           type="button"
           onClick={(e) => {

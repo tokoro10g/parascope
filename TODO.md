@@ -24,6 +24,16 @@ Generated from `SPECIFICATIONS.tsv`.
     - [x] **Frontend**:
         - [x] "Usage" Modal to jump to Root Sheets.
         - [x] "Import Inputs" feature to import inputs from live root simulation context.
+- [x] **Advanced Analysis (Sweeps)**:
+    - [x] **Backend**:
+        - [x] Columnar optimization for large sweep payloads.
+        - [x] Support for secondary sweep variables (Cartesian product).
+    - [x] **Frontend**:
+        - [x] Resizable split-pane layout for configuration vs. results.
+        - [x] Intelligent defaults based on node min/max constraints.
+        - [x] 3D Surface Plots (Numeric x Numeric) with orthographic projection.
+        - [x] Multi-line Charts (Numeric x Categorical).
+        - [x] Piecewise Heatmaps (Categorical x Categorical/Categorical Outputs).
 
 ## 5. GenAI Integration (Use Gemini)
 - [x] **Backend**:
@@ -36,6 +46,6 @@ Generated from `SPECIFICATIONS.tsv`.
 ## 6. Future Scope (Post-Initial)
 - [ ] **Notifications**: Owner-based change notifications (FS-N-01.0 - FS-N-04.0).
 - [ ] **Advanced Math**: Numerical optimization (FS-O-01.0), Overflow handling (EH-07.0).
-- [ ] **Versioning**: Audit logs, History querying, Rollbacks (FS-V-01.0 - FS-V-03.0).
+- [x] **Versioning**: Audit logs, History querying, Rollbacks (FS-V-01.0 - FS-V-03.0).
 - [ ] **IDE**: Python code completion (FS-IDE-01.0).
 - [ ] **Feedback**: Implement Console/Log viewer for selected node (UI-18.0).
