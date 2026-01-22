@@ -5,6 +5,7 @@ import { formatHumanReadableValue } from '../../utils';
 import { CategoricalBarStrategy } from './CategoricalBarStrategy';
 import { NumericLineStrategy } from './NumericLineStrategy';
 import { ScatterStrategy } from './ScatterStrategy';
+import { Surface3DStrategy } from './Surface3DStrategy';
 import { TimelineStrategy } from './TimelineStrategy';
 import type {
   ChartTheme,
@@ -19,6 +20,7 @@ export { getColor, strHash } from './utils';
 
 // Registry
 const strategies: VisualizationStrategy[] = [
+  new Surface3DStrategy(),
   new NumericLineStrategy(),
   new CategoricalBarStrategy(),
   new TimelineStrategy(),
@@ -34,98 +36,19 @@ export const getSweepChartOption = (
 ): EChartsOption => {
   if (!results || results.length === 0 || headers.length === 0) return {};
 
+  // 1. Global Data Analysis
   const inputHeaders = headers.filter((h) => h.type === 'input');
   const outputHeaders = headers.filter((h) => h.type === 'output');
+
   const is2D = inputHeaders.length === 2;
+  const isXNumeric = checkIsNumeric(results.map((row) => row[0]));
+  const isYNumeric = is2D
+    ? checkIsNumeric(results.map((row) => row[1]))
+    : false;
 
-  if (is2D && outputHeaders.length > 0) {
-    const firstOutput = outputHeaders[0];
-    const colIndex = headers.findIndex((h) => h.id === firstOutput.id);
-
-    const isXNumeric = checkIsNumeric(results.map((row) => row[0]));
-    const isYNumeric = checkIsNumeric(results.map((row) => row[1]));
-    const isZNumeric = checkIsNumeric(results.map((row) => row[colIndex]));
-
-    if (isXNumeric && isYNumeric && isZNumeric) {
-      // 3D Surface for Numeric-Numeric-Numeric
-      const zValues = results.map((row) => parseFloat(String(row[colIndex])));
-      const minZ = Math.min(...zValues);
-      const maxZ = Math.max(...zValues);
-
-      return {
-        backgroundColor: theme.background,
-        tooltip: {},
-        visualMap: {
-          show: true,
-          dimension: 2,
-          min: minZ,
-          max: maxZ,
-          inRange: {
-            color: [
-              '#313695',
-              '#4575b4',
-              '#74add1',
-              '#abd9e9',
-              '#e0f3f8',
-              '#ffffbf',
-              '#fee090',
-              '#fdae61',
-              '#f46d43',
-              '#d73027',
-              '#a50026',
-            ],
-          },
-        },
-        xAxis3D: {
-          name: inputHeaders[0].label,
-          type: 'value',
-          nameTextStyle: { color: theme.text },
-          axisLabel: { textStyle: { color: theme.text } },
-          axisLine: { lineStyle: { color: theme.text } },
-        },
-        yAxis3D: {
-          name: inputHeaders[1].label,
-          type: 'value',
-          nameTextStyle: { color: theme.text },
-          axisLabel: { textStyle: { color: theme.text } },
-          axisLine: { lineStyle: { color: theme.text } },
-        },
-        zAxis3D: {
-          name: firstOutput.label,
-          type: 'value',
-          nameTextStyle: { color: theme.text },
-          axisLabel: { textStyle: { color: theme.text } },
-          axisLine: { lineStyle: { color: theme.text } },
-        },
-        grid3D: {
-          boxWidth: 100,
-          boxDepth: 100,
-          viewControl: {
-            // rotation and zoom
-          },
-          light: {
-            main: { intensity: 1.2, shadow: true },
-            ambient: { intensity: 0.3 },
-          },
-        },
-        series: [
-          {
-            type: 'surface',
-            data: results.map((row) => [
-              parseFloat(String(row[0])),
-              parseFloat(String(row[1])),
-              parseFloat(String(row[colIndex])),
-            ]),
-          },
-        ] as any,
-      };
-    }
-  }
-
-  // 1. Context Preparation (1D Logic)
   const count = outputHeaders.length;
 
-  // Layout Constants
+  // Layout Constants (for 1D charts primarily)
   const gap = 5;
   const topMargin = 10;
   const bottomMargin = 10;
@@ -133,15 +56,12 @@ export const getSweepChartOption = (
   const gridHeight =
     count > 1 ? (availableHeight - gap * (count - 1)) / count : availableHeight;
 
-  // Global Data Analysis
-  // First column is always the primary input
-  const isXNumeric = checkIsNumeric(results.map((row) => row[0]));
-
   // Containers
   const grids: any[] = [];
   const xAxes: any[] = [];
   const yAxes: any[] = [];
   const series: any[] = [];
+  let extraOptions: any = {};
 
   // 2. Iterate Outputs and Delegate
   outputHeaders.forEach((header, index) => {
@@ -150,7 +70,6 @@ export const getSweepChartOption = (
     const label = header.label;
 
     // Find index of this output in the results row
-    // Column 0 is input, columns 1+ are outputs in headers order
     const colIndex = headers.findIndex((h) => h.id === id);
     const outputValues = results.map((row) => row[colIndex]);
     const isOutputNumeric = checkIsNumeric(outputValues);
@@ -163,7 +82,9 @@ export const getSweepChartOption = (
       headers,
       node,
       theme,
+      is2D,
       isXNumeric,
+      isYNumeric,
       isOutputNumeric,
       selectedInputLabel: index === count - 1 ? selectedInputLabel : '',
       showXLabel: index === count - 1,
@@ -177,13 +98,29 @@ export const getSweepChartOption = (
 
     if (strategy) {
       // Grid
-      grids.push(strategy.getGrid(context));
+      const grid = strategy.getGrid(context);
+      if (grid && grid.show !== false) grids.push(grid);
+
       // Axes
       const axes = strategy.getAxes(context);
-      xAxes.push(axes.xAxis);
-      yAxes.push(axes.yAxis);
+      if (axes.xAxis) xAxes.push(axes.xAxis);
+      if (axes.yAxis) yAxes.push(axes.yAxis);
+
+      // Collect 3D axes into extraOptions (they are root level)
+      if (axes.xAxis3D) extraOptions.xAxis3D = axes.xAxis3D;
+      if (axes.yAxis3D) extraOptions.yAxis3D = axes.yAxis3D;
+      if (axes.zAxis3D) extraOptions.zAxis3D = axes.zAxis3D;
+
       // Series
       series.push(strategy.getSeries(context));
+
+      // Extra Options (Merge logic)
+      if (strategy.getExtraOptions) {
+        extraOptions = {
+          ...extraOptions,
+          ...strategy.getExtraOptions(context),
+        };
+      }
     } else {
       console.warn(`No strategy found for output ${label}`);
     }
@@ -201,7 +138,7 @@ export const getSweepChartOption = (
     },
     tooltip: {
       confine: true,
-      trigger: 'axis',
+      trigger: is2D ? 'item' : 'axis',
       axisPointer: { type: 'cross' },
       backgroundColor: addAlphaToRgb(theme.background, 0.5),
       textStyle: { color: theme.text },
@@ -215,9 +152,10 @@ export const getSweepChartOption = (
       bottom: 0,
       textStyle: { color: theme.text },
     },
-    grid: grids,
-    xAxis: xAxes,
-    yAxis: yAxes,
-    series: series,
+    grid: grids.length > 0 ? grids : undefined,
+    xAxis: xAxes.length > 0 ? xAxes : undefined,
+    yAxis: yAxes.length > 0 ? yAxes : undefined,
+    series: series as any[],
+    ...extraOptions,
   };
 };

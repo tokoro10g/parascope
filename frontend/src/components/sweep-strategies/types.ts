@@ -15,7 +15,9 @@ export interface StrategyContext {
   headers: SweepHeader[];
   node: any;
   theme: ChartTheme;
+  is2D: boolean;
   isXNumeric: boolean;
+  isYNumeric: boolean;
   isOutputNumeric: boolean;
   selectedInputLabel: string;
   showXLabel: boolean;
@@ -27,6 +29,7 @@ export interface StrategyContext {
 export interface VisualizationStrategy {
   canHandle(ctx: StrategyContext): boolean;
   getGrid(ctx: StrategyContext): any;
-  getAxes(ctx: StrategyContext): { xAxis: any; yAxis: any };
+  getAxes(ctx: StrategyContext): any; // Can return {xAxis, yAxis} or {xAxis3D, yAxis3D, zAxis3D}
   getSeries(ctx: StrategyContext): any;
+  getExtraOptions?(ctx: StrategyContext): any; // For visualMap, grid3D, etc.
 }
