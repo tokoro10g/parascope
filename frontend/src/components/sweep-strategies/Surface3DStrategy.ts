@@ -11,10 +11,10 @@ export class Surface3DStrategy implements VisualizationStrategy {
   }
 
   getAxes(ctx: StrategyContext) {
-    const { theme, headers, label, index } = ctx;
+    const { theme, headers, label, grid3DIndex } = ctx;
     return {
       xAxis3D: {
-        grid3DIndex: index,
+        grid3DIndex: grid3DIndex,
         name: headers[0].label,
         type: 'value',
         nameTextStyle: { color: theme.text },
@@ -22,7 +22,7 @@ export class Surface3DStrategy implements VisualizationStrategy {
         axisLine: { lineStyle: { color: theme.text } },
       },
       yAxis3D: {
-        grid3DIndex: index,
+        grid3DIndex: grid3DIndex,
         name: headers[1].label,
         type: 'value',
         nameTextStyle: { color: theme.text },
@@ -30,7 +30,7 @@ export class Surface3DStrategy implements VisualizationStrategy {
         axisLine: { lineStyle: { color: theme.text } },
       },
       zAxis3D: {
-        grid3DIndex: index,
+        grid3DIndex: grid3DIndex,
         name: label,
         type: 'value',
         nameTextStyle: { color: theme.text },
@@ -41,7 +41,7 @@ export class Surface3DStrategy implements VisualizationStrategy {
   }
 
   getSeries(ctx: StrategyContext) {
-    const { results, headers, id, label, node } = ctx;
+    const { results, headers, id, grid3DIndex, label, node } = ctx;
     const colIndex = headers.findIndex((h) => h.id === id);
 
     const xUnique = Array.from(new Set(results.map((row) => row[0])));
@@ -52,7 +52,7 @@ export class Surface3DStrategy implements VisualizationStrategy {
     const mainSeries = {
       name: label,
       type: 'surface',
-      grid3DIndex: ctx.index,
+      grid3DIndex: grid3DIndex,
       wireframe: { show: true },
       shading: 'color',
       data: results.map((row) => [
@@ -85,7 +85,7 @@ export class Surface3DStrategy implements VisualizationStrategy {
     const createPlane = (name: string, z: number, color: string) => ({
       name: `${label} ${name}`,
       type: 'surface',
-      grid3DIndex: ctx.index,
+      grid3DIndex: grid3DIndex,
       silent: true,
       wireframe: { show: false },
       shading: 'color',

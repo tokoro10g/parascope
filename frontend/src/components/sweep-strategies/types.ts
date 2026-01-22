@@ -9,8 +9,10 @@ export interface ChartTheme {
 
 export interface StrategyContext {
   id: string;
-  index: number;
+  index: number; // Absolute index in the output list
   seriesIndex: number; // The starting index in the series array for this output
+  gridIndex: number; // Index for standard 2D grids/axes
+  grid3DIndex: number; // Index for grid3D/3D axes
   label: string;
   results: any[][];
   headers: SweepHeader[];

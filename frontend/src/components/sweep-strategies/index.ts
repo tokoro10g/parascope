@@ -69,13 +69,16 @@ export const getSweepChartOption = (
   const yAxes: any[] = [];
   const series: any[] = [];
   const visualMaps: any[] = [];
-  let currentSeriesIndex = 0;
 
   // 3D Specific Containers
   const xAxis3D: any[] = [];
   const yAxis3D: any[] = [];
   const zAxis3D: any[] = [];
   const grid3D: any[] = [];
+
+  let currentSeriesIndex = 0;
+  let currentGridIndex = 0;
+  let currentGrid3DIndex = 0;
 
   let extraOptions: any = {};
 
@@ -94,6 +97,8 @@ export const getSweepChartOption = (
       id,
       index,
       seriesIndex: currentSeriesIndex,
+      gridIndex: currentGridIndex,
+      grid3DIndex: currentGrid3DIndex,
       label,
       results,
       headers,
@@ -116,23 +121,43 @@ export const getSweepChartOption = (
     if (strategy) {
       // Grid
       const grid = strategy.getGrid(context);
-      if (grid && grid.show !== false) grids.push(grid);
+      if (grid && grid.show !== false) {
+        grids.push(grid);
+        // Important: strategy only consumes gridIndex if it actually adds a grid
+      }
 
       // Axes
       const axes = strategy.getAxes(context);
+      let addedStandardAxis = false;
+      let added3DAxis = false;
+
       if (axes.xAxis) {
         if (Array.isArray(axes.xAxis)) xAxes.push(...axes.xAxis);
         else xAxes.push(axes.xAxis);
+        addedStandardAxis = true;
       }
       if (axes.yAxis) {
         if (Array.isArray(axes.yAxis)) yAxes.push(...axes.yAxis);
         else yAxes.push(axes.yAxis);
+        addedStandardAxis = true;
       }
 
       // Collect 3D axes
-      if (axes.xAxis3D) xAxis3D.push(axes.xAxis3D);
-      if (axes.yAxis3D) yAxis3D.push(axes.yAxis3D);
-      if (axes.zAxis3D) zAxis3D.push(axes.zAxis3D);
+      if (axes.xAxis3D) {
+        xAxis3D.push(axes.xAxis3D);
+        added3DAxis = true;
+      }
+      if (axes.yAxis3D) {
+        yAxis3D.push(axes.yAxis3D);
+        added3DAxis = true;
+      }
+      if (axes.zAxis3D) {
+        zAxis3D.push(axes.zAxis3D);
+        added3DAxis = true;
+      }
+
+      if (addedStandardAxis) currentGridIndex++;
+      if (added3DAxis) currentGrid3DIndex++;
 
       // Series
       const s = strategy.getSeries(context);
@@ -188,7 +213,7 @@ export const getSweepChartOption = (
         const items = Array.isArray(params) ? params : [params];
         let res = '';
         items.forEach((item, i) => {
-          if (i === 0 && !is2D) {
+          if (i === 0 && !is2D && item.axisValueLabel) {
             res += `<div style="margin-bottom: 4px; font-weight: bold; border-bottom: 1px solid ${theme.grid}">${item.axisValueLabel}</div>`;
           }
           const val = Array.isArray(item.value)
@@ -197,8 +222,8 @@ export const getSweepChartOption = (
           const displayVal = formatHumanReadableValue(val?.toString());
           res += `
             <div style="display: flex; align-items: center; gap: 8px;">
-              ${item.marker}
-              <span style="flex: 1">${item.seriesName}</span>
+              ${item.marker || ''}
+              <span style="flex: 1">${item.seriesName || ''}</span>
               <span style="font-weight: bold">${displayVal}</span>
             </div>
           `;

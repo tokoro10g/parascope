@@ -17,7 +17,7 @@ export class HeatmapStrategy implements VisualizationStrategy {
   }
 
   getAxes(ctx: StrategyContext) {
-    const { results } = ctx;
+    const { results, gridIndex } = ctx;
     const uniqueX = Array.from(new Set(results.map((row) => String(row[0]))));
     const uniqueY = Array.from(new Set(results.map((row) => String(row[1]))));
 
@@ -26,7 +26,7 @@ export class HeatmapStrategy implements VisualizationStrategy {
         type: 'category',
         data: uniqueX,
         splitArea: { show: true },
-        gridIndex: ctx.index,
+        gridIndex: gridIndex,
         name: ctx.headers[0].label,
         nameLocation: 'middle',
         nameGap: 30,
@@ -37,7 +37,7 @@ export class HeatmapStrategy implements VisualizationStrategy {
         type: 'category',
         data: uniqueY,
         splitArea: { show: true },
-        gridIndex: ctx.index,
+        gridIndex: gridIndex,
         name: ctx.headers[1].label,
         axisLabel: { color: ctx.theme.text },
         axisLine: { lineStyle: { color: ctx.theme.text } },
@@ -91,8 +91,8 @@ export class HeatmapStrategy implements VisualizationStrategy {
           shadowColor: 'rgba(0, 0, 0, 0.5)',
         },
       },
-      xAxisIndex: ctx.index,
-      yAxisIndex: ctx.index,
+      xAxisIndex: ctx.gridIndex,
+      yAxisIndex: ctx.gridIndex,
     };
   }
 
