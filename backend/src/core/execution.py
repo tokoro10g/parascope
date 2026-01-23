@@ -57,18 +57,23 @@ def _persistent_worker_loop(task_queue, result_queue, runtime_classes):
     # 1. Define Safe Builtins
     _safe_builtins = safe_builtins.copy()
     _safe_builtins.update(utility_builtins)
-    _safe_builtins['locals'] = locals
-    _safe_builtins['globals'] = globals
-    _safe_builtins['dict'] = dict
-    _safe_builtins['list'] = list
-    _safe_builtins['set'] = set
-    _safe_builtins['str'] = str
-    _safe_builtins['int'] = int
-    _safe_builtins['float'] = float
-    _safe_builtins['bool'] = bool
-    _safe_builtins['isinstance'] = isinstance
-    _safe_builtins['len'] = len
-    _safe_builtins['range'] = range
+    
+    # Add missing essentials often found in ZopeGuards/Restricted environments
+    _safe_builtins.update({
+        'all': all,
+        'any': any,
+        'enumerate': enumerate,
+        'filter': filter,
+        'map': map,
+        'max': max,
+        'min': min,
+        'sum': sum,
+        'dict': dict,
+        'list': list,
+        'set': set,
+        'locals': locals,
+        'globals': globals,
+    })
     
     # 2. Define Safe Import
     def safe_import(name, globals=None, locals=None, fromlist=(), level=0):
