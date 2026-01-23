@@ -13,9 +13,19 @@ export function useSheetLock(sheetId: string | null) {
 
   const [tabId] = useState(() => {
     let id = sessionStorage.getItem('parascope_tab_id');
-    if (!id) {
+    const windowName = window.name;
+
+    // Check if this is a duplicated tab (target="_blank") or a genuine refresh
+    // New tabs/windows usually have an empty window.name by default
+    const isNewTab = !windowName || (id && windowName !== id);
+
+    if (!id || isNewTab) {
       id = uuidv4();
       sessionStorage.setItem('parascope_tab_id', id);
+      window.name = id;
+    } else {
+      // Ensure window.name is consistent (e.g. if it was cleared externally)
+      if (window.name !== id) window.name = id;
     }
     return id;
   });
