@@ -44,6 +44,16 @@ export const ItemExplorer: React.FC<ItemExplorerProps> = ({
 
   const query = searchQuery.toLowerCase();
 
+  const handleFolderClick = (folderId: string) => {
+    onFolderClick?.(folderId);
+    setSearchQuery('');
+  };
+
+  const handleSheetClick = (sheet: any) => {
+    onSheetClick?.(sheet);
+    setSearchQuery('');
+  };
+
   const filteredFolders = useMemo(() => {
     return folders
       .filter((f) => {
@@ -143,7 +153,7 @@ export const ItemExplorer: React.FC<ItemExplorerProps> = ({
               <span className="breadcrumb-separator">/</span>
               <button
                 type="button"
-                onClick={() => onFolderClick?.(folder.id)}
+                onClick={() => handleFolderClick(folder.id)}
                 className={`breadcrumb-item ${
                   index === breadcrumbs.length - 1 ? 'active' : ''
                 }`}
@@ -174,10 +184,10 @@ export const ItemExplorer: React.FC<ItemExplorerProps> = ({
           <div
             key={folder.id}
             className="explorer-item folder-item"
-            onClick={() => onFolderClick?.(folder.id)}
+            onClick={() => handleFolderClick(folder.id)}
             onKeyDown={(e) => {
               if (e.key === 'Enter' || e.key === ' ')
-                onFolderClick?.(folder.id);
+                handleFolderClick(folder.id);
             }}
             role="button"
             tabIndex={0}
@@ -206,9 +216,9 @@ export const ItemExplorer: React.FC<ItemExplorerProps> = ({
           <div
             key={sheet.id}
             className={`explorer-item sheet-item ${onSheetClick ? 'clickable' : ''}`}
-            onClick={() => onSheetClick?.(sheet)}
+            onClick={() => handleSheetClick(sheet)}
             onKeyDown={(e) => {
-              if (e.key === 'Enter' || e.key === ' ') onSheetClick?.(sheet);
+              if (e.key === 'Enter' || e.key === ' ') handleSheetClick(sheet);
             }}
             role="button"
             tabIndex={onSheetClick ? 0 : -1}
