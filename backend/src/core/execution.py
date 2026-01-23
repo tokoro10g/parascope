@@ -9,6 +9,9 @@ import uuid
 from typing import Any, Dict, Optional, List
 
 from pydantic import BaseModel
+from RestrictedPython import compile_restricted, safe_globals, safe_builtins, utility_builtins
+from RestrictedPython.Eval import default_guarded_getiter, default_guarded_getitem
+from RestrictedPython.Guards import guarded_iter_unpack_sequence
 
 from .config import settings
 from .runtime import (
@@ -45,12 +48,47 @@ def _persistent_worker_loop(task_queue, result_queue, runtime_classes):
      function_node, constant_node, input_node, output_node, sheet_node, lut_node) = runtime_classes
 
     # Pre-import common scientific libraries
-    try:
-        import math
-        import numpy
-        import networkx
-    except ImportError:
-        pass
+    import math
+    import numpy
+    import networkx
+    
+    # Setup RestrictedPython environment
+    
+    # 1. Define Safe Builtins
+    _safe_builtins = safe_builtins.copy()
+    _safe_builtins.update(utility_builtins)
+    _safe_builtins['locals'] = locals
+    _safe_builtins['globals'] = globals
+    _safe_builtins['dict'] = dict
+    _safe_builtins['list'] = list
+    _safe_builtins['set'] = set
+    _safe_builtins['str'] = str
+    _safe_builtins['int'] = int
+    _safe_builtins['float'] = float
+    _safe_builtins['bool'] = bool
+    _safe_builtins['isinstance'] = isinstance
+    _safe_builtins['len'] = len
+    _safe_builtins['range'] = range
+    
+    # 2. Define Safe Import
+    def safe_import(name, globals=None, locals=None, fromlist=(), level=0):
+        # Whitelist of allowed modules
+        allowed_modules = {
+            'math', 'numpy', 'scipy', 'networkx', 
+            'json', 'datetime', 'time', 'random', 
+            'itertools', 'functools', 'collections', 're',
+            'traceback'
+        }
+        
+        # Check if the root module is allowed (e.g. numpy.linalg -> check numpy)
+        root_name = name.split('.')[0]
+        
+        if root_name in allowed_modules:
+            return __import__(name, globals, locals, fromlist, level)
+        
+        raise ImportError(f"Import of module '{name}' is not allowed in this environment.")
+
+    _safe_builtins['__import__'] = safe_import
 
     while True:
         try:
@@ -73,7 +111,26 @@ def _persistent_worker_loop(task_queue, result_queue, runtime_classes):
             redirected_output = io.StringIO()
             sys.stdout = redirected_output
 
-            global_vars = {
+            # Helper for print
+            def _print_(*args):
+                print(*args, file=redirected_output)
+
+            def _write_(obj):
+                return obj
+
+            # Construct safe globals
+            # We explicitly allow the runtime classes and pre-imported libs
+            global_vars = safe_globals.copy()
+            global_vars.update({
+                "__builtins__": _safe_builtins,
+                "__metaclass__": type, # Required for RestrictedPython in some modes
+                "__name__": "__restricted_main__",
+                "_print_": _print_,
+                "_write_": _write_,
+                "_getitem_": default_guarded_getitem,
+                "_getiter_": default_guarded_getiter,
+                "_iter_unpack_sequence_": guarded_iter_unpack_sequence,
+                # Runtime Classes
                 "SheetBase": SheetBase,
                 "NodeError": NodeError,
                 "ParascopeError": ParascopeError,
@@ -85,20 +142,27 @@ def _persistent_worker_loop(task_queue, result_queue, runtime_classes):
                 "input_node": input_node,
                 "output_node": output_node,
                 "sheet_node": sheet_node,
-                "lut_node": lut_node
-            }
+                "lut_node": lut_node,
+                # Pre-injected Libraries
+                "math": math,
+                "numpy": numpy,
+                "networkx": networkx,
+            })
+            
             success = False
             error = None
             results = {}
 
             try:
-                # Compile and execute the script
-                code_obj = compile(script, filename, "exec")
+                # Compile and execute the script using RestrictedPython
+                # This transpiles the code to add runtime checks (guards)
+                # 'exec' mode allows top-level statements
+                code_obj = compile_restricted(script, filename, "exec")
                 exec(code_obj, global_vars)
                 results = global_vars.get("results", {})
 
-                # If the script defines a 'sheet' instance (Root), extract its recursive state
-                root_sheet = global_vars.get("sheet")
+                # If the script defines a 'sheet_instance' instance (Root), extract its recursive state
+                root_sheet = global_vars.get("sheet_instance")
                 if root_sheet and isinstance(root_sheet, SheetBase):
                     # Helper to traverse
                     def extract_nodes_state(instance: SheetBase):

@@ -35,14 +35,14 @@ class CodeGenerator:
 # --- Execution Entry Point ---
 try:
     overrides = {repr(input_overrides)}
-    sheet = {root_class_name}(input_overrides=overrides)
-    sheet.run()
+    sheet_instance = {root_class_name}(input_overrides=overrides)
+    sheet_instance.run()
 except Exception as e:
     import traceback
     traceback.print_exc()
 finally:
-    if 'sheet' in locals():
-        results = sheet.results
+    if 'sheet_instance' in locals():
+        results = sheet_instance.results
     else:
         results = {{}}
 """
@@ -83,10 +83,10 @@ try:
         step_res = {{ "inputs": scenario, "outputs": {{}} }}
         
         try:
-            _sweep_sheet_instance = {root_class_name}(input_overrides=current_overrides)
+            sweep_sheet_instance = {root_class_name}(input_overrides=current_overrides)
             # Run the sheet
-            _sweep_sheet_instance.run()
-            raw_results = _sweep_sheet_instance.results
+            sweep_sheet_instance.run()
+            raw_results = sweep_sheet_instance.results
             
             # Extract requested outputs
             for out_id in output_node_ids:
@@ -235,9 +235,9 @@ except Exception as e:
             return ""
         # Preserve case, replace invalid chars with underscore
         clean = re.sub(r'[^a-zA-Z0-9_]', '_', text)
-        # Must start with letter/underscore
-        if clean and not clean[0].isalpha() and clean[0] != '_':
-            clean = f"_{clean}"
+        # Must start with letter
+        if clean and not clean[0].isalpha():
+            clean = f"v_{clean}"
         # Cleanup underscores
         clean = re.sub(r'_+', '_', clean)
         return clean
