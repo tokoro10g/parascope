@@ -56,9 +56,9 @@ export const getSweepChartOption = (
   const count = outputHeaders.length;
 
   // Layout Constants
-  const gap = 5;
-  const topMargin = 10;
-  const bottomMargin = 10;
+  const gap = 2;
+  const topMargin = 5;
+  const bottomMargin = 5;
   const availableHeight = 100 - topMargin - bottomMargin;
   const gridHeight =
     count > 1 ? (availableHeight - gap * (count - 1)) / count : availableHeight;
@@ -266,7 +266,8 @@ export const getSweepChartOption = (
       },
     },
     legend: {
-      bottom: 0,
+      bottom: '1%',
+      padding: 0,
       textStyle: { color: theme.text },
     },
     visualMap: visualMaps.length > 0 ? visualMaps : undefined,
