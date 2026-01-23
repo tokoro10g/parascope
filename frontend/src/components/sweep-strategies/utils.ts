@@ -76,8 +76,16 @@ export function checkIsNumeric(values: any[]) {
     if (v === null || v === undefined || v === '') return true;
     if (typeof v === 'number') return true;
     if (typeof v === 'string') {
-      if (v === 'inf' || v === '-inf' || v.toLowerCase() === 'nan') return true;
-      return !Number.isNaN(parseFloat(v));
+      const trimmed = v.trim();
+      if (trimmed === '') return true;
+      if (
+        trimmed === 'inf' ||
+        trimmed === '-inf' ||
+        trimmed.toLowerCase() === 'nan'
+      )
+        return true;
+      // Use Number() for strict parsing (disallows trailing characters like "123 Steel")
+      return !Number.isNaN(Number(trimmed));
     }
     return false;
   });

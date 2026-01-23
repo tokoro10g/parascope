@@ -787,5 +787,135 @@ async def seed_database(session: AsyncSession):
     await session.flush()
     session.add_all([conn5_1, conn5_2, conn5_3, conn5_4, conn5_5, conn5_6, conn5_7])
 
+    # ==========================================
+    # Sheet 6: Projectile Motion (2D Sweep Demo)
+    # ==========================================
+    sheet6_id = uuid.uuid4()
+    sheet6 = Sheet(id=sheet6_id, name="Projectile Motion (2D Sweep)", owner_name="System", folder_id=folder_id)
+
+    # Inputs
+    node_angle = Node(
+        id=uuid.uuid4(),
+        sheet_id=sheet6_id,
+        type="input",
+        label="Launch Angle [deg]",
+        inputs=[],
+        outputs=[{"key": "value", "socket_type": "any"}],
+        position_x=100,
+        position_y=100,
+        data={"description": "Angle of launch in degrees.", "min": "0", "max": "90", "value": "45"},
+    )
+    node_v0 = Node(
+        id=uuid.uuid4(),
+        sheet_id=sheet6_id,
+        type="input",
+        label="Initial Velocity (v0) [m/s]",
+        inputs=[],
+        outputs=[{"key": "value", "socket_type": "any"}],
+        position_x=100,
+        position_y=300,
+        data={"description": "Initial velocity magnitude.", "min": "0", "value": "100"},
+    )
+    node_g = Node(
+        id=uuid.uuid4(),
+        sheet_id=sheet6_id,
+        type="constant",
+        label="Gravity (g) [m/s^2]",
+        inputs=[],
+        outputs=[{"key": "value", "socket_type": "any"}],
+        position_x=100,
+        position_y=500,
+        data={"value": "9.81", "description": "Acceleration due to gravity.", "min": "0"},
+    )
+
+    # Calculation
+    node_proj_calc = Node(
+        id=uuid.uuid4(),
+        sheet_id=sheet6_id,
+        type="function",
+        label="Calculate Trajectory",
+        inputs=[
+            {"key": "angle_deg", "socket_type": "any"},
+            {"key": "v0", "socket_type": "any"},
+            {"key": "g", "socket_type": "any"},
+        ],
+        outputs=[
+            {"key": "Range", "socket_type": "any"},
+            {"key": "MaxHeight", "socket_type": "any"},
+            {"key": "FlightTime", "socket_type": "any"},
+        ],
+        position_x=500,
+        position_y=300,
+        data={
+            "code": """
+angle_rad = math.radians(angle_deg)
+Range = (v0**2 * math.sin(2 * angle_rad)) / g
+MaxHeight = (v0**2 * math.sin(angle_rad)**2) / (2 * g)
+FlightTime = (2 * v0 * math.sin(angle_rad)) / g
+            """,
+            "description": "Calculates Range, Max Height, and Flight Time using standard kinematic equations.",
+        },
+    )
+
+    # Outputs
+    node_out_range = Node(
+        id=uuid.uuid4(),
+        sheet_id=sheet6_id,
+        type="output",
+        label="Range [m]",
+        inputs=[{"key": "value", "socket_type": "any"}],
+        outputs=[],
+        position_x=900,
+        position_y=150,
+        data={"description": "Total horizontal distance traveled.", "min": "0"},
+    )
+    node_out_height = Node(
+        id=uuid.uuid4(),
+        sheet_id=sheet6_id,
+        type="output",
+        label="Max Height [m]",
+        inputs=[{"key": "value", "socket_type": "any"}],
+        outputs=[],
+        position_x=900,
+        position_y=300,
+        data={"description": "Maximum vertical altitude reached.", "min": "0"},
+    )
+    node_out_time = Node(
+        id=uuid.uuid4(),
+        sheet_id=sheet6_id,
+        type="output",
+        label="Flight Time [s]",
+        inputs=[{"key": "value", "socket_type": "any"}],
+        outputs=[],
+        position_x=900,
+        position_y=450,
+        data={"description": "Total time in the air.", "min": "0"},
+    )
+
+    # Connections
+    conn6_1 = Connection(
+        sheet_id=sheet6_id, source_id=node_angle.id, source_port="value", target_id=node_proj_calc.id, target_port="angle_deg"
+    )
+    conn6_2 = Connection(
+        sheet_id=sheet6_id, source_id=node_v0.id, source_port="value", target_id=node_proj_calc.id, target_port="v0"
+    )
+    conn6_3 = Connection(
+        sheet_id=sheet6_id, source_id=node_g.id, source_port="value", target_id=node_proj_calc.id, target_port="g"
+    )
+    conn6_4 = Connection(
+        sheet_id=sheet6_id, source_id=node_proj_calc.id, source_port="Range", target_id=node_out_range.id, target_port="value"
+    )
+    conn6_5 = Connection(
+        sheet_id=sheet6_id, source_id=node_proj_calc.id, source_port="MaxHeight", target_id=node_out_height.id, target_port="value"
+    )
+    conn6_6 = Connection(
+        sheet_id=sheet6_id, source_id=node_proj_calc.id, source_port="FlightTime", target_id=node_out_time.id, target_port="value"
+    )
+
+    session.add(sheet6)
+    session.add_all([node_angle, node_v0, node_g, node_proj_calc, node_out_range, node_out_height, node_out_time])
+    await session.flush()
+    session.add_all([conn6_1, conn6_2, conn6_3, conn6_4, conn6_5, conn6_6])
+
     await session.commit()
     print("Database seeded successfully.")
