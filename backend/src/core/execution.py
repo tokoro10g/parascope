@@ -11,7 +11,7 @@ from typing import Any, Dict, Optional, List
 from pydantic import BaseModel
 from RestrictedPython import compile_restricted, safe_globals, safe_builtins, utility_builtins
 from RestrictedPython.Eval import default_guarded_getiter, default_guarded_getitem
-from RestrictedPython.Guards import guarded_iter_unpack_sequence
+from RestrictedPython.Guards import guarded_iter_unpack_sequence, safer_getattr
 
 from .config import settings
 from .runtime import (
@@ -118,6 +118,33 @@ def _persistent_worker_loop(task_queue, result_queue, runtime_classes):
             def _write_(obj):
                 return obj
 
+            def _inplacevar_(op, target, expr):
+                if op == '+=':
+                    target += expr
+                elif op == '-=':
+                    target -= expr
+                elif op == '*=':
+                    target *= expr
+                elif op == '/=':
+                    target /= expr
+                elif op == '//=':
+                    target //= expr
+                elif op == '%=':
+                    target %= expr
+                elif op == '**=':
+                    target **= expr
+                elif op == '<<=':
+                    target <<= expr
+                elif op == '>>=':
+                    target >>= expr
+                elif op == '&=':
+                    target &= expr
+                elif op == '^=':
+                    target ^= expr
+                elif op == '|=':
+                    target |= expr
+                return target
+
             # Construct safe globals
             # We explicitly allow the runtime classes and pre-imported libs
             global_vars = safe_globals.copy()
@@ -127,6 +154,8 @@ def _persistent_worker_loop(task_queue, result_queue, runtime_classes):
                 "__name__": "__restricted_main__",
                 "_print_": _print_,
                 "_write_": _write_,
+                "_inplacevar_": _inplacevar_,
+                "_getattr_": safer_getattr,
                 "_getitem_": default_guarded_getitem,
                 "_getiter_": default_guarded_getiter,
                 "_iter_unpack_sequence_": guarded_iter_unpack_sequence,
