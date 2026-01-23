@@ -56,9 +56,10 @@ export const getSweepChartOption = (
   const count = outputHeaders.length;
 
   // Layout Constants
-  const gap = 2;
+  const isCompactLayout = is3D || isHeatmap;
+  const gap = isCompactLayout ? 2 : 5;
   const topMargin = 5;
-  const bottomMargin = 5;
+  const bottomMargin = isCompactLayout ? 5 : 10;
   const availableHeight = 100 - topMargin - bottomMargin;
   const gridHeight =
     count > 1 ? (availableHeight - gap * (count - 1)) / count : availableHeight;
@@ -266,7 +267,8 @@ export const getSweepChartOption = (
       },
     },
     legend: {
-      bottom: '1%',
+      height: 10,
+      itemHeight: 10,
       padding: 0,
       textStyle: { color: theme.text },
     },
