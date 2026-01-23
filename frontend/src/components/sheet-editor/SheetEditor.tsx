@@ -20,6 +20,7 @@ import { createEditor, type ParascopeNode } from '../../rete';
 import type { NodeType } from '../../rete/types';
 import { createSocket, extractValuesFromResult } from '../../utils';
 import { EditorBar } from '../EditorBar';
+import { Modal } from '../Modal';
 import { NavBar } from '../NavBar';
 import { NodeInspector } from '../node-inspector';
 import { SheetPickerModal } from '../SheetPickerModal';
@@ -51,6 +52,7 @@ export const SheetEditor: React.FC = () => {
   const [isSheetPickerOpen, setIsSheetPickerOpen] = useState(false);
   const [isUsageModalOpen, setIsUsageModalOpen] = useState(false);
   const [isVersionListOpen, setIsVersionListOpen] = useState(false);
+  const [isTakeOverModalOpen, setIsTakeOverModalOpen] = useState(false);
   const [initialLoadDone, setInitialLoadDone] = useState(false);
 
   const lastResultRef = useRef(lastResult);
@@ -695,7 +697,11 @@ export const SheetEditor: React.FC = () => {
             Currently being edited by <strong>{lockedByOther}</strong>. You are
             in Read-Only mode.
           </span>
-          <button type="button" onClick={takeOver} className="take-over-btn">
+          <button
+            type="button"
+            onClick={() => setIsTakeOverModalOpen(true)}
+            className="take-over-btn"
+          >
             Take Over
           </button>
         </div>
@@ -839,6 +845,44 @@ export const SheetEditor: React.FC = () => {
           isDirty={isDirty}
         />
       )}
+      <Modal
+        isOpen={isTakeOverModalOpen}
+        onClose={() => setIsTakeOverModalOpen(false)}
+        title="Confirm Take Over"
+        footer={
+          <div
+            style={{ display: 'flex', justifyContent: 'flex-end', gap: '10px' }}
+          >
+            <button
+              type="button"
+              className="btn-secondary"
+              onClick={() => setIsTakeOverModalOpen(false)}
+            >
+              Cancel
+            </button>
+            <button
+              type="button"
+              className="btn-primary"
+              style={{ backgroundColor: '#d32f2f' }}
+              onClick={() => {
+                takeOver();
+                setIsTakeOverModalOpen(false);
+              }}
+            >
+              Confirm Take Over
+            </button>
+          </div>
+        }
+      >
+        <p>
+          Are you sure you want to forcibly take over the lock from{' '}
+          <strong>{lockedByOther}</strong>?
+        </p>
+        <p style={{ marginTop: '10px', color: '#666' }}>
+          This may cause the other user to lose their unsaved work. Only proceed
+          if you are sure they are no longer editing.
+        </p>
+      </Modal>
     </div>
   );
 };
