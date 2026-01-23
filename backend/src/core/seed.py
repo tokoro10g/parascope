@@ -797,7 +797,7 @@ async def seed_database(session: AsyncSession):
     node_angle = Node(
         id=uuid.uuid4(),
         sheet_id=sheet6_id,
-        type="input",
+        type="constant",
         label="Launch Angle [deg]",
         inputs=[],
         outputs=[{"key": "value", "socket_type": "any"}],
@@ -808,7 +808,7 @@ async def seed_database(session: AsyncSession):
     node_v0 = Node(
         id=uuid.uuid4(),
         sheet_id=sheet6_id,
-        type="input",
+        type="constant",
         label="Initial Velocity (v0) [m/s]",
         inputs=[],
         outputs=[{"key": "value", "socket_type": "any"}],
