@@ -172,7 +172,7 @@ async def sweep_sheet(
         
         # Extend timeout for 2D sweeps
         timeout = 30.0 + (len(scenarios) * 0.05) 
-        exec_result = execute_full_script(script, timeout=timeout)
+        exec_result = await execute_full_script(script, timeout=timeout)
         
         if not exec_result.get("success"):
             global_error = exec_result.get("error")

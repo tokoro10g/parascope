@@ -1,3 +1,4 @@
+import asyncio
 import io
 import linecache
 import multiprocessing
@@ -261,33 +262,38 @@ class WorkerHandle:
             )
             self.process.start()
 
-    def execute(self, script: str, timeout: float) -> Dict[str, Any]:
-        with self.lock:
-            self._ensure_alive()
-            
-            # Clear result queue just in case of stale data from a previous crash/timeout
-            while not self.result_queue.empty():
-                try:
-                    self.result_queue.get_nowait()
-                except pyqueue.Empty:
-                    break
+    async def execute(self, script: str, timeout: float) -> Dict[str, Any]:
+        loop = asyncio.get_running_loop()
 
-            try:
-                self.task_queue.put(script)
-            except Exception:
-                self.process.terminate()
+        def _blocking_execute():
+            with self.lock:
                 self._ensure_alive()
-                self.task_queue.put(script)
 
-            try:
-                result = self.result_queue.get(timeout=timeout)
-                return result
-            except pyqueue.Empty:
-                # Timeout: Kill and restart worker
-                self.process.terminate()
-                self.process.join()
-                self.process = None
-                return {"success": False, "error": "Execution timed out"}
+                # Clear result queue just in case of stale data from a previous crash/timeout
+                while not self.result_queue.empty():
+                    try:
+                        self.result_queue.get_nowait()
+                    except pyqueue.Empty:
+                        break
+
+                try:
+                    self.task_queue.put(script)
+                except Exception:
+                    self.process.terminate()
+                    self._ensure_alive()
+                    self.task_queue.put(script)
+
+                try:
+                    result = self.result_queue.get(timeout=timeout)
+                    return result
+                except pyqueue.Empty:
+                    # Timeout: Kill and restart worker
+                    self.process.terminate()
+                    self.process.join()
+                    self.process = None
+                    return {"success": False, "error": "Execution timed out"}
+
+        return await loop.run_in_executor(None, _blocking_execute)
 
 
 class WorkerPool:
@@ -296,13 +302,13 @@ class WorkerPool:
         self.current_index = 0
         self.pool_lock = threading.Lock()
 
-    def execute(self, script: str, timeout: float = 5.0) -> Dict[str, Any]:
+    async def execute(self, script: str, timeout: float = 5.0) -> Dict[str, Any]:
         # Simple Round-Robin distribution
         with self.pool_lock:
             worker = self.workers[self.current_index]
             self.current_index = (self.current_index + 1) % len(self.workers)
         
-        return worker.execute(script, timeout)
+        return await worker.execute(script, timeout)
 
 
 # Global Pool Instance
@@ -318,8 +324,8 @@ def _get_worker_pool() -> WorkerPool:
     return _worker_pool
 
 
-def execute_full_script(script: str, timeout: float = 5.0) -> Dict[str, Any]:
+async def execute_full_script(script: str, timeout: float = 5.0) -> Dict[str, Any]:
     """
     Executes the script using a pool of persistent workers.
     """
-    return _get_worker_pool().execute(script, timeout)
+    return await _get_worker_pool().execute(script, timeout)

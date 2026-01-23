@@ -154,7 +154,7 @@ async def _run_calculation(
     script = await generator.generate_full_script(sheet, input_overrides)
 
     # Execute script
-    exec_result = execute_full_script(script)
+    exec_result = await execute_full_script(script)
     results = exec_result.get("results", {})
 
     # Build detailed response recursively
