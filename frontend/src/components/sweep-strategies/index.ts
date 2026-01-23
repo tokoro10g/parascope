@@ -219,9 +219,10 @@ export const getSweepChartOption = (
         // 1. Header showing input values
         if (is2D) {
           // For 2D, we show both inputs
-          // If triggered by item (3D/Heatmap), value is [x, y, z]
           const first = items[0];
-          if (first && Array.isArray(first.value)) {
+
+          // Case A: Item trigger (3D Surface / Heatmap) - value is [x, y, z]
+          if (first && Array.isArray(first.value) && first.value.length >= 3) {
             const xVal = formatHumanReadableValue(first.value[0]?.toString());
             const yVal = formatHumanReadableValue(first.value[1]?.toString());
             res += `<div style="margin-bottom: 4px; font-weight: bold; border-bottom: 1px solid ${theme.grid}">
@@ -229,10 +230,20 @@ export const getSweepChartOption = (
               ${inputHeaders[1].label}: ${yVal}
             </div>`;
           }
+          // Case B: Axis trigger (Multi-line) - axisValueLabel is the X axis value
+          else if (first?.axisValueLabel) {
+            // Identify which input is on X axis
+            const numericInput = isXNumeric ? inputHeaders[0] : inputHeaders[1];
+
+            // The axisValueLabel corresponds to the numeric input (X axis)
+            res += `<div style="margin-bottom: 4px; font-weight: bold; border-bottom: 1px solid ${theme.grid}">
+              ${numericInput.label}: ${first.axisValueLabel}
+            </div>`;
+          }
         } else {
           // 1D Header
           const first = items[0];
-          if (first && first.axisValueLabel) {
+          if (first?.axisValueLabel) {
             res += `<div style="margin-bottom: 4px; font-weight: bold; border-bottom: 1px solid ${theme.grid}">${first.axisValueLabel}</div>`;
           }
         }
