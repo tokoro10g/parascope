@@ -448,7 +448,7 @@ class SheetBase:
 
                 self.register_error(node_id, error_msg)
                 # For unexpected errors, stop execution
-                raise e
+                raise ParascopeError(error_msg) from e
         
         # 5. Collect Public Outputs
         return self.get_public_outputs()

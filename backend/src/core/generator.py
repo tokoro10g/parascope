@@ -116,7 +116,24 @@ try:
                     step_res["metadata"][out_id] = meta
 
         except Exception as e:
-            step_res["error"] = str(e)
+            msg = str(e)
+            step_res["error"] = msg
+            
+            # Use results from partially executed sheet if available
+            if "metadata" not in step_res: step_res["metadata"] = {{}}
+            
+            # Extract metadata from raw_results if it exists (from partially successful nodes)
+            if 'raw_results' in locals():
+                for node_id, node_res in raw_results.items():
+                    if isinstance(node_res, dict):
+                        m = {{}}
+                        if 'min' in node_res: m['min'] = node_res['min']
+                        if 'max' in node_res: m['max'] = node_res['max']
+                        if m: step_res["metadata"][node_id] = m
+            
+            # Add the global step error
+            step_res["metadata"]["error"] = msg
+            
             # Ensure outputs are populated with None/Null for consistent structure
             for out_id in output_node_ids:
                 step_res["outputs"][out_id] = None

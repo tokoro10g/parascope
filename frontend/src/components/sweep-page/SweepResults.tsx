@@ -1,12 +1,13 @@
 import type { EChartsOption } from 'echarts';
 import ReactECharts from 'echarts-for-react';
-import { ChartArea, Table } from 'lucide-react';
+import { ChartArea, Table, TriangleAlert } from 'lucide-react';
 import type React from 'react';
-import { useMemo, useRef } from 'react';
+import { useMemo, useRef, useState } from 'react';
 import toast from 'react-hot-toast';
 import { Link } from 'react-router-dom';
 import type { NodeData, SweepHeader } from '../../api';
 import { copyToClipboard } from '../../utils';
+import { Modal } from '../Modal';
 import { getSweepChartOption } from '../sweep-strategies';
 import './SweepPage.css';
 
@@ -37,6 +38,14 @@ export const SweepResults: React.FC<SweepResultsProps> = ({
   theme,
 }) => {
   const chartRef = useRef<ReactECharts>(null);
+  const [isErrorModalOpen, setIsErrorModalOpen] = useState(false);
+
+  const errorIndices = useMemo(() => {
+    if (!metadata) return [];
+    return metadata.map((m, i) => (m.error ? i : -1)).filter((i) => i !== -1);
+  }, [metadata]);
+
+  const hasErrors = errorIndices.length > 0;
 
   const selectedInputLabel =
     nodes.find((n) => n.id === inputNodeId)?.label || 'Input';
@@ -120,6 +129,25 @@ export const SweepResults: React.FC<SweepResultsProps> = ({
           ) : (
             sheetName || 'Loading...'
           )}
+          {hasErrors && (
+            <button
+              type="button"
+              onClick={() => setIsErrorModalOpen(true)}
+              className="sweep-error-warning"
+              title={`${errorIndices.length} points failed. Click for details.`}
+              style={{
+                marginLeft: '12px',
+                background: 'none',
+                border: 'none',
+                color: '#ff9800',
+                cursor: 'pointer',
+                display: 'inline-flex',
+                alignItems: 'center',
+              }}
+            >
+              <TriangleAlert size={20} />
+            </button>
+          )}
         </h2>
         {results && (
           <div className="sweep-copy-actions">
@@ -157,6 +185,66 @@ export const SweepResults: React.FC<SweepResultsProps> = ({
           <p>Configure inputs and run the sweep to see results.</p>
         </div>
       )}
+      <Modal
+        isOpen={isErrorModalOpen}
+        onClose={() => setIsErrorModalOpen(false)}
+        title="Sweep Errors"
+      >
+        <p style={{ marginBottom: '15px' }}>
+          {errorIndices.length} out of {results?.length} points failed to
+          calculate correctly.
+        </p>
+        <div style={{ maxHeight: '60vh', overflowY: 'auto' }}>
+          <table className="sweep-error-table" style={{ width: '100%' }}>
+            <thead>
+              <tr style={{ textAlign: 'left' }}>
+                <th style={{ padding: '8px' }}>Point</th>
+                <th style={{ padding: '8px' }}>Error Message</th>
+              </tr>
+            </thead>
+            <tbody>
+              {results &&
+                errorIndices.map((idx) => {
+                  const row = results[idx];
+                  if (!row) return null;
+
+                  const inputLabels = headers
+                    .map((h, i) => ({ h, i }))
+                    .filter((item) => item.h.type === 'input')
+                    .map((item) => `${item.h.label}: ${row[item.i]}`)
+                    .join('\n');
+
+                  return (
+                    <tr key={idx} style={{ borderTop: '1px solid #eee' }}>
+                      <td
+                        style={{
+                          padding: '8px',
+                          fontSize: '0.9em',
+                          color: 'var(--text-color)',
+                          whiteSpace: 'pre-wrap',
+                        }}
+                      >
+                        {inputLabels}
+                      </td>
+                      <td
+                        style={{
+                          padding: '8px',
+                          fontSize: '0.85em',
+                          color: '#d32f2f',
+                          whiteSpace: 'pre-wrap',
+                          fontFamily: 'monospace',
+                          wordBreak: 'break-word',
+                        }}
+                      >
+                        {metadata![idx].error}
+                      </td>
+                    </tr>
+                  );
+                })}
+            </tbody>
+          </table>
+        </div>
+      </Modal>
     </main>
   );
 };

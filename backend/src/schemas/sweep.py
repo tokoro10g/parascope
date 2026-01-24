@@ -30,5 +30,5 @@ class SweepHeader(BaseModel):
 class SweepResponse(BaseModel):
     headers: List[SweepHeader]
     results: List[List[Any]]
-    metadata: List[Dict[UUID, Any]] | None = None
+    metadata: List[Dict[str, Any]] | None = None
     error: str | None = None

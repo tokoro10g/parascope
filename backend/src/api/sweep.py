@@ -16,6 +16,8 @@ from ..schemas.sweep import SweepRequest, SweepResponse, SweepHeader
 
 
 def serialize_result(val: Any) -> Any:
+    if val is None:
+        return None
     if isinstance(val, dict):
         # If it's a structured result object { "value": ..., "min": ..., "max": ... }
         # we want to serialize its members but keep it as a dict
@@ -188,6 +190,10 @@ async def sweep_sheet(
             step_inputs = step.get("inputs", {})
             step_outputs = step.get("outputs", {})
             step_metadata = step.get("metadata", {})
+            
+            # If the step itself had a top-level error (e.g. timeout or hard crash), ensure it's in metadata
+            if "error" in step and "error" not in step_metadata:
+                step_metadata["error"] = step["error"]
             
             row = []
             # 1. Primary Input

@@ -55,22 +55,31 @@ export class Surface3DStrategy implements VisualizationStrategy {
       grid3DIndex: grid3DIndex,
       wireframe: { show: true },
       shading: 'color',
-      data: results.map((row) => [
-        parseFloat(String(row[0])),
-        parseFloat(String(row[1])),
-        parseFloat(String(row[colIndex])),
-      ]),
+      data: results.map((row) => {
+        const val = row[colIndex];
+        return [
+          parseFloat(String(row[0])),
+          parseFloat(String(row[1])),
+          val !== null && val !== undefined ? parseFloat(String(val)) : null,
+        ];
+      }),
       dataShape: [yCount, xCount],
     };
 
     const extraSeries: any[] = [mainSeries];
 
     // Check for min/max in metadata (Backend ensures this is populated even for static)
-    const dynamicMin = ctx.metadata?.map((m) => m[id]?.min);
-    const dynamicMax = ctx.metadata?.map((m) => m[id]?.max);
+    const dynamicMin = ctx.metadata?.map((m) => {
+      const v = m[id]?.min;
+      return v !== null && v !== undefined ? parseFloat(String(v)) : null;
+    });
+    const dynamicMax = ctx.metadata?.map((m) => {
+      const v = m[id]?.max;
+      return v !== null && v !== undefined ? parseFloat(String(v)) : null;
+    });
 
-    const hasMin = dynamicMin?.some((v) => v !== undefined);
-    const hasMax = dynamicMax?.some((v) => v !== undefined);
+    const hasMin = dynamicMin?.some((v) => v !== null && !Number.isNaN(v));
+    const hasMax = dynamicMax?.some((v) => v !== null && !Number.isNaN(v));
 
     if (hasMin) {
       extraSeries.push({
@@ -81,11 +90,14 @@ export class Surface3DStrategy implements VisualizationStrategy {
         wireframe: { show: false },
         shading: 'color',
         itemStyle: { color: '#1890ff', opacity: 0.2 },
-        data: results.map((row, i) => [
-          parseFloat(String(row[0])),
-          parseFloat(String(row[1])),
-          dynamicMin![i] ?? -Infinity,
-        ]),
+        data: results.map((row, i) => {
+          const z = dynamicMin![i];
+          return [
+            parseFloat(String(row[0])),
+            parseFloat(String(row[1])),
+            z !== null && !Number.isNaN(z) ? z : (null as any),
+          ];
+        }),
         dataShape: [yCount, xCount],
       });
     }
@@ -99,11 +111,14 @@ export class Surface3DStrategy implements VisualizationStrategy {
         wireframe: { show: false },
         shading: 'color',
         itemStyle: { color: '#ff4d4f', opacity: 0.2 },
-        data: results.map((row, i) => [
-          parseFloat(String(row[0])),
-          parseFloat(String(row[1])),
-          dynamicMax![i] ?? Infinity,
-        ]),
+        data: results.map((row, i) => {
+          const z = dynamicMax![i];
+          return [
+            parseFloat(String(row[0])),
+            parseFloat(String(row[1])),
+            z !== null && !Number.isNaN(z) ? z : (null as any),
+          ];
+        }),
         dataShape: [yCount, xCount],
       });
     }
@@ -124,9 +139,17 @@ export class Surface3DStrategy implements VisualizationStrategy {
       gap,
     } = ctx;
     const colIndex = headers.findIndex((h) => h.id === id);
-    const zValues = results.map((row) => parseFloat(String(row[colIndex])));
-    const minZ = Math.min(...zValues);
-    const maxZ = Math.max(...zValues);
+    const zValues = results
+      .map((row) => {
+        const val = row[colIndex];
+        return val !== null && val !== undefined
+          ? parseFloat(String(val))
+          : NaN;
+      })
+      .filter((v) => !Number.isNaN(v));
+
+    const minZ = zValues.length > 0 ? Math.min(...zValues) : 0;
+    const maxZ = zValues.length > 0 ? Math.max(...zValues) : 1;
 
     const top = topMargin + index * (gridHeight + gap);
 
