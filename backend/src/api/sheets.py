@@ -330,6 +330,8 @@ async def update_sheet(
         db_sheet.name = update_data["name"]
     if "folder_id" in update_data:
         db_sheet.folder_id = update_data["folder_id"]
+    if "default_version_id" in update_data:
+        db_sheet.default_version_id = update_data["default_version_id"]
 
     # Full replacement strategy for simplicity (delete all, re-add all)
     # In a real app, we might want to diff, but for a graph editor, full save is common.

@@ -321,6 +321,28 @@ export const SheetEditor: React.FC = () => {
     [editor, currentSheet, triggerAutoCalculation],
   );
 
+  const handleSetDefault = useCallback(
+    async (versionId: string | null) => {
+      if (!currentSheet) return;
+      try {
+        const updatedSheet = await api.setDefaultVersion(
+          currentSheet.id,
+          versionId,
+        );
+        setCurrentSheet((prev) =>
+          prev
+            ? { ...prev, default_version_id: updatedSheet.default_version_id }
+            : null,
+        );
+        toast.success('Default version updated');
+      } catch (e: any) {
+        console.error(e);
+        toast.error(`Failed to set default version: ${e.message}`);
+      }
+    },
+    [currentSheet, setCurrentSheet],
+  );
+
   useReteEvents(
     editor || undefined,
     {
@@ -355,6 +377,7 @@ export const SheetEditor: React.FC = () => {
                 id: sheetId,
                 name: `${liveSheet.name} (${v.version_tag})`,
                 version_tag: v.version_tag,
+                default_version_id: liveSheet.default_version_id, // Keep live metadata
               };
               setCurrentSheet(tempSheet);
               editor.loadSheet(tempSheet).then(() => {
@@ -502,7 +525,11 @@ export const SheetEditor: React.FC = () => {
 
       const type = 'sheet';
       const label = sheet.name;
-      const data = { sheetId: sheet.id };
+      // Default to live (undefined versionId) unless sheet has a default_version_id
+      const data: any = { sheetId: sheet.id };
+      if (fullSheet.default_version_id) {
+        data.versionId = fullSheet.default_version_id;
+      }
 
       const centerPos = calcCenterPosition();
       await addNode(type, label, inputs, outputs, data, centerPos);
@@ -699,6 +726,22 @@ export const SheetEditor: React.FC = () => {
           </button>
         </div>
       )}
+      {!isVersionView && !lockedByOther && currentSheet?.default_version_id && (
+        <div
+          className="lock-banner"
+          style={{
+            backgroundColor: '#fff3e0',
+            color: '#e65100',
+            borderColor: '#ffe0b2',
+          }}
+        >
+          <span>
+            Status: <strong>Draft (Default is Locked)</strong>. Changes here
+            will not affect other sheets until a new version is published and
+            set as default.
+          </span>
+        </div>
+      )}
       {!isVersionView && lockedByOther && (
         <div className="lock-banner">
           <span>
@@ -849,7 +892,9 @@ export const SheetEditor: React.FC = () => {
           isOpen={isVersionListOpen}
           onClose={() => setIsVersionListOpen(false)}
           sheetId={currentSheet.id}
+          defaultVersionId={currentSheet.default_version_id}
           onRestore={handleRestoreVersion}
+          onSetDefault={handleSetDefault}
           isDirty={isDirty}
         />
       )}

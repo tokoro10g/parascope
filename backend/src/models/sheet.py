@@ -38,6 +38,7 @@ class Sheet(Base):
     name: Mapped[str] = mapped_column(String, index=True)
     owner_name: Mapped[Optional[str]] = mapped_column(String, nullable=True)
     folder_id: Mapped[Optional[uuid.UUID]] = mapped_column(ForeignKey("folders.id"), nullable=True)
+    default_version_id: Mapped[Optional[uuid.UUID]] = mapped_column(ForeignKey("sheet_versions.id"), nullable=True)
 
     folder: Mapped[Optional["Folder"]] = relationship(back_populates="sheets")
     nodes: Mapped[List["Node"]] = relationship(back_populates="sheet", cascade="all, delete-orphan")
@@ -45,7 +46,8 @@ class Sheet(Base):
     locks: Mapped[List["Lock"]] = relationship(back_populates="sheet", cascade="all, delete-orphan")
     audit_logs: Mapped[List["AuditLog"]] = relationship(back_populates="sheet", cascade="all, delete-orphan")
     read_states: Mapped[List["UserReadState"]] = relationship(back_populates="sheet", cascade="all, delete-orphan")
-    versions: Mapped[List["SheetVersion"]] = relationship(back_populates="sheet", cascade="all, delete-orphan")
+    versions: Mapped[List["SheetVersion"]] = relationship(back_populates="sheet", cascade="all, delete-orphan", foreign_keys="SheetVersion.sheet_id")
+    default_version: Mapped[Optional["SheetVersion"]] = relationship(foreign_keys=[default_version_id])
 
 
 class Node(Base):
@@ -134,5 +136,5 @@ class SheetVersion(Base):
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=utcnow)
     created_by: Mapped[str] = mapped_column(String)
 
-    sheet: Mapped["Sheet"] = relationship("Sheet", back_populates="versions")
+    sheet: Mapped["Sheet"] = relationship("Sheet", back_populates="versions", foreign_keys=[sheet_id])
 

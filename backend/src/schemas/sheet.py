@@ -87,6 +87,7 @@ class SheetCreate(SheetBase):
 
 class SheetRead(SheetBase):
     id: UUID
+    default_version_id: Optional[UUID] = None
     nodes: List[NodeRead]
     connections: List[ConnectionRead]
     model_config = ConfigDict(from_attributes=True)
@@ -95,6 +96,7 @@ class SheetRead(SheetBase):
 class SheetSummary(SheetBase):
     id: UUID
     folder_id: Optional[UUID] = None
+    default_version_id: Optional[UUID] = None
     has_updates: bool = False
     model_config = ConfigDict(from_attributes=True)
 
@@ -102,6 +104,7 @@ class SheetSummary(SheetBase):
 class SheetUpdate(BaseModel):
     name: Optional[str] = None
     folder_id: Optional[UUID] = None
+    default_version_id: Optional[UUID] = None
     nodes: Optional[List[NodeCreate]] = None
     connections: Optional[List[ConnectionCreate]] = None
 

@@ -73,6 +73,7 @@ export interface Sheet {
   id: string;
   name: string;
   folder_id?: string | null;
+  default_version_id?: string | null;
   nodes: NodeData[];
   connections: ConnectionData[];
 }
@@ -82,6 +83,7 @@ export interface SheetSummary {
   name: string;
   owner_name?: string;
   folder_id?: string | null;
+  default_version_id?: string | null;
   has_updates?: boolean;
 }
 
@@ -310,6 +312,17 @@ export const api = {
   async getVersion(sheetId: string, versionId: string): Promise<SheetVersion> {
     return request(`${API_BASE}/sheets/${sheetId}/versions/${versionId}`, {
       headers: getHeaders(),
+    });
+  },
+
+  async setDefaultVersion(
+    sheetId: string,
+    versionId: string | null,
+  ): Promise<Sheet> {
+    return request(`${API_BASE}/sheets/${sheetId}`, {
+      method: 'PUT',
+      headers: getHeaders({ 'Content-Type': 'application/json' }),
+      body: JSON.stringify({ default_version_id: versionId }),
     });
   },
 

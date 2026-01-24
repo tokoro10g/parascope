@@ -9,7 +9,9 @@ interface VersionListModalProps {
   isOpen: boolean;
   onClose: () => void;
   sheetId: string;
+  defaultVersionId?: string | null;
   onRestore: (version: SheetVersion) => void;
+  onSetDefault: (versionId: string | null) => void;
   isDirty: boolean;
 }
 
@@ -17,7 +19,9 @@ export const VersionListModal: React.FC<VersionListModalProps> = ({
   isOpen,
   onClose,
   sheetId,
+  defaultVersionId,
   onRestore,
+  onSetDefault,
   isDirty,
 }) => {
   const [versions, setVersions] = useState<SheetVersion[]>([]);
@@ -146,6 +150,61 @@ export const VersionListModal: React.FC<VersionListModalProps> = ({
         className="version-list"
         style={{ maxHeight: '50vh', overflowY: 'auto' }}
       >
+        <div
+          style={{
+            padding: '12px',
+            border: '1px solid var(--border-color)',
+            borderRadius: '6px',
+            backgroundColor: !defaultVersionId
+              ? 'rgba(25, 118, 210, 0.1)'
+              : 'var(--panel-bg-secondary)',
+            marginBottom: '10px',
+            display: 'flex',
+            justifyContent: 'space-between',
+            alignItems: 'center',
+          }}
+        >
+          <div>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+              <strong style={{ fontSize: '1.1em' }}>
+                Live (Bleeding Edge)
+              </strong>
+              {!defaultVersionId && (
+                <span
+                  style={{
+                    backgroundColor: 'var(--primary-color)',
+                    color: 'white',
+                    padding: '2px 6px',
+                    borderRadius: '4px',
+                    fontSize: '0.75em',
+                  }}
+                >
+                  Current Default
+                </span>
+              )}
+            </div>
+            <div
+              style={{
+                fontSize: '0.85em',
+                color: 'var(--text-secondary)',
+                marginTop: '4px',
+              }}
+            >
+              The latest saved state.
+            </div>
+          </div>
+          {defaultVersionId && (
+            <button
+              type="button"
+              onClick={() => onSetDefault(null)}
+              className="btn-secondary"
+              style={{ padding: '4px 8px', fontSize: '0.85em' }}
+            >
+              Set as Default
+            </button>
+          )}
+        </div>
+
         {isLoading ? (
           <div
             style={{
@@ -177,7 +236,10 @@ export const VersionListModal: React.FC<VersionListModalProps> = ({
                   padding: '12px',
                   border: '1px solid var(--border-color)',
                   borderRadius: '6px',
-                  backgroundColor: 'var(--panel-bg-secondary)',
+                  backgroundColor:
+                    v.id === defaultVersionId
+                      ? 'rgba(25, 118, 210, 0.1)'
+                      : 'var(--panel-bg-secondary)',
                 }}
               >
                 <div
@@ -188,7 +250,30 @@ export const VersionListModal: React.FC<VersionListModalProps> = ({
                     marginBottom: '4px',
                   }}
                 >
-                  <strong style={{ fontSize: '1.1em' }}>{v.version_tag}</strong>
+                  <div
+                    style={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '8px',
+                    }}
+                  >
+                    <strong style={{ fontSize: '1.1em' }}>
+                      {v.version_tag}
+                    </strong>
+                    {v.id === defaultVersionId && (
+                      <span
+                        style={{
+                          backgroundColor: 'var(--primary-color)',
+                          color: 'white',
+                          padding: '2px 6px',
+                          borderRadius: '4px',
+                          fontSize: '0.75em',
+                        }}
+                      >
+                        Default
+                      </span>
+                    )}
+                  </div>
                   <span
                     style={{
                       fontSize: '0.85em',
@@ -224,6 +309,16 @@ export const VersionListModal: React.FC<VersionListModalProps> = ({
                 >
                   <span>By {v.created_by}</span>
                   <div style={{ display: 'flex', gap: '8px' }}>
+                    {v.id !== defaultVersionId && (
+                      <button
+                        type="button"
+                        onClick={() => onSetDefault(v.id)}
+                        className="btn-secondary"
+                        style={{ padding: '4px 8px', fontSize: '0.85em' }}
+                      >
+                        Set Default
+                      </button>
+                    )}
                     <a
                       href={`/sheet/${sheetId}?versionId=${v.id}`}
                       target="_blank"
