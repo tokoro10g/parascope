@@ -129,28 +129,25 @@ export const SweepResults: React.FC<SweepResultsProps> = ({
           ) : (
             sheetName || 'Loading...'
           )}
-          {hasErrors && (
-            <button
-              type="button"
-              onClick={() => setIsErrorModalOpen(true)}
-              className="sweep-error-warning"
-              title={`${errorIndices.length} points failed. Click for details.`}
-              style={{
-                marginLeft: '12px',
-                background: 'none',
-                border: 'none',
-                color: '#ff9800',
-                cursor: 'pointer',
-                display: 'inline-flex',
-                alignItems: 'center',
-              }}
-            >
-              <TriangleAlert size={20} />
-            </button>
-          )}
         </h2>
         {results && (
           <div className="sweep-copy-actions">
+            {hasErrors && (
+              <button
+                type="button"
+                onClick={() => setIsErrorModalOpen(true)}
+                className="btn-secondary sweep-copy-btn"
+                title={`${errorIndices.length} points failed. Click for details.`}
+                style={{
+                  color: '#ff9800',
+                  borderColor: '#ff9800',
+                  marginRight: '8px',
+                }}
+              >
+                <TriangleAlert size={16} />
+                <span>Calculation issues</span>
+              </button>
+            )}
             <button
               type="button"
               onClick={handleCopyTable}
