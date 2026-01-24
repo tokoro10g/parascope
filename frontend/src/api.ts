@@ -162,19 +162,35 @@ export interface SheetUsage {
   can_import: boolean;
 }
 
+const sheetCache = new Map<string, Promise<Sheet>>();
+const configCache = { promise: null as Promise<{ enabled: boolean }> | null };
+const versionsCache = new Map<string, Promise<SheetVersion[]>>();
+const lockCache = new Map<string, Promise<Lock | null>>();
+
 export const api = {
   // GENAI
   async getGenAIConfig(): Promise<{ enabled: boolean }> {
-    try {
-      const res = await fetch(`${API_BASE}/api/genai/config`, {
-        headers: getHeaders(),
-      });
-      if (!res.ok) return { enabled: false };
-      return res.json();
-    } catch (e) {
-      console.error('Failed to fetch GenAI config', e);
-      return { enabled: false };
-    }
+    if (configCache.promise) return configCache.promise;
+
+    const promise = (async () => {
+      try {
+        const res = await fetch(`${API_BASE}/api/genai/config`, {
+          headers: getHeaders(),
+        });
+        if (!res.ok) return { enabled: false };
+        return res.json();
+      } catch (e) {
+        console.error('Failed to fetch GenAI config', e);
+        return { enabled: false };
+      }
+    })();
+
+    configCache.promise = promise;
+    promise.finally(() => {
+      configCache.promise = null;
+    });
+
+    return promise;
   },
 
   async generateFunction(
@@ -244,9 +260,20 @@ export const api = {
   },
 
   async getSheet(id: string): Promise<Sheet> {
-    return request(`${API_BASE}/sheets/${id}`, {
+    const cached = sheetCache.get(id);
+    if (cached) return cached;
+
+    const promise = request<Sheet>(`${API_BASE}/sheets/${id}`, {
       headers: getHeaders(),
     });
+
+    sheetCache.set(id, promise);
+
+    promise.finally(() => {
+      sheetCache.delete(id);
+    });
+
+    return promise;
   },
 
   async updateSheet(id: string, sheet: Partial<Sheet>): Promise<Sheet> {
@@ -290,9 +317,22 @@ export const api = {
   },
 
   async listSheetVersions(id: string): Promise<SheetVersion[]> {
-    return request(`${API_BASE}/sheets/${id}/versions`, {
-      headers: getHeaders(),
+    const cached = versionsCache.get(id);
+    if (cached) return cached;
+
+    const promise = request<SheetVersion[]>(
+      `${API_BASE}/sheets/${id}/versions`,
+      {
+        headers: getHeaders(),
+      },
+    );
+
+    versionsCache.set(id, promise);
+    promise.finally(() => {
+      versionsCache.delete(id);
     });
+
+    return promise;
   },
 
   async createSheetVersion(
@@ -450,10 +490,23 @@ export const api = {
   },
 
   getLock: (sheetId: string) => {
-    return request<Lock | null>(`${API_BASE}/api/sheets/${sheetId}/lock`, {
-      method: 'GET',
-      headers: getHeaders(),
+    const cached = lockCache.get(sheetId);
+    if (cached) return cached;
+
+    const promise = request<Lock | null>(
+      `${API_BASE}/api/sheets/${sheetId}/lock`,
+      {
+        method: 'GET',
+        headers: getHeaders(),
+      },
+    );
+
+    lockCache.set(sheetId, promise);
+    promise.finally(() => {
+      lockCache.delete(sheetId);
     });
+
+    return promise;
   },
 };
 
