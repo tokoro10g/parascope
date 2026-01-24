@@ -106,7 +106,7 @@ def input_node(node_id: str, label: str = None, value: Any = None, min: float = 
         return wrapper
     return decorator
 
-def output_node(node_id: str, inputs: Dict[str, str] = None, label: str = None, min: float = None, max: float = None, min_arg: str = None, max_arg: str = None, **kwargs):
+def output_node(node_id: str, inputs: Dict[str, str] = None, label: str = None, min: float = None, max: float = None, **kwargs):
     """Decorator for Output Nodes - Pass through logic with validation"""
     def decorator(func):
         func._node_config = {
@@ -117,30 +117,14 @@ def output_node(node_id: str, inputs: Dict[str, str] = None, label: str = None, 
         }
         
         def wrapper(self, *args, **kwargs):
-            # Return the first available argument as value
-            val = None
-            if args: 
-                val = args[0]
-            elif kwargs: 
-                # If we have dynamic args (e.g. min/max inputs), the actual value is likely implicitly first
-                # or named differently?
-                # The generator passes dynamic inputs as kwargs with sanitized names.
-                # Usually the main value is the first connection?
-                # Or we can check which arg is NOT min/max?
-                
-                # Heuristic: The main value is likely not the constraint args
-                potential_vals = [v for k, v in kwargs.items() if k != min_arg and k != max_arg]
-                if potential_vals:
-                    val = potential_vals[0]
+            val = kwargs.get('value')
             
-            # Resolve dynamic constraints
-            actual_min = min
-            actual_max = max
+            actual_min = kwargs.get('min', min)
+            actual_max = kwargs.get('max', max)
             
-            if min_arg and min_arg in kwargs:
-                actual_min = self.parse_number(kwargs[min_arg])
-            if max_arg and max_arg in kwargs:
-                actual_max = self.parse_number(kwargs[max_arg])
+            # Convert to number if necessary (they might be strings from inputs)
+            if 'min' in kwargs: actual_min = self.parse_number(actual_min)
+            if 'max' in kwargs: actual_max = self.parse_number(actual_max)
             
             # Store metadata for retrieval (always do this before validation)
             if hasattr(self, 'node_metadata'):

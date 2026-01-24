@@ -480,9 +480,6 @@ def {method_name}(self): pass
                 d_max = node.data.get("max")
                 if d_max is not None and d_max != "": params.append(f"max={d_max}")
             
-            if dynamic_min_arg: params.append(f"min_arg='{dynamic_min_arg}'")
-            if dynamic_max_arg: params.append(f"max_arg='{dynamic_max_arg}'")
-            
             if params:
                 params_str = ", " + ", ".join(params)
             else:
