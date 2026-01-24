@@ -41,7 +41,7 @@ export class Surface3DStrategy implements VisualizationStrategy {
   }
 
   getSeries(ctx: StrategyContext) {
-    const { results, headers, id, grid3DIndex, label, node } = ctx;
+    const { results, headers, id, grid3DIndex, label } = ctx;
     const colIndex = headers.findIndex((h) => h.id === id);
 
     const xUnique = Array.from(new Set(results.map((row) => row[0])));
@@ -65,14 +65,14 @@ export class Surface3DStrategy implements VisualizationStrategy {
 
     const extraSeries: any[] = [mainSeries];
 
-    // Check for dynamic min/max in metadata
+    // Check for min/max in metadata (Backend ensures this is populated even for static)
     const dynamicMin = ctx.metadata?.map((m) => m[id]?.min);
     const dynamicMax = ctx.metadata?.map((m) => m[id]?.max);
 
-    const hasDynamicMin = dynamicMin?.some((v) => v !== undefined);
-    const hasDynamicMax = dynamicMax?.some((v) => v !== undefined);
+    const hasMin = dynamicMin?.some((v) => v !== undefined);
+    const hasMax = dynamicMax?.some((v) => v !== undefined);
 
-    if (hasDynamicMin) {
+    if (hasMin) {
       extraSeries.push({
         name: `${label} Min`,
         type: 'surface',
@@ -90,7 +90,7 @@ export class Surface3DStrategy implements VisualizationStrategy {
       });
     }
 
-    if (hasDynamicMax) {
+    if (hasMax) {
       extraSeries.push({
         name: `${label} Max`,
         type: 'surface',
@@ -106,53 +106,6 @@ export class Surface3DStrategy implements VisualizationStrategy {
         ]),
         dataShape: [yCount, xCount],
       });
-    }
-
-    // Static Reference planes for min/max (only if no dynamic ones)
-    const createPlane = (name: string, z: number, color: string) => {
-      const xValues = xUnique.map((v) => parseFloat(String(v)));
-      const yValues = yUnique.map((v) => parseFloat(String(v)));
-      const minX = Math.min(...xValues);
-      const maxX = Math.max(...xValues);
-      const minY = Math.min(...yValues);
-      const maxY = Math.max(...yValues);
-
-      return {
-        name: `${label} ${name}`,
-        type: 'surface',
-        grid3DIndex: ctx.grid3DIndex,
-        silent: true,
-        wireframe: { show: false },
-        shading: 'color',
-        itemStyle: { color, opacity: 0.2 },
-        data: [
-          [minX, minY, z],
-          [maxX, minY, z],
-          [minX, maxY, z],
-          [maxX, maxY, z],
-        ],
-        dataShape: [2, 2],
-      };
-    };
-
-    if (!hasDynamicMin) {
-      const minZ =
-        node?.data?.min !== undefined && node.data.min !== ''
-          ? Number(node.data.min)
-          : undefined;
-      if (minZ !== undefined) {
-        extraSeries.push(createPlane('Min', minZ, '#1890ff'));
-      }
-    }
-
-    if (!hasDynamicMax) {
-      const maxZ =
-        node?.data?.max !== undefined && node.data.max !== ''
-          ? Number(node.data.max)
-          : undefined;
-      if (maxZ !== undefined) {
-        extraSeries.push(createPlane('Max', maxZ, '#ff4d4f'));
-      }
     }
 
     return extraSeries;

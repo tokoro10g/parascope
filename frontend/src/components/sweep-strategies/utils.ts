@@ -184,27 +184,21 @@ export function createBaseYAxis(
 }
 
 export function createRangeMarkers(ctx: StrategyContext) {
-  const { node, theme, metadata, id } = ctx;
+  const { theme, metadata, id } = ctx;
 
-  // 1. Dynamic Ranges (MarkLine)
-  const dynamicMin = metadata
-    ?.map((m) => m[id]?.min)
-    .find((v) => v !== undefined);
-  const dynamicMax = metadata
-    ?.map((m) => m[id]?.max)
-    .find((v) => v !== undefined);
+  let min: number | undefined;
+  let max: number | undefined;
 
-  // If we have dynamic range, we don't show static MarkArea (series handles it)
-  if (dynamicMin !== undefined || dynamicMax !== undefined) return undefined;
+  if (metadata && metadata.length > 0) {
+    const firstMin = metadata[0][id]?.min;
+    const firstMax = metadata[0][id]?.max;
 
-  const min =
-    node?.data?.min !== undefined && node.data.min !== ''
-      ? Number(node.data.min)
-      : undefined;
-  const max =
-    node?.data?.max !== undefined && node.data.max !== ''
-      ? Number(node.data.max)
-      : undefined;
+    const isConstantMin = metadata.every((m) => m[id]?.min === firstMin);
+    const isConstantMax = metadata.every((m) => m[id]?.max === firstMax);
+
+    if (isConstantMin) min = firstMin;
+    if (isConstantMax) max = firstMax;
+  }
 
   if (min === undefined && max === undefined) return undefined;
 
@@ -290,7 +284,7 @@ export function createLineSeriesWithRange(
           },
           style: {
             fill: api.visual('color'),
-            opacity: 0.05,
+            opacity: 0.03,
             stroke: 'none',
           },
           styleEmphasis: {
