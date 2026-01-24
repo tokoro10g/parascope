@@ -5,13 +5,31 @@ interface TypeConfigProps {
   nodeType: string;
   data: Record<string, any>;
   setData: (data: Record<string, any>) => void;
+  inputs?: { key: string; socket_type: string }[];
+  setInputs?: (inputs: { key: string; socket_type: string }[]) => void;
 }
 
 export const TypeConfig: React.FC<TypeConfigProps> = ({
   nodeType,
   data,
   setData,
+  inputs,
+  setInputs,
 }) => {
+  const hasMinInput = inputs?.some((i) => i.key === 'min');
+  const hasMaxInput = inputs?.some((i) => i.key === 'max');
+
+  const toggleInput = (key: string, enabled: boolean) => {
+    if (!setInputs || !inputs) return;
+    if (enabled) {
+      setInputs([...inputs, { key, socket_type: 'any' }]);
+      // Clear static value
+      setData({ ...data, [key]: undefined });
+    } else {
+      setInputs(inputs.filter((i) => i.key !== key));
+    }
+  };
+
   return (
     <>
       <div className="form-group">
@@ -37,12 +55,38 @@ export const TypeConfig: React.FC<TypeConfigProps> = ({
           </label>
           <div style={{ display: 'flex', gap: '10px' }}>
             <div style={{ flex: 1 }}>
-              <label
-                htmlFor="node-min"
-                style={{ fontSize: '0.8em', display: 'block' }}
+              <div
+                style={{
+                  display: 'flex',
+                  justifyContent: 'space-between',
+                  alignItems: 'center',
+                }}
               >
-                Min
-              </label>
+                <label
+                  htmlFor="node-min"
+                  style={{ fontSize: '0.8em', display: 'block' }}
+                >
+                  Min
+                </label>
+                {nodeType === 'output' && (
+                  <label
+                    style={{
+                      fontSize: '0.7em',
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '4px',
+                      cursor: 'pointer',
+                    }}
+                  >
+                    <input
+                      type="checkbox"
+                      checked={!!hasMinInput}
+                      onChange={(e) => toggleInput('min', e.target.checked)}
+                    />
+                    Use Input
+                  </label>
+                )}
+              </div>
               <input
                 id="node-min"
                 type="number"
@@ -53,17 +97,44 @@ export const TypeConfig: React.FC<TypeConfigProps> = ({
                     min: e.target.value === '' ? undefined : e.target.value,
                   })
                 }
-                placeholder="-Inf"
-                style={{ width: '100%' }}
+                placeholder={hasMinInput ? 'Driven by Input' : '-Inf'}
+                disabled={!!hasMinInput}
+                style={{ width: '100%', opacity: hasMinInput ? 0.7 : 1 }}
               />
             </div>
             <div style={{ flex: 1 }}>
-              <label
-                htmlFor="node-max"
-                style={{ fontSize: '0.8em', display: 'block' }}
+              <div
+                style={{
+                  display: 'flex',
+                  justifyContent: 'space-between',
+                  alignItems: 'center',
+                }}
               >
-                Max
-              </label>
+                <label
+                  htmlFor="node-max"
+                  style={{ fontSize: '0.8em', display: 'block' }}
+                >
+                  Max
+                </label>
+                {nodeType === 'output' && (
+                  <label
+                    style={{
+                      fontSize: '0.7em',
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '4px',
+                      cursor: 'pointer',
+                    }}
+                  >
+                    <input
+                      type="checkbox"
+                      checked={!!hasMaxInput}
+                      onChange={(e) => toggleInput('max', e.target.checked)}
+                    />
+                    Use Input
+                  </label>
+                )}
+              </div>
               <input
                 id="node-max"
                 type="number"
@@ -74,8 +145,9 @@ export const TypeConfig: React.FC<TypeConfigProps> = ({
                     max: e.target.value === '' ? undefined : e.target.value,
                   })
                 }
-                placeholder="+Inf"
-                style={{ width: '100%' }}
+                placeholder={hasMaxInput ? 'Driven by Input' : '+Inf'}
+                disabled={!!hasMaxInput}
+                style={{ width: '100%', opacity: hasMaxInput ? 0.7 : 1 }}
               />
             </div>
           </div>

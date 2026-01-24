@@ -459,10 +459,24 @@ def {method_name}(self): pass
              # The wrapper handles passing args
             params = []
             
-            d_min = node.data.get("min")
-            d_max = node.data.get("max")
-            if d_min is not None: params.append(f"min={d_min}")
-            if d_max is not None: params.append(f"max={d_max}")
+            dynamic_min_arg = None
+            dynamic_max_arg = None
+            
+            if arg_mapping:
+                for arg, port in arg_mapping.items():
+                    if port == 'min': dynamic_min_arg = arg
+                    if port == 'max': dynamic_max_arg = arg
+            
+            if not dynamic_min_arg:
+                d_min = node.data.get("min")
+                if d_min is not None and d_min != "": params.append(f"min={d_min}")
+            
+            if not dynamic_max_arg:
+                d_max = node.data.get("max")
+                if d_max is not None and d_max != "": params.append(f"max={d_max}")
+            
+            if dynamic_min_arg: params.append(f"min_arg='{dynamic_min_arg}'")
+            if dynamic_max_arg: params.append(f"max_arg='{dynamic_max_arg}'")
             
             if params:
                 params_str = ", " + ", ".join(params)

@@ -264,7 +264,13 @@ export const NodeInspector: React.FC<NodeInspectorProps> = ({
           {(node.type === 'constant' ||
             node.type === 'input' ||
             node.type === 'output') && (
-            <TypeConfig nodeType={node.type} data={data} setData={setData} />
+            <TypeConfig
+              nodeType={node.type}
+              data={data}
+              setData={setData}
+              inputs={inputs}
+              setInputs={setInputs}
+            />
           )}
 
           {node.type === 'function' && (

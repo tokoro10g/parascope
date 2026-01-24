@@ -80,7 +80,7 @@ export const SheetEditor: React.FC = () => {
   // Reset load ref if sheetId changes
   useEffect(() => {
     initialLoadDoneRef.current = false;
-  }, [sheetId]);
+  }, []);
 
   useUnsavedChanges(isDirty);
 
