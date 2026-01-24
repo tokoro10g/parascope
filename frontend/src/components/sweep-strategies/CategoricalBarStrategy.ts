@@ -40,12 +40,8 @@ export class CategoricalBarStrategy implements VisualizationStrategy {
     });
 
     const seriesList: any[] = [];
-    const rangeSeries = createRangeSeries(ctx, dataWithMeta, ctx.label, true);
 
-    if (rangeSeries) {
-      seriesList.push(rangeSeries);
-    }
-
+    // Main Bar Series
     seriesList.push({
       name: ctx.label,
       type: 'bar',
@@ -55,6 +51,12 @@ export class CategoricalBarStrategy implements VisualizationStrategy {
       itemStyle: { borderRadius: [4, 4, 0, 0] },
     });
 
-    return seriesList;
+    // Dynamic Range Band
+    const rangeSeries = createRangeSeries(ctx, dataWithMeta, ctx.label, true);
+    if (rangeSeries) {
+      seriesList.push(rangeSeries);
+    }
+
+    return seriesList.length === 1 ? seriesList[0] : seriesList;
   }
 }
