@@ -200,7 +200,8 @@ export function createRangeSeries(
   return {
     name: `${name} Range`,
     type: 'custom',
-    renderItem: (_params: any, api: any) => {
+    renderItem: (params: any, api: any) => {
+      if (params.dataIndex !== 0) return;
       if (data.length === 0) return;
       const points = [];
 
@@ -242,7 +243,7 @@ export function createRangeSeries(
         shape: { points },
         style: {
           fill: api.visual('color'),
-          opacity: 0.05,
+          opacity: 0.1,
           stroke: 'none',
         },
         styleEmphasis: {
