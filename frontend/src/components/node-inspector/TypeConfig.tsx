@@ -76,6 +76,7 @@ export const TypeConfig: React.FC<TypeConfigProps> = ({
                       alignItems: 'center',
                       gap: '4px',
                       cursor: 'pointer',
+                      whiteSpace: 'nowrap',
                     }}
                   >
                     <input
@@ -124,6 +125,7 @@ export const TypeConfig: React.FC<TypeConfigProps> = ({
                       alignItems: 'center',
                       gap: '4px',
                       cursor: 'pointer',
+                      whiteSpace: 'nowrap',
                     }}
                   >
                     <input
