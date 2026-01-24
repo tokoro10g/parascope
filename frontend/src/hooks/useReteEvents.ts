@@ -277,16 +277,6 @@ export function useReteEvents(
                       },
                     };
                   }
-                } else {
-                  if (otherNode.data.dataType === 'option') {
-                    updates = {
-                      data: {
-                        ...otherNode.data,
-                        dataType: 'any',
-                        options: [],
-                      },
-                    };
-                  }
                 }
 
                 if (updates) {
