@@ -890,7 +890,16 @@ export const SheetEditor: React.FC = () => {
               onUpdateValue={handleUpdateNodeValue}
               onSelectNode={handleSelectNode}
               onCalculate={handleCalculate}
-              onSweep={() => window.open(`/sheet/${sheetId}/sweep`, '_blank')}
+              onSweep={() => {
+                const params = new URLSearchParams();
+                if (Object.keys(calculationInputs).length > 0) {
+                  params.set('overrides', JSON.stringify(calculationInputs));
+                }
+                window.open(
+                  `/sheet/${sheetId}/sweep?${params.toString()}`,
+                  '_blank',
+                );
+              }}
               isCalculating={isCalculating}
             />
           </Panel>
