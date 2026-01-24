@@ -3,7 +3,8 @@ import {
   createBaseGrid,
   createBaseYAxis,
   createCategoricalXAxis,
-  createRangeMarkers,
+  createConstantRangeMarker,
+  createRangeSeries,
 } from './utils';
 
 export class CategoricalBarStrategy implements VisualizationStrategy {
@@ -25,15 +26,38 @@ export class CategoricalBarStrategy implements VisualizationStrategy {
   getSeries(ctx: StrategyContext) {
     // For Bar with Category X, logic handles mapping automatically if X axis has data[]
     const colIndex = ctx.headers.findIndex((h) => h.id === ctx.id);
-    const data = ctx.results.map((row) => parseFloat(String(row[colIndex])));
-    return {
+    const { results, metadata, id } = ctx;
+
+    const dataWithMeta = results.map((row, i) => {
+      const meta = metadata?.[i]?.[id];
+      const min = meta?.min !== undefined ? Number(meta.min) : undefined;
+      const max = meta?.max !== undefined ? Number(meta.max) : undefined;
+      return {
+        x: i, // Category index
+        y: parseFloat(String(row[colIndex])),
+        min,
+        max,
+      };
+    });
+
+    const seriesList: any[] = [];
+    const rangeSeries = createRangeSeries(ctx, dataWithMeta, ctx.label, true);
+
+    if (rangeSeries) {
+      seriesList.push(rangeSeries);
+    }
+
+    seriesList.push({
       name: ctx.label,
       type: 'bar',
-      data,
+      data: dataWithMeta.map((d) => d.y),
       xAxisIndex: ctx.index,
       yAxisIndex: ctx.index,
-      markArea: createRangeMarkers(ctx),
+      // Use markArea only if no dynamic range series was created
+      markArea: !rangeSeries ? createConstantRangeMarker(ctx) : undefined,
       itemStyle: { borderRadius: [4, 4, 0, 0] },
-    };
+    });
+
+    return seriesList;
   }
 }

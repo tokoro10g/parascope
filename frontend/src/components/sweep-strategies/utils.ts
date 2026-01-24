@@ -183,7 +183,7 @@ export function createBaseYAxis(
   };
 }
 
-export function createRangeMarkers(ctx: StrategyContext) {
+export function createConstantRangeMarker(ctx: StrategyContext) {
   const { theme, metadata, id } = ctx;
 
   let min: number | undefined;
@@ -225,80 +225,104 @@ export function createRangeMarkers(ctx: StrategyContext) {
   };
 }
 
+export function createRangeSeries(
+  ctx: StrategyContext,
+  data: { x: number; y: number; min?: number; max?: number }[],
+  name: string,
+  isStepped = false,
+) {
+  data.sort((a, b) => a.x - b.x);
+
+  const hasDynamic = data.some(
+    (d) => d.min !== undefined || d.max !== undefined,
+  );
+
+  if (!hasDynamic) return undefined;
+
+  return {
+    name: `${name} Range`,
+    type: 'custom',
+    renderItem: (_params: any, api: any) => {
+      if (data.length === 0) return;
+      const points = [];
+
+      if (isStepped) {
+        // Calculate the width of one category step in pixels
+        // Note: api.size returns [width, height] corresponding to the data difference given
+        const slotWidth = api.size([1, 0])[0];
+        const halfWidth = slotWidth / 2;
+
+        for (let i = 0; i < data.length; i++) {
+          const d = data[i];
+          const topVal = d.max !== undefined ? d.max : 999999999;
+          const center = api.coord([d.x, topVal]);
+          points.push([center[0] - halfWidth, center[1]]);
+          points.push([center[0] + halfWidth, center[1]]);
+        }
+        for (let i = data.length - 1; i >= 0; i--) {
+          const d = data[i];
+          const bottomVal = d.min !== undefined ? d.min : -999999999;
+          const center = api.coord([d.x, bottomVal]);
+          points.push([center[0] + halfWidth, center[1]]);
+          points.push([center[0] - halfWidth, center[1]]);
+        }
+      } else {
+        for (let i = 0; i < data.length; i++) {
+          const d = data[i];
+          const topVal = d.max !== undefined ? d.max : 999999999;
+          points.push(api.coord([d.x, topVal]));
+        }
+        for (let i = data.length - 1; i >= 0; i--) {
+          const d = data[i];
+          const bottomVal = d.min !== undefined ? d.min : -999999999;
+          points.push(api.coord([d.x, bottomVal]));
+        }
+      }
+
+      return {
+        type: 'polygon',
+        shape: { points },
+        style: {
+          fill: api.visual('color'),
+          opacity: 0.05,
+          stroke: 'none',
+        },
+        styleEmphasis: {
+          opacity: 0.1,
+        },
+      };
+    },
+    data: data.map((d) => [d.x, d.y]),
+    z: -1,
+    xAxisIndex: ctx.index,
+    yAxisIndex: ctx.index,
+    tooltip: { show: false },
+    clip: true,
+  };
+}
+
 export function createLineSeriesWithRange(
   ctx: StrategyContext,
   data: { x: number; y: number; min?: number; max?: number }[],
   name: string,
 ) {
-  // Sort by X
-  data.sort((a, b) => a.x - b.x);
-
-  const lineData = data.map((d) => [d.x, d.y]);
-  const hasDynamic = data.some(
-    (d) => d.min !== undefined || d.max !== undefined,
-  );
-
   const seriesList: any[] = [];
 
   // Main Line
   seriesList.push({
     name,
     type: 'line',
-    data: lineData,
+    data: data.map((d) => [d.x, d.y]),
     symbolSize: 6,
     showSymbol: true,
     xAxisIndex: ctx.index,
     yAxisIndex: ctx.index,
-    // Only show static MarkArea if no dynamic range
-    markArea: !hasDynamic ? createRangeMarkers(ctx) : undefined,
   });
 
-  // Dynamic Range Band (Custom Series)
-  if (hasDynamic) {
-    seriesList.push({
-      name: `${name} Range`,
-      type: 'custom',
-      renderItem: (_params: any, api: any) => {
-        if (data.length === 0) return;
-        const points = [];
-
-        // Build polygon: top edge (max) left-to-right, then bottom edge (min) right-to-left
-        for (let i = 0; i < data.length; i++) {
-          const d = data[i];
-          const topVal = d.max !== undefined ? d.max : 999999999; // Infinity clipped
-          const point = api.coord([d.x, topVal]);
-          points.push(point);
-        }
-
-        for (let i = data.length - 1; i >= 0; i--) {
-          const d = data[i];
-          const bottomVal = d.min !== undefined ? d.min : -999999999;
-          const point = api.coord([d.x, bottomVal]);
-          points.push(point);
-        }
-
-        return {
-          type: 'polygon',
-          shape: {
-            points: points,
-          },
-          style: {
-            fill: api.visual('color'),
-            opacity: 0.03,
-            stroke: 'none',
-          },
-          styleEmphasis: {
-            opacity: 0.1,
-          },
-        };
-      },
-      data: lineData, // Dummy data for tooltip/color mapping
-      z: -1, // Behind the line
-      xAxisIndex: ctx.index,
-      yAxisIndex: ctx.index,
-      tooltip: { show: false }, // Hide range from tooltip
-      clip: true,
-    });
+  // Dynamic Range Band
+  const rangeSeries = createRangeSeries(ctx, data, name);
+  if (rangeSeries) {
+    seriesList.push(rangeSeries);
   }
 
   return seriesList;
