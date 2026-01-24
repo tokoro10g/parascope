@@ -54,6 +54,7 @@ export const SheetEditor: React.FC = () => {
   const [isVersionListOpen, setIsVersionListOpen] = useState(false);
   const [isTakeOverModalOpen, setIsTakeOverModalOpen] = useState(false);
   const [initialLoadDone, setInitialLoadDone] = useState(false);
+  const initialLoadDoneRef = useRef(false);
 
   const lastResultRef = useRef(lastResult);
   lastResultRef.current = lastResult;
@@ -75,6 +76,11 @@ export const SheetEditor: React.FC = () => {
   const calculateTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(
     null,
   );
+
+  // Reset load ref if sheetId changes
+  useEffect(() => {
+    initialLoadDoneRef.current = false;
+  }, [sheetId]);
 
   useUnsavedChanges(isDirty);
 
@@ -337,7 +343,8 @@ export const SheetEditor: React.FC = () => {
   // Load the specific sheet when sheetId changes
   useEffect(() => {
     const versionId = searchParams.get('versionId');
-    if (sheetId) {
+    if (sheetId && editor && !initialLoadDoneRef.current) {
+      initialLoadDoneRef.current = true;
       if (versionId) {
         setIsLoading(true);
         Promise.all([api.getVersion(sheetId, versionId), api.getSheet(sheetId)])
@@ -361,8 +368,9 @@ export const SheetEditor: React.FC = () => {
           })
           .catch(() => setIsLoading(false));
       } else {
-        handleLoadSheet(sheetId);
-        setInitialLoadDone(false);
+        handleLoadSheet(sheetId).finally(() => {
+          setInitialLoadDone(true);
+        });
       }
     }
   }, [
