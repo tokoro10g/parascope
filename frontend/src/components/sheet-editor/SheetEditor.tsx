@@ -368,8 +368,10 @@ export const SheetEditor: React.FC = () => {
   }, [
     sheetId,
     handleLoadSheet,
-    searchParams.get('versionId'),
+    searchParams,
     editor,
+    setIsLoading,
+    setCurrentSheet,
   ]);
 
   useUrlSync({

@@ -77,59 +77,74 @@ export const syncNestedSheets = async (
     sheet.connections.map((c) => c.id).filter((id): id is string => !!id),
   );
 
+  // Deduplicate sheet IDs to fetch each sheet only once
+  const uniqueSheetIds = new Set(
+    nestedSheetNodes.map((n) => n.data.sheetId).filter(Boolean),
+  );
+  const sheetMap = new Map<string, Sheet>();
+
   await Promise.all(
-    nestedSheetNodes.map(async (node) => {
+    Array.from(uniqueSheetIds).map(async (id) => {
       try {
-        const childSheet = await api.getSheet(node.data.sheetId);
-
-        // Update Inputs (from child's Input nodes)
-        const newInputs = childSheet.nodes
-          .filter((n) => n.type === 'input')
-          .map((n) => createSocket(n.label));
-
-        // Update Outputs (from child's Output nodes and Constant nodes)
-        const newOutputs = childSheet.nodes
-          .filter((n) => n.type === 'output' || n.type === 'constant')
-          .map((n) => ({ key: n.label, socket_type: n.type }));
-
-        // Find the node in the array and update it
-        const nodeIndex = updatedNodes.findIndex((n) => n.id === node.id);
-        if (nodeIndex !== -1) {
-          updatedNodes[nodeIndex] = {
-            ...updatedNodes[nodeIndex],
-            inputs: newInputs,
-            outputs: newOutputs,
-          };
-        }
-
-        // Validate Connections
-        // Remove connections to/from this node that reference non-existent sockets
-        const inputKeys = new Set(newInputs.map((i) => i.key));
-        const outputKeys = new Set(newOutputs.map((o) => o.key));
-
-        sheet.connections.forEach((c) => {
-          if (c.target_id === node.id) {
-            if (!inputKeys.has(c.target_port)) {
-              if (c.id) validConnectionIds.delete(c.id);
-              connectionsChanged = true;
-            }
-          }
-          if (c.source_id === node.id) {
-            if (!outputKeys.has(c.source_port)) {
-              if (c.id) validConnectionIds.delete(c.id);
-              connectionsChanged = true;
-            }
-          }
-        });
+        const s = await api.getSheet(id);
+        sheetMap.set(id, s);
       } catch (err) {
-        console.error(`Failed to sync nested sheet ${node.data.sheetId}`, err);
+        console.error(`Failed to fetch nested sheet ${id}`, err);
       }
     }),
   );
 
+  for (const node of nestedSheetNodes) {
+    try {
+      const childSheet = sheetMap.get(node.data.sheetId);
+      if (!childSheet) continue;
+
+      // Update Inputs (from child's Input nodes)
+      const newInputs = childSheet.nodes
+        .filter((n) => n.type === 'input')
+        .map((n) => createSocket(n.label));
+
+      // Update Outputs (from child's Output nodes and Constant nodes)
+      const newOutputs = childSheet.nodes
+        .filter((n) => n.type === 'output' || n.type === 'constant')
+        .map((n) => ({ key: n.label, socket_type: n.type }));
+
+      // Find the node in the array and update it
+      const nodeIndex = updatedNodes.findIndex((n) => n.id === node.id);
+      if (nodeIndex !== -1) {
+        updatedNodes[nodeIndex] = {
+          ...updatedNodes[nodeIndex],
+          inputs: newInputs,
+          outputs: newOutputs,
+        };
+      }
+
+      // Validate Connections
+      // Remove connections to/from this node that reference non-existent sockets
+      const inputKeys = new Set(newInputs.map((i) => i.key));
+      const outputKeys = new Set(newOutputs.map((o) => o.key));
+
+      sheet.connections.forEach((c) => {
+        if (c.target_id === node.id) {
+          if (!inputKeys.has(c.target_port)) {
+            if (c.id) validConnectionIds.delete(c.id);
+            connectionsChanged = true;
+          }
+        }
+        if (c.source_id === node.id) {
+          if (!outputKeys.has(c.source_port)) {
+            if (c.id) validConnectionIds.delete(c.id);
+            connectionsChanged = true;
+          }
+        }
+      });
+    } catch (err) {
+      console.error(`Failed to sync nested sheet ${node.data.sheetId}`, err);
+    }
+  }
+
   return { updatedNodes, connectionsChanged, validConnectionIds };
 };
-
 export const resolveNestedSheetParams = (
   editor: NodeEditor<Schemes>,
   nodeId: string,

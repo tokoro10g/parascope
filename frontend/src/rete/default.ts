@@ -117,7 +117,7 @@ export async function createEditor(container: HTMLElement) {
   // Listen for changes
   instance.addPipe((context) => {
     if (context.type === 'connectioncreated') {
-      if (onConnectionCreated)
+      if (onConnectionCreated && !suppressGraphChange)
         onConnectionCreated(
           context.data as Connection<ParascopeNode, ParascopeNode>,
         );
