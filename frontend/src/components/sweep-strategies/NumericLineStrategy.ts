@@ -3,7 +3,7 @@ import {
   createBaseGrid,
   createBaseXAxis,
   createBaseYAxis,
-  createMarkArea,
+  createLineSeriesWithRange,
 } from './utils';
 
 export class NumericLineStrategy implements VisualizationStrategy {
@@ -23,20 +23,23 @@ export class NumericLineStrategy implements VisualizationStrategy {
   }
 
   getSeries(ctx: StrategyContext) {
-    const colIndex = ctx.headers.findIndex((h) => h.id === ctx.id);
-    const data = ctx.results.map((row) => [
-      parseFloat(String(row[0])),
-      parseFloat(String(row[colIndex])),
-    ]);
-    return {
-      name: ctx.label,
-      type: 'line',
-      data,
-      symbolSize: 6,
-      showSymbol: true,
-      xAxisIndex: ctx.index,
-      yAxisIndex: ctx.index,
-      markArea: createMarkArea(ctx),
-    };
+    const { results, headers, id, metadata } = ctx;
+    const colIndex = headers.findIndex((h) => h.id === id);
+
+    const data = results.map((row, i) => {
+      // Extract metadata for this row
+      const meta = metadata?.[i]?.[id];
+      const min = meta?.min !== undefined ? Number(meta.min) : undefined;
+      const max = meta?.max !== undefined ? Number(meta.max) : undefined;
+
+      return {
+        x: parseFloat(String(row[0])),
+        y: parseFloat(String(row[colIndex])),
+        min,
+        max,
+      };
+    });
+
+    return createLineSeriesWithRange(ctx, data, ctx.label);
   }
 }

@@ -183,8 +183,20 @@ export function createBaseYAxis(
   };
 }
 
-export function createMarkArea(ctx: StrategyContext) {
-  const { node, theme } = ctx;
+export function createRangeMarkers(ctx: StrategyContext) {
+  const { node, theme, metadata, id } = ctx;
+
+  // 1. Dynamic Ranges (MarkLine)
+  const dynamicMin = metadata
+    ?.map((m) => m[id]?.min)
+    .find((v) => v !== undefined);
+  const dynamicMax = metadata
+    ?.map((m) => m[id]?.max)
+    .find((v) => v !== undefined);
+
+  // If we have dynamic range, we don't show static MarkArea (series handles it)
+  if (dynamicMin !== undefined || dynamicMax !== undefined) return undefined;
+
   const min =
     node?.data?.min !== undefined && node.data.min !== ''
       ? Number(node.data.min)
@@ -217,4 +229,83 @@ export function createMarkArea(ctx: StrategyContext) {
       ],
     ],
   };
+}
+
+export function createLineSeriesWithRange(
+  ctx: StrategyContext,
+  data: { x: number; y: number; min?: number; max?: number }[],
+  name: string,
+) {
+  // Sort by X
+  data.sort((a, b) => a.x - b.x);
+
+  const lineData = data.map((d) => [d.x, d.y]);
+  const hasDynamic = data.some(
+    (d) => d.min !== undefined || d.max !== undefined,
+  );
+
+  const seriesList: any[] = [];
+
+  // Main Line
+  seriesList.push({
+    name,
+    type: 'line',
+    data: lineData,
+    symbolSize: 6,
+    showSymbol: true,
+    xAxisIndex: ctx.index,
+    yAxisIndex: ctx.index,
+    // Only show static MarkArea if no dynamic range
+    markArea: !hasDynamic ? createRangeMarkers(ctx) : undefined,
+  });
+
+  // Dynamic Range Band (Custom Series)
+  if (hasDynamic) {
+    seriesList.push({
+      name: `${name} Range`,
+      type: 'custom',
+      renderItem: (_params: any, api: any) => {
+        if (data.length === 0) return;
+        const points = [];
+
+        // Build polygon: top edge (max) left-to-right, then bottom edge (min) right-to-left
+        for (let i = 0; i < data.length; i++) {
+          const d = data[i];
+          const topVal = d.max !== undefined ? d.max : 999999999; // Infinity clipped
+          const point = api.coord([d.x, topVal]);
+          points.push(point);
+        }
+
+        for (let i = data.length - 1; i >= 0; i--) {
+          const d = data[i];
+          const bottomVal = d.min !== undefined ? d.min : -999999999;
+          const point = api.coord([d.x, bottomVal]);
+          points.push(point);
+        }
+
+        return {
+          type: 'polygon',
+          shape: {
+            points: points,
+          },
+          style: {
+            fill: api.visual('color'),
+            opacity: 0.05,
+            stroke: 'none',
+          },
+          styleEmphasis: {
+            opacity: 0.1,
+          },
+        };
+      },
+      data: lineData, // Dummy data for tooltip/color mapping
+      z: -1, // Behind the line
+      xAxisIndex: ctx.index,
+      yAxisIndex: ctx.index,
+      tooltip: { show: false }, // Hide range from tooltip
+      clip: true,
+    });
+  }
+
+  return seriesList;
 }

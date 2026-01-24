@@ -3,7 +3,7 @@ import {
   createBaseGrid,
   createBaseYAxis,
   createCategoricalXAxis,
-  createMarkArea,
+  createRangeMarkers,
 } from './utils';
 
 export class CategoricalBarStrategy implements VisualizationStrategy {
@@ -32,7 +32,7 @@ export class CategoricalBarStrategy implements VisualizationStrategy {
       data,
       xAxisIndex: ctx.index,
       yAxisIndex: ctx.index,
-      markArea: createMarkArea(ctx),
+      markArea: createRangeMarkers(ctx),
       itemStyle: { borderRadius: [4, 4, 0, 0] },
     };
   }

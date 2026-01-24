@@ -3,7 +3,7 @@ import {
   createBaseGrid,
   createBaseXAxis,
   createBaseYAxis,
-  createMarkArea,
+  createLineSeriesWithRange,
 } from './utils';
 
 export class MultiLineStrategy implements VisualizationStrategy {
@@ -36,36 +36,48 @@ export class MultiLineStrategy implements VisualizationStrategy {
   }
 
   getSeries(ctx: StrategyContext) {
-    const { results, headers, id, isXNumeric } = ctx;
+    const { results, headers, id, isXNumeric, metadata } = ctx;
     const colIndex = headers.findIndex((h) => h.id === id);
 
     // Identify which column is the categorical one (legend) and which is numeric (X axis)
-    // results row format: [input1, input2, output1, output2, ...]
     const numericColIndex = isXNumeric ? 0 : 1;
     const categoricalColIndex = isXNumeric ? 1 : 0;
 
-    const seriesMap: Record<string, any[][]> = {};
+    const seriesMap: Record<
+      string,
+      { x: number; y: number; min?: number; max?: number }[]
+    > = {};
 
-    results.forEach((row) => {
+    results.forEach((row, rowIndex) => {
       const secondaryVal = String(row[categoricalColIndex]);
       if (!seriesMap[secondaryVal]) {
         seriesMap[secondaryVal] = [];
       }
-      seriesMap[secondaryVal].push([
-        parseFloat(String(row[numericColIndex])),
-        parseFloat(String(row[colIndex])),
-      ]);
+
+      // Extract metadata for this row
+      const meta = metadata?.[rowIndex]?.[id];
+      const min = meta?.min !== undefined ? Number(meta.min) : undefined;
+      const max = meta?.max !== undefined ? Number(meta.max) : undefined;
+
+      seriesMap[secondaryVal].push({
+        x: parseFloat(String(row[numericColIndex])),
+        y: parseFloat(String(row[colIndex])),
+        min,
+        max,
+      });
     });
 
-    return Object.entries(seriesMap).map(([category, data]) => ({
-      name: `${ctx.label} (${category})`,
-      type: 'line',
-      data: data.sort((a, b) => a[0] - b[0]),
-      symbolSize: 6,
-      showSymbol: true,
-      xAxisIndex: ctx.index,
-      yAxisIndex: ctx.index,
-      markArea: createMarkArea(ctx),
-    }));
+    const seriesList: any[] = [];
+
+    Object.entries(seriesMap).forEach(([category, data]) => {
+      const subSeries = createLineSeriesWithRange(
+        ctx,
+        data,
+        `${ctx.label} (${category})`,
+      );
+      seriesList.push(...subSeries);
+    });
+
+    return seriesList;
   }
 }
