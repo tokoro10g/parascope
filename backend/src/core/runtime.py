@@ -142,16 +142,16 @@ def output_node(node_id: str, inputs: Dict[str, str] = None, label: str = None, 
             if max_arg and max_arg in kwargs:
                 actual_max = self.parse_number(kwargs[max_arg])
             
-            # Perform validation if configured
-            val = self.validate_range(val, actual_min, actual_max)
-
-            # Store metadata for retrieval
+            # Store metadata for retrieval (always do this before validation)
             if hasattr(self, 'node_metadata'):
                 meta = {}
                 if actual_min is not None: meta['min'] = actual_min
                 if actual_max is not None: meta['max'] = actual_max
                 if meta:
                     self.node_metadata[node_id] = meta
+
+            # Perform validation if configured
+            val = self.validate_range(val, actual_min, actual_max)
 
             return val
 
@@ -393,11 +393,14 @@ class SheetBase:
                 # They return the invalid value but attach the error message, keeping valid=True for downstream.
                 # Creates a "warning" state effectively.
                 if is_validation:
-                    self.results[node_id] = {
+                    meta = self.node_metadata.get(node_id)
+                    res_obj = {
                         "value": e.value,
                         "valid": True, # Keep valid so it doesn't break logic expecting success
                         "error": msg
                     }
+                    if meta: res_obj.update(meta)
+                    self.results[node_id] = res_obj
                 else:
                     self.register_error(
                         node_id, 
