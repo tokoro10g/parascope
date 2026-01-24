@@ -17,6 +17,8 @@ from ..schemas.sweep import SweepRequest, SweepResponse, SweepHeader
 
 def serialize_result(val: Any) -> Any:
     if isinstance(val, dict):
+        # If it's a structured result object { "value": ..., "min": ..., "max": ... }
+        # we want to serialize its members but keep it as a dict
         return {k: serialize_result(v) for k, v in val.items()}
     if isinstance(val, list):
         return [serialize_result(v) for v in val]
@@ -161,6 +163,7 @@ async def sweep_sheet(
 
     global_error = None
     results_rows: List[List[Any]] = []
+    metadata_rows: List[Dict[str, Any]] = []
 
     try:
         script = await generator.generate_sweep_script(
@@ -184,6 +187,7 @@ async def sweep_sheet(
         for step in raw_results:
             step_inputs = step.get("inputs", {})
             step_outputs = step.get("outputs", {})
+            step_metadata = step.get("metadata", {})
             
             row = []
             # 1. Primary Input
@@ -198,9 +202,15 @@ async def sweep_sheet(
                 row.append(serialize_result(step_outputs.get(oid)))
             
             results_rows.append(row)
+            metadata_rows.append(step_metadata)
 
     except Exception as e:
          global_error = str(e)
          print(f"Sweep generation failed: {e}")
 
-    return SweepResponse(headers=headers, results=results_rows, error=global_error)
+    return SweepResponse(
+        headers=headers, 
+        results=results_rows, 
+        metadata=metadata_rows if metadata_rows else None,
+        error=global_error
+    )

@@ -37,6 +37,7 @@ export const getSweepChartOption = (
   nodes: any[],
   theme: ChartTheme,
   selectedInputLabel: string,
+  metadata?: Record<string, any>[] | null,
 ): EChartsOption => {
   if (!results || results.length === 0 || headers.length === 0) return {};
 
@@ -102,6 +103,7 @@ export const getSweepChartOption = (
       grid3DIndex: currentGrid3DIndex,
       label,
       results,
+      metadata,
       headers,
       node,
       theme,

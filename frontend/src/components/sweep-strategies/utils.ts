@@ -72,7 +72,12 @@ export const renderTimelineItem = (_params: any, api: any) => {
 };
 
 export function checkIsNumeric(values: any[]) {
-  return values.every((v) => {
+  return values.every((rawV) => {
+    const v =
+      rawV !== null && typeof rawV === 'object' && 'value' in rawV
+        ? rawV.value
+        : rawV;
+
     if (v === null || v === undefined || v === '') return true;
     if (typeof v === 'number') return true;
     if (typeof v === 'string') {

@@ -33,6 +33,7 @@ export const SweepPage: React.FC = () => {
     error,
     handleRun,
     results,
+    metadata,
     headers,
     handleSweepInputChange,
   } = useSweepState();
@@ -118,6 +119,7 @@ export const SweepPage: React.FC = () => {
               sheetName={sheet?.name || 'Loading...'}
               sheetId={sheetId}
               results={results}
+              metadata={metadata}
               headers={headers}
               nodes={nodes}
               inputNodeId={primaryInput.nodeId}

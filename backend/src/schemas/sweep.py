@@ -29,6 +29,6 @@ class SweepHeader(BaseModel):
 
 class SweepResponse(BaseModel):
     headers: List[SweepHeader]
-    # results is a list of rows, where each row is a list of values matching the headers
     results: List[List[Any]]
+    metadata: List[Dict[UUID, Any]] | None = None
     error: str | None = None

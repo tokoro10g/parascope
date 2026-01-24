@@ -65,45 +65,94 @@ export class Surface3DStrategy implements VisualizationStrategy {
 
     const extraSeries: any[] = [mainSeries];
 
-    // Reference planes for min/max
-    const minZ =
-      node?.data?.min !== undefined && node.data.min !== ''
-        ? Number(node.data.min)
-        : undefined;
-    const maxZ =
-      node?.data?.max !== undefined && node.data.max !== ''
-        ? Number(node.data.max)
-        : undefined;
+    // Check for dynamic min/max in metadata
+    const dynamicMin = ctx.metadata?.map((m) => m[id]?.min);
+    const dynamicMax = ctx.metadata?.map((m) => m[id]?.max);
 
-    const xValues = xUnique.map((v) => parseFloat(String(v)));
-    const yValues = yUnique.map((v) => parseFloat(String(v)));
-    const minX = Math.min(...xValues);
-    const maxX = Math.max(...xValues);
-    const minY = Math.min(...yValues);
-    const maxY = Math.max(...yValues);
+    const hasDynamicMin = dynamicMin?.some((v) => v !== undefined);
+    const hasDynamicMax = dynamicMax?.some((v) => v !== undefined);
 
-    const createPlane = (name: string, z: number, color: string) => ({
-      name: `${label} ${name}`,
-      type: 'surface',
-      grid3DIndex: grid3DIndex,
-      silent: true,
-      wireframe: { show: false },
-      shading: 'color',
-      itemStyle: { color, opacity: 0.2 },
-      data: [
-        [minX, minY, z],
-        [maxX, minY, z],
-        [minX, maxY, z],
-        [maxX, maxY, z],
-      ],
-      dataShape: [2, 2],
-    });
-
-    if (minZ !== undefined) {
-      extraSeries.push(createPlane('Min', minZ, '#1890ff'));
+    if (hasDynamicMin) {
+      extraSeries.push({
+        name: `${label} Min`,
+        type: 'surface',
+        grid3DIndex: ctx.grid3DIndex,
+        silent: true,
+        wireframe: { show: false },
+        shading: 'color',
+        itemStyle: { color: '#1890ff', opacity: 0.2 },
+        data: results.map((row, i) => [
+          parseFloat(String(row[0])),
+          parseFloat(String(row[1])),
+          dynamicMin![i] ?? -Infinity,
+        ]),
+        dataShape: [yCount, xCount],
+      });
     }
-    if (maxZ !== undefined) {
-      extraSeries.push(createPlane('Max', maxZ, '#ff4d4f'));
+
+    if (hasDynamicMax) {
+      extraSeries.push({
+        name: `${label} Max`,
+        type: 'surface',
+        grid3DIndex: ctx.grid3DIndex,
+        silent: true,
+        wireframe: { show: false },
+        shading: 'color',
+        itemStyle: { color: '#ff4d4f', opacity: 0.2 },
+        data: results.map((row, i) => [
+          parseFloat(String(row[0])),
+          parseFloat(String(row[1])),
+          dynamicMax![i] ?? Infinity,
+        ]),
+        dataShape: [yCount, xCount],
+      });
+    }
+
+    // Static Reference planes for min/max (only if no dynamic ones)
+    const createPlane = (name: string, z: number, color: string) => {
+      const xValues = xUnique.map((v) => parseFloat(String(v)));
+      const yValues = yUnique.map((v) => parseFloat(String(v)));
+      const minX = Math.min(...xValues);
+      const maxX = Math.max(...xValues);
+      const minY = Math.min(...yValues);
+      const maxY = Math.max(...yValues);
+
+      return {
+        name: `${label} ${name}`,
+        type: 'surface',
+        grid3DIndex: ctx.grid3DIndex,
+        silent: true,
+        wireframe: { show: false },
+        shading: 'color',
+        itemStyle: { color, opacity: 0.2 },
+        data: [
+          [minX, minY, z],
+          [maxX, minY, z],
+          [minX, maxY, z],
+          [maxX, maxY, z],
+        ],
+        dataShape: [2, 2],
+      };
+    };
+
+    if (!hasDynamicMin) {
+      const minZ =
+        node?.data?.min !== undefined && node.data.min !== ''
+          ? Number(node.data.min)
+          : undefined;
+      if (minZ !== undefined) {
+        extraSeries.push(createPlane('Min', minZ, '#1890ff'));
+      }
+    }
+
+    if (!hasDynamicMax) {
+      const maxZ =
+        node?.data?.max !== undefined && node.data.max !== ''
+          ? Number(node.data.max)
+          : undefined;
+      if (maxZ !== undefined) {
+        extraSeries.push(createPlane('Max', maxZ, '#ff4d4f'));
+      }
     }
 
     return extraSeries;

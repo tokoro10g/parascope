@@ -56,6 +56,7 @@ export const useSweepState = () => {
   );
 
   const [results, setResults] = useState<any[][] | null>(null);
+  const [metadata, setMetadata] = useState<Record<string, any>[] | null>(null);
   const [headers, setHeaders] = useState<SweepHeader[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -386,6 +387,7 @@ export const useSweepState = () => {
         toast.error(msg);
       }
       setResults(res.results);
+      setMetadata(res.metadata || null);
       setHeaders(res.headers);
     } catch (e: any) {
       const msg = e.message || 'An error occurred during sweep.';
@@ -427,6 +429,7 @@ export const useSweepState = () => {
     inputOverrides,
     setInputOverrides,
     results,
+    metadata,
     headers,
     loading,
     error,

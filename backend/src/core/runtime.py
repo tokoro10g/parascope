@@ -145,6 +145,14 @@ def output_node(node_id: str, inputs: Dict[str, str] = None, label: str = None, 
             # Perform validation if configured
             val = self.validate_range(val, actual_min, actual_max)
 
+            # Store metadata for retrieval
+            if hasattr(self, 'node_metadata'):
+                meta = {}
+                if actual_min is not None: meta['min'] = actual_min
+                if actual_max is not None: meta['max'] = actual_max
+                if meta:
+                    self.node_metadata[node_id] = meta
+
             return val
 
         wrapper._node_config = func._node_config
@@ -174,10 +182,14 @@ class SheetBase:
         self.results: Dict[str, Dict[str, Any]] = {}
         self.node_map: Dict[str, Any] = {} # Metadata about nodes
         self.node_instances: Dict[str, 'SheetBase'] = {} # Track nested sheet instances
+        self.node_metadata: Dict[str, Dict[str, Any]] = {} # Transient metadata during execution
 
-    def register_result(self, node_id: str, value: Any):
+    def register_result(self, node_id: str, value: Any, metadata: Dict[str, Any] = None):
         """Register a successful result"""
-        self.results[node_id] = {"value": value, "valid": True}
+        res = {"value": value, "valid": True}
+        if metadata:
+            res.update(metadata)
+        self.results[node_id] = res
         
     def register_instance(self, node_id: str, instance: 'SheetBase'):
         """Register a nested sheet instance for state inspection"""
@@ -363,7 +375,8 @@ class SheetBase:
                 res = method(**kwargs)
                 
                 # Register Result (Handle dicts vs usage)
-                self.register_result(node_id, res)
+                meta = self.node_metadata.get(node_id)
+                self.register_result(node_id, res, metadata=meta)
                 
             except (DependencyError, ValueValidationError) as e:
                 # Upstream failure or Validation failure

@@ -15,6 +15,7 @@ export interface StrategyContext {
   grid3DIndex: number; // Index for grid3D/3D axes
   label: string;
   results: any[][];
+  metadata?: Record<string, any>[] | null;
   headers: SweepHeader[];
   node: any;
   theme: ChartTheme;

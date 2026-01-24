@@ -477,5 +477,6 @@ export interface SweepHeader {
 export interface SweepResponse {
   headers: SweepHeader[];
   results: any[][];
+  metadata?: Record<string, any>[];
   error?: string;
 }

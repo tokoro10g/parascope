@@ -28,12 +28,16 @@ Generated from `SPECIFICATIONS.tsv`.
     - [x] **Backend**:
         - [x] Columnar optimization for large sweep payloads.
         - [x] Support for secondary sweep variables (Cartesian product).
+        - [x] Secure execution with RestrictedPython.
+        - [ ] Dynamic min/max support in Sweep response (include resolved bounds).
     - [x] **Frontend**:
         - [x] Resizable split-pane layout for configuration vs. results.
         - [x] Intelligent defaults based on node min/max constraints.
         - [x] 3D Surface Plots (Numeric x Numeric) with orthographic projection.
         - [x] Multi-line Charts (Numeric x Categorical).
         - [x] Piecewise Heatmaps (Categorical x Categorical/Categorical Outputs).
+        - [x] 3D Reference Planes (Static).
+        - [ ] 3D Reference Planes (Dynamic) - Update visualizer to consume sweep bounds.
 
 ## 5. GenAI Integration (Use Gemini)
 - [x] **Backend**:

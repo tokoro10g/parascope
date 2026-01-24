@@ -14,6 +14,7 @@ interface SweepResultsProps {
   sheetName: string;
   sheetId?: string;
   results: any[][] | null;
+  metadata?: Record<string, any>[] | null;
   headers: SweepHeader[];
   nodes: NodeData[];
   inputNodeId: string;
@@ -29,6 +30,7 @@ export const SweepResults: React.FC<SweepResultsProps> = ({
   sheetName,
   sheetId,
   results,
+  metadata,
   headers,
   nodes,
   inputNodeId,
@@ -47,8 +49,9 @@ export const SweepResults: React.FC<SweepResultsProps> = ({
       nodes,
       theme,
       selectedInputLabel,
+      metadata,
     );
-  }, [results, headers, nodes, theme, selectedInputLabel]);
+  }, [results, headers, nodes, theme, selectedInputLabel, metadata]);
 
   const handleCopyPlot = async () => {
     if (!chartRef.current) return;

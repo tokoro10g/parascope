@@ -91,16 +91,18 @@ try:
             # Extract requested outputs
             for out_id in output_node_ids:
                 node_res = raw_results.get(out_id)
-                # Handle different result formats
                 final_val = None
+                meta = {{}}
+                
                 if isinstance(node_res, dict):
+                    if 'min' in node_res: meta['min'] = node_res['min']
+                    if 'max' in node_res: meta['max'] = node_res['max']
+                    
                     if 'value' in node_res:
                          final_val = node_res['value']
                     elif 'valid' in node_res and not node_res['valid']:
-                         final_val = None # Error state, maybe capture error?
+                         final_val = None 
                     else:
-                        # Try to find a numeric value if it's a multi-output but we want 'the' value
-                        # Default to None if complex
                         for v in node_res.values():
                             if isinstance(v, (int, float)):
                                 final_val = v
@@ -109,6 +111,9 @@ try:
                      final_val = node_res
                 
                 step_res["outputs"][out_id] = final_val
+                if meta:
+                    if "metadata" not in step_res: step_res["metadata"] = {{}}
+                    step_res["metadata"][out_id] = meta
 
         except Exception as e:
             step_res["error"] = str(e)
