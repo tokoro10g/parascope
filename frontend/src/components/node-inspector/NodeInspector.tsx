@@ -223,9 +223,11 @@ export const NodeInspector: React.FC<NodeInspectorProps> = ({
           <select
             id="sheet-version"
             value={data.versionId || ''}
-            onChange={(e) =>
-              setData({ ...data, versionId: e.target.value || null })
-            }
+            onChange={(e) => {
+              const vid = e.target.value || null;
+              const tag = versions.find((v) => v.id === vid)?.version_tag;
+              setData({ ...data, versionId: vid, versionTag: tag });
+            }}
           >
             <option value="">Live (Latest Draft)</option>
             {versions.map((v) => (

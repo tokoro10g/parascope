@@ -166,6 +166,27 @@ export function CustomNode(props: any) {
   return (
     <div ref={ref} style={{ position: 'relative' }}>
       <Presets.classic.Node {...props} />
+      {type === 'sheet' && (
+        <div
+          style={{
+            position: 'absolute',
+            top: '-8px',
+            right: '10px',
+            backgroundColor: data.data.versionTag ? '#f5f5f5' : '#e1bee7',
+            color: '#333',
+            fontSize: '10px',
+            fontWeight: 'bold',
+            padding: '2px 6px',
+            borderRadius: '4px',
+            pointerEvents: 'none',
+            zIndex: 2,
+            border: '1px solid #bdbdbd',
+            boxShadow: '0 1px 2px rgba(0,0,0,0.1)',
+          }}
+        >
+          {data.data.versionTag || 'Live'}
+        </div>
+      )}
       {Icon && (
         <div
           style={{

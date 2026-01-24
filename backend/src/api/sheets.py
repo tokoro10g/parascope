@@ -28,6 +28,40 @@ from ..schemas.sheet import (
 router = APIRouter(prefix="/sheets", tags=["sheets"])
 
 
+async def _enrich_nodes_with_versions(sheet: Sheet, db: AsyncSession):
+    if not sheet.nodes:
+        return
+
+    version_ids = []
+    for node in sheet.nodes:
+        if node.type == 'sheet':
+            vid = node.data.get('versionId')
+            if vid:
+                try:
+                    version_ids.append(UUID(vid))
+                except ValueError:
+                    pass
+
+    if not version_ids:
+        return
+
+    # Fetch versions
+    query = select(SheetVersion.id, SheetVersion.version_tag).where(SheetVersion.id.in_(version_ids))
+    result = await db.execute(query)
+    version_map = {str(row.id): row.version_tag for row in result.all()}
+
+    # Update node data
+    for node in sheet.nodes:
+        if node.type == 'sheet':
+            vid = node.data.get('versionId')
+            if vid and vid in version_map:
+                # Explicitly copy and re-assign to ensure the change is registered/visible
+                # SQLAlchemy's mutation tracking for JSON types can be tricky
+                new_data = dict(node.data)
+                new_data['versionTag'] = version_map[vid]
+                node.data = new_data
+
+
 def _sort_nodes(sheet: Sheet) -> Sheet:
     if sheet.nodes:
         # Sort by X then Y to match frontend table view
@@ -199,6 +233,7 @@ async def create_sheet(
 
     await db.commit()
     await db.refresh(db_sheet, attribute_names=["nodes", "connections"])
+    await _enrich_nodes_with_versions(db_sheet, db)
     return _sort_nodes(db_sheet)
 
 
@@ -211,6 +246,8 @@ async def read_sheet(sheet_id: UUID, db: AsyncSession = Depends(get_db)):
     sheet = result.scalar_one_or_none()
     if not sheet:
         raise HTTPException(status_code=404, detail="Sheet not found")
+    
+    await _enrich_nodes_with_versions(sheet, db)
     return _sort_nodes(sheet)
 
 
@@ -383,6 +420,7 @@ async def update_sheet(
             db.add(db_conn)
     await db.commit()
     await db.refresh(db_sheet, attribute_names=["nodes", "connections"])
+    await _enrich_nodes_with_versions(db_sheet, db)
     return _sort_nodes(db_sheet)
 
 
@@ -444,6 +482,7 @@ async def duplicate_sheet(sheet_id: UUID, db: AsyncSession = Depends(get_db)):
 
     await db.commit()
     await db.refresh(new_sheet, attribute_names=["nodes", "connections"])
+    await _enrich_nodes_with_versions(new_sheet, db)
     return _sort_nodes(new_sheet)
 
 
