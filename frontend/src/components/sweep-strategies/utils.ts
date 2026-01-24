@@ -183,48 +183,6 @@ export function createBaseYAxis(
   };
 }
 
-export function createConstantRangeMarker(ctx: StrategyContext) {
-  const { theme, metadata, id } = ctx;
-
-  let min: number | undefined;
-  let max: number | undefined;
-
-  if (metadata && metadata.length > 0) {
-    const firstMin = metadata[0][id]?.min;
-    const firstMax = metadata[0][id]?.max;
-
-    const isConstantMin = metadata.every((m) => m[id]?.min === firstMin);
-    const isConstantMax = metadata.every((m) => m[id]?.max === firstMax);
-
-    if (isConstantMin) min = firstMin;
-    if (isConstantMax) max = firstMax;
-  }
-
-  if (min === undefined && max === undefined) return undefined;
-
-  return {
-    silent: true,
-    itemStyle: {
-      color: 'rgba(76, 175, 80, 0.1)',
-    },
-    label: {
-      position: 'insideRight',
-      color: theme.text,
-    },
-    data: [
-      [
-        {
-          name: `${ctx.label} Range`,
-          yAxis: min !== undefined ? min : -Infinity,
-        },
-        {
-          yAxis: max !== undefined ? max : Infinity,
-        },
-      ],
-    ],
-  };
-}
-
 export function createRangeSeries(
   ctx: StrategyContext,
   data: { x: number; y: number; min?: number; max?: number }[],

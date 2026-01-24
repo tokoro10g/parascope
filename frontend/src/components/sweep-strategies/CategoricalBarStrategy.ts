@@ -3,7 +3,6 @@ import {
   createBaseGrid,
   createBaseYAxis,
   createCategoricalXAxis,
-  createConstantRangeMarker,
   createRangeSeries,
 } from './utils';
 
@@ -53,8 +52,6 @@ export class CategoricalBarStrategy implements VisualizationStrategy {
       data: dataWithMeta.map((d) => d.y),
       xAxisIndex: ctx.index,
       yAxisIndex: ctx.index,
-      // Use markArea only if no dynamic range series was created
-      markArea: !rangeSeries ? createConstantRangeMarker(ctx) : undefined,
       itemStyle: { borderRadius: [4, 4, 0, 0] },
     });
 
