@@ -197,7 +197,7 @@ export const VersionListModal: React.FC<VersionListModalProps> = ({
             <button
               type="button"
               onClick={() => onSetDefault(null)}
-              className="btn-secondary"
+              className="btn btn-secondary"
               style={{ padding: '4px 8px', fontSize: '0.85em' }}
             >
               Set as Default
@@ -313,10 +313,10 @@ export const VersionListModal: React.FC<VersionListModalProps> = ({
                       <button
                         type="button"
                         onClick={() => onSetDefault(v.id)}
-                        className="btn-secondary"
+                        className="btn btn-secondary"
                         style={{ padding: '4px 8px', fontSize: '0.85em' }}
                       >
-                        Set Default
+                        Set as Default
                       </button>
                     )}
                     <a

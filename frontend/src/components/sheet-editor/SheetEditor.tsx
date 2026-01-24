@@ -55,6 +55,9 @@ export const SheetEditor: React.FC = () => {
   const [isTakeOverModalOpen, setIsTakeOverModalOpen] = useState(false);
   const [initialLoadDone, setInitialLoadDone] = useState(false);
   const initialLoadDoneRef = useRef(false);
+  const [defaultVersionTag, setDefaultVersionTag] = useState<string | null>(
+    null,
+  );
 
   const lastResultRef = useRef(lastResult);
   lastResultRef.current = lastResult;
@@ -147,6 +150,18 @@ export const SheetEditor: React.FC = () => {
     ),
     setIsDirty,
   );
+
+  // Fetch default version tag when default_version_id changes
+  useEffect(() => {
+    if (currentSheet?.default_version_id && sheetId) {
+      api
+        .getVersion(sheetId, currentSheet.default_version_id)
+        .then((v) => setDefaultVersionTag(v.version_tag))
+        .catch((e) => console.error('Failed to fetch default version tag', e));
+    } else {
+      setDefaultVersionTag(null);
+    }
+  }, [currentSheet?.default_version_id, sheetId]);
 
   const triggerAutoCalculation = useCallback(() => {
     if (calculateTimeoutRef.current) {
@@ -736,10 +751,23 @@ export const SheetEditor: React.FC = () => {
           }}
         >
           <span>
-            Status: <strong>Draft (Default is Locked)</strong>. Changes here
-            will not affect other sheets until a new version is published and
-            set as default.
+            Status:{' '}
+            <strong>Draft (Default is {defaultVersionTag || 'Locked'})</strong>.
+            Changes here will not affect other sheets until a new version is
+            published and set as default.
           </span>
+          <button
+            type="button"
+            onClick={() =>
+              navigate(
+                `/sheet/${sheetId}?versionId=${currentSheet.default_version_id}`,
+              )
+            }
+            className="take-over-btn"
+            style={{ backgroundColor: '#e65100' }}
+          >
+            View Default
+          </button>
         </div>
       )}
       {!isVersionView && lockedByOther && (
