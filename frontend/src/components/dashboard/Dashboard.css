@@ -63,6 +63,18 @@
   box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
 }
 
+@media (max-width: 600px) {
+  .actions-bottom {
+    flex-direction: column;
+  }
+  .actions-bottom .btn {
+    width: 100%;
+  }
+  .dashboard-inner {
+    padding: 10px;
+  }
+}
+
 @media (prefers-color-scheme: dark) {
   .session-item {
     background: #333;

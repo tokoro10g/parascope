@@ -12,6 +12,8 @@ import { useSweepState } from './useSweepState';
 export const SweepPage: React.FC = () => {
   const navigate = useNavigate();
   const { user, logout } = useAuth();
+  const [isMobile, setIsMobile] = useState(window.innerWidth <= 768);
+  const [activeTab, setActiveTab] = useState<'config' | 'results'>('config');
 
   const {
     sheet,
@@ -48,6 +50,11 @@ export const SweepPage: React.FC = () => {
 
   // Update theme on mount and system change
   useEffect(() => {
+    const handleResize = () => {
+      setIsMobile(window.innerWidth <= 768);
+    };
+    window.addEventListener('resize', handleResize);
+
     const updateTheme = () => {
       const rootStyles = getComputedStyle(document.documentElement);
       const bodyStyles = getComputedStyle(document.body);
@@ -74,6 +81,7 @@ export const SweepPage: React.FC = () => {
     const timer = setTimeout(updateTheme, 100);
 
     return () => {
+      window.removeEventListener('resize', handleResize);
       mediaQuery.removeEventListener('change', updateTheme);
       clearTimeout(timer);
     };
@@ -84,49 +92,107 @@ export const SweepPage: React.FC = () => {
     navigate('/');
   };
 
+  const onRunAndSwitch = async () => {
+    if (isMobile) setActiveTab('results');
+    await handleRun();
+  };
+
   return (
     <div className="sweep-page">
       <NavBar user={user} onBack={handleBack} onLogout={logout} />
 
+      {isMobile && (
+        <div className="sweep-mobile-tabs">
+          <button
+            type="button"
+            className={`mobile-tab-btn ${activeTab === 'config' ? 'active' : ''}`}
+            onClick={() => setActiveTab('config')}
+          >
+            Configuration
+          </button>
+          <button
+            type="button"
+            className={`mobile-tab-btn ${activeTab === 'results' ? 'active' : ''}`}
+            onClick={() => setActiveTab('results')}
+          >
+            Results
+          </button>
+        </div>
+      )}
+
       <div className="sweep-content">
-        <Group
-          orientation="horizontal"
-          style={{ width: '100%', height: '100%' }}
-        >
-          <Panel defaultSize="35%" minSize="25%" maxSize="70%">
-            <SweepSidebar
-              inputOptions={inputOptions}
-              outputOptions={outputOptions}
-              primaryInput={primaryInput}
-              updatePrimary={updatePrimary}
-              secondaryInput={secondaryInput}
-              updateSecondary={updateSecondary}
-              onInputChange={handleSweepInputChange}
-              inputOverrides={inputOverrides}
-              setInputOverrides={setInputOverrides}
-              outputNodeIds={outputNodeIds}
-              toggleOutput={toggleOutput}
-              loading={loading}
-              error={error}
-              onRun={handleRun}
+        {isMobile ? (
+          <div className="sweep-mobile-content">
+            {activeTab === 'config' ? (
+              <SweepSidebar
+                inputOptions={inputOptions}
+                outputOptions={outputOptions}
+                primaryInput={primaryInput}
+                updatePrimary={updatePrimary}
+                secondaryInput={secondaryInput}
+                updateSecondary={updateSecondary}
+                onInputChange={handleSweepInputChange}
+                inputOverrides={inputOverrides}
+                setInputOverrides={setInputOverrides}
+                outputNodeIds={outputNodeIds}
+                toggleOutput={toggleOutput}
+                loading={loading}
+                error={error}
+                onRun={onRunAndSwitch}
+              />
+            ) : (
+              <SweepResults
+                sheetName={sheet?.name || 'Loading...'}
+                sheetId={sheetId}
+                results={results}
+                metadata={metadata}
+                headers={headers}
+                nodes={nodes}
+                inputNodeId={primaryInput.nodeId}
+                theme={theme}
+              />
+            )}
+          </div>
+        ) : (
+          <Group
+            orientation="horizontal"
+            style={{ width: '100%', height: '100%' }}
+          >
+            <Panel defaultSize="35%" minSize={450} maxSize="80%">
+              <SweepSidebar
+                inputOptions={inputOptions}
+                outputOptions={outputOptions}
+                primaryInput={primaryInput}
+                updatePrimary={updatePrimary}
+                secondaryInput={secondaryInput}
+                updateSecondary={updateSecondary}
+                onInputChange={handleSweepInputChange}
+                inputOverrides={inputOverrides}
+                setInputOverrides={setInputOverrides}
+                outputNodeIds={outputNodeIds}
+                toggleOutput={toggleOutput}
+                loading={loading}
+                error={error}
+                onRun={handleRun}
+              />
+            </Panel>
+            <Separator
+              style={{ width: '4px', background: '#ccc', cursor: 'col-resize' }}
             />
-          </Panel>
-          <Separator
-            style={{ width: '4px', background: '#ccc', cursor: 'col-resize' }}
-          />
-          <Panel defaultSize="65%" minSize="30%">
-            <SweepResults
-              sheetName={sheet?.name || 'Loading...'}
-              sheetId={sheetId}
-              results={results}
-              metadata={metadata}
-              headers={headers}
-              nodes={nodes}
-              inputNodeId={primaryInput.nodeId}
-              theme={theme}
-            />
-          </Panel>
-        </Group>
+            <Panel defaultSize="65%" minSize={300}>
+              <SweepResults
+                sheetName={sheet?.name || 'Loading...'}
+                sheetId={sheetId}
+                results={results}
+                metadata={metadata}
+                headers={headers}
+                nodes={nodes}
+                inputNodeId={primaryInput.nodeId}
+                theme={theme}
+              />
+            </Panel>
+          </Group>
+        )}
       </div>
     </div>
   );
