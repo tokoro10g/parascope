@@ -127,6 +127,12 @@
   margin: 0 10px;
 }
 
+@media (max-width: 600px) {
+  .explorer-item-id {
+    display: none;
+  }
+}
+
 .explorer-item-actions {
   display: flex;
   gap: 8px;
