@@ -156,7 +156,7 @@ export const SweepResults: React.FC<SweepResultsProps> = ({
               title="Copy Data Table to Clipboard"
               style={{ minWidth: 'unset' }}
             >
-              <Table size={16} className="sweep-copy-icon" /> Copy Data
+              <Table size={16} /> Copy Data
             </button>
             <button
               type="button"
@@ -165,7 +165,7 @@ export const SweepResults: React.FC<SweepResultsProps> = ({
               title="Copy Plot Image to Clipboard"
               style={{ minWidth: 'unset' }}
             >
-              <ChartArea size={16} className="sweep-copy-icon" /> Copy Plot
+              <ChartArea size={16} /> Copy Plot
             </button>
           </div>
         )}
