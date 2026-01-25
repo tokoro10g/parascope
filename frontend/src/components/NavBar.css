@@ -1,0 +1,81 @@
+.nav-bar {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 5px 10px;
+  background: var(--panel-bg);
+  color: var(--text-color);
+  border-bottom: 1px solid var(--border-color);
+  min-height: 40px;
+  flex-wrap: nowrap;
+}
+
+.nav-logo-container {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.nav-logo-container span {
+  font-weight: bold;
+}
+
+.nav-back-button {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  background: none;
+  border: none;
+  color: inherit;
+  cursor: pointer;
+  padding: 0;
+  font: inherit;
+  white-space: nowrap;
+}
+
+.nav-user-section {
+  margin-left: auto;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.nav-user-name {
+  font-size: 0.9em;
+  white-space: nowrap;
+}
+
+.nav-logout-button {
+  background: none;
+  border: none;
+  padding: 0;
+  color: inherit;
+  font-size: 0.9em;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-family: inherit;
+  white-space: nowrap;
+}
+
+.nav-logout-button:hover,
+.nav-back-button:hover {
+  text-decoration: underline;
+}
+
+@media (max-width: 600px) {
+  .nav-logo-container span,
+  .nav-back-button span,
+  .nav-logout-button span {
+    display: none;
+  }
+
+  .nav-bar {
+    gap: 15px;
+  }
+
+  .nav-user-section {
+    gap: 8px;
+  }
+}

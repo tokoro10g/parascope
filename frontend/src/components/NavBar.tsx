@@ -1,6 +1,7 @@
 import { ArrowLeft, LogOut } from 'lucide-react';
 import type React from 'react';
 import { ParascopeLogo } from './ParascopeLogo';
+import './NavBar.css';
 
 interface NavBarProps {
   user: string | null;
@@ -10,46 +11,25 @@ interface NavBarProps {
 
 export const NavBar: React.FC<NavBarProps> = ({ user, onBack, onLogout }) => {
   return (
-    <div
-      className="nav-bar"
-      style={{ display: 'flex', alignItems: 'center', gap: '10px' }}
-    >
-      <ParascopeLogo size={16} />
-      <span style={{ fontWeight: 'bold' }}>Parascope</span>
-      <button
-        type="button"
-        onClick={onBack}
-        style={{
-          display: 'flex',
-          alignItems: 'center',
-          gap: '4px',
-          background: 'none',
-          border: 'none',
-          color: 'inherit',
-          cursor: 'pointer',
-          padding: 0,
-          font: 'inherit',
-        }}
-      >
-        <ArrowLeft size={16} /> Back to Dashboard
+    <div className="nav-bar">
+      <div className="nav-logo-container">
+        <ParascopeLogo size={16} />
+        <span>Parascope</span>
+      </div>
+      <button type="button" onClick={onBack} className="nav-back-button">
+        <ArrowLeft size={16} />
+        <span>Back to Dashboard</span>
       </button>
-      <div
-        style={{
-          marginLeft: 'auto',
-          display: 'flex',
-          alignItems: 'center',
-          gap: '8px',
-          paddingRight: '10px',
-        }}
-      >
-        <span style={{ fontSize: '0.9em' }}>{user}</span>
+      <div className="nav-user-section">
+        <span className="nav-user-name">{user}</span>
         <button
           type="button"
           onClick={onLogout}
           title="Change User"
-          className="nav-link"
+          className="nav-logout-button"
         >
-          <LogOut size={16} /> Change User
+          <LogOut size={16} />
+          <span>Change User</span>
         </button>
       </div>
     </div>
