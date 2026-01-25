@@ -40,10 +40,16 @@ export const NodeInspector: React.FC<NodeInspectorProps> = ({
   const [aiImage, setAiImage] = useState<string | null>(null);
   const [isGenerating, setIsGenerating] = useState(false);
   const [aiEnabled, setAiEnabled] = useState(false);
+  const [aiAvailableProviders, setAiAvailableProviders] = useState<string[]>(
+    [],
+  );
+  const [aiSelectedProvider, setAiSelectedProvider] = useState<string>('');
 
   useEffect(() => {
     api.getGenAIConfig().then((config) => {
       setAiEnabled(config.enabled);
+      setAiAvailableProviders(config.available_providers || []);
+      setAiSelectedProvider(config.default_provider || '');
     });
   }, []);
 
@@ -157,6 +163,7 @@ export const NodeInspector: React.FC<NodeInspectorProps> = ({
         urls,
         aiImage || undefined,
         data.description,
+        aiSelectedProvider,
       );
       setData((prev) => ({
         ...prev,
@@ -204,6 +211,9 @@ export const NodeInspector: React.FC<NodeInspectorProps> = ({
           handleGenerate={handleGenerate}
           aiEnabled={aiEnabled}
           hasExistingContent={!!(data.code || data.description)}
+          availableProviders={aiAvailableProviders}
+          selectedProvider={aiSelectedProvider}
+          setSelectedProvider={setAiSelectedProvider}
         />
       )}
 

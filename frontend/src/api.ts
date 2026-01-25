@@ -166,16 +166,25 @@ export interface SheetUsage {
 
 export const api = {
   // GENAI
-  async getGenAIConfig(): Promise<{ enabled: boolean }> {
+  async getGenAIConfig(): Promise<{
+    enabled: boolean;
+    available_providers: string[];
+    default_provider: string;
+  }> {
     try {
       const res = await fetch(`${API_BASE}/api/genai/config`, {
         headers: getHeaders(),
       });
-      if (!res.ok) return { enabled: false };
+      if (!res.ok)
+        return {
+          enabled: false,
+          available_providers: [],
+          default_provider: '',
+        };
       return res.json();
     } catch (e) {
       console.error('Failed to fetch GenAI config', e);
-      return { enabled: false };
+      return { enabled: false, available_providers: [], default_provider: '' };
     }
   },
 
@@ -185,6 +194,7 @@ export const api = {
     urls: string[] = [],
     image?: string,
     existingDescription: string = '',
+    provider?: string,
   ): Promise<GenerateFunctionResponse> {
     return request(`${API_BASE}/api/genai/generate_function`, {
       method: 'POST',
@@ -195,6 +205,7 @@ export const api = {
         urls,
         image,
         existing_description: existingDescription,
+        provider,
       }),
     });
   },

@@ -11,6 +11,9 @@ interface AIGeneratorProps {
   handleGenerate: () => void;
   aiEnabled: boolean;
   hasExistingContent: boolean;
+  availableProviders: string[];
+  selectedProvider: string;
+  setSelectedProvider: (provider: string) => void;
 }
 
 export const AIGenerator: React.FC<AIGeneratorProps> = ({
@@ -24,6 +27,9 @@ export const AIGenerator: React.FC<AIGeneratorProps> = ({
   handleGenerate,
   aiEnabled,
   hasExistingContent,
+  availableProviders,
+  selectedProvider,
+  setSelectedProvider,
 }) => {
   if (!aiEnabled) return null;
 
@@ -38,6 +44,19 @@ export const AIGenerator: React.FC<AIGeneratorProps> = ({
     }
   };
 
+  const getProviderLabel = (p: string) => {
+    switch (p) {
+      case 'gemini':
+        return 'Google Gemini';
+      case 'openai':
+        return 'OpenAI ChatGPT';
+      case 'bedrock':
+        return 'AWS Bedrock';
+      default:
+        return p;
+    }
+  };
+
   return (
     <div
       className="form-group"
@@ -49,22 +68,52 @@ export const AIGenerator: React.FC<AIGeneratorProps> = ({
         marginBottom: '15px',
       }}
     >
-      <label
-        htmlFor="ai-prompt"
+      <div
         style={{
           display: 'flex',
           justifyContent: 'space-between',
           alignItems: 'center',
-          marginBottom: '5px',
+          marginBottom: '8px',
         }}
       >
-        <span style={{ fontWeight: 500 }}>Generate with Gemini AI</span>
-        {isGenerating && (
-          <span style={{ fontSize: '0.8em', color: '#9c27b0' }}>
-            Generating...
-          </span>
-        )}
-      </label>
+        <label
+          htmlFor="ai-prompt"
+          style={{
+            fontWeight: 500,
+            margin: 0,
+          }}
+        >
+          Generate with AI
+        </label>
+
+        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+          {availableProviders.length > 1 && (
+            <select
+              value={selectedProvider}
+              onChange={(e) => setSelectedProvider(e.target.value)}
+              style={{
+                fontSize: '0.75rem',
+                padding: '2px 4px',
+                height: 'auto',
+                width: 'auto',
+                minWidth: 'unset',
+              }}
+              disabled={isGenerating}
+            >
+              {availableProviders.map((p) => (
+                <option key={p} value={p}>
+                  {getProviderLabel(p)}
+                </option>
+              ))}
+            </select>
+          )}
+          {isGenerating && (
+            <span style={{ fontSize: '0.8em', color: '#9c27b0' }}>
+              Generating...
+            </span>
+          )}
+        </div>
+      </div>
 
       <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
         <input

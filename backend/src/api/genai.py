@@ -3,9 +3,9 @@ import json
 import logging
 import os
 
-from google import genai
 from fastapi import APIRouter, HTTPException
 from pydantic import BaseModel
+from ..core.ai_providers import get_provider, get_available_providers
 
 router = APIRouter()
 
@@ -17,6 +17,7 @@ class GenerateFunctionRequest(BaseModel):
     existing_description: str = ""
     urls: list[str] = []
     image: str | None = None
+    provider: str | None = None
 
 class GenerateFunctionResponse(BaseModel):
     title: str
@@ -25,20 +26,18 @@ class GenerateFunctionResponse(BaseModel):
     outputs: list[str]
     description: str
 
-def get_gemini_client():
-    api_key = os.getenv("GEMINI_API_KEY")
-    if not api_key:
-        raise HTTPException(status_code=500, detail="GEMINI_API_KEY not configured")
-    return genai.Client(api_key=api_key)
-
 @router.get("/config")
 async def get_genai_config():
-    return {"enabled": bool(os.getenv("GEMINI_API_KEY"))}
+    return {
+        "enabled": len(get_available_providers()) > 0,
+        "available_providers": get_available_providers(),
+        "default_provider": os.getenv("DEFAULT_AI_PROVIDER", "gemini")
+    }
 
 @router.post("/generate_function", response_model=GenerateFunctionResponse)
 async def generate_function(request: GenerateFunctionRequest):
     try:
-        client = get_gemini_client()
+        provider = get_provider(request.provider)
         
         system_instruction = """
         You are an expert Python engineer helping a user write a function for an engineering calculation tool.
@@ -86,60 +85,24 @@ async def generate_function(request: GenerateFunctionRequest):
         }
         """
         
-        user_prompt = f"Prompt: {request.prompt}\n"
-        if request.urls:
-            user_prompt += "\nReference URLs:\n" + "\n".join(request.urls) + "\n"
-
-        if request.existing_code:
-            user_prompt += f"Existing Code:\n{request.existing_code}\n"
-            user_prompt += "Update the existing code based on the prompt, or rewrite it if requested.\n"
-
-        if request.existing_description:
-            user_prompt += f"\nExisting Description:\n{request.existing_description}\n"
-            user_prompt += "Ensure the new description remains consistent with existing background info unless otherwise instructed.\n"
-
-        parts = [genai.types.Part.from_text(text=user_prompt)]
-        
-        if request.image:
-            if "," in request.image:
-                header, encoded = request.image.split(",", 1)
-                mime_type = header.split(":")[1].split(";")[0]
-            else:
-                encoded = request.image
-                mime_type = "image/png"
-            
-            image_bytes = base64.b64decode(encoded)
-            parts.append(genai.types.Part.from_bytes(data=image_bytes, mime_type=mime_type))
-
-        tools = [
-            genai.types.Tool(url_context=genai.types.UrlContext()),
-            genai.types.Tool(google_search=genai.types.GoogleSearch())
-        ]
-
-        response = client.models.generate_content(
-            model="gemini-3-flash-preview",
-            contents=[genai.types.Content(role="user", parts=parts)],
-            config=genai.types.GenerateContentConfig(
-                system_instruction=system_instruction,
-                response_mime_type="application/json",
-                tools=tools
-            )
+        parsed = await provider.generate_function(
+            prompt=request.prompt,
+            system_instruction=system_instruction,
+            existing_code=request.existing_code,
+            existing_description=request.existing_description,
+            urls=request.urls,
+            image=request.image
         )
-        
-        result_text = response.text
-        try:
-            parsed = json.loads(result_text)
-            return GenerateFunctionResponse(
-                title=parsed.get("title", ""),
-                code=parsed.get("code", ""),
-                inputs=parsed.get("inputs", []),
-                outputs=parsed.get("outputs", []),
-                description=parsed.get("description", "")
-            )
-        except json.JSONDecodeError as err:
-            logger.error(f"Failed to parse Gemini response: {result_text}")
-            raise HTTPException(status_code=500, detail="AI returned invalid JSON") from err
+
+        return GenerateFunctionResponse(
+            title=parsed.get("title", ""),
+            code=parsed.get("code", ""),
+            inputs=parsed.get("inputs", []),
+            outputs=parsed.get("outputs", []),
+            description=parsed.get("description", "")
+        )
 
     except Exception as e:
-        logger.error(f"Gemini API error: {str(e)}")
+        logger.error(f"AI Provider error ({request.provider}): {str(e)}")
         raise HTTPException(status_code=500, detail=str(e)) from e
+
