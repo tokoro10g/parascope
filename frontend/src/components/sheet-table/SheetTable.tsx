@@ -130,14 +130,14 @@ export const SheetTable: React.FC<SheetTableProps> = ({
         <div className="sheet-table-tabs">
           <button
             type="button"
-            className={`btn sheet-table-tab ${activeTab === 'variables' ? 'active' : ''}`}
+            className={`sheet-table-tab ${activeTab === 'variables' ? 'active' : ''}`}
             onClick={() => handleTabChange('variables')}
           >
             <Hash size={16} /> Variables
           </button>
           <button
             type="button"
-            className={`btn sheet-table-tab ${activeTab === 'descriptions' ? 'active' : ''}`}
+            className={`sheet-table-tab ${activeTab === 'descriptions' ? 'active' : ''}`}
             onClick={() => handleTabChange('descriptions')}
           >
             <FileText size={16} /> Descriptions

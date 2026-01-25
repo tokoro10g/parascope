@@ -18,6 +18,7 @@
   --text-muted: #999;
 
   --primary-color: #646cff;
+  --primary-color-rgb: 100, 108, 255;
   --primary-hover: #535bf2;
 
   --border-color: #ccc;
@@ -49,10 +50,12 @@
     --text-secondary: #ccc;
     --text-muted: #aaa;
 
+    --primary-color-rgb: 100, 108, 255;
+
     --border-color: #444;
     --border-light: #555;
 
-    --panel-bg: #333;
+    --panel-bg: #3a3a3a;
     --panel-bg-secondary: #2a2a2a;
     --panel-bg-translucent: rgba(30, 30, 30, 0.95);
 
