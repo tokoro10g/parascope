@@ -33,6 +33,7 @@
 
   --input-bg: #ffffff;
   --button-bg: #f9f9f9;
+  --button-secondary-bg: #f5f5f5;
 
   --danger-color: #ff4d4f;
   --danger-hover: #ff7875;
@@ -64,6 +65,7 @@
 
     --input-bg: #222;
     --button-bg: #1a1a1a;
+    --button-secondary-bg: #2a2a2a;
   }
 }
 
@@ -138,7 +140,7 @@ h1 {
 }
 
 .btn.secondary {
-  background-color: var(--panel-bg-secondary);
+  background-color: var(--button-secondary-bg);
   color: var(--text-color);
   border: 1px solid var(--border-color);
 }
