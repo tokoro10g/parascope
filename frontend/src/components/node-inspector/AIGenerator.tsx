@@ -218,7 +218,7 @@ export const AIGenerator: React.FC<AIGeneratorProps> = ({
           type="button"
           onClick={handleGenerate}
           disabled={isGenerating || !aiPrompt.trim()}
-          className="btn primary"
+          className="btn btn-primary"
           style={{ width: '100%', marginTop: '4px', minWidth: 'unset' }}
         >
           {hasExistingContent ? 'Edit with AI' : 'Generate'}

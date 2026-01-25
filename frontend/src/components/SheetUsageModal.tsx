@@ -1,4 +1,4 @@
-import { Download, ExternalLink } from 'lucide-react';
+import { ExternalLink } from 'lucide-react';
 import type React from 'react';
 import { useEffect, useState } from 'react';
 import toast from 'react-hot-toast';
@@ -214,19 +214,12 @@ export const SheetUsageModal: React.FC<SheetUsageModalProps> = ({
                       {usage.can_import && (
                         <button
                           type="button"
-                          className="btn-primary"
-                          style={{ padding: '6px 10px', fontSize: '0.9em' }}
                           onClick={() => handleImport(usage)}
-                          title="Calculate Root sheet and import the inputs for this specific instance"
-                          disabled={importingId === targetId}
+                          disabled={importingId !== null}
+                          className="btn primary"
+                          style={{ padding: '4px 8px', minWidth: 'unset' }}
                         >
-                          {importingId === targetId ? (
-                            'Calculating...'
-                          ) : (
-                            <>
-                              <Download size={14} /> Import Inputs
-                            </>
-                          )}
+                          {importingId === targetId ? '...' : 'Import'}
                         </button>
                       )}
                     </td>

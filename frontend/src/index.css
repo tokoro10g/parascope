@@ -107,7 +107,11 @@ h1 {
   background-color: var(--button-bg);
   color: var(--text-color);
   cursor: pointer;
-  transition: border-color 0.25s;
+  transition: all 0.2s ease;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
 }
 .btn:hover {
   border-color: var(--primary-color);
@@ -117,30 +121,40 @@ h1 {
   outline: 4px auto -webkit-focus-ring-color;
 }
 
-.btn-primary {
+.btn.primary {
   background-color: var(--primary-color);
   color: white;
   border: none;
 }
 
-.btn-primary:hover {
+.btn.primary:hover {
   background-color: var(--primary-hover);
 }
 
-.btn-primary:disabled {
+.btn.primary:disabled {
   background-color: var(--border-color);
   color: var(--text-muted);
   cursor: not-allowed;
 }
 
-.btn-secondary {
+.btn.secondary {
   background-color: var(--panel-bg-secondary);
   color: var(--text-color);
   border: 1px solid var(--border-color);
 }
 
-.btn-secondary:hover {
+.btn.secondary:hover {
   background-color: var(--item-hover);
+}
+
+.btn.danger {
+  background-color: var(--danger-color);
+  color: white;
+  border: none;
+}
+
+.btn.danger:hover {
+  background-color: var(--danger-hover);
 }
 
 .monospace {
@@ -178,16 +192,6 @@ h1 {
 
 .katex {
   padding: 5px;
-}
-
-button.danger {
-  background-color: var(--danger-color);
-  color: white;
-  border: none;
-}
-
-button.danger:hover {
-  background-color: var(--danger-hover);
 }
 
 .breadcrumbs button {

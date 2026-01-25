@@ -34,21 +34,3 @@
   background-color: var(--input-bg);
   color: var(--text-color);
 }
-
-.login-button {
-  width: 100%;
-  padding: 12px;
-  background-color: var(--primary-color);
-  color: white;
-  border: none;
-  border-radius: 4px;
-  font-size: 16px;
-  cursor: pointer;
-  transition: background-color 0.2s;
-}
-
-.login-button:disabled {
-  background-color: var(--border-color);
-  cursor: not-allowed;
-  color: var(--text-muted);
-}

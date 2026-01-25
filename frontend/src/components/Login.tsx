@@ -77,7 +77,8 @@ export const Login: React.FC = () => {
           <button
             type="submit"
             disabled={!isValid(name)}
-            className="login-button"
+            className="btn primary"
+            style={{ width: '100%' }}
           >
             Continue
           </button>

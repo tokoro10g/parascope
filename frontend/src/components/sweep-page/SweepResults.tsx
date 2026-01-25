@@ -136,12 +136,13 @@ export const SweepResults: React.FC<SweepResultsProps> = ({
               <button
                 type="button"
                 onClick={() => setIsErrorModalOpen(true)}
-                className="btn-secondary sweep-copy-btn"
+                className="btn secondary sweep-copy-btn"
                 title={`${errorIndices.length} points failed. Click for details.`}
                 style={{
                   color: '#ff9800',
                   borderColor: '#ff9800',
                   marginRight: '8px',
+                  minWidth: 'unset',
                 }}
               >
                 <TriangleAlert size={16} />
@@ -151,16 +152,18 @@ export const SweepResults: React.FC<SweepResultsProps> = ({
             <button
               type="button"
               onClick={handleCopyTable}
-              className="btn-secondary sweep-copy-btn"
+              className="btn secondary sweep-copy-btn"
               title="Copy Data Table to Clipboard"
+              style={{ minWidth: 'unset' }}
             >
               <Table size={16} className="sweep-copy-icon" /> Copy Data
             </button>
             <button
               type="button"
               onClick={handleCopyPlot}
-              className="btn-secondary sweep-copy-btn"
+              className="btn secondary sweep-copy-btn"
               title="Copy Plot Image to Clipboard"
+              style={{ minWidth: 'unset' }}
             >
               <ChartArea size={16} className="sweep-copy-icon" /> Copy Plot
             </button>

@@ -106,7 +106,6 @@ export const HistoryModal: React.FC<HistoryModalProps> = ({
       </button>
     </div>
   );
-
   return (
     <Modal
       isOpen={isOpen}

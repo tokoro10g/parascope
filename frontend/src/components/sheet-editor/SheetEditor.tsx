@@ -815,8 +815,14 @@ export const SheetEditor: React.FC = () => {
                 `/sheet/${sheetId}?versionId=${currentSheet.default_version_id}`,
               )
             }
-            className="take-over-btn"
-            style={{ backgroundColor: '#e65100' }}
+            className="btn"
+            style={{
+              backgroundColor: '#e65100',
+              color: 'white',
+              border: 'none',
+              padding: '5px 10px',
+              minWidth: 'unset',
+            }}
           >
             View Default
           </button>
@@ -831,7 +837,8 @@ export const SheetEditor: React.FC = () => {
           <button
             type="button"
             onClick={() => setIsTakeOverModalOpen(true)}
-            className="take-over-btn"
+            className="btn danger"
+            style={{ padding: '5px 10px', minWidth: 'unset' }}
           >
             Take Over
           </button>
@@ -843,7 +850,8 @@ export const SheetEditor: React.FC = () => {
           <button
             type="button"
             onClick={() => window.location.reload()}
-            className="take-over-btn"
+            className="btn"
+            style={{ padding: '5px 10px', minWidth: 'unset' }}
           >
             Reload
           </button>
@@ -1068,14 +1076,14 @@ export const SheetEditor: React.FC = () => {
           >
             <button
               type="button"
-              className="btn-secondary"
+              className="btn secondary"
               onClick={() => setIsTakeOverModalOpen(false)}
             >
               Cancel
             </button>
             <button
               type="button"
-              className="btn-primary"
+              className="btn primary"
               style={{ backgroundColor: '#d32f2f' }}
               onClick={() => {
                 takeOver();

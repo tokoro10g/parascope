@@ -99,17 +99,9 @@ export const VersionListModal: React.FC<VersionListModalProps> = ({
             type="button"
             onClick={handleCreate}
             disabled={isCreating || isDirty}
-            className="btn"
+            className="btn primary"
             style={{
               padding: '8px 16px',
-              backgroundColor: isDirty
-                ? 'var(--text-muted)'
-                : 'var(--primary-color)',
-              color: 'white',
-              border: 'none',
-              borderRadius: '4px',
-              cursor: isCreating || isDirty ? 'not-allowed' : 'pointer',
-              opacity: isCreating || isDirty ? 0.7 : 1,
               minWidth: 'unset',
             }}
           >
@@ -197,8 +189,12 @@ export const VersionListModal: React.FC<VersionListModalProps> = ({
             <button
               type="button"
               onClick={() => onSetDefault(null)}
-              className="btn btn-secondary"
-              style={{ padding: '4px 8px', fontSize: '0.85em' }}
+              className="btn secondary"
+              style={{
+                padding: '4px 8px',
+                fontSize: '0.85em',
+                minWidth: 'unset',
+              }}
             >
               Set as Default
             </button>
@@ -313,8 +309,12 @@ export const VersionListModal: React.FC<VersionListModalProps> = ({
                       <button
                         type="button"
                         onClick={() => onSetDefault(v.id)}
-                        className="btn btn-secondary"
-                        style={{ padding: '4px 8px', fontSize: '0.85em' }}
+                        className="btn secondary"
+                        style={{
+                          padding: '4px 8px',
+                          fontSize: '0.85em',
+                          minWidth: 'unset',
+                        }}
                       >
                         Set as Default
                       </button>
@@ -346,15 +346,11 @@ export const VersionListModal: React.FC<VersionListModalProps> = ({
                           onClose();
                         }
                       }}
+                      className="btn"
                       style={{
-                        display: 'flex',
-                        alignItems: 'center',
-                        gap: '4px',
                         padding: '4px 8px',
-                        border: '1px solid var(--border-color)',
-                        borderRadius: '4px',
-                        background: 'var(--panel-bg)',
-                        cursor: 'pointer',
+                        minWidth: 'unset',
+                        fontSize: '0.85em',
                       }}
                     >
                       <RotateCcw size={14} /> Restore
