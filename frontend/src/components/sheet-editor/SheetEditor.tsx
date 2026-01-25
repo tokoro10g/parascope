@@ -122,11 +122,12 @@ export const SheetEditor: React.FC = () => {
     null,
   );
 
-  // Reset load ref if sheetId changes or editor instance changes (HMR)
-  // biome-ignore lint/correctness/useExhaustiveDependencies: We want to trigger reload on ID or editor instance change
+  // Reset load ref if sheetId, versionId or editor instance changes (HMR)
+  const versionId = searchParams.get('versionId');
+  // biome-ignore lint/correctness/useExhaustiveDependencies: We want to trigger reload on ID, version or editor instance change
   useEffect(() => {
     initialLoadDoneRef.current = false;
-  }, [sheetId, editor]);
+  }, [sheetId, versionId, editor]);
 
   useUnsavedChanges(isDirty);
 
@@ -786,8 +787,14 @@ export const SheetEditor: React.FC = () => {
           <button
             type="button"
             onClick={() => navigate(`/sheet/${sheetId}`)}
-            className="take-over-btn"
-            style={{ backgroundColor: '#1976d2' }}
+            className="btn"
+            style={{
+              backgroundColor: '#1976d2',
+              color: 'white',
+              border: 'none',
+              padding: '5px 10px',
+              minWidth: 'unset',
+            }}
           >
             Back to Live
           </button>
