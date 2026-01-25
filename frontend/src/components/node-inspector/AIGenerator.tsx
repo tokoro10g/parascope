@@ -76,15 +76,27 @@ export const AIGenerator: React.FC<AIGeneratorProps> = ({
           marginBottom: '8px',
         }}
       >
-        <label
-          htmlFor="ai-prompt"
-          style={{
-            fontWeight: 500,
-            margin: 0,
-          }}
-        >
-          Generate with AI
-        </label>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+          <label
+            htmlFor="ai-prompt"
+            style={{
+              fontWeight: 500,
+              margin: 0,
+            }}
+          >
+            Generate with AI
+          </label>
+          <span
+            style={{
+              fontSize: '0.7rem',
+              color: 'var(--text-secondary)',
+              fontStyle: 'italic',
+              opacity: 0.7,
+            }}
+          >
+            (AI can be incorrect; please verify code and formulas)
+          </span>
+        </div>
 
         <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
           {availableProviders.length > 1 && (
