@@ -217,9 +217,8 @@ export const SheetUsageModal: React.FC<SheetUsageModalProps> = ({
                           onClick={() => handleImport(usage)}
                           disabled={importingId !== null}
                           className="btn primary"
-                          style={{ padding: '4px 8px', minWidth: 'unset' }}
                         >
-                          {importingId === targetId ? '...' : 'Import'}
+                          {importingId === targetId ? '...' : 'Import values'}
                         </button>
                       )}
                     </td>
