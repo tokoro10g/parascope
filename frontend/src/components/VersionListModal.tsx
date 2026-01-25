@@ -323,13 +323,11 @@ export const VersionListModal: React.FC<VersionListModalProps> = ({
                       href={`/sheet/${sheetId}?versionId=${v.id}`}
                       target="_blank"
                       rel="noreferrer"
+                      className="btn"
                       style={{
-                        textDecoration: 'none',
-                        color: 'var(--link-color, #007bff)',
-                        border: '1px solid var(--border-color)',
                         padding: '4px 8px',
-                        borderRadius: '4px',
-                        backgroundColor: 'var(--panel-bg)',
+                        fontSize: '0.85em',
+                        minWidth: 'unset',
                       }}
                     >
                       View
