@@ -80,8 +80,12 @@ export function customSelectableNodes(
       if (twitch !== null) twitch++;
       lastEvent = context.data.event;
     } else if (context.type === 'pointerup') {
-      if (twitch !== null && twitch < 4 && context.data.event.button !== 2) {
-        selector.unselectAll();
+      const isBackground =
+        context.data.event.target === area.area.content.holder.parentNode;
+      if (twitch !== null && twitch < 4) {
+        if (context.data.event.button !== 2 || isBackground) {
+          selector.unselectAll();
+        }
       }
       twitch = null;
       lastEvent = context.data.event;
