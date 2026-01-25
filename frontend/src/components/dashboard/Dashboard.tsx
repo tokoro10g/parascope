@@ -248,8 +248,9 @@ export const Dashboard: React.FC = () => {
             justifyContent: 'space-between',
             marginBottom: '20px',
           }}
+          className="dashboard-header"
         >
-          <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+          <div className="dashboard-logo-container">
             <ParascopeLogo size={48} strokeColor="var(--text-color, #333)" />
             <h1 style={{ margin: 0 }}>Parascope</h1>
           </div>
