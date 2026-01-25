@@ -1,7 +1,12 @@
 import { FileText, Hash, Workflow } from 'lucide-react';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import toast from 'react-hot-toast';
-import { Group, Panel, Separator } from 'react-resizable-panels';
+import {
+  Group,
+  Panel,
+  type PanelImperativeHandle,
+  Separator,
+} from 'react-resizable-panels';
 import {
   useLocation,
   useNavigate,
@@ -65,6 +70,36 @@ export const SheetEditor: React.FC = () => {
   const [activeTab, setActiveTab] = useState<
     'editor' | 'variables' | 'descriptions'
   >('editor');
+  const editorPanelRef = useRef<PanelImperativeHandle>(null);
+  const tablePanelRef = useRef<PanelImperativeHandle>(null);
+
+  // Programmatically resize panels on mobile to ensure full-width tabs
+  useEffect(() => {
+    const resizePanels = () => {
+      if (isMobile) {
+        if (activeTab === 'editor') {
+          editorPanelRef.current?.resize('100%');
+          tablePanelRef.current?.resize('0%');
+        } else {
+          editorPanelRef.current?.resize('0%');
+          tablePanelRef.current?.resize('100%');
+        }
+      } else {
+        // Only force desktop split once when entering desktop mode
+        // to avoid resetting user-defined widths when switching Variables/Descriptions tabs
+        const currentEditorSize =
+          editorPanelRef.current?.getSize().asPercentage;
+        if (currentEditorSize === 0 || currentEditorSize === 100) {
+          editorPanelRef.current?.resize('70%');
+          tablePanelRef.current?.resize('30%');
+        }
+      }
+    };
+
+    // Small delay to let DOM settle during resize/tab switch
+    const timer = setTimeout(resizePanels, 0);
+    return () => clearTimeout(timer);
+  }, [isMobile, activeTab]);
 
   const lastResultRef = useRef(lastResult);
   lastResultRef.current = lastResult;
@@ -842,10 +877,13 @@ export const SheetEditor: React.FC = () => {
       >
         <div className="editor-main-wrapper">
           <Group
+            id="editor-group"
             orientation="horizontal"
             style={{ width: '100%', height: '100%' }}
           >
             <Panel
+              id="editor-panel"
+              panelRef={editorPanelRef}
               defaultSize={
                 isMobile ? (activeTab === 'editor' ? '100%' : '0%') : '70%'
               }
@@ -940,6 +978,8 @@ export const SheetEditor: React.FC = () => {
               }}
             />
             <Panel
+              id="table-panel"
+              panelRef={tablePanelRef}
               defaultSize={
                 isMobile ? (activeTab !== 'editor' ? '100%' : '0%') : '30%'
               }
