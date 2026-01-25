@@ -80,7 +80,7 @@ export function customSelectableNodes(
       if (twitch !== null) twitch++;
       lastEvent = context.data.event;
     } else if (context.type === 'pointerup') {
-      if (twitch !== null && twitch < 4) {
+      if (twitch !== null && twitch < 4 && context.data.event.button !== 2) {
         selector.unselectAll();
       }
       twitch = null;
