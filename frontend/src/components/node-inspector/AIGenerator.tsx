@@ -1,3 +1,4 @@
+import { Image, X } from 'lucide-react';
 import type React from 'react';
 
 interface AIGeneratorProps {
@@ -128,61 +129,46 @@ export const AIGenerator: React.FC<AIGeneratorProps> = ({
       </div>
 
       <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-        <input
-          id="ai-prompt"
-          value={aiPrompt}
-          onChange={(e) => setAiPrompt(e.target.value)}
-          placeholder={
-            hasExistingContent
-              ? 'e.g. Add the triangle area to the output. Write the description based on the code.'
-              : 'e.g. Calculate the hypotenuse of a right angle triangle'
-          }
-          style={{ width: '100%' }}
-          onKeyDown={(e) => {
-            if (e.key === 'Enter' && !isGenerating) {
-              e.preventDefault();
-              handleGenerate();
+        <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+          <input
+            id="ai-prompt"
+            value={aiPrompt}
+            onChange={(e) => setAiPrompt(e.target.value)}
+            placeholder={
+              hasExistingContent
+                ? 'e.g. Add the triangle area to the output. Write the description based on the code.'
+                : 'e.g. Calculate the hypotenuse of a right angle triangle'
             }
-          }}
-        />
-
-        <div style={{ display: 'flex', gap: '8px' }}>
-          <textarea
-            value={aiUrls}
-            onChange={(e) => setAiUrls(e.target.value)}
-            placeholder="Reference URLs (one per line)..."
-            rows={2}
-            style={{
-              flex: 1,
-              fontSize: '0.85em',
-              resize: 'vertical',
-              minHeight: '38px',
+            style={{ flex: 1 }}
+            onKeyDown={(e) => {
+              if (e.key === 'Enter' && !isGenerating) {
+                e.preventDefault();
+                handleGenerate();
+              }
             }}
           />
-          <div
-            style={{
-              display: 'flex',
-              flexDirection: 'column',
-              gap: '4px',
-              maxWidth: '120px',
-            }}
-          >
+          <div style={{ display: 'flex', gap: '4px', alignItems: 'center' }}>
             <label
               className="button"
+              title={aiImage ? 'Change Image' : 'Upload Image'}
               style={{
-                fontSize: '0.8em',
-                padding: '4px 8px',
-                textAlign: 'center',
+                padding: '4px',
                 cursor: 'pointer',
-                background: 'var(--button-bg)',
+                background: aiImage
+                  ? 'rgba(var(--primary-color-rgb), 0.1)'
+                  : 'var(--button-bg)',
                 border: '1px solid var(--border-color)',
                 borderRadius: '4px',
-                whiteSpace: 'nowrap',
-                overflow: 'hidden',
-                textOverflow: 'ellipsis',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                color: aiImage ? 'var(--primary-color)' : 'inherit',
+                minWidth: '32px',
+                height: '32px',
+                marginBottom: 0,
               }}
             >
-              {aiImage ? 'Change Img' : 'Upload Img'}
+              <Image size={18} />
               <input
                 type="file"
                 accept="image/*"
@@ -194,21 +180,39 @@ export const AIGenerator: React.FC<AIGeneratorProps> = ({
               <button
                 type="button"
                 onClick={() => setAiImage(null)}
+                title="Clear Image"
                 className="btn"
                 style={{
-                  fontSize: '0.8em',
-                  padding: '2px',
+                  padding: '4px',
                   color: 'var(--danger-color)',
-                  border: 'none',
-                  background: 'transparent',
-                  minWidth: 'unset',
+                  border: '1px solid var(--border-color)',
+                  background: 'var(--button-bg)',
+                  borderRadius: '4px',
+                  minWidth: '32px',
+                  height: '32px',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
                 }}
               >
-                Clear Image
+                <X size={18} />
               </button>
             )}
           </div>
         </div>
+
+        <textarea
+          value={aiUrls}
+          onChange={(e) => setAiUrls(e.target.value)}
+          placeholder="Reference URLs (one per line)..."
+          rows={2}
+          style={{
+            width: '100%',
+            fontSize: '0.85em',
+            resize: 'vertical',
+            minHeight: '38px',
+          }}
+        />
 
         <button
           type="button"
