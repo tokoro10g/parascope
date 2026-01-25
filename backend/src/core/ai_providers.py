@@ -25,22 +25,34 @@ class AIProvider(ABC):
         pass
 
 class GeminiProvider(AIProvider):
+    @staticmethod
+    def is_enabled() -> bool:
+        return bool(os.getenv("GEMINI_API_KEY"))
+
     def __init__(self):
         try:
             from google import genai
             self.api_key = os.getenv("GEMINI_API_KEY")
-            self.client = genai.Client(api_key=self.api_key) if self.api_key else None
+            self.client = (
+                genai.Client(api_key=self.api_key) if self.api_key else None
+            )
             self.model = os.getenv("GEMINI_MODEL", "gemini-3-flash-preview")
         except ImportError:
             self.client = None
             self.api_key = None
             self.model = None
 
-    def is_enabled(self) -> bool:
-        return bool(self.api_key)
-
-    async def generate_function(self, prompt: str, system_instruction: str, existing_code: str = "", existing_description: str = "", urls: List[str] = [], image: Optional[str] = None) -> dict:
+    async def generate_function(
+        self,
+        prompt: str,
+        system_instruction: str,
+        existing_code: str = "",
+        existing_description: str = "",
+        urls: List[str] = [],
+        image: Optional[str] = None,
+    ) -> dict:
         from google import genai
+
         if not self.client:
             raise Exception("Gemini API key not configured")
 
@@ -61,11 +73,13 @@ class GeminiProvider(AIProvider):
                 encoded = image
                 mime_type = "image/png"
             image_bytes = base64.b64decode(encoded)
-            parts.append(genai.types.Part.from_bytes(data=image_bytes, mime_type=mime_type))
+            parts.append(
+                genai.types.Part.from_bytes(data=image_bytes, mime_type=mime_type)
+            )
 
         tools = [
             genai.types.Tool(url_context=genai.types.UrlContext()),
-            genai.types.Tool(google_search=genai.types.GoogleSearch())
+            genai.types.Tool(google_search=genai.types.GoogleSearch()),
         ]
 
         response = self.client.models.generate_content(
@@ -74,15 +88,21 @@ class GeminiProvider(AIProvider):
             config=genai.types.GenerateContentConfig(
                 system_instruction=system_instruction,
                 response_mime_type="application/json",
-                tools=tools
-            )
+                tools=tools,
+            ),
         )
         return json.loads(response.text)
 
+
 class OpenAIProvider(AIProvider):
+    @staticmethod
+    def is_enabled() -> bool:
+        return bool(os.getenv("OPENAI_API_KEY"))
+
     def __init__(self):
         try:
             from openai import OpenAI
+
             self.api_key = os.getenv("OPENAI_API_KEY")
             self.client = OpenAI(api_key=self.api_key) if self.api_key else None
             self.model = os.getenv("OPENAI_MODEL", "o4-mini")
@@ -90,20 +110,31 @@ class OpenAIProvider(AIProvider):
             self.client = None
             self.api_key = None
 
-    def is_enabled(self) -> bool:
-        return bool(self.api_key)
-
-    async def generate_function(self, prompt: str, system_instruction: str, existing_code: str = "", existing_description: str = "", urls: List[str] = [], image: Optional[str] = None) -> dict:
+    async def generate_function(
+        self,
+        prompt: str,
+        system_instruction: str,
+        existing_code: str = "",
+        existing_description: str = "",
+        urls: List[str] = [],
+        image: Optional[str] = None,
+    ) -> dict:
         if not self.client:
             raise Exception("OpenAI API key not configured")
 
         user_content = [{"type": "text", "text": f"Prompt: {prompt}"}]
         if urls:
-            user_content[0]["text"] += "\nReference URLs:\n" + "\n".join(urls) + "\n"
+            user_content[0]["text"] += (
+                "\nReference URLs:\n" + "\n".join(urls) + "\n"
+            )
         if existing_code:
-            user_content[0]["text"] += f"Existing Code:\n{existing_code}\nUpdate the existing code based on the prompt, or rewrite it if requested.\n"
+            user_content[0]["text"] += (
+                f"Existing Code:\n{existing_code}\nUpdate the existing code based on the prompt, or rewrite it if requested.\n"
+            )
         if existing_description:
-            user_content[0]["text"] += f"\nExisting Description:\n{existing_description}\nEnsure the new description remains consistent with existing background info unless otherwise instructed.\n"
+            user_content[0]["text"] += (
+                f"\nExisting Description:\n{existing_description}\nEnsure the new description remains consistent with existing background info unless otherwise instructed.\n"
+            )
 
         if image:
             if not image.startswith("data:"):
@@ -114,29 +145,41 @@ class OpenAIProvider(AIProvider):
             model=self.model,
             messages=[
                 {"role": "system", "content": system_instruction},
-                {"role": "user", "content": user_content}
+                {"role": "user", "content": user_content},
             ],
-            response_format={"type": "json_object"}
+            response_format={"type": "json_object"},
         )
         return json.loads(response.choices[0].message.content)
 
+
 class BedrockProvider(AIProvider):
+    @staticmethod
+    def is_enabled() -> bool:
+        return (
+            bool(os.getenv("AWS_ACCESS_KEY_ID") and os.getenv("AWS_SECRET_ACCESS_KEY"))
+            or bool(os.getenv("AWS_PROFILE"))
+            or bool(os.getenv("AWS_CONTAINER_CREDENTIALS_RELATIVE_URI"))
+        )
+
     def __init__(self):
         try:
             import boto3
+
             self.region = os.getenv("AWS_REGION", "us-east-1")
             self.model_id = os.getenv("BEDROCK_MODEL_ID", "anthropic.claude-3-5-haiku-20241022-v1:0")
             self.client = boto3.client("bedrock-runtime", region_name=self.region)
-            # Simple check if configured
-            self._enabled = bool(os.getenv("AWS_ACCESS_KEY_ID") and os.getenv("AWS_SECRET_ACCESS_KEY")) or bool(os.getenv("AWS_PROFILE"))
         except (ImportError, Exception):
             self.client = None
-            self._enabled = False
 
-    def is_enabled(self) -> bool:
-        return self._enabled
-
-    async def generate_function(self, prompt: str, system_instruction: str, existing_code: str = "", existing_description: str = "", urls: List[str] = [], image: Optional[str] = None) -> dict:
+    async def generate_function(
+        self,
+        prompt: str,
+        system_instruction: str,
+        existing_code: str = "",
+        existing_description: str = "",
+        urls: List[str] = [],
+        image: Optional[str] = None,
+    ) -> dict:
         if not self.client:
             raise Exception("AWS/Bedrock not configured")
 
@@ -149,64 +192,68 @@ class BedrockProvider(AIProvider):
             user_text += f"\nExisting Description:\n{existing_description}\nEnsure the new description remains consistent with existing background info unless otherwise instructed.\n"
 
         content = [{"text": user_text}]
-        
+
         if image:
             if "," in image:
                 header, encoded = image.split(",", 1)
                 mime_type = header.split(":")[1].split(";")[0]
                 ext = mime_type.split("/")[-1]
-                if ext == "jpeg": ext = "jpg"
+                if ext == "jpeg":
+                    ext = "jpg"
             else:
                 encoded = image
                 ext = "png"
-            
-            content.append({
-                "image": {
-                    "format": ext,
-                    "source": {"bytes": base64.b64decode(encoded)}
+
+            content.append(
+                {
+                    "image": {
+                        "format": ext,
+                        "source": {"bytes": base64.b64decode(encoded)},
+                    }
                 }
-            })
+            )
 
-        body = json.dumps({
-            "anthropic_version": "bedrock-2023-05-31",
-            "max_tokens": 4096,
-            "system": system_instruction,
-            "messages": [
-                {"role": "user", "content": content}
-            ]
-        })
-
-        response = self.client.invoke_model(
-            modelId=self.model_id,
-            body=body
+        body = json.dumps(
+            {
+                "anthropic_version": "bedrock-2023-05-31",
+                "max_tokens": 4096,
+                "system": system_instruction,
+                "messages": [{"role": "user", "content": content}],
+            }
         )
-        
+
+        response = self.client.invoke_model(modelId=self.model_id, body=body)
+
         response_body = json.loads(response.get("body").read())
         result_text = response_body["content"][0]["text"]
-        
+
         if "```json" in result_text:
             result_text = result_text.split("```json")[1].split("```")[0].strip()
         elif "```" in result_text:
-             result_text = result_text.split("```")[1].split("```")[0].strip()
-             
+            result_text = result_text.split("```")[1].split("```")[0].strip()
+
         return json.loads(result_text)
+
 
 def get_provider(provider_name: Optional[str] = None) -> AIProvider:
     if not provider_name:
         provider_name = os.getenv("DEFAULT_AI_PROVIDER", "gemini")
-    
+
     if provider_name == "gemini":
         return GeminiProvider()
-    elif provider_name == "openai":
+    if provider_name == "openai":
         return OpenAIProvider()
-    elif provider_name == "bedrock":
+    if provider_name == "bedrock":
         return BedrockProvider()
-    else:
-        raise Exception(f"Unknown AI provider: {provider_name}")
+    raise Exception(f"Unknown AI provider: {provider_name}")
+
 
 def get_available_providers() -> List[str]:
     providers = []
-    if GeminiProvider().is_enabled(): providers.append("gemini")
-    if OpenAIProvider().is_enabled(): providers.append("openai")
-    if BedrockProvider().is_enabled(): providers.append("bedrock")
+    if GeminiProvider.is_enabled():
+        providers.append("gemini")
+    if OpenAIProvider.is_enabled():
+        providers.append("openai")
+    if BedrockProvider.is_enabled():
+        providers.append("bedrock")
     return providers
