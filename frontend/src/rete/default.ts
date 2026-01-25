@@ -22,6 +22,7 @@ import { DropdownControl, DropdownControlComponent } from './DropdownControl';
 import { InputControl, InputControlComponent } from './InputControl';
 import { MarkdownControl, MarkdownControlComponent } from './MarkdownControl';
 import { ParascopeNode } from './ParascopeNode';
+import { customSelectableNodes } from './selectable';
 import {
   type AreaExtra,
   Connection,
@@ -71,7 +72,7 @@ export async function createEditor(container: HTMLElement) {
     }
   };
 
-  const selectableNodes = AreaExtensions.selectableNodes(area, selector, {
+  const selectableNodes = customSelectableNodes(instance, area, selector, {
     accumulating: AreaExtensions.accumulateOnCtrl(),
   });
   const pathPlugin = new ConnectionPathPlugin<Schemes, Area2D<Schemes>>({
