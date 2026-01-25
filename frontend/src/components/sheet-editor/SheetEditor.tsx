@@ -122,10 +122,11 @@ export const SheetEditor: React.FC = () => {
     null,
   );
 
-  // Reset load ref if sheetId changes
+  // Reset load ref if sheetId changes or editor instance changes (HMR)
+  // biome-ignore lint/correctness/useExhaustiveDependencies: We want to trigger reload on ID or editor instance change
   useEffect(() => {
     initialLoadDoneRef.current = false;
-  }, []);
+  }, [sheetId, editor]);
 
   useUnsavedChanges(isDirty);
 
