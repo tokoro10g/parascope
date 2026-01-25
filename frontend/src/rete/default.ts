@@ -46,9 +46,15 @@ export async function createEditor(container: HTMLElement) {
   history.addPreset(HistoryPresets.classic.setup());
 
   const contextMenuCallbacks: ContextMenuCallbacks = {};
-  const contextMenu = createContextMenuPlugin(instance, contextMenuCallbacks);
-
   const selector = AreaExtensions.selector();
+  const contextMenu = createContextMenuPlugin(
+    instance,
+    contextMenuCallbacks,
+    () =>
+      instance
+        .getNodes()
+        .filter((n) => selector.isSelected({ id: n.id, label: 'node' })),
+  );
 
   // We need to expose a way to set the callback later, or pass it in.
   // Since useRete calls this, we can attach it to the returned object.

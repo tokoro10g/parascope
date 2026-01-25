@@ -24,6 +24,7 @@ export interface ContextMenuCallbacks {
 export function createContextMenuPlugin(
   editor: NodeEditor<Schemes>,
   callbacks: ContextMenuCallbacks,
+  getSelectedNodes: () => Schemes['Node'][],
 ) {
   return new ContextMenuPlugin<Schemes>({
     items: (context) => {
@@ -87,6 +88,18 @@ export function createContextMenuPlugin(
       }
 
       // Node
+      const selectedNodes = getSelectedNodes();
+      const isSelected = selectedNodes.some((n) => n.id === context.id);
+
+      if (selectedNodes.length > 1 && isSelected) {
+        return {
+          searchBar: false,
+          list: [
+            // Multi-node actions will go here
+          ],
+        };
+      }
+
       const items = [];
 
       if (context.type === 'sheet') {
