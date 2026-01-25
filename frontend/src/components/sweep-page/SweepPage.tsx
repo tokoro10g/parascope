@@ -1,8 +1,13 @@
-import type React from 'react';
-import { useEffect, useState } from 'react';
-import { Group, Panel, Separator } from 'react-resizable-panels';
+import { useEffect, useRef, useState } from 'react';
+import {
+  Group,
+  Panel,
+  type PanelImperativeHandle,
+  Separator,
+} from 'react-resizable-panels';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
+
 import { NavBar } from '../NavBar';
 import './SweepPage.css';
 import { SweepResults } from './SweepResults';
@@ -14,6 +19,8 @@ export const SweepPage: React.FC = () => {
   const { user, logout } = useAuth();
   const [isMobile, setIsMobile] = useState(window.innerWidth <= 768);
   const [activeTab, setActiveTab] = useState<'config' | 'results'>('config');
+  const sidebarPanelRef = useRef<PanelImperativeHandle>(null);
+  const resultsPanelRef = useRef<PanelImperativeHandle>(null);
 
   const {
     sheet,
@@ -39,6 +46,24 @@ export const SweepPage: React.FC = () => {
     headers,
     handleSweepInputChange,
   } = useSweepState();
+
+  // Programmatically resize panels on mobile to ensure full-width tabs
+  useEffect(() => {
+    const resizePanels = () => {
+      if (isMobile) {
+        if (activeTab === 'config') {
+          sidebarPanelRef.current?.resize('100%');
+          resultsPanelRef.current?.resize('0%');
+        } else {
+          sidebarPanelRef.current?.resize('0%');
+          resultsPanelRef.current?.resize('100%');
+        }
+      }
+    };
+
+    const timer = setTimeout(resizePanels, 0);
+    return () => clearTimeout(timer);
+  }, [isMobile, activeTab]);
 
   // State to track theme colors
   const [theme, setTheme] = useState({
@@ -121,93 +146,72 @@ export const SweepPage: React.FC = () => {
       )}
 
       <div className="sweep-content">
-        {isMobile ? (
-          <div className="sweep-mobile-content">
-            <div
-              style={{
-                display: activeTab === 'config' ? 'flex' : 'none',
-                flex: 1,
-                flexDirection: 'column',
-                minHeight: 0,
-              }}
-            >
-              <SweepSidebar
-                inputOptions={inputOptions}
-                outputOptions={outputOptions}
-                primaryInput={primaryInput}
-                updatePrimary={updatePrimary}
-                secondaryInput={secondaryInput}
-                updateSecondary={updateSecondary}
-                onInputChange={handleSweepInputChange}
-                inputOverrides={inputOverrides}
-                setInputOverrides={setInputOverrides}
-                outputNodeIds={outputNodeIds}
-                toggleOutput={toggleOutput}
-                loading={loading}
-                error={error}
-                onRun={onRunAndSwitch}
-              />
-            </div>
-            <div
-              style={{
-                display: activeTab === 'results' ? 'flex' : 'none',
-                flex: 1,
-                flexDirection: 'column',
-                minHeight: 0,
-              }}
-            >
-              <SweepResults
-                sheetName={sheet?.name || 'Loading...'}
-                sheetId={sheetId}
-                results={results}
-                metadata={metadata}
-                headers={headers}
-                nodes={nodes}
-                inputNodeId={primaryInput.nodeId}
-                theme={theme}
-              />
-            </div>
-          </div>
-        ) : (
-          <Group
-            orientation="horizontal"
-            style={{ width: '100%', height: '100%' }}
+        <Group
+          id="sweep-group"
+          orientation={isMobile ? 'vertical' : 'horizontal'}
+          style={{ width: '100%', height: '100%' }}
+        >
+          <Panel
+            id="sidebar-panel"
+            panelRef={sidebarPanelRef}
+            defaultSize={
+              isMobile ? (activeTab === 'config' ? '100%' : '0%') : '35%'
+            }
+            minSize={isMobile ? 0 : 450}
+            maxSize={isMobile ? '100%' : '80%'}
+            style={{
+              display: isMobile && activeTab !== 'config' ? 'none' : 'flex',
+              flexDirection: 'column',
+            }}
           >
-            <Panel defaultSize="35%" minSize={450} maxSize="80%">
-              <SweepSidebar
-                inputOptions={inputOptions}
-                outputOptions={outputOptions}
-                primaryInput={primaryInput}
-                updatePrimary={updatePrimary}
-                secondaryInput={secondaryInput}
-                updateSecondary={updateSecondary}
-                onInputChange={handleSweepInputChange}
-                inputOverrides={inputOverrides}
-                setInputOverrides={setInputOverrides}
-                outputNodeIds={outputNodeIds}
-                toggleOutput={toggleOutput}
-                loading={loading}
-                error={error}
-                onRun={handleRun}
-              />
-            </Panel>
-            <Separator
-              style={{ width: '4px', background: '#ccc', cursor: 'col-resize' }}
+            <SweepSidebar
+              inputOptions={inputOptions}
+              outputOptions={outputOptions}
+              primaryInput={primaryInput}
+              updatePrimary={updatePrimary}
+              secondaryInput={secondaryInput}
+              updateSecondary={updateSecondary}
+              onInputChange={handleSweepInputChange}
+              inputOverrides={inputOverrides}
+              setInputOverrides={setInputOverrides}
+              outputNodeIds={outputNodeIds}
+              toggleOutput={toggleOutput}
+              loading={loading}
+              error={error}
+              onRun={onRunAndSwitch}
             />
-            <Panel defaultSize="65%" minSize={300}>
-              <SweepResults
-                sheetName={sheet?.name || 'Loading...'}
-                sheetId={sheetId}
-                results={results}
-                metadata={metadata}
-                headers={headers}
-                nodes={nodes}
-                inputNodeId={primaryInput.nodeId}
-                theme={theme}
-              />
-            </Panel>
-          </Group>
-        )}
+          </Panel>
+          <Separator
+            style={
+              isMobile
+                ? { display: 'none' }
+                : { width: '4px', background: '#ccc', cursor: 'col-resize' }
+            }
+          />
+          <Panel
+            id="results-panel"
+            panelRef={resultsPanelRef}
+            defaultSize={
+              isMobile ? (activeTab === 'results' ? '100%' : '0%') : '65%'
+            }
+            minSize={isMobile ? 0 : 300}
+            style={{
+              display: isMobile && activeTab !== 'results' ? 'none' : 'flex',
+              flexDirection: 'column',
+            }}
+          >
+            <SweepResults
+              sheetName={sheet?.name || 'Loading...'}
+              sheetId={sheetId}
+              results={results}
+              metadata={metadata}
+              headers={headers}
+              nodes={nodes}
+              inputNodeId={primaryInput.nodeId}
+              theme={theme}
+            />
+          </Panel>
+        </Group>
       </div>
     </div>
   );

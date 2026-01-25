@@ -366,7 +366,7 @@ export const SweepSidebar: React.FC<SweepSidebarProps> = ({
 
         <button
           type="button"
-          className="btn-primary sweep-run-button"
+          className="btn primary sweep-run-button"
           onClick={onRun}
           disabled={loading}
         >
