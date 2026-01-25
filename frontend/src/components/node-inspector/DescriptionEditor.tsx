@@ -1,4 +1,5 @@
 import CodeEditor from '@uiw/react-textarea-code-editor';
+import { ExternalLink, Image as ImageIcon, Plus, Trash2 } from 'lucide-react';
 import type React from 'react';
 import ReactMarkdown from 'react-markdown';
 import rehypeKatex from 'rehype-katex';
@@ -38,26 +39,52 @@ export const DescriptionEditor: React.FC<DescriptionEditorProps> = ({
             display: 'flex',
             justifyContent: 'space-between',
             alignItems: 'center',
-            marginBottom: '5px',
+            marginBottom: '8px',
           }}
         >
           <label htmlFor="node-description" style={{ marginBottom: 0 }}>
             Description (Markdown):
           </label>
-          <button
-            type="button"
-            onClick={() => setShowPreview(!showPreview)}
-            disabled={isGenerating}
-            className="btn"
-            style={{
-              fontSize: '0.8em',
-              padding: '2px 8px',
-              cursor: 'pointer',
-              minWidth: 'unset',
-            }}
-          >
-            {showPreview ? 'Edit' : 'Preview'}
-          </button>
+          <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+            {!data.attachment && (
+              <label
+                className="btn"
+                style={{
+                  fontSize: '0.8em',
+                  padding: '4px 8px',
+                  cursor: 'pointer',
+                  minWidth: 'unset',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '4px',
+                  marginBottom: 0,
+                }}
+              >
+                <ImageIcon size={14} /> Upload Image
+                <input
+                  type="file"
+                  accept="image/*"
+                  onChange={handleFileUpload}
+                  style={{ display: 'none' }}
+                  disabled={isGenerating}
+                />
+              </label>
+            )}
+            <button
+              type="button"
+              onClick={() => setShowPreview(!showPreview)}
+              disabled={isGenerating}
+              className="btn"
+              style={{
+                fontSize: '0.8em',
+                padding: '4px 8px',
+                cursor: 'pointer',
+                minWidth: 'unset',
+              }}
+            >
+              {showPreview ? 'Edit' : 'Preview'}
+            </button>
+          </div>
         </div>
 
         {showPreview ? (
@@ -99,68 +126,109 @@ export const DescriptionEditor: React.FC<DescriptionEditorProps> = ({
         )}
       </div>
 
-      <div className="form-group">
+      {data.attachment && (
         <div
+          className="form-group"
           style={{
-            display: 'block',
-            marginBottom: '5px',
-            fontWeight: 'bold',
+            marginTop: '12px',
+            padding: '12px',
+            background: 'var(--panel-bg-secondary)',
+            border: '1px solid var(--border-color)',
+            borderRadius: '4px',
           }}
         >
-          Attachment:
-        </div>
-        {data.attachment ? (
-          <div className="attachment-preview" style={{ marginTop: '5px' }}>
-            <img
-              src={API_BASE + getAttachmentUrl(data.attachment)}
-              alt="Attachment"
-              style={{
-                maxWidth: '100%',
-                maxHeight: '200px',
-                display: 'block',
-                marginBottom: '10px',
-                borderRadius: '4px',
-                border: '1px solid var(--border-color)',
-              }}
-            />
-            <div style={{ display: 'flex', gap: '10px' }}>
-              <a
-                href={API_BASE + getAttachmentUrl(data.attachment)}
-                target="_blank"
-                rel="noreferrer"
-                style={{ color: 'var(--link-color, #007bff)' }}
-              >
-                Open Original
-              </a>
+          <div
+            style={{
+              display: 'flex',
+              justifyContent: 'space-between',
+              alignItems: 'center',
+              marginBottom: '10px',
+            }}
+          >
+            <span style={{ fontWeight: 600, fontSize: '0.9em' }}>
+              Current Attachment
+            </span>
+            <div style={{ display: 'flex', gap: '8px' }}>
               <button
                 type="button"
                 onClick={handleInsertToDescription}
                 disabled={isGenerating}
                 className="btn"
-                style={{ minWidth: 'unset', padding: '4px 8px' }}
+                title="Insert into Description"
+                style={{
+                  minWidth: 'unset',
+                  padding: '4px 8px',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '4px',
+                  fontSize: '0.85em',
+                }}
               >
-                Insert into Description
+                <Plus size={14} /> Insert
               </button>
               <button
                 type="button"
                 onClick={handleRemoveAttachment}
                 disabled={isGenerating}
                 className="btn danger"
-                style={{ minWidth: 'unset', padding: '4px 8px' }}
+                title="Remove Attachment"
+                style={{
+                  minWidth: 'unset',
+                  padding: '4px 8px',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '4px',
+                  fontSize: '0.85em',
+                }}
               >
-                Remove
+                <Trash2 size={14} /> Remove
               </button>
             </div>
           </div>
-        ) : (
-          <input
-            type="file"
-            accept="image/*"
-            onChange={handleFileUpload}
-            disabled={isGenerating}
-          />
-        )}
-      </div>
+          <div
+            style={{
+              position: 'relative',
+              borderRadius: '4px',
+              overflow: 'hidden',
+              border: '1px solid var(--border-color)',
+              background: '#000',
+              display: 'flex',
+              justifyContent: 'center',
+              alignItems: 'center',
+            }}
+          >
+            <img
+              src={API_BASE + getAttachmentUrl(data.attachment)}
+              alt="Attachment"
+              style={{
+                maxWidth: '100%',
+                maxHeight: '150px',
+                display: 'block',
+              }}
+            />
+            <a
+              href={API_BASE + getAttachmentUrl(data.attachment)}
+              target="_blank"
+              rel="noreferrer"
+              style={{
+                position: 'absolute',
+                top: '5px',
+                right: '5px',
+                background: 'rgba(0,0,0,0.5)',
+                color: '#fff',
+                padding: '4px',
+                borderRadius: '4px',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+              }}
+              title="Open Original"
+            >
+              <ExternalLink size={14} />
+            </a>
+          </div>
+        </div>
+      )}
     </>
   );
 };
