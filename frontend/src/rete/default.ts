@@ -73,7 +73,9 @@ export async function createEditor(container: HTMLElement) {
   };
 
   const selectableNodes = customSelectableNodes(instance, area, selector, {
-    accumulating: AreaExtensions.accumulateOnCtrl(),
+    accumulating: {
+      active: (e) => e.ctrlKey || e.metaKey || e.shiftKey,
+    },
   });
   const pathPlugin = new ConnectionPathPlugin<Schemes, Area2D<Schemes>>({
     arrow: () => true,
