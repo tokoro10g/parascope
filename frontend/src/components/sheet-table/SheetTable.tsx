@@ -17,6 +17,9 @@ interface SheetTableProps {
   onCalculate: () => void;
   onSweep: () => void;
   isCalculating: boolean;
+  activeTab?: 'variables' | 'descriptions';
+  onTabChange?: (tab: 'variables' | 'descriptions') => void;
+  hideTabs?: boolean;
 }
 
 export const SheetTable: React.FC<SheetTableProps> = ({
@@ -26,10 +29,23 @@ export const SheetTable: React.FC<SheetTableProps> = ({
   onCalculate,
   onSweep,
   isCalculating,
+  activeTab: externalActiveTab,
+  onTabChange,
+  hideTabs = false,
 }) => {
-  const [activeTab, setActiveTab] = useState<'variables' | 'descriptions'>(
-    'variables',
-  );
+  const [localActiveTab, setLocalActiveTab] = useState<
+    'variables' | 'descriptions'
+  >('variables');
+
+  const activeTab = externalActiveTab || localActiveTab;
+
+  const handleTabChange = (tab: 'variables' | 'descriptions') => {
+    if (onTabChange) {
+      onTabChange(tab);
+    } else {
+      setLocalActiveTab(tab);
+    }
+  };
 
   const transformUrl = (url: string) => {
     if (url.startsWith('/attachments/')) {
@@ -110,22 +126,24 @@ export const SheetTable: React.FC<SheetTableProps> = ({
 
   return (
     <div className="sheet-table">
-      <div className="sheet-table-tabs">
-        <button
-          type="button"
-          className={`btn sheet-table-tab ${activeTab === 'variables' ? 'active' : ''}`}
-          onClick={() => setActiveTab('variables')}
-        >
-          <Hash size={16} /> Variables
-        </button>
-        <button
-          type="button"
-          className={`btn sheet-table-tab ${activeTab === 'descriptions' ? 'active' : ''}`}
-          onClick={() => setActiveTab('descriptions')}
-        >
-          <FileText size={16} /> Descriptions
-        </button>
-      </div>
+      {!hideTabs && (
+        <div className="sheet-table-tabs">
+          <button
+            type="button"
+            className={`btn sheet-table-tab ${activeTab === 'variables' ? 'active' : ''}`}
+            onClick={() => handleTabChange('variables')}
+          >
+            <Hash size={16} /> Variables
+          </button>
+          <button
+            type="button"
+            className={`btn sheet-table-tab ${activeTab === 'descriptions' ? 'active' : ''}`}
+            onClick={() => handleTabChange('descriptions')}
+          >
+            <FileText size={16} /> Descriptions
+          </button>
+        </div>
+      )}
 
       {/* Content Area */}
       <div className="sheet-table-content">

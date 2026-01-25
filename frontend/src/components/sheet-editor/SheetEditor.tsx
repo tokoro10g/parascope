@@ -1,3 +1,4 @@
+import { FileText, Hash, Workflow } from 'lucide-react';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import toast from 'react-hot-toast';
 import { Group, Panel, Separator } from 'react-resizable-panels';
@@ -61,7 +62,9 @@ export const SheetEditor: React.FC = () => {
     null,
   );
   const [isMobile, setIsMobile] = useState(window.innerWidth <= 768);
-  const [activeTab, setActiveTab] = useState<'editor' | 'table'>('editor');
+  const [activeTab, setActiveTab] = useState<
+    'editor' | 'variables' | 'descriptions'
+  >('editor');
 
   const lastResultRef = useRef(lastResult);
   lastResultRef.current = lastResult;
@@ -816,14 +819,21 @@ export const SheetEditor: React.FC = () => {
           className={`mobile-tab-btn ${activeTab === 'editor' ? 'active' : ''}`}
           onClick={() => setActiveTab('editor')}
         >
-          Editor
+          <Workflow size={16} /> Editor
         </button>
         <button
           type="button"
-          className={`mobile-tab-btn ${activeTab === 'table' ? 'active' : ''}`}
-          onClick={() => setActiveTab('table')}
+          className={`mobile-tab-btn ${activeTab === 'variables' ? 'active' : ''}`}
+          onClick={() => setActiveTab('variables')}
         >
-          Table
+          <Hash size={16} /> Variables
+        </button>
+        <button
+          type="button"
+          className={`mobile-tab-btn ${activeTab === 'descriptions' ? 'active' : ''}`}
+          onClick={() => setActiveTab('descriptions')}
+        >
+          <FileText size={16} /> Descriptions
         </button>
       </div>
       <div
@@ -931,14 +941,15 @@ export const SheetEditor: React.FC = () => {
             />
             <Panel
               defaultSize={
-                isMobile ? (activeTab === 'table' ? '100%' : '0%') : '30%'
+                isMobile ? (activeTab !== 'editor' ? '100%' : '0%') : '30%'
               }
               minSize={isMobile ? 0 : '10%'}
               style={{
-                display: isMobile && activeTab !== 'table' ? 'none' : 'flex',
+                display: isMobile && activeTab === 'editor' ? 'none' : 'flex',
                 flexDirection: 'column',
               }}
             >
+              {' '}
               <SheetTable
                 nodes={nodes}
                 onUpdateValue={handleUpdateNodeValue}
@@ -955,6 +966,11 @@ export const SheetEditor: React.FC = () => {
                   );
                 }}
                 isCalculating={isCalculating}
+                activeTab={
+                  activeTab === 'editor' ? 'variables' : (activeTab as any)
+                }
+                onTabChange={setActiveTab as any}
+                hideTabs={isMobile}
               />
             </Panel>
           </Group>
