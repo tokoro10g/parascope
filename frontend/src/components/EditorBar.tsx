@@ -3,6 +3,7 @@ import {
   ChevronDown,
   ClipboardPaste,
   Copy,
+  History as HistoryIcon,
   Import,
   LogIn,
   LogOut,
@@ -30,6 +31,7 @@ interface EditorBarProps {
   onRenameSheet: (name: string) => void;
   onSaveSheet: () => void;
   onOpenVersionList?: () => void;
+  onOpenHistory?: () => void;
   onAddNode: (type: NodeType) => void;
   onUndo: () => void;
   onRedo: () => void;
@@ -46,6 +48,7 @@ export const EditorBar: React.FC<EditorBarProps> = ({
   onRenameSheet,
   onSaveSheet,
   onOpenVersionList,
+  onOpenHistory,
   onAddNode,
   onUndo,
   onRedo,
@@ -260,6 +263,19 @@ export const EditorBar: React.FC<EditorBarProps> = ({
                   style={{ color: 'var(--text-color)' }}
                 >
                   <Share2 size={16} /> Check Usage
+                </button>
+              )}
+              {onOpenHistory && (
+                <button
+                  type="button"
+                  onClick={() => {
+                    onOpenHistory();
+                    setIsSheetMenuOpen(false);
+                  }}
+                  className="add-menu-item"
+                  style={{ color: 'var(--text-color)' }}
+                >
+                  <HistoryIcon size={16} /> History
                 </button>
               )}
             </div>

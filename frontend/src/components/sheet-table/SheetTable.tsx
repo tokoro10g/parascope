@@ -1,22 +1,12 @@
-import {
-  CheckCheck,
-  Copy,
-  FileText,
-  History,
-  LineChart,
-  List,
-  Play,
-} from 'lucide-react';
+import { Copy, FileText, Hash, LineChart, Play } from 'lucide-react';
 import type React from 'react';
-import { useCallback, useEffect, useState } from 'react';
+import { useState } from 'react';
 import ReactMarkdown from 'react-markdown';
-import { useParams } from 'react-router-dom';
 import rehypeKatex from 'rehype-katex';
 import remarkMath from 'remark-math';
-import { API_BASE, type AuditLog, api } from '../../api';
+import { API_BASE } from '../../api';
 import type { ParascopeNode } from '../../rete';
 import './SheetTable.css';
-import toast from 'react-hot-toast';
 import { copyToClipboard, formatHumanReadableValue } from '../../utils';
 import { ScrollablePanel } from '../ScrollablePanel';
 
@@ -29,40 +19,6 @@ interface SheetTableProps {
   isCalculating: boolean;
 }
 
-// Helper to group all deltas across all logs by node
-const groupHistoryByNode = (history: AuditLog[], nodes: ParascopeNode[]) => {
-  const nodeGroups: Record<string, { label: string; changes: any[] }> = {};
-
-  history.forEach((log) => {
-    log.delta.forEach((d) => {
-      const nodeId = d.node_id || 'new-node';
-      const label = d.label || '(Unknown Node)';
-      if (!nodeGroups[nodeId]) {
-        nodeGroups[nodeId] = { label, changes: [] };
-      }
-      nodeGroups[nodeId].changes.push({
-        ...d,
-        user_name: log.user_name,
-        timestamp: log.timestamp,
-        is_unread: log.is_unread,
-      });
-    });
-  });
-  return Object.entries(nodeGroups)
-    .filter(([nodeId, _value]) => {
-      // filter out groups with no matching nodes (e.g. deleted nodes)
-      return nodes.some((n) => n.id === nodeId);
-    })
-    .map(([_key, value]) => value)
-    .sort((a, b) => a.label.localeCompare(b.label));
-};
-
-const formatValue = (val: any) => {
-  if (val === null || val === undefined) return 'null';
-  if (typeof val === 'object') return JSON.stringify(val);
-  return String(val);
-};
-
 export const SheetTable: React.FC<SheetTableProps> = ({
   nodes,
   onUpdateValue,
@@ -71,42 +27,9 @@ export const SheetTable: React.FC<SheetTableProps> = ({
   onSweep,
   isCalculating,
 }) => {
-  const { sheetId } = useParams<{ sheetId: string }>();
-  const [activeTab, setActiveTab] = useState<
-    'table' | 'history' | 'descriptions'
-  >('table');
-  const [history, setHistory] = useState<AuditLog[]>([]);
-  const [isHistoryLoading, setIsHistoryLoading] = useState(false);
-
-  const loadHistory = useCallback(async () => {
-    if (!sheetId) return;
-    setIsHistoryLoading(true);
-    try {
-      const data = await api.getSheetHistory(sheetId);
-      setHistory(data);
-    } catch (e) {
-      console.error(e);
-    } finally {
-      setIsHistoryLoading(false);
-    }
-  }, [sheetId]);
-
-  useEffect(() => {
-    if (activeTab === 'history') {
-      loadHistory();
-    }
-  }, [activeTab, loadHistory]);
-
-  const handleMarkAsRead = async () => {
-    if (!sheetId) return;
-    try {
-      await api.markSheetAsRead(sheetId);
-      toast.success('All changes marked as seen');
-      loadHistory(); // Refresh the list to clear highlights
-    } catch (e) {
-      console.error(e);
-    }
-  };
+  const [activeTab, setActiveTab] = useState<'variables' | 'descriptions'>(
+    'variables',
+  );
 
   const transformUrl = (url: string) => {
     if (url.startsWith('/attachments/')) {
@@ -190,33 +113,23 @@ export const SheetTable: React.FC<SheetTableProps> = ({
       <div className="sheet-table-tabs">
         <button
           type="button"
-          className={`btn sheet-table-tab ${activeTab === 'table' ? 'active' : ''}`}
-          onClick={() => setActiveTab('table')}
+          className={`btn sheet-table-tab ${activeTab === 'variables' ? 'active' : ''}`}
+          onClick={() => setActiveTab('variables')}
         >
-          <List size={16} /> Table
+          <Hash size={16} /> Variables
         </button>
         <button
           type="button"
           className={`btn sheet-table-tab ${activeTab === 'descriptions' ? 'active' : ''}`}
           onClick={() => setActiveTab('descriptions')}
         >
-          <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
-            <FileText size={16} />
-            <span>Descriptions</span>
-          </div>
-        </button>
-        <button
-          type="button"
-          className={`btn sheet-table-tab ${activeTab === 'history' ? 'active' : ''}`}
-          onClick={() => setActiveTab('history')}
-        >
-          <History size={16} /> History
+          <FileText size={16} /> Descriptions
         </button>
       </div>
 
       {/* Content Area */}
       <div className="sheet-table-content">
-        {activeTab === 'table' && (
+        {activeTab === 'variables' && (
           <div className="sheet-table-constants-section">
             <div
               className="sheet-table-controls"
@@ -440,66 +353,6 @@ export const SheetTable: React.FC<SheetTableProps> = ({
                 <div className="description-empty">
                   No descriptions available
                 </div>
-              )}
-            </ScrollablePanel>
-          </div>
-        )}
-
-        {activeTab === 'history' && (
-          <div className="history-panel">
-            <div className="history-header">
-              <h3>Edit History</h3>
-              <button
-                type="button"
-                className="btn mark-read-btn"
-                onClick={handleMarkAsRead}
-                title="Mark all as seen"
-                style={{ minWidth: 'unset' }}
-              >
-                <CheckCheck size={16} /> Mark all seen
-              </button>
-            </div>
-            <ScrollablePanel
-              className="history-list"
-              dependencies={[nodes, history]}
-            >
-              {isHistoryLoading ? (
-                <div className="history-empty">Loading history...</div>
-              ) : history.length === 0 ? (
-                <div className="history-empty">No changes recorded yet</div>
-              ) : (
-                groupHistoryByNode(history, nodes).map((group) => (
-                  <div key={group.label} className="history-node-section">
-                    <div className="history-node-header">
-                      <strong>{group.label}</strong>
-                    </div>
-                    <div className="history-node-timeline">
-                      {group.changes.map((change, i) => (
-                        <div
-                          // biome-ignore lint/suspicious/noArrayIndexKey: timeline display
-                          key={i}
-                          className={`history-timeline-item ${change.is_unread ? 'unread' : ''}`}
-                        >
-                          <div className="history-timeline-meta">
-                            <span className="history-user">
-                              {change.user_name}
-                            </span>
-                            <span className="history-time">
-                              {new Date(change.timestamp).toLocaleString()}
-                            </span>
-                          </div>
-                          <div className="history-timeline-delta">
-                            <span className="delta-field">{change.field}</span>
-                            <span className="delta-values">
-                              {formatValue(change.old)} →{' '}
-                              {formatValue(change.new)}
-                            </span>
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                ))
               )}
             </ScrollablePanel>
           </div>

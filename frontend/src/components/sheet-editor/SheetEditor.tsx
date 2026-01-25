@@ -20,6 +20,7 @@ import { createEditor, type ParascopeNode } from '../../rete';
 import type { NodeType } from '../../rete/types';
 import { createSocket, extractValuesFromResult } from '../../utils';
 import { EditorBar } from '../EditorBar';
+import { HistoryModal } from '../HistoryModal';
 import { Modal } from '../Modal';
 import { NavBar } from '../NavBar';
 import { NodeInspector } from '../node-inspector';
@@ -53,6 +54,7 @@ export const SheetEditor: React.FC = () => {
   const [isUsageModalOpen, setIsUsageModalOpen] = useState(false);
   const [isVersionListOpen, setIsVersionListOpen] = useState(false);
   const [isTakeOverModalOpen, setIsTakeOverModalOpen] = useState(false);
+  const [isHistoryModalOpen, setIsHistoryModalOpen] = useState(false);
   const [initialLoadDone, setInitialLoadDone] = useState(false);
   const initialLoadDoneRef = useRef(false);
   const [defaultVersionTag, setDefaultVersionTag] = useState<string | null>(
@@ -909,6 +911,7 @@ export const SheetEditor: React.FC = () => {
                   }}
                   onPaste={handlePaste}
                   onCheckUsage={() => setIsUsageModalOpen(true)}
+                  onOpenHistory={() => setIsHistoryModalOpen(true)}
                 />
                 <div
                   ref={ref}
@@ -985,6 +988,14 @@ export const SheetEditor: React.FC = () => {
           onRestore={handleRestoreVersion}
           onSetDefault={handleSetDefault}
           isDirty={isDirty}
+        />
+      )}
+      {currentSheet && (
+        <HistoryModal
+          isOpen={isHistoryModalOpen}
+          onClose={() => setIsHistoryModalOpen(false)}
+          sheetId={currentSheet.id}
+          nodes={nodes}
         />
       )}
       <Modal
