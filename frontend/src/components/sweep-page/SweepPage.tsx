@@ -123,7 +123,14 @@ export const SweepPage: React.FC = () => {
       <div className="sweep-content">
         {isMobile ? (
           <div className="sweep-mobile-content">
-            {activeTab === 'config' ? (
+            <div
+              style={{
+                display: activeTab === 'config' ? 'flex' : 'none',
+                flex: 1,
+                flexDirection: 'column',
+                minHeight: 0,
+              }}
+            >
               <SweepSidebar
                 inputOptions={inputOptions}
                 outputOptions={outputOptions}
@@ -140,7 +147,15 @@ export const SweepPage: React.FC = () => {
                 error={error}
                 onRun={onRunAndSwitch}
               />
-            ) : (
+            </div>
+            <div
+              style={{
+                display: activeTab === 'results' ? 'flex' : 'none',
+                flex: 1,
+                flexDirection: 'column',
+                minHeight: 0,
+              }}
+            >
               <SweepResults
                 sheetName={sheet?.name || 'Loading...'}
                 sheetId={sheetId}
@@ -151,7 +166,7 @@ export const SweepPage: React.FC = () => {
                 inputNodeId={primaryInput.nodeId}
                 theme={theme}
               />
-            )}
+            </div>
           </div>
         ) : (
           <Group
