@@ -187,26 +187,37 @@ export const SheetTable: React.FC<SheetTableProps> = ({
 
   return (
     <div className="sheet-table">
+      <div className="sheet-table-tabs">
+        <button
+          type="button"
+          className={`btn sheet-table-tab ${activeTab === 'table' ? 'active' : ''}`}
+          onClick={() => setActiveTab('table')}
+        >
+          <List size={16} /> Table
+        </button>
+        <button
+          type="button"
+          className={`btn sheet-table-tab ${activeTab === 'descriptions' ? 'active' : ''}`}
+          onClick={() => setActiveTab('descriptions')}
+        >
+          <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
+            <FileText size={16} />
+            <span>Descriptions</span>
+          </div>
+        </button>
+        <button
+          type="button"
+          className={`btn sheet-table-tab ${activeTab === 'history' ? 'active' : ''}`}
+          onClick={() => setActiveTab('history')}
+        >
+          <History size={16} /> History
+        </button>
+      </div>
+
       {/* Content Area */}
-      <div
-        className="sheet-table-content"
-        style={{
-          flex: 1,
-          overflowY: 'hidden',
-          display: 'flex',
-          flexDirection: 'column',
-        }}
-      >
+      <div className="sheet-table-content">
         {activeTab === 'table' && (
-          <div
-            className="sheet-table-constants-section"
-            style={{
-              flex: 1,
-              display: 'flex',
-              flexDirection: 'column',
-              borderBottom: 'none',
-            }}
-          >
+          <div className="sheet-table-constants-section">
             <div
               className="sheet-table-controls"
               style={{ display: 'flex', gap: '8px' }}
@@ -342,15 +353,7 @@ export const SheetTable: React.FC<SheetTableProps> = ({
         )}
 
         {activeTab === 'descriptions' && (
-          <div
-            className="description-panel"
-            style={{
-              flex: 1,
-              display: 'flex',
-              flexDirection: 'column',
-              minHeight: 0,
-            }}
-          >
+          <div className="description-panel">
             <div className="description-panel-header">
               <h3>Descriptions</h3>
             </div>
@@ -443,15 +446,7 @@ export const SheetTable: React.FC<SheetTableProps> = ({
         )}
 
         {activeTab === 'history' && (
-          <div
-            className="history-panel"
-            style={{
-              flex: 1,
-              display: 'flex',
-              flexDirection: 'column',
-              minHeight: 0,
-            }}
-          >
+          <div className="history-panel">
             <div className="history-header">
               <h3>Edit History</h3>
               <button
@@ -509,42 +504,6 @@ export const SheetTable: React.FC<SheetTableProps> = ({
             </ScrollablePanel>
           </div>
         )}
-      </div>
-
-      <div
-        className="sheet-table-tabs"
-        style={{
-          borderTop: '1px solid var(--border-color)',
-          borderBottom: 'none',
-        }}
-      >
-        <button
-          type="button"
-          className={`btn sheet-table-tab ${activeTab === 'table' ? 'active' : ''}`}
-          onClick={() => setActiveTab('table')}
-          style={{ minWidth: 'unset' }}
-        >
-          <List size={16} /> Table
-        </button>
-        <button
-          type="button"
-          className={`btn sheet-table-tab ${activeTab === 'descriptions' ? 'active' : ''}`}
-          onClick={() => setActiveTab('descriptions')}
-          style={{ minWidth: 'unset' }}
-        >
-          <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
-            <FileText size={16} />
-            <span>Descriptions</span>
-          </div>
-        </button>
-        <button
-          type="button"
-          className={`btn sheet-table-tab ${activeTab === 'history' ? 'active' : ''}`}
-          onClick={() => setActiveTab('history')}
-          style={{ minWidth: 'unset' }}
-        >
-          <History size={16} /> History
-        </button>
       </div>
     </div>
   );
