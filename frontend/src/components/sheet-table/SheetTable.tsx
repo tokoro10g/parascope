@@ -7,6 +7,7 @@ import remarkMath from 'remark-math';
 import { API_BASE } from '../../api';
 import type { ParascopeNode } from '../../rete';
 import './SheetTable.css';
+import type { NodeResult } from '../../api';
 import { copyToClipboard, formatHumanReadableValue } from '../../utils';
 import { ScrollablePanel } from '../ScrollablePanel';
 
@@ -20,6 +21,7 @@ interface SheetTableProps {
   activeTab?: 'variables' | 'descriptions';
   onTabChange?: (tab: 'variables' | 'descriptions') => void;
   hideTabs?: boolean;
+  lastResult?: Record<string, NodeResult> | null;
 }
 
 export const SheetTable: React.FC<SheetTableProps> = ({
@@ -32,6 +34,7 @@ export const SheetTable: React.FC<SheetTableProps> = ({
   activeTab: externalActiveTab,
   onTabChange,
   hideTabs = false,
+  lastResult,
 }) => {
   const [localActiveTab, setLocalActiveTab] = useState<
     'variables' | 'descriptions'
@@ -315,7 +318,21 @@ export const SheetTable: React.FC<SheetTableProps> = ({
                     {node.type === 'sheet' && sheetId ? (
                       <div className="description-item-sheet-link">
                         <a
-                          href={`/sheet/${sheetId}`}
+                          href={(() => {
+                            const params = new URLSearchParams();
+                            const nodeRes = lastResult?.[node.id];
+                            if (nodeRes?.inputs) {
+                              for (const [key, value] of Object.entries(
+                                nodeRes.inputs,
+                              )) {
+                                if (value !== undefined && value !== null) {
+                                  params.set(key, String(value));
+                                }
+                              }
+                            }
+                            const queryString = params.toString();
+                            return `/sheet/${sheetId}${queryString ? `?${queryString}` : ''}`;
+                          })()}
                           target="_blank"
                           rel="noreferrer"
                         >

@@ -1014,6 +1014,7 @@ export const SheetEditor: React.FC = () => {
                 }
                 onTabChange={setActiveTab as any}
                 hideTabs={isMobile}
+                lastResult={lastResult}
               />
             </Panel>
           </Group>
