@@ -848,29 +848,31 @@ export const SheetEditor: React.FC = () => {
           </button>
         </div>
       )}{' '}
-      <div className="tabs-container mobile-only">
-        <button
-          type="button"
-          className={`tab-button ${activeTab === 'editor' ? 'active' : ''}`}
-          onClick={() => setActiveTab('editor')}
-        >
-          <Workflow size={16} /> Editor
-        </button>
-        <button
-          type="button"
-          className={`tab-button ${activeTab === 'variables' ? 'active' : ''}`}
-          onClick={() => setActiveTab('variables')}
-        >
-          <Hash size={16} /> Variables
-        </button>
-        <button
-          type="button"
-          className={`tab-button ${activeTab === 'descriptions' ? 'active' : ''}`}
-          onClick={() => setActiveTab('descriptions')}
-        >
-          <FileText size={16} /> Descriptions
-        </button>
-      </div>
+      {isMobile && (
+        <div className="tabs-container">
+          <button
+            type="button"
+            className={`tab-button ${activeTab === 'editor' ? 'active' : ''}`}
+            onClick={() => setActiveTab('editor')}
+          >
+            <Workflow size={16} /> Editor
+          </button>
+          <button
+            type="button"
+            className={`tab-button ${activeTab === 'variables' ? 'active' : ''}`}
+            onClick={() => setActiveTab('variables')}
+          >
+            <Hash size={16} /> Variables
+          </button>
+          <button
+            type="button"
+            className={`tab-button ${activeTab === 'descriptions' ? 'active' : ''}`}
+            onClick={() => setActiveTab('descriptions')}
+          >
+            <FileText size={16} /> Descriptions
+          </button>
+        </div>
+      )}
       <div
         className="editor-content"
         style={{ display: 'flex', flex: 1, minHeight: 0, overflow: 'hidden' }}
