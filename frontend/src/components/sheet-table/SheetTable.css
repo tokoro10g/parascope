@@ -7,52 +7,6 @@
   overflow: hidden;
 }
 
-.sheet-table-tabs {
-  display: flex;
-  border-bottom: 1px solid var(--border-color);
-  background-color: var(--panel-bg);
-  flex-shrink: 0;
-  width: 100%;
-}
-
-.sheet-table-tab {
-  flex: 1;
-  padding: 12px;
-  border: none;
-  background: none;
-  color: var(--text-secondary);
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 8px;
-  font-size: 0.9em;
-  font-weight: 600;
-  transition: all 0.2s;
-  border-radius: 0;
-  border-bottom: 3px solid transparent;
-  outline: none;
-  margin: 0;
-  -webkit-tap-highlight-color: transparent;
-}
-
-.sheet-table-tab:hover {
-  background-color: var(--item-hover);
-  color: var(--text-color);
-}
-
-.sheet-table-tab.active {
-  color: var(--primary-color);
-  border-bottom-color: var(--primary-color);
-  background-color: rgba(var(--primary-color-rgb), 0.05);
-}
-
-.sheet-table-tab:focus,
-.sheet-table-tab:active {
-  box-shadow: none;
-  outline: none;
-}
-
 .sheet-table-content {
   flex: 1;
   overflow: hidden;

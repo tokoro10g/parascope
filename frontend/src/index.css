@@ -117,6 +117,36 @@ h1 {
   outline: 4px auto -webkit-focus-ring-color;
 }
 
+.btn-primary {
+  background-color: var(--primary-color);
+  color: white;
+  border: none;
+}
+
+.btn-primary:hover {
+  background-color: var(--primary-hover);
+}
+
+.btn-primary:disabled {
+  background-color: var(--border-color);
+  color: var(--text-muted);
+  cursor: not-allowed;
+}
+
+.btn-secondary {
+  background-color: var(--panel-bg-secondary);
+  color: var(--text-color);
+  border: 1px solid var(--border-color);
+}
+
+.btn-secondary:hover {
+  background-color: var(--item-hover);
+}
+
+.monospace {
+  font-family: monospace;
+}
+
 .compact-markdown p {
   margin: 0.2em 0;
 }

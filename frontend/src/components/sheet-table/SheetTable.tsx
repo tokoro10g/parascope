@@ -127,17 +127,17 @@ export const SheetTable: React.FC<SheetTableProps> = ({
   return (
     <div className="sheet-table">
       {!hideTabs && (
-        <div className="sheet-table-tabs">
+        <div className="tabs-container">
           <button
             type="button"
-            className={`sheet-table-tab ${activeTab === 'variables' ? 'active' : ''}`}
+            className={`tab-button ${activeTab === 'variables' ? 'active' : ''}`}
             onClick={() => handleTabChange('variables')}
           >
             <Hash size={16} /> Variables
           </button>
           <button
             type="button"
-            className={`sheet-table-tab ${activeTab === 'descriptions' ? 'active' : ''}`}
+            className={`tab-button ${activeTab === 'descriptions' ? 'active' : ''}`}
             onClick={() => handleTabChange('descriptions')}
           >
             <FileText size={16} /> Descriptions

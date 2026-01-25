@@ -102,17 +102,17 @@ export const SweepPage: React.FC = () => {
       <NavBar user={user} onBack={handleBack} onLogout={logout} />
 
       {isMobile && (
-        <div className="sweep-mobile-tabs">
+        <div className="tabs-container">
           <button
             type="button"
-            className={`mobile-tab-btn ${activeTab === 'config' ? 'active' : ''}`}
+            className={`tab-button ${activeTab === 'config' ? 'active' : ''}`}
             onClick={() => setActiveTab('config')}
           >
             Configuration
           </button>
           <button
             type="button"
-            className={`mobile-tab-btn ${activeTab === 'results' ? 'active' : ''}`}
+            className={`tab-button ${activeTab === 'results' ? 'active' : ''}`}
             onClick={() => setActiveTab('results')}
           >
             Results

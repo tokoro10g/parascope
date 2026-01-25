@@ -848,24 +848,24 @@ export const SheetEditor: React.FC = () => {
           </button>
         </div>
       )}{' '}
-      <div className="editor-mobile-tabs mobile-only">
+      <div className="tabs-container mobile-only">
         <button
           type="button"
-          className={`mobile-tab-btn ${activeTab === 'editor' ? 'active' : ''}`}
+          className={`tab-button ${activeTab === 'editor' ? 'active' : ''}`}
           onClick={() => setActiveTab('editor')}
         >
           <Workflow size={16} /> Editor
         </button>
         <button
           type="button"
-          className={`mobile-tab-btn ${activeTab === 'variables' ? 'active' : ''}`}
+          className={`tab-button ${activeTab === 'variables' ? 'active' : ''}`}
           onClick={() => setActiveTab('variables')}
         >
           <Hash size={16} /> Variables
         </button>
         <button
           type="button"
-          className={`mobile-tab-btn ${activeTab === 'descriptions' ? 'active' : ''}`}
+          className={`tab-button ${activeTab === 'descriptions' ? 'active' : ''}`}
           onClick={() => setActiveTab('descriptions')}
         >
           <FileText size={16} /> Descriptions
