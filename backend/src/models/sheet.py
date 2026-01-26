@@ -46,7 +46,9 @@ class Sheet(Base):
     locks: Mapped[List["SheetLock"]] = relationship(back_populates="sheet", cascade="all, delete-orphan")
     audit_logs: Mapped[List["AuditLog"]] = relationship(back_populates="sheet", cascade="all, delete-orphan")
     read_states: Mapped[List["UserReadState"]] = relationship(back_populates="sheet", cascade="all, delete-orphan")
-    versions: Mapped[List["SheetVersion"]] = relationship(back_populates="sheet", cascade="all, delete-orphan", foreign_keys="SheetVersion.sheet_id")
+    versions: Mapped[List["SheetVersion"]] = relationship(
+        back_populates="sheet", cascade="all, delete-orphan", foreign_keys="SheetVersion.sheet_id"
+    )
     default_version: Mapped[Optional["SheetVersion"]] = relationship(foreign_keys=[default_version_id])
 
 
@@ -137,4 +139,3 @@ class SheetVersion(Base):
     created_by: Mapped[str] = mapped_column(String)
 
     sheet: Mapped["Sheet"] = relationship("Sheet", back_populates="versions", foreign_keys=[sheet_id])
-

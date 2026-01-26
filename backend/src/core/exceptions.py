@@ -8,5 +8,6 @@ class GraphExecutionError(Exception):
         self.value = value
         super().__init__(f"Error executing node '{node_label}': {error_message}")
 
+
 class ValueRangeValidationError(GraphExecutionError):
     pass

@@ -31,7 +31,7 @@ class SessionRead(LockBase):
     user_id: str
     acquired_at: datetime
     last_save_at: Optional[datetime] = None
-    duration_since_save: Optional[float] = None # Seconds
+    duration_since_save: Optional[float] = None  # Seconds
 
     class Config:
         from_attributes = True

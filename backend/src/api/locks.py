@@ -19,6 +19,7 @@ from ..schemas.lock import LockAcquire, LockRead, SessionRead
 def utcnow():
     return datetime.now(timezone.utc)
 
+
 def make_aware(dt: datetime):
     if dt.tzinfo is None:
         return dt.replace(tzinfo=timezone.utc)
@@ -26,7 +27,6 @@ def make_aware(dt: datetime):
 
 
 router = APIRouter(tags=["concurrency"])
-
 
 
 @router.get("/sheets/{sheet_id}/lock", response_model=Optional[LockRead])
@@ -41,14 +41,14 @@ async def get_lock_status(
     query = select(SheetLock).where(SheetLock.sheet_id == sheet_id)
     result = await db.execute(query)
     lock = result.scalar_one_or_none()
-    
+
     # Hide expired locks (effectively free)
     if lock:
         now = utcnow()
         timeout = timedelta(seconds=settings.LOCK_TIMEOUT_SECONDS)
         if now - make_aware(lock.last_heartbeat_at) > timeout:
             return None
-            
+
     return lock
 
 
@@ -60,15 +60,13 @@ async def acquire_or_refresh_lock(
     db: AsyncSession = Depends(get_db),
 ):
     if not user_id:
-        raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED, detail="User identification required"
-        )
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="User identification required")
 
     # Check if sheet exists
     sheet_query = select(Sheet).where(Sheet.id == sheet_id)
     sheet_result = await db.execute(sheet_query)
     if not sheet_result.scalar_one_or_none():
-         raise HTTPException(status_code=404, detail="Sheet not found")
+        raise HTTPException(status_code=404, detail="Sheet not found")
 
     query = select(SheetLock).where(SheetLock.sheet_id == sheet_id)
     result = await db.execute(query)
@@ -113,7 +111,7 @@ async def acquire_or_refresh_lock(
                     existing_lock.acquired_at = now
                     existing_lock.last_heartbeat_at = now
                     existing_lock.last_save_at = None
-                    
+
                     await db.commit()
                     await db.refresh(existing_lock)
                     return existing_lock
@@ -149,8 +147,8 @@ async def acquire_or_refresh_lock(
             res = await db.execute(stmt)
             existing_lock = res.scalars().first()
             if not existing_lock:
-                 # Should not happen after IntegrityError on PK
-                 raise HTTPException(status_code=500, detail="Unexpected concurrency error") from err
+                # Should not happen after IntegrityError on PK
+                raise HTTPException(status_code=500, detail="Unexpected concurrency error") from err
 
             if existing_lock.user_id == user_id:
                 existing_lock.last_heartbeat_at = now
@@ -158,9 +156,9 @@ async def acquire_or_refresh_lock(
                 await db.refresh(existing_lock)
                 return existing_lock
             else:
-                 # Extremely rare race: another user acquired it milliseconds ago
-                 # We don't steal it immediately even if timeout logic might apply, 
-                 # because they just acquired it.
+                # Extremely rare race: another user acquired it milliseconds ago
+                # We don't steal it immediately even if timeout logic might apply,
+                # because they just acquired it.
                 raise HTTPException(
                     status_code=status.HTTP_409_CONFLICT,
                     detail=f"Sheet is locked by {existing_lock.user_id}",
@@ -175,9 +173,7 @@ async def force_takeover_lock(
     db: AsyncSession = Depends(get_db),
 ):
     if not user_id:
-        raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED, detail="User identification required"
-        )
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="User identification required")
 
     query = select(SheetLock).where(SheetLock.sheet_id == sheet_id)
     result = await db.execute(query)
@@ -190,14 +186,14 @@ async def force_takeover_lock(
         existing_lock.tab_id = body.tab_id
         existing_lock.acquired_at = now
         existing_lock.last_heartbeat_at = now
-        # We preserve last_save_at? Or reset? 
+        # We preserve last_save_at? Or reset?
         # Requirement doesn't specify, but it makes sense to keep sheet state history or reset if it's a new "session".
         # Let's keep it if we are thinking about the sheet's state, but for "session duration" maybe reset?
         # Let's reset purely for the "session" semantics.
         # However, "Time Since Last Save" is a property of the sheet's modification history.
         # But Lock represents the session.
         # I'll effectively restart the session.
-        existing_lock.last_save_at = None 
+        existing_lock.last_save_at = None
     else:
         # Create new lock if not exists
         existing_lock = SheetLock(
@@ -222,8 +218,8 @@ async def release_lock(
     db: AsyncSession = Depends(get_db),
 ):
     if not user_id:
-        return # Robustness
-    
+        return  # Robustness
+
     query = select(SheetLock).where(SheetLock.sheet_id == sheet_id)
     result = await db.execute(query)
     existing_lock = result.scalar_one_or_none()
@@ -235,7 +231,7 @@ async def release_lock(
 
         await db.delete(existing_lock)
         await db.commit()
-    
+
     return {"status": "ok"}
 
 
@@ -245,31 +241,33 @@ async def list_sessions(db: AsyncSession = Depends(get_db)):
     # Filtering is safer for read operations.
     # Note: SQLite/Postgres timezone handling can be tricky with utcnow.
     # We'll assume naive UTC for now as per previous code.
-    
+
     query = select(SheetLock).options(joinedload(SheetLock.sheet))
     result = await db.execute(query)
     locks = result.scalars().all()
-    
+
     now = utcnow()
     timeout = timedelta(seconds=settings.LOCK_TIMEOUT_SECONDS)
-    
+
     sessions = []
     for lock in locks:
         # Filter stale locks in python for simplicity
         if now - make_aware(lock.last_heartbeat_at) > timeout:
             continue
-            
+
         duration = None
         if lock.last_save_at:
-             duration = (now - make_aware(lock.last_save_at)).total_seconds()
-        
-        sessions.append({
-            "sheet_id": lock.sheet_id,
-            "sheet_name": lock.sheet.name,
-            "user_id": lock.user_id,
-            "acquired_at": make_aware(lock.acquired_at),
-            "last_save_at": make_aware(lock.last_save_at) if lock.last_save_at else None,
-            "duration_since_save": duration
-        })
-        
+            duration = (now - make_aware(lock.last_save_at)).total_seconds()
+
+        sessions.append(
+            {
+                "sheet_id": lock.sheet_id,
+                "sheet_name": lock.sheet.name,
+                "user_id": lock.user_id,
+                "acquired_at": make_aware(lock.acquired_at),
+                "last_save_at": make_aware(lock.last_save_at) if lock.last_save_at else None,
+                "duration_since_save": duration,
+            }
+        )
+
     return sessions

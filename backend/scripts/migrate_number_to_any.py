@@ -17,7 +17,7 @@ async def migrate_number_to_any():
 
     async with engine.begin() as conn:
         print("Executing migration...")
-        
+
         # update dataType 'number' to 'any'
         stmt = text("""
             UPDATE nodes 

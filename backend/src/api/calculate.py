@@ -37,9 +37,7 @@ def serialize_result(val: Any) -> Any:
     return str(val)
 
 
-def _get_input_overrides(
-    sheet: Sheet, inputs: Dict[str, Dict[str, Any]]
-) -> Dict[str, Any]:
+def _get_input_overrides(sheet: Sheet, inputs: Dict[str, Dict[str, Any]]) -> Dict[str, Any]:
     # Map input labels/IDs to IDs
     input_overrides = {}
     input_nodes_by_label = {n.label: n for n in sheet.nodes if n.type == "input"}
@@ -56,12 +54,12 @@ def _get_input_overrides(
 
 async def _enrich_results(sheet: Sheet, raw_results: Dict[str, Any], db: AsyncSession) -> Dict[str, Any]:
     detailed_results = {}
-    
+
     # Build edge map: target_node_id -> { target_port: (source_node_id, source_port) }
     edge_map = {}
     for node in sheet.nodes:
         edge_map[str(node.id)] = {}
-        
+
     for conn in sheet.connections:
         t_id = str(conn.target_id)
         if t_id not in edge_map:
@@ -71,11 +69,11 @@ async def _enrich_results(sheet: Sheet, raw_results: Dict[str, Any], db: AsyncSe
     # 3. Identify all nested sheets needed
     nested_sheet_ids = []
     for node in sheet.nodes:
-        if node.type == 'sheet':
-            sid = node.data.get('sheetId')
+        if node.type == "sheet":
+            sid = node.data.get("sheetId")
             if sid:
                 nested_sheet_ids.append(sid)
-            
+
     nested_sheets_map = {}
     if nested_sheet_ids:
         # We need to fetch full definitions
@@ -100,14 +98,14 @@ async def _enrich_results(sheet: Sheet, raw_results: Dict[str, Any], db: AsyncSe
         }
 
         res_data = raw_results.get(node_id, {})
-        
+
         # Check for error and validity
         if "error" in res_data and res_data["error"]:
             node_resp["error"] = res_data["error"]
-            
+
         if "valid" in res_data:
             node_resp["valid"] = res_data["valid"]
-            
+
         val = res_data.get("value")
 
         # Populate inputs
@@ -116,23 +114,23 @@ async def _enrich_results(sheet: Sheet, raw_results: Dict[str, Any], db: AsyncSe
             for port, (src_id, src_port) in node_edges.items():
                 src_res = raw_results.get(src_id, {})
                 src_val = src_res.get("value")
-                
+
                 actual_val = None
                 if isinstance(src_val, dict) and src_port:
                     actual_val = src_val.get(src_port)
                 else:
                     actual_val = src_val
-                
+
                 node_resp["inputs"][port] = actual_val
 
         # Populate outputs
         if node.type == "function":
-             node_resp["outputs"] = val if val is not None else {}
+            node_resp["outputs"] = val if val is not None else {}
         elif node.type == "sheet":
             node_resp["outputs"] = val if val is not None else {}
             # Recursively enrich nested nodes if available
             if "nodes" in res_data:
-                sub_id = node.data.get('sheetId')
+                sub_id = node.data.get("sheetId")
                 sub_sheet = nested_sheets_map.get(str(sub_id)) if sub_id else None
                 if sub_sheet:
                     node_resp["nodes"] = await _enrich_results(sub_sheet, res_data["nodes"], db)
@@ -147,9 +145,7 @@ async def _enrich_results(sheet: Sheet, raw_results: Dict[str, Any], db: AsyncSe
     return detailed_results
 
 
-async def _run_calculation(
-    sheet: Sheet, inputs: Dict[str, Dict[str, Any]], db: AsyncSession
-):
+async def _run_calculation(sheet: Sheet, inputs: Dict[str, Dict[str, Any]], db: AsyncSession):
     input_overrides = _get_input_overrides(sheet, inputs)
 
     # Generate script
@@ -162,7 +158,7 @@ async def _run_calculation(
 
     # Build detailed response recursively
     detailed_results = await _enrich_results(sheet, results, db)
-    
+
     # Global script error?
     error = exec_result.get("error") if not exec_result.get("success") else None
 
@@ -209,7 +205,7 @@ async def generate_script_preview(
 ):
     sheet = _construct_sheet(body)
     input_overrides = _get_input_overrides(sheet, body.inputs)
-    
+
     generator = CodeGenerator(db)
     script = await generator.generate_full_script(sheet, input_overrides)
     return {"script": script}
@@ -221,9 +217,7 @@ async def generate_script_sheet(
     db: AsyncSession = Depends(get_db),
 ):
     query = (
-        select(Sheet)
-        .where(Sheet.id == sheet_id)
-        .options(selectinload(Sheet.nodes), selectinload(Sheet.connections))
+        select(Sheet).where(Sheet.id == sheet_id).options(selectinload(Sheet.nodes), selectinload(Sheet.connections))
     )
     result = await db.execute(query)
     sheet = result.scalar_one_or_none()
@@ -246,9 +240,7 @@ async def calculate_sheet(
     if inputs is None:
         inputs = {}
     query = (
-        select(Sheet)
-        .where(Sheet.id == sheet_id)
-        .options(selectinload(Sheet.nodes), selectinload(Sheet.connections))
+        select(Sheet).where(Sheet.id == sheet_id).options(selectinload(Sheet.nodes), selectinload(Sheet.connections))
     )
     result = await db.execute(query)
     sheet = result.scalar_one_or_none()
@@ -257,4 +249,3 @@ async def calculate_sheet(
         raise HTTPException(status_code=404, detail="Sheet not found")
 
     return await _run_calculation(sheet, inputs, db)
-

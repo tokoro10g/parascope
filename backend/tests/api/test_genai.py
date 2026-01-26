@@ -12,6 +12,7 @@ async def test_genai_config(client: AsyncClient):
     assert "enabled" in res
     assert "available_providers" in res
 
+
 @pytest.mark.asyncio
 async def test_generate_function_mocked(client: AsyncClient):
     mock_provider = AsyncMock()
@@ -20,16 +21,13 @@ async def test_generate_function_mocked(client: AsyncClient):
         "code": "y = x * 2",
         "inputs": ["x"],
         "outputs": ["y"],
-        "description": "Mocked description"
+        "description": "Mocked description",
     }
 
     with patch("src.api.genai.get_provider", return_value=mock_provider):
-        request_data = {
-            "prompt": "Test prompt",
-            "provider": "gemini"
-        }
+        request_data = {"prompt": "Test prompt", "provider": "gemini"}
         response = await client.post("/api/genai/generate_function", json=request_data)
-        
+
         assert response.status_code == 200
         res = response.json()
         assert res["title"] == "Mock Title"

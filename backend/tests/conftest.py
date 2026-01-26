@@ -16,11 +16,13 @@ from src.main import app
 # Use the DATABASE_URL from environment (provided by docker-compose.test.yml)
 DATABASE_URL = os.getenv("DATABASE_URL")
 
+
 @pytest.fixture(scope="session")
 def event_loop():
     loop = asyncio.get_event_loop_policy().new_event_loop()
     yield loop
     loop.close()
+
 
 @pytest_asyncio.fixture(scope="session", autouse=True)
 async def setup_database():
@@ -30,6 +32,7 @@ async def setup_database():
         await conn.run_sync(Base.metadata.drop_all)
         await conn.run_sync(Base.metadata.create_all)
     await engine.dispose()
+
 
 @pytest_asyncio.fixture
 async def client():

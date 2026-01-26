@@ -17,7 +17,7 @@ async def migrate_parameter_to_constant():
 
     async with engine.begin() as conn:
         print("Executing migration...")
-        
+
         # update node type 'parameter' to 'constant'
         stmt = text("""
             UPDATE nodes 

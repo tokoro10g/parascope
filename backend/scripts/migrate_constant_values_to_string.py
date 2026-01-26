@@ -17,7 +17,7 @@ async def migrate_constant_values_to_string():
 
     async with engine.begin() as conn:
         print("Executing migration...")
-        
+
         # Update 'constant' nodes: convert data.value from number to string
         # We only target nodes where the value is actually a JSON number to avoid unnecessary updates
         stmt = text("""

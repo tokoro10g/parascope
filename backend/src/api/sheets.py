@@ -44,8 +44,8 @@ async def _enrich_nodes_with_versions(sheet: Sheet, db: AsyncSession):
 
     version_ids = []
     for node in sheet.nodes:
-        if node.type == 'sheet':
-            vid = node.data.get('versionId')
+        if node.type == "sheet":
+            vid = node.data.get("versionId")
             if vid:
                 try:
                     version_ids.append(UUID(vid))
@@ -62,13 +62,13 @@ async def _enrich_nodes_with_versions(sheet: Sheet, db: AsyncSession):
 
     # Update node data
     for node in sheet.nodes:
-        if node.type == 'sheet':
-            vid = node.data.get('versionId')
+        if node.type == "sheet":
+            vid = node.data.get("versionId")
             if vid and vid in version_map:
                 # Explicitly copy and re-assign to ensure the change is registered/visible
                 # SQLAlchemy's mutation tracking for JSON types can be tricky
                 new_data = dict(node.data)
-                new_data['versionTag'] = version_map[vid]
+                new_data["versionTag"] = version_map[vid]
                 node.data = new_data
 
 
@@ -256,7 +256,7 @@ async def read_sheet(sheet_id: UUID, db: AsyncSession = Depends(get_db)):
     sheet = result.scalar_one_or_none()
     if not sheet:
         raise HTTPException(status_code=404, detail="Sheet not found")
-    
+
     await _enrich_nodes_with_versions(sheet, db)
     return _sort_nodes(sheet)
 
@@ -305,68 +305,55 @@ async def update_sheet(
 
             if nid_str and nid_str in old_nodes_by_id:
                 old_node = old_nodes_by_id[nid_str]
-                
+
                 # 1. Label
                 if old_node.label != node_in.label:
-                    delta.append({
-                        "node_id": nid_str,
-                        "label": node_in.label,
-                        "field": "label",
-                        "old": old_node.label,
-                        "new": node_in.label
-                    })
+                    delta.append(
+                        {
+                            "node_id": nid_str,
+                            "label": node_in.label,
+                            "field": "label",
+                            "old": old_node.label,
+                            "new": node_in.label,
+                        }
+                    )
 
                 # 2. Values & Core Config
                 old_data = old_node.data or {}
                 new_data = node_in.data or {}
-                
+
                 for field in ["value", "code", "lut", "description"]:
                     if old_data.get(field) != new_data.get(field):
-                        delta.append({
-                            "node_id": nid_str,
-                            "label": node_in.label,
-                            "field": field,
-                            "old": old_data.get(field),
-                            "new": new_data.get(field)
-                        })
+                        delta.append(
+                            {
+                                "node_id": nid_str,
+                                "label": node_in.label,
+                                "field": field,
+                                "old": old_data.get(field),
+                                "new": new_data.get(field),
+                            }
+                        )
             elif not nid_str:
                 # New node (no ID provided yet)
-                delta.append({
-                    "node_id": None,
-                    "label": node_in.label,
-                    "field": "node",
-                    "old": None,
-                    "new": "created"
-                })
-        
+                delta.append({"node_id": None, "label": node_in.label, "field": "node", "old": None, "new": "created"})
+
         # 3. Deleted Nodes
         for old_id, old_node in old_nodes_by_id.items():
             if old_id not in new_node_ids:
-                delta.append({
-                    "node_id": old_id,
-                    "label": old_node.label,
-                    "field": "node",
-                    "old": "existing",
-                    "new": "deleted"
-                })
+                delta.append(
+                    {"node_id": old_id, "label": old_node.label, "field": "node", "old": "existing", "new": "deleted"}
+                )
 
     if delta:
-        audit_log = AuditLog(
-            sheet_id=sheet_id,
-            user_name=user_id or "Anonymous",
-            delta=delta
-        )
+        audit_log = AuditLog(sheet_id=sheet_id, user_name=user_id or "Anonymous", delta=delta)
         db.add(audit_log)
 
     # Auto-update read state for the person who saved
     if user_id:
-        read_state_stmt = insert(UserReadState).values(
-            user_name=user_id,
-            sheet_id=sheet_id,
-            last_read_at=utcnow()
-        ).on_conflict_do_update(
-            index_elements=['user_name', 'sheet_id'],
-            set_={'last_read_at': utcnow()}
+        read_state_stmt = (
+            insert(UserReadState)
+            .values(user_name=user_id, sheet_id=sheet_id, last_read_at=utcnow())
+            .on_conflict_do_update(index_elements=["user_name", "sheet_id"], set_={"last_read_at": utcnow()})
         )
         await db.execute(read_state_stmt)
     # ----------------------------------------
@@ -390,9 +377,9 @@ async def update_sheet(
 
         # Re-create Nodes
         for node_in in sheet_in.nodes:
-            if node_in.type in ('input', 'function', 'sheet'):
-                if 'value' in node_in.data:
-                    node_in.data.pop('value')
+            if node_in.type in ("input", "function", "sheet"):
+                if "value" in node_in.data:
+                    node_in.data.pop("value")
             db_node = Node(
                 sheet_id=db_sheet.id,
                 type=node_in.type,
@@ -524,61 +511,62 @@ async def get_sheet_usages(sheet_id: UUID, db: AsyncSession = Depends(get_db)):
     A Root Sheet is an ancestor that has NO 'input' nodes (self-contained simulation).
     Returns the path of node IDs to reach the current sheet instance.
     """
-    
+
     # Queue: (current_sheet_id, list_of_nodes_trace)
     # trace: [NodeInstance_in_Parent, NodeInstance_in_GrandParent...]
-    
+
     queue = [(str(sheet_id), [])]
     valid_roots = []
-    visited = set() # (sheet_id) to avoid cycles
-    
+    visited = set()  # (sheet_id) to avoid cycles
+
     while queue:
         curr_id, trace = queue.pop(0)
-        
+
         if curr_id in visited:
             continue
         visited.add(curr_id)
-        
+
         # 1. Find parents (sheets that contain curr_id as a node)
         query = (
             select(Node, Sheet)
             .join(Sheet, Node.sheet_id == Sheet.id)
-            .where(
-                Node.type == "sheet", 
-                Node.data["sheetId"].astext == curr_id
-            )
-            .options(selectinload(Sheet.nodes)) # Load nodes to check for inputs
+            .where(Node.type == "sheet", Node.data["sheetId"].astext == curr_id)
+            .options(selectinload(Sheet.nodes))  # Load nodes to check for inputs
         )
         result = await db.execute(query)
         parents = result.all()
-        
+
         for node_instance, parent_sheet in parents:
             # Check if parent has inputs
-            has_inputs = any(n.type == 'input' for n in parent_sheet.nodes)
-            
-            new_trace = [ {"id": str(node_instance.id), "label": node_instance.label} ] + trace
-            
+            has_inputs = any(n.type == "input" for n in parent_sheet.nodes)
+
+            new_trace = [{"id": str(node_instance.id), "label": node_instance.label}] + trace
+
             if not has_inputs:
                 # Found a root!
-                valid_roots.append({
-                    "parent_sheet_id": parent_sheet.id,
-                    "parent_sheet_name": parent_sheet.name,
-                    "node_path": new_trace, # RootInstance -> ... -> LeafInstance
-                    "can_import": True
-                })
+                valid_roots.append(
+                    {
+                        "parent_sheet_id": parent_sheet.id,
+                        "parent_sheet_name": parent_sheet.name,
+                        "node_path": new_trace,  # RootInstance -> ... -> LeafInstance
+                        "can_import": True,
+                    }
+                )
             else:
                 # Show direct parents even if they have inputs (but not importable)
                 if len(new_trace) == 1:
-                    valid_roots.append({
-                        "parent_sheet_id": parent_sheet.id,
-                        "parent_sheet_name": parent_sheet.name,
-                        "node_path": new_trace,
-                        "can_import": False
-                    })
+                    valid_roots.append(
+                        {
+                            "parent_sheet_id": parent_sheet.id,
+                            "parent_sheet_name": parent_sheet.name,
+                            "node_path": new_trace,
+                            "can_import": False,
+                        }
+                    )
 
-                if len(new_trace) < 10: # Depth limit
+                if len(new_trace) < 10:  # Depth limit
                     queue.append((str(parent_sheet.id), new_trace))
-    
+
     return valid_roots
 
 

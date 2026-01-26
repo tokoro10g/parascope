@@ -10,7 +10,7 @@ class SweepRequest(BaseModel):
     end_value: str | None = None
     increment: str | None = None
     manual_values: List[str] | None = None
-    
+
     # Secondary Input (Optional)
     secondary_input_node_id: UUID | None = None
     secondary_start_value: str | None = None
@@ -25,7 +25,7 @@ class SweepRequest(BaseModel):
 class SweepHeader(BaseModel):
     id: UUID
     label: str
-    type: str # "input" or "output"
+    type: str  # "input" or "output"
 
 
 class SweepResponse(BaseModel):

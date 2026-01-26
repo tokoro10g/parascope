@@ -14,13 +14,19 @@ async def migrate():
     async with engine.begin() as conn:
         print("Adding default_version_id column to sheets table...")
         try:
-            await conn.execute(text("ALTER TABLE sheets ADD COLUMN default_version_id UUID REFERENCES sheet_versions(id) ON DELETE SET NULL;"))
+            await conn.execute(
+                text(
+                    "ALTER TABLE sheets ADD COLUMN default_version_id UUID REFERENCES sheet_versions(id) "
+                    "ON DELETE SET NULL;"
+                )
+            )
             print("Migration successful.")
         except Exception as e:
             if "already exists" in str(e):
                 print("Column already exists.")
             else:
                 print(f"Migration failed: {e}")
+
 
 if __name__ == "__main__":
     asyncio.run(migrate())

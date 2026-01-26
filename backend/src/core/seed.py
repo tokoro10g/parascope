@@ -704,7 +704,10 @@ async def seed_database(session: AsyncSession):
         outputs=[{"key": "stress", "socket_type": "any"}],
         position_x=750,
         position_y=350,
-        data={"code": "stress = E * epsilon", "description": "Calculate stress using Hooke's Law: $\\sigma = E \\cdot \\epsilon$"},
+        data={
+            "code": "stress = E * epsilon",
+            "description": "Calculate stress using Hooke's Law: $\\sigma = E \\cdot \\epsilon$",
+        },
     )
 
     node_out_mass = Node(
@@ -783,7 +786,18 @@ async def seed_database(session: AsyncSession):
     )
 
     session.add(sheet5)
-    session.add_all([node_material, node_volume, node_strain, node_material_lut, node_mass_calc, node_stress_calc, node_out_mass, node_out_stress])
+    session.add_all(
+        [
+            node_material,
+            node_volume,
+            node_strain,
+            node_material_lut,
+            node_mass_calc,
+            node_stress_calc,
+            node_out_mass,
+            node_out_stress,
+        ]
+    )
     await session.flush()
     session.add_all([conn5_1, conn5_2, conn5_3, conn5_4, conn5_5, conn5_6, conn5_7])
 
@@ -894,7 +908,11 @@ FlightTime = (2 * v0 * math.sin(angle_rad)) / g
 
     # Connections
     conn6_1 = Connection(
-        sheet_id=sheet6_id, source_id=node_angle.id, source_port="value", target_id=node_proj_calc.id, target_port="angle_deg"
+        sheet_id=sheet6_id,
+        source_id=node_angle.id,
+        source_port="value",
+        target_id=node_proj_calc.id,
+        target_port="angle_deg",
     )
     conn6_2 = Connection(
         sheet_id=sheet6_id, source_id=node_v0.id, source_port="value", target_id=node_proj_calc.id, target_port="v0"
@@ -903,13 +921,25 @@ FlightTime = (2 * v0 * math.sin(angle_rad)) / g
         sheet_id=sheet6_id, source_id=node_g.id, source_port="value", target_id=node_proj_calc.id, target_port="g"
     )
     conn6_4 = Connection(
-        sheet_id=sheet6_id, source_id=node_proj_calc.id, source_port="Range", target_id=node_out_range.id, target_port="value"
+        sheet_id=sheet6_id,
+        source_id=node_proj_calc.id,
+        source_port="Range",
+        target_id=node_out_range.id,
+        target_port="value",
     )
     conn6_5 = Connection(
-        sheet_id=sheet6_id, source_id=node_proj_calc.id, source_port="MaxHeight", target_id=node_out_height.id, target_port="value"
+        sheet_id=sheet6_id,
+        source_id=node_proj_calc.id,
+        source_port="MaxHeight",
+        target_id=node_out_height.id,
+        target_port="value",
     )
     conn6_6 = Connection(
-        sheet_id=sheet6_id, source_id=node_proj_calc.id, source_port="FlightTime", target_id=node_out_time.id, target_port="value"
+        sheet_id=sheet6_id,
+        source_id=node_proj_calc.id,
+        source_port="FlightTime",
+        target_id=node_out_time.id,
+        target_port="value",
     )
 
     session.add(sheet6)

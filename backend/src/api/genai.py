@@ -10,6 +10,7 @@ router = APIRouter()
 
 logger = logging.getLogger(__name__)
 
+
 class GenerateFunctionRequest(BaseModel):
     prompt: str
     existing_code: str = ""
@@ -18,6 +19,7 @@ class GenerateFunctionRequest(BaseModel):
     image: str | None = None
     provider: str | None = None
 
+
 class GenerateFunctionResponse(BaseModel):
     title: str
     code: str
@@ -25,13 +27,15 @@ class GenerateFunctionResponse(BaseModel):
     outputs: list[str]
     description: str
 
+
 @router.get("/config")
 async def get_genai_config():
     return {
         "enabled": len(get_available_providers()) > 0,
         "available_providers": get_available_providers(),
-        "default_provider": os.getenv("DEFAULT_AI_PROVIDER", "gemini")
+        "default_provider": os.getenv("DEFAULT_AI_PROVIDER", "gemini"),
     }
+
 
 @router.post("/generate_function", response_model=GenerateFunctionResponse)
 async def generate_function(request: GenerateFunctionRequest):
@@ -82,15 +86,15 @@ async def generate_function(request: GenerateFunctionRequest):
             "outputs": ["stress_hoop_Pa"],
             "description": "Calculates the circumferential (hoop) stress in a cylinder assuming thin-wall approximation ($t < D/20$).\n\n$$\n\n\\sigma_\\theta = \\frac{P d}{2t}\n\n$$"
         }
-        """
-        
+        """  # noqa: E501
+
         parsed = await provider.generate_function(
             prompt=request.prompt,
             system_instruction=system_instruction,
             existing_code=request.existing_code,
             existing_description=request.existing_description,
             urls=request.urls,
-            image=request.image
+            image=request.image,
         )
 
         return GenerateFunctionResponse(
@@ -98,10 +102,9 @@ async def generate_function(request: GenerateFunctionRequest):
             code=parsed.get("code", ""),
             inputs=parsed.get("inputs", []),
             outputs=parsed.get("outputs", []),
-            description=parsed.get("description", "")
+            description=parsed.get("description", ""),
         )
 
     except Exception as e:
         logger.error(f"AI Provider error ({request.provider}): {str(e)}")
         raise HTTPException(status_code=500, detail=str(e)) from e
-

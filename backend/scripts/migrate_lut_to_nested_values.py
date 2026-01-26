@@ -20,18 +20,18 @@ async def migrate_lut_to_nested_values():
 
     async with AsyncSessionLocal() as session:
         print("Fetching LUT nodes...")
-        stmt = select(Node).where(Node.type == 'lut')
+        stmt = select(Node).where(Node.type == "lut")
         result = await session.execute(stmt)
         nodes = result.scalars().all()
-        
+
         updated_count = 0
         for node in nodes:
             lut_data = node.data.get("lut", {})
             rows = lut_data.get("rows", [])
-            
+
             needs_update = False
             new_rows = []
-            
+
             for row in rows:
                 # If row has more than 'key' but no 'values' object, it's old format
                 if "key" in row and "values" not in row and len(row.keys()) > 1:
@@ -43,13 +43,13 @@ async def migrate_lut_to_nested_values():
                     new_rows.append(new_row)
                 else:
                     new_rows.append(row)
-            
+
             if needs_update:
                 print(f"Updating node {node.id} ({node.label})...")
                 node.data["lut"]["rows"] = new_rows
                 session.add(node)
                 updated_count += 1
-        
+
         if updated_count > 0:
             await session.commit()
             print(f"Migration complete. Updated {updated_count} LUT nodes.")
@@ -57,6 +57,7 @@ async def migrate_lut_to_nested_values():
             print("No LUT nodes required migration.")
 
     await engine.dispose()
+
 
 if __name__ == "__main__":
     asyncio.run(migrate_lut_to_nested_values())

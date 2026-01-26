@@ -54,17 +54,17 @@ app.include_router(genai.router, prefix="/api/genai", tags=["genai"])
 async def global_exception_handler(request: Request, exc: Exception):
     error_msg = str(exc)
     tb = traceback.format_exc()
-    
+
     # Log the full error
     logging.error(f"Global exception: {error_msg}\n{tb}")
-    
+
     return JSONResponse(
         status_code=500,
         content={
             "detail": {
                 "message": "Internal Server Error",
                 "error": error_msg,
-                "traceback": tb if settings.DEBUG else None
+                "traceback": tb if settings.DEBUG else None,
             }
         },
     )
