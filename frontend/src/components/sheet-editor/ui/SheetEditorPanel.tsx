@@ -1,58 +1,30 @@
 import type React from 'react';
-import { Panel, type PanelImperativeHandle } from 'react-resizable-panels';
-import type { Sheet } from '../../../api';
-import type { NodeEditorWrapper } from '../../../rete/default';
+import { Panel } from 'react-resizable-panels';
 import { EditorBar } from '../../EditorBar';
 import { TooltipLayer } from '../../TooltipLayer';
+import { useSheetEditor } from '../SheetEditorContext';
 
-interface SheetEditorPanelProps {
-  editorPanelRef: React.RefObject<PanelImperativeHandle | null>;
-  isMobile: boolean;
-  activeTab: 'editor' | 'variables' | 'descriptions';
-  isLoading: boolean;
-  currentSheet: Sheet | null;
-  isDirty: boolean;
-  isReadOnly: boolean;
-  handleRenameSheet: (name: string) => Promise<void>;
-  onSave: () => void;
-  setIsVersionListOpen: (open: boolean) => void;
-  handleAddNode: (
-    type:
-      | 'constant'
-      | 'function'
-      | 'input'
-      | 'output'
-      | 'comment'
-      | 'lut'
-      | 'sheet',
-  ) => Promise<void>;
-  editor: NodeEditorWrapper | null;
-  handleCopy: (data: { nodes: any[]; connections: any[] }) => void;
-  handlePaste: () => Promise<void>;
-  setIsUsageModalOpen: (open: boolean) => void;
-  setIsHistoryModalOpen: (open: boolean) => void;
-  reteRef: React.RefObject<HTMLDivElement | null>;
-}
+export const SheetEditorPanel: React.FC = () => {
+  const {
+    editorPanelRef,
+    isMobile,
+    activeTab,
+    isLoading,
+    currentSheet,
+    isDirty,
+    isReadOnly,
+    handleRenameSheet,
+    handleSave,
+    setIsVersionListOpen,
+    handleAddNode,
+    editor,
+    handleCopy,
+    handlePaste,
+    setIsUsageModalOpen,
+    setIsHistoryModalOpen,
+    reteRef,
+  } = useSheetEditor();
 
-export const SheetEditorPanel: React.FC<SheetEditorPanelProps> = ({
-  editorPanelRef,
-  isMobile,
-  activeTab,
-  isLoading,
-  currentSheet,
-  isDirty,
-  isReadOnly,
-  handleRenameSheet,
-  onSave,
-  setIsVersionListOpen,
-  handleAddNode,
-  editor,
-  handleCopy,
-  handlePaste,
-  setIsUsageModalOpen,
-  setIsHistoryModalOpen,
-  reteRef,
-}) => {
   return (
     <Panel
       id="editor-panel"
@@ -74,7 +46,7 @@ export const SheetEditorPanel: React.FC<SheetEditorPanelProps> = ({
           isDirty={isDirty}
           readOnly={isReadOnly}
           onRenameSheet={handleRenameSheet}
-          onSaveSheet={onSave}
+          onSaveSheet={handleSave}
           onOpenVersionList={() => setIsVersionListOpen(true)}
           onAddNode={handleAddNode}
           onUndo={() => editor?.undo()}

@@ -1,38 +1,24 @@
 import type React from 'react';
-import { Panel, type PanelImperativeHandle } from 'react-resizable-panels';
-import type { NodeResult } from '../../../api';
-import type { ParascopeNode } from '../../../rete';
+import { Panel } from 'react-resizable-panels';
 import { SheetTable } from '../../sheet-table';
+import { useSheetEditor } from '../SheetEditorContext';
 
-interface SheetTablePanelProps {
-  tablePanelRef: React.RefObject<PanelImperativeHandle | null>;
-  isMobile: boolean;
-  activeTab: 'editor' | 'variables' | 'descriptions';
-  setActiveTab: (tab: 'editor' | 'variables' | 'descriptions') => void;
-  nodes: ParascopeNode[];
-  handleUpdateNodeValue: (nodeId: string, value: string) => void;
-  handleSelectNode: (nodeId: string) => void;
-  handleCalculate: () => Promise<void>;
-  sheetId: string | undefined;
-  calculationInputs: Record<string, string>;
-  isCalculating: boolean;
-  lastResult: Record<string, NodeResult> | null;
-}
+export const SheetTablePanel: React.FC = () => {
+  const {
+    tablePanelRef,
+    isMobile,
+    activeTab,
+    setActiveTab,
+    nodes,
+    handleUpdateNodeValue,
+    handleSelectNode,
+    handleCalculate,
+    sheetId,
+    calculationInputs,
+    isCalculating,
+    lastResult,
+  } = useSheetEditor();
 
-export const SheetTablePanel: React.FC<SheetTablePanelProps> = ({
-  tablePanelRef,
-  isMobile,
-  activeTab,
-  setActiveTab,
-  nodes,
-  handleUpdateNodeValue,
-  handleSelectNode,
-  handleCalculate,
-  sheetId,
-  calculationInputs,
-  isCalculating,
-  lastResult,
-}) => {
   return (
     <Panel
       id="table-panel"

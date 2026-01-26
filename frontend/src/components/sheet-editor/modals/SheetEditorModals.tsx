@@ -1,63 +1,38 @@
 import type React from 'react';
-import type { Sheet, SheetVersion } from '../../../api';
-import type { ParascopeNode } from '../../../rete';
 import { HistoryModal } from '../../HistoryModal';
 import { Modal } from '../../Modal';
 import { NodeInspector } from '../../node-inspector';
-import type { NodeUpdates } from '../../node-inspector/types';
 import { SheetPickerModal } from '../../SheetPickerModal';
 import { SheetUsageModal } from '../../SheetUsageModal';
 import { VersionListModal } from '../../VersionListModal';
+import { useSheetEditor } from '../SheetEditorContext';
 
-interface SheetEditorModalsProps {
-  editingNode: ParascopeNode | null;
-  setEditingNode: (node: ParascopeNode | null) => void;
-  handleNodeUpdate: (nodeId: string, updates: NodeUpdates) => Promise<void>;
-  isSheetPickerOpen: boolean;
-  setIsSheetPickerOpen: (open: boolean) => void;
-  handleImportSheet: (sheet: Sheet) => Promise<void>;
-  currentSheet: Sheet | null;
-  isUsageModalOpen: boolean;
-  setIsUsageModalOpen: (open: boolean) => void;
-  handleImportInputs: (inputs: Record<string, string>) => void;
-  isVersionListOpen: boolean;
-  setIsVersionListOpen: (open: boolean) => void;
-  handleRestoreVersion: (version: SheetVersion) => Promise<void>;
-  handleSetDefault: (versionId: string | null) => Promise<void>;
-  isDirty: boolean;
-  isHistoryModalOpen: boolean;
-  setIsHistoryModalOpen: (open: boolean) => void;
-  nodes: ParascopeNode[];
-  isTakeOverModalOpen: boolean;
-  setIsTakeOverModalOpen: (open: boolean) => void;
-  lockedByOther: string | null;
-  takeOver: () => Promise<void>;
-}
+export const SheetEditorModals: React.FC = () => {
+  const {
+    editingNode,
+    setEditingNode,
+    handleNodeUpdate,
+    isSheetPickerOpen,
+    setIsSheetPickerOpen,
+    handleImportSheet,
+    currentSheet,
+    isUsageModalOpen,
+    setIsUsageModalOpen,
+    handleImportInputs,
+    isVersionListOpen,
+    setIsVersionListOpen,
+    handleRestoreVersion,
+    handleSetDefault,
+    isDirty,
+    isHistoryModalOpen,
+    setIsHistoryModalOpen,
+    nodes,
+    isTakeOverModalOpen,
+    setIsTakeOverModalOpen,
+    lockedByOther,
+    takeOver,
+  } = useSheetEditor();
 
-export const SheetEditorModals: React.FC<SheetEditorModalsProps> = ({
-  editingNode,
-  setEditingNode,
-  handleNodeUpdate,
-  isSheetPickerOpen,
-  setIsSheetPickerOpen,
-  handleImportSheet,
-  currentSheet,
-  isUsageModalOpen,
-  setIsUsageModalOpen,
-  handleImportInputs,
-  isVersionListOpen,
-  setIsVersionListOpen,
-  handleRestoreVersion,
-  handleSetDefault,
-  isDirty,
-  isHistoryModalOpen,
-  setIsHistoryModalOpen,
-  nodes,
-  isTakeOverModalOpen,
-  setIsTakeOverModalOpen,
-  lockedByOther,
-  takeOver,
-}) => {
   return (
     <>
       <NodeInspector

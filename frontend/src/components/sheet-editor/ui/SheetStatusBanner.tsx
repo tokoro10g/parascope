@@ -1,29 +1,19 @@
 import type React from 'react';
 import { useNavigate } from 'react-router-dom';
-import type { Sheet } from '../../../api';
+import { useSheetEditor } from '../SheetEditorContext';
 
-interface SheetStatusBannerProps {
-  isVersionView: boolean;
-  lockedByOther: string | null;
-  isReadOnly: boolean;
-  isLockLoading: boolean;
-  currentSheet: Sheet | null;
-  defaultVersionTag: string | null;
-  sheetId: string | undefined;
-  setIsTakeOverModalOpen: (open: boolean) => void;
-}
-
-export const SheetStatusBanner: React.FC<SheetStatusBannerProps> = ({
-  isVersionView,
-  lockedByOther,
-  isReadOnly,
-  isLockLoading,
-  currentSheet,
-  defaultVersionTag,
-  sheetId,
-  setIsTakeOverModalOpen,
-}) => {
+export const SheetStatusBanner: React.FC = () => {
   const navigate = useNavigate();
+  const {
+    isVersionView,
+    lockedByOther,
+    isReadOnly,
+    isLockLoading,
+    currentSheet,
+    defaultVersionTag,
+    sheetId,
+    setIsTakeOverModalOpen,
+  } = useSheetEditor();
 
   if (isVersionView) {
     return (

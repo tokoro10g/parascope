@@ -1,17 +1,10 @@
 import { FileText, Hash, Workflow } from 'lucide-react';
 import type React from 'react';
+import { useSheetEditor } from '../SheetEditorContext';
 
-interface SheetMobileTabsProps {
-  isMobile: boolean;
-  activeTab: 'editor' | 'variables' | 'descriptions';
-  setActiveTab: (tab: 'editor' | 'variables' | 'descriptions') => void;
-}
+export const SheetMobileTabs: React.FC = () => {
+  const { isMobile, activeTab, setActiveTab } = useSheetEditor();
 
-export const SheetMobileTabs: React.FC<SheetMobileTabsProps> = ({
-  isMobile,
-  activeTab,
-  setActiveTab,
-}) => {
   if (!isMobile) return null;
 
   return (
