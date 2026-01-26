@@ -1,5 +1,5 @@
 /**
- * Scenario 8: Material Selection (Option Node)
+ * Material Selection (Option Node)
  * Goal: Use categorical logic to switch between material properties.
  * 
  * This test verifies:
@@ -12,7 +12,7 @@
 import { test, expect } from '@playwright/test';
 import { connectNodes, moveNode, zoomOut } from './utils/graph-utils';
 
-test.describe('Scenario 8: Material Selection', () => {
+test.describe('Material Selection', () => {
   test.beforeEach(async ({ page }) => {
     await page.goto('/login');
     await page.locator('input[placeholder="Your Name"]').fill('material_user');

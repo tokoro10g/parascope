@@ -1,5 +1,5 @@
 /**
- * Scenario 10: Table View & Data Export
+ * Table View & Data Export
  * Goal: Efficiently manage parameters and share results with spreadsheets.
  * 
  * This test verifies:
@@ -11,7 +11,7 @@
 import { test, expect } from '@playwright/test';
 import { connectNodes, moveNode, zoomOut } from './utils/graph-utils';
 
-test.describe('Scenario 10: Table Productivity', () => {
+test.describe('Table Productivity', () => {
   test.beforeEach(async ({ page }) => {
     await page.goto('/login');
     await page.locator('input[placeholder="Your Name"]').fill('table_user');

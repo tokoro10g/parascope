@@ -1,5 +1,5 @@
 /**
- * Scenario 1: The "Back-of-the-Napkin" Calculation (New User)
+ * Force Calculator
  * Goal: Create a simple physics calculation and save it.
  * 
  * This test verifies the core "Happy Path":
@@ -14,7 +14,7 @@
 import { test, expect } from '@playwright/test';
 import { connectNodes, moveNode, zoomOut } from './utils/graph-utils';
 
-test.describe('Scenario 1: Force Calculator', () => {
+test.describe('Force Calculator', () => {
   test.beforeEach(async ({ page }) => {
     await page.goto('/login');
     await page.locator('input[placeholder="Your Name"]').fill('scenario_1_user');

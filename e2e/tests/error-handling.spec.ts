@@ -1,5 +1,5 @@
 /**
- * Scenario 3: Debugging a Python Error
+ * Error Handling
  * Goal: Identify and fix a mistake in a function.
  * 
  * This test verifies:
@@ -11,7 +11,7 @@
 import { test, expect } from '@playwright/test';
 import { connectNodes, moveNode, zoomOut } from './utils/graph-utils';
 
-test.describe('Scenario 3: Error Handling', () => {
+test.describe('Error Handling', () => {
   test.beforeEach(async ({ page }) => {
     await page.goto('/login');
     await page.locator('input[placeholder="Your Name"]').fill('error_tester');

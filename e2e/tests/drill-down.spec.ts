@@ -1,5 +1,5 @@
 /**
- * Scenario 6: URL Overrides & Drill-down Editing
+ * URL Overrides & Drill-down Editing
  * Goal: Share specific calculation cases and debug nested logic in context.
  * 
  * This test verifies:
@@ -11,7 +11,7 @@
 import { test, expect } from '@playwright/test';
 import { connectNodes, moveNode, zoomOut } from './utils/graph-utils';
 
-test.describe('Scenario 6: Drill-down & Overrides', () => {
+test.describe('Drill-down & Overrides', () => {
   test.beforeEach(async ({ page }) => {
     await page.goto('/login');
     await page.locator('input[placeholder="Your Name"]').fill('override_user');

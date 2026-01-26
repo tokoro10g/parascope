@@ -1,5 +1,5 @@
 /**
- * Scenario 11: Organizing Engineering Models (Folders)
+ * Organizing Engineering Models (Folders)
  * Goal: Organize a growing collection of engineering models.
  * 
  * This test verifies:
@@ -11,7 +11,7 @@
 
 import { test, expect } from '@playwright/test';
 
-test.describe('Scenario 11: Folders & Organization', () => {
+test.describe('Folders & Organization', () => {
   test.beforeEach(async ({ page }) => {
     await page.goto('/login');
     await page.locator('input[placeholder="Your Name"]').fill('organizer_user');

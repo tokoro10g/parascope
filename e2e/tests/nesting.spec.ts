@@ -1,5 +1,5 @@
 /**
- * Scenario 4: Nesting Sheets (Sub-graphs)
+ * Nesting Sheets (Sub-graphs)
  * Goal: Reuse a specific calculation component within a larger system.
  * 
  * This test verifies:
@@ -12,7 +12,7 @@
 import { test, expect } from '@playwright/test';
 import { connectNodes, moveNode, zoomOut } from './utils/graph-utils';
 
-test.describe('Scenario 4: Nesting Sheets', () => {
+test.describe('Nesting Sheets', () => {
   test.beforeEach(async ({ page }) => {
     await page.goto('/login');
     await page.locator('input[placeholder="Your Name"]').fill('nesting_user');

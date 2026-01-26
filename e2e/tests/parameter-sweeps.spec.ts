@@ -1,5 +1,5 @@
 /**
- * Scenario 5: Parameter Sweeps
+ * Parameter Sweeps
  * Goal: Execute iterative analysis for high-density engineering work.
  * 
  * This test verifies:
@@ -12,7 +12,7 @@
 import { test, expect } from '@playwright/test';
 import { connectNodes, moveNode, zoomOut } from './utils/graph-utils';
 
-test.describe('Scenario 5: Parameter Sweeps', () => {
+test.describe('Parameter Sweeps', () => {
   test.beforeEach(async ({ page }) => {
     await page.goto('/login');
     await page.locator('input[placeholder="Your Name"]').fill('sweep_user');

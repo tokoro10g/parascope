@@ -1,5 +1,5 @@
 /**
- * Scenario 9: Safety and Limits (Timeouts)
+ * Safety and Limits (Timeouts)
  * Goal: Debug complex logic and handle infinite loops gracefully.
  * 
  * This test verifies:
@@ -11,7 +11,7 @@
 import { test, expect } from '@playwright/test';
 import { moveNode, zoomOut } from './utils/graph-utils';
 
-test.describe('Scenario 9: Safety & Limits', () => {
+test.describe('Safety & Limits', () => {
   test.beforeEach(async ({ page }) => {
     await page.goto('/login');
     await page.locator('input[placeholder="Your Name"]').fill('safety_user');

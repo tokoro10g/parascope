@@ -9,8 +9,8 @@ It allows users to define parameters and functions (Python code) to perform comp
 
 ## 2. Critical Documentation
 Start by reading these files to understand the requirements and roadmap:
-1.  **`SCENARIOS.md`**: Detailed user journeys explaining the intended workflow, especially for nesting and debugging.
-2.  **`GEMINI.md`**: (This file) Contains the active roadmap and implementation plan.
+1.  **`GEMINI.md`**: (This file) Contains the active roadmap and implementation plan.
+2.  **`e2e/tests/`**: Individual test files document critical user journeys (Scenarios) with detailed headers. Refer to these for functional examples of nesting, sweeps, and error handling.
 
 ## 3. Architecture & Stack
 The project is a **Monorepo**.
@@ -73,13 +73,13 @@ Parascope uses an isolated testing architecture to ensure reliability without si
 
 ## 6. Roadmap & TODOs
 
-### Immediate Testing Priorities (E2E)
-- [ ] **Option Nodes**: Implement test for Scenario 8 (Verify dropdown interaction and calculation propagation).
-- [ ] **Safety & Limits**: Implement test for Scenario 9 (Verify RestrictedPython timeouts and infinite loop handling).
-- [ ] **Analysis Flow**: Implement test for Scenario 5 (Verify Parameter Sweeps and ECharts rendering).
-- [ ] **Utility Expansion**: Add `deleteNode` and `renamePort` helpers to `graph-utils.ts`.
+### Completed Priorities (QA)
+- [x] **Smoke Tests**: 11 core scenarios implemented in `e2e/tests/`.
+- [x] **Infrastructure**: Isolated Dockerized E2E environment.
+- [x] **Rete Library**: Robust programmatic interaction in `graph-utils.ts`.
 
 ### Logic & Core Enhancements
+- [ ] **Utility Expansion**: Add `deleteNode` and `renamePort` helpers to `graph-utils.ts`.
 - [ ] **Graph Integrity**: Validate function dependencies before saving (prevent invalid port states).
 - [ ] **Notifications**: Implement owner-based change notifications (audit log alerts).
 - [ ] **Advanced Math**: Support numerical optimization (Scipy integrate) and overflow handling.
