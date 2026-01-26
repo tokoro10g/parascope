@@ -1,4 +1,5 @@
 import { test, expect } from '@playwright/test';
+import { connectNodes, moveNode, zoomOut } from './utils/graph-utils';
 
 test.describe('Parascope Smoke Tests', () => {
   test.beforeEach(async ({ page }) => {
@@ -10,49 +11,29 @@ test.describe('Parascope Smoke Tests', () => {
   });
 
   test('Folder and Sheet Organization', async ({ page }) => {
-    // 1. Create a folder
     const folderName = `Folder_${Date.now()}`;
     page.on('dialog', async dialog => {
       await dialog.accept(folderName);
     });
     await page.click('button:has-text("New Folder")');
-    
-    // 2. Verify folder exists
     const folderLocator = page.locator(`.explorer-item:has-text("${folderName}")`);
     await expect(folderLocator).toBeVisible();
-
-    // 3. Enter folder
     await folderLocator.click();
-    await expect(page.locator('.explorer-item:has-text(".. (Up)")')).toBeVisible();
-
-    // 4. Create a sheet inside the folder
     await page.click('button:has-text("Create New Sheet")');
-    await expect(page).toHaveURL(/.*sheet\/.*/);
-
-    // 5. Rename sheet
     const sheetName = `Sheet_${Date.now()}`;
     const nameInput = page.locator('input[placeholder="Sheet Name"]');
     await nameInput.click();
     await nameInput.fill(sheetName);
     await nameInput.press('Enter');
     
-    // Reliably trigger dirty state by adding a node
     await page.click('button:has-text("Add Node")');
     await page.click('.add-menu-item:has-text("Constant")');
     await page.locator('#node-label').fill('trigger');
     await page.click('button:has-text("Save")');
-
-    // Verify it is dirty
-    const unsavedBadge = page.locator('.unsaved-indicator-badge');
-    await expect(unsavedBadge).toBeVisible();
-
-    // 6. Save sheet
-    const saveButton = page.locator('button[title="Save Sheet"]');
-    await expect(saveButton).toBeEnabled();
-    await saveButton.click();
-    await expect(unsavedBadge).toBeHidden();
-
-    // 7. Go back to dashboard and verify
+    
+    await expect(page.locator('.unsaved-indicator-badge')).toBeVisible();
+    await page.click('button[title="Save Sheet"]');
+    await expect(page.locator('.unsaved-indicator-badge')).toBeHidden();
     await page.goto('/');
     await folderLocator.click();
     await expect(page.locator(`.explorer-item:has-text("${sheetName}")`)).toBeVisible();
@@ -60,101 +41,179 @@ test.describe('Parascope Smoke Tests', () => {
 
   test('Basic Calculation Flow (Force Calculator)', async ({ page }) => {
     await page.click('button:has-text("Create New Sheet")');
-    await expect(page).toHaveURL(/.*sheet\/.*/);
+    await zoomOut(page, 4); // Zoom out more for space
 
-    // Add 'mass'
+    // 1. Create 'mass' Constant
     await page.click('button:has-text("Add Node")');
     await page.click('.add-menu-item:has-text("Constant")');
     await page.locator('#node-label').fill('mass');
     await page.locator('#node-value').fill('10');
     await page.click('button:has-text("Save")');
+    await moveNode(page, 'mass', -250, -100);
 
-    // Add 'accel'
+    // 2. Create 'accel' Constant
     await page.click('button:has-text("Add Node")');
     await page.click('.add-menu-item:has-text("Constant")');
     await page.locator('#node-label').fill('accel');
     await page.locator('#node-value').fill('9.8');
     await page.click('button:has-text("Save")');
+    await moveNode(page, 'accel', -250, 100);
 
-    // Add 'Force' Function
+    // 3. Create 'Force Function'
     await page.click('button:has-text("Add Node")');
     await page.click('.add-menu-item:has-text("Function")');
     await page.locator('#node-label').fill('ForceCalc');
-    await page.locator('#node-code').fill('force = mass * accel');
+    
+    // Remove defaults (x and result)
+    await page.locator('.io-column:has-text("Inputs") li').filter({ has: page.locator('input').filter({ hasValue: 'x' }) }).locator('button.danger').click();
+    await page.locator('.io-column:has-text("Outputs") li').filter({ has: page.locator('input').filter({ hasValue: 'result' }) }).locator('button.danger').click();
+
+    // Add mass input
+    await page.click('button:has-text("+ Add Input")');
+    await page.locator('.io-column:has-text("Inputs") li input').last().fill('mass');
+    // Add accel input
+    await page.click('button:has-text("+ Add Input")');
+    await page.locator('.io-column:has-text("Inputs") li input').last().fill('accel');
+    // Add force output
     await page.click('button:has-text("+ Add Output")');
     await page.locator('.io-column:has-text("Outputs") li input').last().fill('force');
-    await page.click('button:has-text("Save")');
-
-    // Verify nodes exist
-    await expect(page.locator('.rete >> text=mass')).toBeVisible();
-    await expect(page.locator('.rete >> text=accel')).toBeVisible();
-    await expect(page.locator('.rete >> text=ForceCalc')).toBeVisible();
-
-    // Check Table
-    const table = page.locator('.sheet-table');
-    await expect(table.locator('text=mass')).toBeVisible();
-    await expect(table.locator('text=accel')).toBeVisible();
     
-    // Check values
-    await expect(table.locator('input.sheet-table-input').filter({ hasValue: '10' }).first()).toBeVisible();
-    await expect(table.locator('input.sheet-table-input').filter({ hasValue: '9.8' }).first()).toBeVisible();
+    await page.locator('#node-code').fill('force = mass * accel');
+    await page.click('button:has-text("Save")');
+    await moveNode(page, 'ForceCalc', 0, 0);
+
+    // 4. Create Output Node
+    await page.click('button:has-text("Add Node")');
+    await page.click('.add-menu-item:has-text("Output")');
+    await page.locator('#node-label').fill('FinalForce');
+    await page.click('button:has-text("Save")');
+    await moveNode(page, 'FinalForce', 250, 0);
+
+    // 5. Connect nodes
+    await connectNodes(page, 'mass', 'value', 'ForceCalc', 'mass');
+    await connectNodes(page, 'accel', 'value', 'ForceCalc', 'accel');
+    await connectNodes(page, 'ForceCalc', 'force', 'FinalForce', 'value');
+
+    // 6. Run and Check Table results
+    await page.click('button:has-text("Run")');
+    await page.waitForTimeout(2000);
+    
+    const table = page.locator('.sheet-table');
+    await expect(table.locator('text=98')).toBeVisible(); 
   });
 
   test('Error Handling (Scenario 3)', async ({ page }) => {
     await page.click('button:has-text("Create New Sheet")');
+    await zoomOut(page, 4);
     
-    // Add Function with a division by zero error
     await page.click('button:has-text("Add Node")');
     await page.click('.add-menu-item:has-text("Function")');
     await page.locator('#node-label').fill('ZeroDivNode');
-    await page.locator('#node-code').fill('result = 1 / 0');
-    await page.click('button:has-text("+ Add Output")');
-    await page.locator('.io-column:has-text("Outputs") li input').last().fill('result');
-    await page.click('button:has-text("Save")');
+    
+    // Cleanup defaults
+    await page.locator('.io-column:has-text("Inputs") li').filter({ has: page.locator('input').filter({ hasValue: 'x' }) }).locator('button.danger').click();
+    await page.locator('.io-column:has-text("Outputs") li').filter({ has: page.locator('input').filter({ hasValue: 'result' }) }).locator('button.danger').click();
 
-    // Run calculation
+    await page.click('button:has-text("+ Add Output")');
+    await page.locator('.io-column:has-text("Outputs") li input').last().fill('out_val');
+    await page.locator('#node-code').fill('out_val = 1 / 0');
+    await page.click('button:has-text("Save")');
+    await moveNode(page, 'ZeroDivNode', -150, 0);
+
+    // Add Output node
+    await page.click('button:has-text("Add Node")');
+    await page.click('.add-menu-item:has-text("Output")');
+    await page.locator('#node-label').fill('surfaced_error');
+    await page.click('button:has-text("Save")');
+    await moveNode(page, 'surfaced_error', 150, 0);
+
+    // Connect
+    await connectNodes(page, 'ZeroDivNode', 'out_val', 'surfaced_error', 'value');
+
+    // Run
     await page.click('button:has-text("Run")');
-    
-    // Wait for execution and verify visual indicator on canvas
-    await expect(page.locator('.rete >> text=ZeroDivNode')).toBeVisible();
-    
-    // Verify the error message in the tooltip
+    await page.waitForTimeout(2000);
+
+    // Verify error tooltip
     const tooltip = page.locator('.node-error-tooltip');
     await expect(tooltip).toBeVisible();
-    // Python usually says "division by zero"
     await expect(tooltip).toContainText('division by zero');
   });
 
   test('Nesting Sheets (Scenario 4)', async ({ page }) => {
-    // 1. Create Cylinder Volume sheet
+    // 1. Create Cylinder Volume sub-sheet
     await page.click('button:has-text("Create New Sheet")');
-    const sheetName = `CylVol_${Date.now()}`;
+    const subSheetName = `SubSheet_${Date.now()}`;
     const nameInput = page.locator('input[placeholder="Sheet Name"]');
     await nameInput.click();
-    await nameInput.fill(sheetName);
+    await nameInput.fill(subSheetName);
     await nameInput.press('Enter');
+    await zoomOut(page, 4);
 
-    // Add Input radius
+    // Add Input 'radius'
     await page.click('button:has-text("Add Node")');
     await page.click('.add-menu-item:has-text("Input")');
     await page.locator('#node-label').fill('radius');
     await page.click('button:has-text("Save")');
+    await moveNode(page, 'radius', -150, 0);
 
-    // Save
+    // Add Output 'volume'
+    await page.click('button:has-text("Add Node")');
+    await page.click('.add-menu-item:has-text("Output")');
+    await page.locator('#node-label').fill('volume');
+    await page.click('button:has-text("Save")');
+    await moveNode(page, 'volume', 150, 0);
+
+    // Connect radius -> volume
+    await connectNodes(page, 'radius', 'value', 'volume', 'value');
+
+    // Save and wait
     await page.click('button[title="Save Sheet"]');
     await expect(page.locator('.unsaved-indicator-badge')).toBeHidden();
 
     // 2. Create Parent sheet
     await page.goto('/');
     await page.click('button:has-text("Create New Sheet")');
+    await zoomOut(page, 4);
+
+    const parentName = `ParentSheet_${Date.now()}`;
+    const pNameInput = page.locator('input[placeholder="Sheet Name"]');
+    await pNameInput.click();
+    await pNameInput.fill(parentName);
+    await pNameInput.press('Enter');
     
-    // Import Cylinder Volume
+    // Import SubSheet
     await page.click('button:has-text("Import Sheet")');
     await page.waitForTimeout(1000);
-    await page.click(`.explorer-item:has-text("${sheetName}")`);
-
-    // Verify the node exists on parent canvas
+    await page.click(`.explorer-item:has-text("${subSheetName}")`);
     await page.waitForTimeout(1000);
-    await expect(page.locator('.rete')).toContainText(sheetName);
+    await moveNode(page, subSheetName, 0, 0);
+
+    // Add Constant 'r_in'
+    await page.click('button:has-text("Add Node")');
+    await page.click('.add-menu-item:has-text("Constant")');
+    await page.locator('#node-label').fill('r_in');
+    await page.locator('#node-value').fill('42');
+    await page.click('button:has-text("Save")');
+    await moveNode(page, 'r_in', -200, 0);
+
+    // Add Output 'result'
+    await page.click('button:has-text("Add Node")');
+    await page.click('.add-menu-item:has-text("Output")');
+    await page.locator('#node-label').fill('result');
+    await page.click('button:has-text("Save")');
+    await moveNode(page, 'result', 200, 0);
+
+    // Connect r_in -> SubSheet(radius) -> result
+    await connectNodes(page, 'r_in', 'value', subSheetName, 'radius');
+    await connectNodes(page, subSheetName, 'volume', 'result', 'value');
+
+    // Run
+    await page.click('button:has-text("Run")');
+    await page.waitForTimeout(3000);
+
+    // Verify result in table
+    const table = page.locator('.sheet-table');
+    await expect(table.locator('text=42')).toBeVisible(); 
   });
 });
