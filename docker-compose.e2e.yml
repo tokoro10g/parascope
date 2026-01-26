@@ -24,6 +24,7 @@ services:
       - DATABASE_URL=postgresql+asyncpg://user:password@db-e2e:5432/parascope_e2e
       - BACKEND_CORS_ORIGINS=*
       - USERNAME_REGEX=^[a-zA-Z0-9_]+$
+      - DB_ECHO=false
     depends_on:
       db-e2e:
         condition: service_healthy
