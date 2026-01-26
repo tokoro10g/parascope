@@ -96,10 +96,10 @@ test.describe('Parascope Smoke Tests', () => {
 
     // 6. Run and Check Table results
     await page.click('button:has-text("Run")');
-    await page.waitForTimeout(2000);
-    
-    const table = page.locator('.sheet-table');
-    await expect(table.locator('text=98')).toBeVisible(); 
+    // Wait for calculation to complete and result to appear in the table
+    // Non-editable cells like FinalForce outputs are rendered in <span> inside .sheet-table-cell-value
+    const resultCell = page.locator('.sheet-table-cell-value:has-text("98")');
+    await expect(resultCell).toBeVisible({ timeout: 5000 });
   });
 
   test('Error Handling (Scenario 3)', async ({ page }) => {
@@ -313,5 +313,57 @@ test.describe('Parascope Smoke Tests', () => {
     await expect(toast).toBeVisible({ timeout: 20000 });
     await expect(toast).toContainText('Execution Error');
     await expect(toast).toContainText('timed out');
+  });
+
+  test('Analysis Flow - Parameter Sweeps (Scenario 5)', async ({ page }) => {
+    await page.click('button:has-text("Create New Sheet")');
+    await zoomOut(page, 4);
+
+    // 1. Create simple graph: mass -> ForceCalc -> FinalForce
+    await page.click('button:has-text("Add Node")');
+    await page.click('.add-menu-item:has-text("Constant")');
+    await page.locator('#node-label').fill('sweep_mass');
+    await page.locator('#node-value').fill('10');
+    await page.click('button:has-text("Save")');
+    await moveNode(page, 'sweep_mass', -200, 0);
+
+    await page.click('button:has-text("Add Node")');
+    await page.click('.add-menu-item:has-text("Output")');
+    await page.locator('#node-label').fill('sweep_result');
+    await page.click('button:has-text("Save")');
+    await moveNode(page, 'sweep_result', 200, 0);
+
+    await connectNodes(page, 'sweep_mass', 'value', 'sweep_result', 'value');
+    await page.click('button[title="Save Sheet"]');
+    await expect(page.locator('.unsaved-indicator-badge')).toBeHidden();
+
+    // 2. Go to Sweep Page (opens in new tab)
+    const [popup] = await Promise.all([
+      page.waitForEvent('popup'),
+      page.click('button.sweep-button')
+    ]);
+    await popup.waitForLoadState();
+    await expect(popup).toHaveURL(/.*\/sweep/);
+
+    // 3. Configure Sweep
+    // sweep_mass should be auto-selected as Primary because it's the only input/constant
+    await popup.locator('.sweep-input-row:has-text("Start") input').fill('10');
+    await popup.locator('.sweep-input-row:has-text("End") input').fill('50');
+    await popup.locator('.sweep-input-row:has-text("Increment") input').fill('10');
+
+    // Select output to plot
+    await popup.locator('tr.sweep-output-row:has-text("sweep_result") input[type="checkbox"]').check();
+
+    // 4. Run Sweep
+    await popup.click('button:has-text("Run Sweep")');
+    
+    // 5. Verify Results
+    // Verification: SweepResults.tsx renders Copy buttons and Chart when results exist
+    await expect(popup.locator('button:has-text("Copy Data")')).toBeVisible({ timeout: 10000 });
+    await expect(popup.locator('button:has-text("Copy Plot")')).toBeVisible();
+    
+    // Verify ECharts rendering (canvas element)
+    const chart = popup.locator('.echarts-for-react canvas');
+    await expect(chart).toBeVisible();
   });
 });
