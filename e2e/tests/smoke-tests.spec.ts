@@ -401,4 +401,62 @@ test.describe('Parascope Smoke Tests', () => {
     const resultCell = page.locator('.sheet-table-cell-value:has-text("123")');
     await expect(resultCell).toBeVisible({ timeout: 10000 });
   });
+
+  test('Drill-down Editing (Scenario 6 extension)', async ({ page }) => {
+    // 1. Create sub-sheet
+    await page.click('button:has-text("Create New Sheet")');
+    const subName = `Sub_${Date.now()}`;
+    await page.locator('input[placeholder="Sheet Name"]').fill(subName);
+    await page.locator('input[placeholder="Sheet Name"]').press('Enter');
+    await zoomOut(page, 4);
+
+    await page.click('button:has-text("Add Node")');
+    await page.click('.add-menu-item:has-text("Input")');
+    await page.locator('#node-label').fill('sub_input');
+    await page.click('button:has-text("Save")');
+    
+    await page.click('button[title="Save Sheet"]');
+    await expect(page.locator('.unsaved-indicator-badge')).toBeHidden();
+
+    // 2. Create parent and import sub
+    await page.goto('/');
+    await page.click('button:has-text("Create New Sheet")');
+    await zoomOut(page, 4);
+
+    await page.click('button:has-text("Import Sheet")');
+    await page.waitForTimeout(1000);
+    await page.click(`.explorer-item:has-text("${subName}")`);
+    await moveNode(page, subName, 0, 0);
+
+    // 3. Add Constant to drive sub
+    await page.click('button:has-text("Add Node")');
+    await page.click('.add-menu-item:has-text("Constant")');
+    await page.locator('#node-label').fill('driver');
+    await page.locator('#node-value').fill('999');
+    await page.click('button:has-text("Save")');
+    await moveNode(page, 'driver', -250, 0);
+
+    await connectNodes(page, 'driver', 'value', subName, 'sub_input');
+    
+    // Run to generate results context
+    await page.click('button:has-text("Run")');
+    await page.waitForTimeout(2000);
+
+    // 4. Drill down via Context Menu
+    // Right-click the sub-sheet node
+    const subNode = page.locator(`.node-sheet:has-text("${subName}")`);
+    await subNode.click({ button: 'right' });
+    
+    const [popup] = await Promise.all([
+      page.waitForEvent('popup'),
+      page.click('text=Open in New Tab')
+    ]);
+    await popup.waitForLoadState();
+
+    // 5. Verify the sub-sheet has the value from parent in URL and table
+    await expect(popup).toHaveURL(/.*sub_input=999/);
+    // In sub-sheet, 'sub_input' is an Input node, so it's an <input> element in the table
+    const tableInput = popup.locator('tr:has-text("sub_input") input.sheet-table-input');
+    await expect(tableInput).toHaveValue('999', { timeout: 10000 });
+  });
 });
