@@ -270,18 +270,17 @@ test.describe('Parascope Smoke Tests', () => {
     await connectNodes(page, 'GetDensity', 'rho', 'density_out', 'value');
     
     await page.click('button:has-text("Run")');
-    await page.waitForTimeout(1000);
-    
-    const table = page.locator('.sheet-table');
-    await expect(table.locator('text=7850')).toBeVisible();
+    // Verify first material (Steel -> 7850)
+    await expect(page.locator('.sheet-table-cell-value:has-text("7850")')).toBeVisible({ timeout: 5000 });
 
     // 5. Interaction: Change material to Aluminum in the table
+    const table = page.locator('.sheet-table');
     await table.locator('select.sheet-table-input').selectOption('Aluminum');
     await page.click('button:has-text("Run")');
     await page.waitForTimeout(1000);
     
-    // Result should update
-    await expect(table.locator('text=2700')).toBeVisible();
+    // Result should update (Aluminum -> 2700)
+    await expect(page.locator('.sheet-table-cell-value:has-text("2700")')).toBeVisible({ timeout: 5000 });
   });
 
   test('Safety and Limits - Timeouts (Scenario 9)', async ({ page }) => {
@@ -455,8 +454,68 @@ test.describe('Parascope Smoke Tests', () => {
 
     // 5. Verify the sub-sheet has the value from parent in URL and table
     await expect(popup).toHaveURL(/.*sub_input=999/);
-    // In sub-sheet, 'sub_input' is an Input node, so it's an <input> element in the table
+    const tableCell = popup.locator('tr:has-text("sub_input") input.sheet-table-cell-value');
+    // Wait for the value to appear in the table
     const tableInput = popup.locator('tr:has-text("sub_input") input.sheet-table-input');
     await expect(tableInput).toHaveValue('999', { timeout: 10000 });
+  });
+
+  test('Table View and Data Export (Scenario 10)', async ({ page }) => {
+    // 1. Mock clipboard writeText since headless permissions are tricky
+    await page.evaluate(() => {
+      (window as any).clipboardData = "";
+      Object.defineProperty(navigator, "clipboard", {
+        value: {
+          writeText: async (text: string) => { (window as any).clipboardData = text; }
+        },
+        configurable: true
+      });
+    });
+
+    await page.click('button:has-text("Create New Sheet")');
+    await zoomOut(page, 4);
+
+    // 1. Create a simple multiplier: in * 2 = out
+    await page.click('button:has-text("Add Node")');
+    await page.click('.add-menu-item:has-text("Input")');
+    await page.locator('#node-label').fill('factor');
+    await page.click('button:has-text("Save")');
+    await moveNode(page, 'factor', -200, 0);
+
+    await page.click('button:has-text("Add Node")');
+    await page.click('.add-menu-item:has-text("Function")');
+    await page.locator('#node-label').fill('doubler');
+    await page.locator('#node-code').fill('result = x * 2');
+    await page.click('button:has-text("Save")');
+    await moveNode(page, 'doubler', 0, 0);
+
+    await page.click('button:has-text("Add Node")');
+    await page.click('.add-menu-item:has-text("Output")');
+    await page.locator('#node-label').fill('total');
+    await page.click('button:has-text("Save")');
+    await moveNode(page, 'total', 200, 0);
+
+    await connectNodes(page, 'factor', 'value', 'doubler', 'x');
+    await connectNodes(page, 'doubler', 'result', 'total', 'value');
+
+    // 2. Edit 'factor' in the table directly
+    const tableInput = page.locator('tr:has-text("factor") input.sheet-table-input');
+    await tableInput.fill('50');
+    await tableInput.press('Enter');
+
+    // Run and verify result '100'
+    await page.click('button:has-text("Run")');
+    const resultCell = page.locator('.sheet-table-cell-value:has-text("100")');
+    await expect(resultCell).toBeVisible({ timeout: 5000 });
+
+    // 3. Export Table
+    await page.click('button:has-text("Copy Table")');
+    
+    // Verify mocked clipboard content (should be TSV)
+    const clipboardText = await page.evaluate(() => (window as any).clipboardData);
+    expect(clipboardText).toContain('factor');
+    expect(clipboardText).toContain('total');
+    expect(clipboardText).toContain('50');
+    expect(clipboardText).toContain('100');
   });
 });
