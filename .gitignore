@@ -26,5 +26,8 @@ dist-ssr
 # Python
 __pycache__/
 *.pyc
+build/
+dist/
+*.egg-info
 
 .env
