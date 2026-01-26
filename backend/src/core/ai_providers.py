@@ -7,6 +7,7 @@ from typing import List, Optional
 
 logger = logging.getLogger(__name__)
 
+
 class AIProvider(ABC):
     @abstractmethod
     async def generate_function(
@@ -16,13 +17,38 @@ class AIProvider(ABC):
         existing_code: str = "",
         existing_description: str = "",
         urls: List[str] = None,
-        image: Optional[str] = None
+        image: Optional[str] = None,
     ) -> dict:
         pass
 
     @abstractmethod
     def is_enabled(self) -> bool:
         pass
+
+    def _build_user_prompt(
+        self,
+        prompt: str,
+        urls: List[str] = None,
+        existing_code: str = "",
+        existing_description: str = "",
+    ) -> str:
+        """Centralized helper to build the standard user prompt across providers."""
+        user_prompt = f"Prompt: {prompt}\n"
+        if urls:
+            user_prompt += "\nReference URLs:\n" + "\n".join(urls) + "\n"
+        if existing_code:
+            user_prompt += (
+                f"Existing Code:\n{existing_code}\n"
+                "Update the existing code based on the prompt, or rewrite it if requested.\n"
+            )
+        if existing_description:
+            user_prompt += (
+                f"\nExisting Description:\n{existing_description}\n"
+                "Ensure the new description remains consistent with existing background info "
+                "unless otherwise instructed.\n"
+            )
+        return user_prompt
+
 
 class GeminiProvider(AIProvider):
     @staticmethod
@@ -32,11 +58,10 @@ class GeminiProvider(AIProvider):
     def __init__(self):
         try:
             from google import genai
+
             self.api_key = os.getenv("GEMINI_API_KEY")
-            self.client = (
-                genai.Client(api_key=self.api_key) if self.api_key else None
-            )
-            self.model = os.getenv("GEMINI_MODEL", "gemini-3-flash-preview")
+            self.client = genai.Client(api_key=self.api_key) if self.api_key else None
+            self.model = os.getenv("GEMINI_MODEL", "gemini-2.0-flash-exp")
         except ImportError:
             self.client = None
             self.api_key = None
@@ -53,20 +78,12 @@ class GeminiProvider(AIProvider):
     ) -> dict:
         from google import genai
 
-        if urls is None:
-            urls = []
         if not self.client:
             raise Exception("Gemini API key not configured")
 
-        user_prompt = f"Prompt: {prompt}\n"
-        if urls:
-            user_prompt += "\nReference URLs:\n" + "\n".join(urls) + "\n"
-        if existing_code:
-            user_prompt += f"Existing Code:\n{existing_code}\nUpdate the existing code based on the prompt, or rewrite it if requested.\n"
-        if existing_description:
-            user_prompt += f"\nExisting Description:\n{existing_description}\nEnsure the new description remains consistent with existing background info unless otherwise instructed.\n"
-
+        user_prompt = self._build_user_prompt(prompt, urls, existing_code, existing_description)
         parts = [genai.types.Part.from_text(text=user_prompt)]
+
         if image:
             if "," in image:
                 header, encoded = image.split(",", 1)
@@ -75,9 +92,7 @@ class GeminiProvider(AIProvider):
                 encoded = image
                 mime_type = "image/png"
             image_bytes = base64.b64decode(encoded)
-            parts.append(
-                genai.types.Part.from_bytes(data=image_bytes, mime_type=mime_type)
-            )
+            parts.append(genai.types.Part.from_bytes(data=image_bytes, mime_type=mime_type))
 
         tools = [
             genai.types.Tool(url_context=genai.types.UrlContext()),
@@ -121,24 +136,11 @@ class OpenAIProvider(AIProvider):
         urls: List[str] = None,
         image: Optional[str] = None,
     ) -> dict:
-        if urls is None:
-            urls = []
         if not self.client:
             raise Exception("OpenAI API key not configured")
 
-        user_content = [{"type": "text", "text": f"Prompt: {prompt}"}]
-        if urls:
-            user_content[0]["text"] += (
-                "\nReference URLs:\n" + "\n".join(urls) + "\n"
-            )
-        if existing_code:
-            user_content[0]["text"] += (
-                f"Existing Code:\n{existing_code}\nUpdate the existing code based on the prompt, or rewrite it if requested.\n"
-            )
-        if existing_description:
-            user_content[0]["text"] += (
-                f"\nExisting Description:\n{existing_description}\nEnsure the new description remains consistent with existing background info unless otherwise instructed.\n"
-            )
+        user_prompt = self._build_user_prompt(prompt, urls, existing_code, existing_description)
+        user_content = [{"type": "text", "text": user_prompt}]
 
         if image:
             if not image.startswith("data:"):
@@ -184,20 +186,11 @@ class BedrockProvider(AIProvider):
         urls: List[str] = None,
         image: Optional[str] = None,
     ) -> dict:
-        if urls is None:
-            urls = []
         if not self.client:
             raise Exception("AWS/Bedrock not configured")
 
-        user_text = f"Prompt: {prompt}\n"
-        if urls:
-            user_text += "\nReference URLs:\n" + "\n".join(urls) + "\n"
-        if existing_code:
-            user_text += f"Existing Code:\n{existing_code}\nUpdate the existing code based on the prompt, or rewrite it if requested.\n"
-        if existing_description:
-            user_text += f"\nExisting Description:\n{existing_description}\nEnsure the new description remains consistent with existing background info unless otherwise instructed.\n"
-
-        content = [{"text": user_text}]
+        user_prompt = self._build_user_prompt(prompt, urls, existing_code, existing_description)
+        content = [{"text": user_prompt}]
 
         if image:
             if "," in image:
@@ -229,10 +222,10 @@ class BedrockProvider(AIProvider):
         )
 
         response = self.client.invoke_model(modelId=self.model_id, body=body)
-
         response_body = json.loads(response.get("body").read())
         result_text = response_body["content"][0]["text"]
 
+        # Extract JSON if wrapped in markdown
         if "```json" in result_text:
             result_text = result_text.split("```json")[1].split("```")[0].strip()
         elif "```" in result_text:
