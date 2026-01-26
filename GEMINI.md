@@ -9,9 +9,8 @@ It allows users to define parameters and functions (Python code) to perform comp
 
 ## 2. Critical Documentation
 Start by reading these files to understand the requirements and roadmap:
-1.  **`SPECIFICATIONS.tsv`**: The source of truth for requirements. **Note**: This is a draft; agents can and should update this file upon approval to fix flaws or clarify details.
-2.  **`SCENARIOS.md`**: Detailed user journeys explaining the intended workflow, especially for nesting and debugging.
-3.  **`TODO.md`**: The current implementation plan and progress tracker.
+1.  **`SCENARIOS.md`**: Detailed user journeys explaining the intended workflow, especially for nesting and debugging.
+2.  **`TODO.md`**: The current implementation plan and progress tracker.
 
 ## 3. Architecture & Stack
 The project is a **Monorepo**.
