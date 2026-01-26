@@ -1,9 +1,7 @@
-import { FileText, Hash, Workflow } from 'lucide-react';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import toast from 'react-hot-toast';
 import {
   Group,
-  Panel,
   type PanelImperativeHandle,
   Separator,
 } from 'react-resizable-panels';
@@ -25,18 +23,16 @@ import { useUnsavedChanges } from '../../hooks/useUnsavedChanges';
 import { createEditor, type ParascopeNode } from '../../rete';
 import type { NodeType } from '../../rete/types';
 import { createSocket, extractValuesFromResult } from '../../utils';
-import { EditorBar } from '../EditorBar';
-import { HistoryModal } from '../HistoryModal';
-import { Modal } from '../Modal';
 import { NavBar } from '../NavBar';
-import { NodeInspector } from '../node-inspector';
-import { SheetPickerModal } from '../SheetPickerModal';
-import { SheetUsageModal } from '../SheetUsageModal';
-import { SheetTable } from '../sheet-table';
-import { TooltipLayer } from '../TooltipLayer';
-import { VersionListModal } from '../VersionListModal';
 import './SheetEditor.css';
+
+// Extracted UI Components
+import { SheetEditorModals } from './modals/SheetEditorModals';
 import type { CalculationInputDefinition } from './types';
+import { SheetEditorPanel } from './ui/SheetEditorPanel';
+import { SheetMobileTabs } from './ui/SheetMobileTabs';
+import { SheetStatusBanner } from './ui/SheetStatusBanner';
+import { SheetTablePanel } from './ui/SheetTablePanel';
 import { useEditorSetup } from './useEditorSetup';
 import { useSheetClipboard } from './useSheetClipboard';
 import { useUrlSync } from './useUrlSync';
@@ -78,20 +74,22 @@ export const SheetEditor: React.FC = () => {
     const resizePanels = () => {
       if (isMobile) {
         if (activeTab === 'editor') {
-          editorPanelRef.current?.resize('100%');
-          tablePanelRef.current?.resize('0%');
+          editorPanelRef.current?.resize(100);
+          tablePanelRef.current?.resize(0);
         } else {
-          editorPanelRef.current?.resize('0%');
-          tablePanelRef.current?.resize('100%');
+          editorPanelRef.current?.resize(0);
+          tablePanelRef.current?.resize(100);
         }
       } else {
         // Only force desktop split once when entering desktop mode
         // to avoid resetting user-defined widths when switching Variables/Descriptions tabs
-        const currentEditorSize =
-          editorPanelRef.current?.getSize().asPercentage;
-        if (currentEditorSize === 0 || currentEditorSize === 100) {
-          editorPanelRef.current?.resize('70%');
-          tablePanelRef.current?.resize('30%');
+        const currentEditorSize = editorPanelRef.current?.getSize();
+        if (
+          currentEditorSize?.asPercentage === 0 ||
+          currentEditorSize?.asPercentage === 100
+        ) {
+          editorPanelRef.current?.resize(70);
+          tablePanelRef.current?.resize(30);
         }
       }
     };
@@ -768,127 +766,24 @@ export const SheetEditor: React.FC = () => {
   return (
     <div className="sheet-editor">
       <NavBar user={user} onBack={handleBackClick} onLogout={logout} />
-      {isVersionView && (
-        <div
-          className="lock-banner"
-          style={{
-            backgroundColor: '#e3f2fd',
-            color: '#0d47a1',
-            borderColor: '#90caf9',
-          }}
-        >
-          <span>
-            Viewing{' '}
-            <strong>
-              Version Snapshot ({(currentSheet as any)?.version_tag})
-            </strong>
-            . Read-Only Mode.
-          </span>
-          <button
-            type="button"
-            onClick={() => navigate(`/sheet/${sheetId}`)}
-            className="btn"
-            style={{
-              backgroundColor: '#1976d2',
-              color: 'white',
-              border: 'none',
-              padding: '5px 10px',
-              minWidth: 'unset',
-            }}
-          >
-            Back to Live
-          </button>
-        </div>
-      )}
-      {!isVersionView && !lockedByOther && currentSheet?.default_version_id && (
-        <div
-          className="lock-banner"
-          style={{
-            backgroundColor: '#fff3e0',
-            color: '#e65100',
-            borderColor: '#ffe0b2',
-          }}
-        >
-          <span>
-            Status:{' '}
-            <strong>Draft (Default is {defaultVersionTag || 'Locked'})</strong>.
-            Changes here will not affect other sheets until a new version is
-            published and set as default.
-          </span>
-          <button
-            type="button"
-            onClick={() =>
-              navigate(
-                `/sheet/${sheetId}?versionId=${currentSheet.default_version_id}`,
-              )
-            }
-            className="btn"
-            style={{
-              backgroundColor: '#e65100',
-              color: 'white',
-              border: 'none',
-              padding: '5px 10px',
-              minWidth: 'unset',
-            }}
-          >
-            View Default
-          </button>
-        </div>
-      )}
-      {!isVersionView && lockedByOther && (
-        <div className="lock-banner">
-          <span>
-            Currently being edited by <strong>{lockedByOther}</strong>. You are
-            in Read-Only mode.
-          </span>
-          <button
-            type="button"
-            onClick={() => setIsTakeOverModalOpen(true)}
-            className="btn danger"
-            style={{ padding: '5px 10px', minWidth: 'unset' }}
-          >
-            Take Over
-          </button>
-        </div>
-      )}
-      {!isVersionView && !lockedByOther && isReadOnly && !isLockLoading && (
-        <div className="lock-banner">
-          <span>You are in Read-Only mode. Reload to acquire lock.</span>
-          <button
-            type="button"
-            onClick={() => window.location.reload()}
-            className="btn"
-            style={{ padding: '5px 10px', minWidth: 'unset' }}
-          >
-            Reload
-          </button>
-        </div>
-      )}{' '}
-      {isMobile && (
-        <div className="tabs-container">
-          <button
-            type="button"
-            className={`tab-button ${activeTab === 'editor' ? 'active' : ''}`}
-            onClick={() => setActiveTab('editor')}
-          >
-            <Workflow size={16} /> Editor
-          </button>
-          <button
-            type="button"
-            className={`tab-button ${activeTab === 'variables' ? 'active' : ''}`}
-            onClick={() => setActiveTab('variables')}
-          >
-            <Hash size={16} /> Variables
-          </button>
-          <button
-            type="button"
-            className={`tab-button ${activeTab === 'descriptions' ? 'active' : ''}`}
-            onClick={() => setActiveTab('descriptions')}
-          >
-            <FileText size={16} /> Descriptions
-          </button>
-        </div>
-      )}
+
+      <SheetStatusBanner
+        isVersionView={isVersionView}
+        lockedByOther={lockedByOther}
+        isReadOnly={isReadOnly}
+        isLockLoading={isLockLoading}
+        currentSheet={currentSheet}
+        defaultVersionTag={defaultVersionTag}
+        sheetId={sheetId}
+        setIsTakeOverModalOpen={setIsTakeOverModalOpen}
+      />
+
+      <SheetMobileTabs
+        isMobile={isMobile}
+        activeTab={activeTab}
+        setActiveTab={setActiveTab}
+      />
+
       <div
         className="editor-content"
         style={{ display: 'flex', flex: 1, minHeight: 0, overflow: 'hidden' }}
@@ -899,94 +794,26 @@ export const SheetEditor: React.FC = () => {
             orientation="horizontal"
             style={{ width: '100%', height: '100%' }}
           >
-            <Panel
-              id="editor-panel"
-              panelRef={editorPanelRef}
-              defaultSize={
-                isMobile ? (activeTab === 'editor' ? '100%' : '0%') : '70%'
-              }
-              minSize={isMobile ? 0 : '20%'}
-              style={{
-                display: isMobile && activeTab !== 'editor' ? 'none' : 'flex',
-                flexDirection: 'column',
-              }}
-            >
-              <div
-                className="rete-container"
-                style={{ width: '100%', height: '100%', position: 'relative' }}
-              >
-                {isLoading && <div className="loading-overlay">Loading...</div>}
-                <EditorBar
-                  sheetName={currentSheet?.name}
-                  isDirty={isDirty}
-                  readOnly={isReadOnly}
-                  onRenameSheet={handleRenameSheet}
-                  onSaveSheet={onSave}
-                  onOpenVersionList={() => setIsVersionListOpen(true)}
-                  onAddNode={handleAddNode}
-                  onUndo={() => editor?.undo()}
-                  onRedo={() => editor?.redo()}
-                  onZoomToFit={() => editor?.zoomToFit()}
-                  onCopy={() => {
-                    if (editor) {
-                      const selected = editor.getSelectedNodes();
-                      const selectedIds = new Set(selected.map((n) => n.id));
-                      const nodesData = selected.map((n) => {
-                        const view = editor.area.nodeViews.get(n.id);
-                        return {
-                          id: n.id,
-                          type: n.type,
-                          label: n.label,
-                          inputs: Object.keys(n.inputs).map((key) => ({
-                            key,
-                            socket_type: 'any',
-                          })),
-                          outputs: Object.keys(n.outputs).map((key) => ({
-                            key,
-                            socket_type: 'any',
-                          })),
-                          data: JSON.parse(JSON.stringify(n.data)),
-                          controls: n.controls.value
-                            ? { value: (n.controls.value as any).value }
-                            : {},
-                          position: view
-                            ? { x: view.position.x, y: view.position.y }
-                            : { x: 0, y: 0 },
-                        };
-                      });
+            <SheetEditorPanel
+              editorPanelRef={editorPanelRef}
+              isMobile={isMobile}
+              activeTab={activeTab}
+              isLoading={isLoading}
+              currentSheet={currentSheet}
+              isDirty={isDirty}
+              isReadOnly={isReadOnly}
+              handleRenameSheet={handleRenameSheet}
+              onSave={onSave}
+              setIsVersionListOpen={setIsVersionListOpen}
+              handleAddNode={handleAddNode}
+              editor={editor}
+              handleCopy={handleCopy}
+              handlePaste={handlePaste}
+              setIsUsageModalOpen={setIsUsageModalOpen}
+              setIsHistoryModalOpen={setIsHistoryModalOpen}
+              reteRef={ref}
+            />
 
-                      const internalConnections = editor.instance
-                        .getConnections()
-                        .filter(
-                          (c) =>
-                            selectedIds.has(c.source) &&
-                            selectedIds.has(c.target),
-                        )
-                        .map((c) => ({
-                          source: c.source,
-                          sourceOutput: c.sourceOutput,
-                          target: c.target,
-                          targetInput: c.targetInput,
-                        }));
-
-                      handleCopy({
-                        nodes: nodesData,
-                        connections: internalConnections,
-                      });
-                    }
-                  }}
-                  onPaste={handlePaste}
-                  onCheckUsage={() => setIsUsageModalOpen(true)}
-                  onOpenHistory={() => setIsHistoryModalOpen(true)}
-                />
-                <div
-                  ref={ref}
-                  className="rete"
-                  style={{ opacity: isLoading ? 0 : 1 }}
-                />
-                <TooltipLayer editor={editor} />
-              </div>
-            </Panel>
             <Separator
               style={{
                 width: isMobile ? '0' : '4px',
@@ -995,122 +822,49 @@ export const SheetEditor: React.FC = () => {
                 display: isMobile ? 'none' : 'block',
               }}
             />
-            <Panel
-              id="table-panel"
-              panelRef={tablePanelRef}
-              defaultSize={
-                isMobile ? (activeTab !== 'editor' ? '100%' : '0%') : '30%'
-              }
-              minSize={isMobile ? 0 : '10%'}
-              style={{
-                display: isMobile && activeTab === 'editor' ? 'none' : 'flex',
-                flexDirection: 'column',
-              }}
-            >
-              {' '}
-              <SheetTable
-                nodes={nodes}
-                onUpdateValue={handleUpdateNodeValue}
-                onSelectNode={handleSelectNode}
-                onCalculate={handleCalculate}
-                onSweep={() => {
-                  const params = new URLSearchParams();
-                  if (Object.keys(calculationInputs).length > 0) {
-                    params.set('overrides', JSON.stringify(calculationInputs));
-                  }
-                  window.open(
-                    `/sheet/${sheetId}/sweep?${params.toString()}`,
-                    '_blank',
-                  );
-                }}
-                isCalculating={isCalculating}
-                activeTab={
-                  activeTab === 'editor' ? 'variables' : (activeTab as any)
-                }
-                onTabChange={setActiveTab as any}
-                hideTabs={isMobile}
-                lastResult={lastResult}
-              />
-            </Panel>
+
+            <SheetTablePanel
+              tablePanelRef={tablePanelRef}
+              isMobile={isMobile}
+              activeTab={activeTab}
+              setActiveTab={setActiveTab}
+              nodes={nodes}
+              handleUpdateNodeValue={handleUpdateNodeValue}
+              handleSelectNode={handleSelectNode}
+              handleCalculate={handleCalculate}
+              sheetId={sheetId}
+              calculationInputs={calculationInputs}
+              isCalculating={isCalculating}
+              lastResult={lastResult}
+            />
           </Group>
         </div>
-      </div>{' '}
-      <NodeInspector
-        node={editingNode}
-        isOpen={!!editingNode}
-        onClose={() => setEditingNode(null)}
-        onSave={handleNodeUpdate}
+      </div>
+
+      <SheetEditorModals
+        editingNode={editingNode}
+        setEditingNode={setEditingNode}
+        handleNodeUpdate={handleNodeUpdate}
+        isSheetPickerOpen={isSheetPickerOpen}
+        setIsSheetPickerOpen={setIsSheetPickerOpen}
+        handleImportSheet={handleImportSheet}
+        currentSheet={currentSheet}
+        isUsageModalOpen={isUsageModalOpen}
+        setIsUsageModalOpen={setIsUsageModalOpen}
+        handleImportInputs={handleImportInputs}
+        isVersionListOpen={isVersionListOpen}
+        setIsVersionListOpen={setIsVersionListOpen}
+        handleRestoreVersion={handleRestoreVersion}
+        handleSetDefault={handleSetDefault}
+        isDirty={isDirty}
+        isHistoryModalOpen={isHistoryModalOpen}
+        setIsHistoryModalOpen={setIsHistoryModalOpen}
+        nodes={nodes}
+        isTakeOverModalOpen={isTakeOverModalOpen}
+        setIsTakeOverModalOpen={setIsTakeOverModalOpen}
+        lockedByOther={lockedByOther}
+        takeOver={takeOver}
       />
-      <SheetPickerModal
-        isOpen={isSheetPickerOpen}
-        onClose={() => setIsSheetPickerOpen(false)}
-        onSelect={handleImportSheet}
-      />
-      {currentSheet && (
-        <SheetUsageModal
-          isOpen={isUsageModalOpen}
-          onClose={() => setIsUsageModalOpen(false)}
-          sheetId={currentSheet.id}
-          onImportInputs={handleImportInputs}
-        />
-      )}
-      {currentSheet && (
-        <VersionListModal
-          isOpen={isVersionListOpen}
-          onClose={() => setIsVersionListOpen(false)}
-          sheetId={currentSheet.id}
-          defaultVersionId={currentSheet.default_version_id}
-          onRestore={handleRestoreVersion}
-          onSetDefault={handleSetDefault}
-          isDirty={isDirty}
-        />
-      )}
-      {currentSheet && (
-        <HistoryModal
-          isOpen={isHistoryModalOpen}
-          onClose={() => setIsHistoryModalOpen(false)}
-          sheetId={currentSheet.id}
-          nodes={nodes}
-        />
-      )}
-      <Modal
-        isOpen={isTakeOverModalOpen}
-        onClose={() => setIsTakeOverModalOpen(false)}
-        title="Confirm Take Over"
-        footer={
-          <div
-            style={{ display: 'flex', justifyContent: 'flex-end', gap: '10px' }}
-          >
-            <button
-              type="button"
-              className="btn secondary"
-              onClick={() => setIsTakeOverModalOpen(false)}
-            >
-              Cancel
-            </button>
-            <button
-              type="button"
-              className="btn primary"
-              style={{ backgroundColor: '#d32f2f' }}
-              onClick={() => {
-                takeOver();
-                setIsTakeOverModalOpen(false);
-              }}
-            >
-              Confirm Take Over
-            </button>
-          </div>
-        }
-      >
-        <p>
-          Are you sure you want to forcibly take over the lock from{' '}
-          <strong>{lockedByOther}</strong>?
-        </p>
-        <p style={{ marginTop: '10px', color: '#666' }}>
-          This may cause the other user to lose their unsaved work. Only proceed
-          if you are sure they are no longer editing.
-        </p>
-      </Modal>
     </div>
   );
 };
