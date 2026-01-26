@@ -95,6 +95,17 @@ This will:
 3.  Execute all tests under `backend/tests/`.
 4.  Automatically shut down and clean up all containers upon completion.
 
+### End-to-End Tests
+
+E2E tests use Playwright to verify the full application stack.
+
+To run the E2E tests:
+```bash
+docker-compose -f docker-compose.e2e.yml up --build --abort-on-container-exit --exit-code-from e2e-runner
+```
+
+This will run the tests in a completely isolated Docker project, allowing you to run them even while the main development server is active.
+
 ## 🧪 Database Seeding
 
 On the first run, the database is automatically seeded with example engineering sheets:

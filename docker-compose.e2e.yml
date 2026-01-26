@@ -1,0 +1,56 @@
+name: parascope-e2e
+
+services:
+  frontend-e2e:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    environment:
+      - VITE_API_BASE_URL=http://backend-e2e:8000
+      - VITE_USERNAME_REGEX=^[a-zA-Z0-9_]+$
+    depends_on:
+      - backend-e2e
+    healthcheck:
+      test: ["CMD-SHELL", "wget --no-verbose --tries=1 --spider http://localhost:3000/ || exit 1"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  backend-e2e:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    environment:
+      - DATABASE_URL=postgresql+asyncpg://user:password@db-e2e:5432/parascope_e2e
+      - BACKEND_CORS_ORIGINS=*
+      - USERNAME_REGEX=^[a-zA-Z0-9_]+$
+    depends_on:
+      db-e2e:
+        condition: service_healthy
+
+  db-e2e:
+    image: postgres:15
+    environment:
+      - POSTGRES_USER=user
+      - POSTGRES_PASSWORD=password
+      - POSTGRES_DB=parascope_e2e
+    tmpfs:
+      - /var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U user -d parascope_e2e"]
+      interval: 2s
+      timeout: 5s
+      retries: 5
+
+  e2e-runner:
+    image: mcr.microsoft.com/playwright:v1.58.0-noble
+    volumes:
+      - ./e2e:/work
+    working_dir: /work
+    environment:
+      - BASE_URL=http://frontend-e2e:3000
+    depends_on:
+      frontend-e2e:
+        condition: service_healthy
+    command: >
+      bash -c "npm install && npx playwright test"

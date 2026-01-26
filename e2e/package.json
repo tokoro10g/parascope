@@ -1,0 +1,12 @@
+{
+  "name": "parascope-e2e",
+  "version": "1.0.0",
+  "description": "End-to-end tests for Parascope",
+  "main": "index.js",
+  "devDependencies": {
+    "@playwright/test": "^1.58.0"
+  },
+  "scripts": {
+    "test": "playwright test"
+  }
+}

@@ -60,5 +60,16 @@ Parascope uses an isolated testing architecture to ensure reliability without si
 -   **Fixtures**: Use the `client` fixture from `conftest.py`. it provides a fresh database session per request to prevent state leakage.
 -   **Error Handling**: 
     -   **Node-Level Errors** (Logic/Syntax): Use `NodeExecutionError`. These should return `200 OK` with detailed results so the frontend can highlight the failing node.
-    -   **Graph-Level Errors** (Cycles/Structure): Use `GraphStructureError`. These should bubble up to trigger a global error (toast).
--   **Mandate**: Every new API feature or significant logic change MUST include corresponding unit tests in the appropriate `test_*.py` file.
+    -   Graph-Level Errors (Cycles/Structure): Use `GraphStructureError`. These should bubble up to trigger a global error (toast).
+    -   Mandate: Every new API feature or significant logic change MUST include corresponding unit tests in the appropriate `test_*.py` file.
+    
+    ### E2E Tests (Playwright)
+    -   **Purpose**: Verify critical user journeys (Login, Sheet Creation, Calculation Flow).
+    -   **Execution**: 
+        ```bash
+        docker-compose -f docker-compose.e2e.yml up --build --abort-on-container-exit --exit-code-from e2e-runner
+        ```
+    -   **Isolation**: Runs in a dedicated `parascope-e2e` Docker project to avoid conflicts with development or unit test environments.
+    -   **Organization**: Located in `e2e/tests/`.
+    -   **Writing Tests**: Prefer using user-visible locators (text, placeholders) over brittle CSS classes.
+    
