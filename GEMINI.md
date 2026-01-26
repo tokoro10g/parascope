@@ -10,7 +10,7 @@ It allows users to define parameters and functions (Python code) to perform comp
 ## 2. Critical Documentation
 Start by reading these files to understand the requirements and roadmap:
 1.  **`SCENARIOS.md`**: Detailed user journeys explaining the intended workflow, especially for nesting and debugging.
-2.  **`TODO.md`**: The current implementation plan and progress tracker.
+2.  **`GEMINI.md`**: (This file) Contains the active roadmap and implementation plan.
 
 ## 3. Architecture & Stack
 The project is a **Monorepo**.
@@ -32,9 +32,8 @@ The project is a **Monorepo**.
 -   **Containerization**: Docker Compose (orchestrates Backend, Frontend, DB).
 
 ## 4. Development Workflow
--   Verify changes against `SPECIFICATIONS.tsv`. Update it if necessary.
 -   Use absolute path for shell commands
--   Check `TODO.md` for the next task
+-   Check the **Roadmap & TODOs** section in this file for the next task
 -   Ask the user for feedback before starting working on a task
 -   Make it clear if you are waiting for the user's feedback
 -   Make a commit once in a while. Use Conventional Commits.
@@ -52,7 +51,7 @@ Parascope uses an isolated testing architecture to ensure reliability without si
 ### Backend Tests
 -   **Execution**: Always run tests using the dedicated test compose file:
     ```bash
-    docker-compose -f docker-compose.test.yml up --build --abort-on-container-exit
+    docker compose -f docker-compose.test.yml up --build --abort-on-container-exit --exit-code-from backend-test
     ```
 -   **Isolation**: The test environment uses a separate `db-test` container with a `tmpfs` volume. Data is wiped after every run.
 -   **Organization**: Tests are located in `backend/tests/api/` and organized by endpoint (e.g., `test_calculate.py`, `test_sheets.py`).
@@ -62,13 +61,27 @@ Parascope uses an isolated testing architecture to ensure reliability without si
     -   Graph-Level Errors (Cycles/Structure): Use `GraphStructureError`. These should bubble up to trigger a global error (toast).
     -   Mandate: Every new API feature or significant logic change MUST include corresponding unit tests in the appropriate `test_*.py` file.
     
-    ### E2E Tests (Playwright)
-    -   **Purpose**: Verify critical user journeys (Login, Sheet Creation, Calculation Flow).
-    -   **Execution**: 
-        ```bash
-        docker-compose -f docker-compose.e2e.yml up --build --abort-on-container-exit --exit-code-from e2e-runner
-        ```
-    -   **Isolation**: Runs in a dedicated `parascope-e2e` Docker project to avoid conflicts with development or unit test environments.
-    -   **Organization**: Located in `e2e/tests/`.
-    -   **Writing Tests**: Prefer using user-visible locators (text, placeholders) over brittle CSS classes.
-    
+### E2E Tests (Playwright)
+-   **Purpose**: Verify critical user journeys (Login, Sheet Creation, Calculation Flow).
+-   **Execution**: 
+    ```bash
+    docker compose -f docker-compose.e2e.yml up --build --abort-on-container-exit --exit-code-from e2e-runner
+    ```
+-   **Isolation**: Runs in a dedicated `parascope-e2e` Docker project to avoid conflicts with development or unit test environments.
+-   **Organization**: Located in `e2e/tests/`. Use `e2e/tests/utils/graph-utils.ts` for Rete interactions.
+-   **Writing Tests**: Prefer using user-visible locators (text, placeholders) or `data-testid`.
+
+## 6. Roadmap & TODOs
+
+### Immediate Testing Priorities (E2E)
+- [ ] **Option Nodes**: Implement test for Scenario 8 (Verify dropdown interaction and calculation propagation).
+- [ ] **Safety & Limits**: Implement test for Scenario 9 (Verify RestrictedPython timeouts and infinite loop handling).
+- [ ] **Analysis Flow**: Implement test for Scenario 5 (Verify Parameter Sweeps and ECharts rendering).
+- [ ] **Utility Expansion**: Add `deleteNode` and `renamePort` helpers to `graph-utils.ts`.
+
+### Logic & Core Enhancements
+- [ ] **Graph Integrity**: Validate function dependencies before saving (prevent invalid port states).
+- [ ] **Notifications**: Implement owner-based change notifications (audit log alerts).
+- [ ] **Advanced Math**: Support numerical optimization (Scipy integrate) and overflow handling.
+- [ ] **IDE Features**: Add Python code completion in the Function Editor.
+- [ ] **Feedback Loop**: Implement a Console/Log viewer for the selected node's detailed execution output.
