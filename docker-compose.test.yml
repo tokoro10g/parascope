@@ -1,3 +1,5 @@
+name: parascope-test
+
 services:
   backend-test:
     build:

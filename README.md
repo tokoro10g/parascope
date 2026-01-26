@@ -80,6 +80,21 @@ Key variables:
 *   `FRONTEND_PORT`: Port for the frontend application (default: `3000`).
 *   `BACKEND_PORT`: Port for the backend API (default: `8000`).
 
+## 🧪 Testing
+
+Backend unit tests are containerized and run in an isolated environment using a separate database.
+
+To run the backend tests:
+```bash
+docker-compose -f docker-compose.test.yml up --build --abort-on-container-exit
+```
+
+This will:
+1.  Build a test-specific backend image.
+2.  Start a transient PostgreSQL instance (`db-test`) in memory.
+3.  Execute all tests under `backend/tests/`.
+4.  Automatically shut down and clean up all containers upon completion.
+
 ## 🧪 Database Seeding
 
 On the first run, the database is automatically seeded with example engineering sheets:

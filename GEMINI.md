@@ -46,3 +46,19 @@ The project is a **Monorepo**.
 -   Do not leave comments describing your detailed thought process in the code. Instead, ask the user if you are unsure about what to do.
 -   Prefer modularization over monolithic code.
 -   Frontend: Before making a commit, run `pnpm build` and `pnpm format` commands inside the `frontend` folder to ensure the code quality
+
+## 5. Testing Philosophy & Structure
+Parascope uses an isolated testing architecture to ensure reliability without side effects.
+
+### Backend Tests
+-   **Execution**: Always run tests using the dedicated test compose file:
+    ```bash
+    docker-compose -f docker-compose.test.yml up --build --abort-on-container-exit
+    ```
+-   **Isolation**: The test environment uses a separate `db-test` container with a `tmpfs` volume. Data is wiped after every run.
+-   **Organization**: Tests are located in `backend/tests/api/` and organized by endpoint (e.g., `test_calculate.py`, `test_sheets.py`).
+-   **Fixtures**: Use the `client` fixture from `conftest.py`. it provides a fresh database session per request to prevent state leakage.
+-   **Error Handling**: 
+    -   **Node-Level Errors** (Logic/Syntax): Use `NodeExecutionError`. These should return `200 OK` with detailed results so the frontend can highlight the failing node.
+    -   **Graph-Level Errors** (Cycles/Structure): Use `GraphStructureError`. These should bubble up to trigger a global error (toast).
+-   **Mandate**: Every new API feature or significant logic change MUST include corresponding unit tests in the appropriate `test_*.py` file.
