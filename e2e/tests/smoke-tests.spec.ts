@@ -366,4 +366,39 @@ test.describe('Parascope Smoke Tests', () => {
     const chart = popup.locator('.echarts-for-react canvas');
     await expect(chart).toBeVisible();
   });
+
+  test('URL Parameter Overrides (Scenario 6)', async ({ page }) => {
+    // 1. Create a sheet with an Input node and a calculation
+    await page.click('button:has-text("Create New Sheet")');
+    await zoomOut(page, 4);
+
+    await page.click('button:has-text("Add Node")');
+    await page.click('.add-menu-item:has-text("Input")');
+    await page.locator('#node-label').fill('shared_input');
+    await page.click('button:has-text("Save")');
+    await moveNode(page, 'shared_input', -150, 0);
+
+    await page.click('button:has-text("Add Node")');
+    await page.click('.add-menu-item:has-text("Output")');
+    await page.locator('#node-label').fill('shared_output');
+    await page.click('button:has-text("Save")');
+    await moveNode(page, 'shared_output', 150, 0);
+
+    await connectNodes(page, 'shared_input', 'value', 'shared_output', 'value');
+    
+    // Save to get a permanent URL
+    await page.click('button[title="Save Sheet"]');
+    await expect(page.locator('.unsaved-indicator-badge')).toBeHidden();
+    
+    const sheetUrl = page.url();
+
+    // 2. Navigate to the same sheet with a URL override
+    // e.g. /sheet/<uuid>?shared_input=123
+    await page.goto(`${sheetUrl}?shared_input=123`);
+    
+    // 3. Verify the input reflects the override and calculation propagates
+    // Check the table for the overridden value
+    const resultCell = page.locator('.sheet-table-cell-value:has-text("123")');
+    await expect(resultCell).toBeVisible({ timeout: 10000 });
+  });
 });
