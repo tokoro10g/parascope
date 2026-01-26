@@ -14,9 +14,9 @@ from ..models.sheet import (
     AuditLog,
     Connection,
     Folder,
-    Lock,
     Node,
     Sheet,
+    SheetLock,
     SheetVersion,
     UserReadState,
     make_aware,
@@ -279,7 +279,7 @@ async def update_sheet(
 
     # Lock Check and Session Update
     if user_id:
-        lock_query = select(Lock).where(Lock.sheet_id == sheet_id)
+        lock_query = select(SheetLock).where(SheetLock.sheet_id == sheet_id)
         lock_result = await db.execute(lock_query)
         lock = lock_result.scalar_one_or_none()
 

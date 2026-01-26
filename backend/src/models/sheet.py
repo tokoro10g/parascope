@@ -43,7 +43,7 @@ class Sheet(Base):
     folder: Mapped[Optional["Folder"]] = relationship(back_populates="sheets")
     nodes: Mapped[List["Node"]] = relationship(back_populates="sheet", cascade="all, delete-orphan")
     connections: Mapped[List["Connection"]] = relationship(back_populates="sheet", cascade="all, delete-orphan")
-    locks: Mapped[List["Lock"]] = relationship(back_populates="sheet", cascade="all, delete-orphan")
+    locks: Mapped[List["SheetLock"]] = relationship(back_populates="sheet", cascade="all, delete-orphan")
     audit_logs: Mapped[List["AuditLog"]] = relationship(back_populates="sheet", cascade="all, delete-orphan")
     read_states: Mapped[List["UserReadState"]] = relationship(back_populates="sheet", cascade="all, delete-orphan")
     versions: Mapped[List["SheetVersion"]] = relationship(back_populates="sheet", cascade="all, delete-orphan", foreign_keys="SheetVersion.sheet_id")
@@ -90,7 +90,7 @@ class Connection(Base):
     sheet: Mapped["Sheet"] = relationship(back_populates="connections")
 
 
-class Lock(Base):
+class SheetLock(Base):
     __tablename__ = "sheet_locks"
 
     sheet_id: Mapped[uuid.UUID] = mapped_column(ForeignKey("sheets.id", ondelete="CASCADE"), primary_key=True)
