@@ -37,9 +37,12 @@ try:
     overrides = {repr(input_overrides)}
     sheet_instance = {root_class_name}(input_overrides=overrides)
     sheet_instance.run()
+except NodeExecutionError:
+    # Logic error inside a node, already registered in sheet_instance.results
+    pass
 except Exception as e:
-    import traceback
-    traceback.print_exc()
+    # Structural error (Cycle, etc) or unhandled system error
+    raise
 finally:
     if 'sheet_instance' in locals():
         results = sheet_instance.results

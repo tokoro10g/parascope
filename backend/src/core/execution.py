@@ -23,6 +23,8 @@ from .runtime import (
     SheetBase,
     NodeError,
     ParascopeError,
+    NodeExecutionError,
+    GraphStructureError,
     ValueValidationError,
     node,
     sheet,
@@ -175,6 +177,8 @@ def _persistent_worker_loop(task_queue, result_queue, runtime_classes):
                 "SheetBase": SheetBase,
                 "NodeError": NodeError,
                 "ParascopeError": ParascopeError,
+                "NodeExecutionError": NodeExecutionError,
+                "GraphStructureError": GraphStructureError,
                 "ValueValidationError": ValueValidationError,
                 "node": node,
                 "sheet": sheet,
@@ -194,49 +198,37 @@ def _persistent_worker_loop(task_queue, result_queue, runtime_classes):
             error = None
             results = {}
 
-            try:
-                # Compile and execute the script using RestrictedPython
-                # This transpiles the code to add runtime checks (guards)
-                # 'exec' mode allows top-level statements
-                code_obj = compile_restricted(script, filename, "exec")
-                exec(code_obj, global_vars)
-                results = global_vars.get("results", {})
-
-                # If the script defines a 'sheet_instance' instance (Root), extract its recursive state
+            def extract_full_state(global_vars):
+                """Helper to extract recursive state from sheet_instance if it exists"""
                 root_sheet = global_vars.get("sheet_instance")
                 if root_sheet and isinstance(root_sheet, SheetBase):
-                    # Helper to traverse
-                    def extract_nodes_state(instance: SheetBase):
+                    def traverse(instance: SheetBase):
                         state = {}
-                        # Instance results (node_id -> {value, valid, error})
                         for nid, res_obj in instance.results.items():
                             state[nid] = res_obj.copy()
-                            # If this node was a nested sheet, inject its internal state recursively
                             if nid in instance.node_instances:
                                 sub_instance = instance.node_instances[nid]
-                                state[nid]['nodes'] = extract_nodes_state(sub_instance)
+                                state[nid]['nodes'] = traverse(sub_instance)
                         return state
+                    return traverse(root_sheet)
+                return global_vars.get("results", {})
 
-                    full_state = extract_nodes_state(root_sheet)
-                    results = full_state
-
+            try:
+                # Compile and execute the script using RestrictedPython
+                code_obj = compile_restricted(script, filename, "exec")
+                exec(code_obj, global_vars)
                 success = True
             except Exception as e:
-                # If it's a SyntaxError that we've already registered at the node level,
-                # we don't want to show it as a global toast.
+                # If it's a SyntaxError from our generator, don't show global toast
                 if isinstance(e, SyntaxError) and "\n" in str(e):
                     error = None
+                    success = True # Consider it a "graceful" failure if it was handled at node level
                 else:
                     error = traceback.format_exc()
-            finally:
-                sys.stdout = old_stdout
+                    success = False
 
-            result_queue.put({
-                "success": success,
-                "results": results,
-                "error": error,
-                "stdout": redirected_output.getvalue()
-            })
+            results = extract_full_state(global_vars)
+            result_queue.put({"success": success, "error": error, "results": results})
 
         except Exception as e:
             # Critical failure in the loop (e.g. queue error)

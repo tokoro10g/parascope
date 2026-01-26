@@ -7,6 +7,14 @@ class ParascopeError(Exception):
     """Base error for Parascope execution"""
     pass
 
+class GraphStructureError(ParascopeError):
+    """Raised for structural issues like cycles or missing nodes"""
+    pass
+
+class NodeExecutionError(ParascopeError):
+    """Raised when a node execution fails but the error is registered in results"""
+    pass
+
 class NodeError(ParascopeError):
     def __init__(self, node_id: str, message: str):
         self.node_id = node_id
@@ -320,7 +328,7 @@ class SheetBase:
             execution_order = list(nx.topological_sort(G))
         except nx.NetworkXUnfeasible:
             # Cycle detected
-            raise ParascopeError("Cycle detected in sheet graph")
+            raise GraphStructureError("Cycle detected in sheet graph")
             
         # 4. Execute
         for name in execution_order:
@@ -448,7 +456,7 @@ class SheetBase:
 
                 self.register_error(node_id, error_msg)
                 # For unexpected errors, stop execution
-                raise ParascopeError(error_msg) from e
+                raise NodeExecutionError(error_msg) from e
         
         # 5. Collect Public Outputs
         return self.get_public_outputs()
