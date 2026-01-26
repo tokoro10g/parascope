@@ -283,4 +283,35 @@ test.describe('Parascope Smoke Tests', () => {
     // Result should update
     await expect(table.locator('text=2700')).toBeVisible();
   });
+
+  test('Safety and Limits - Timeouts (Scenario 9)', async ({ page }) => {
+    await page.click('button:has-text("Create New Sheet")');
+    await zoomOut(page, 4);
+
+    // 1. Create Infinite Loop Function
+    await page.click('button:has-text("Add Node")');
+    await page.click('.add-menu-item:has-text("Function")');
+    await page.locator('#node-label').fill('InfiniteLoop');
+    
+    // Cleanup defaults
+    await page.locator('.io-column:has-text("Inputs") li').filter({ has: page.locator('input').filter({ hasValue: 'x' }) }).locator('button.danger').click();
+    await page.locator('.io-column:has-text("Outputs") li').filter({ has: page.locator('input').filter({ hasValue: 'result' }) }).locator('button.danger').click();
+
+    await page.click('button:has-text("+ Add Output")');
+    await page.locator('.io-column:has-text("Outputs") li input').last().fill('out_val');
+    
+    // This will cause a timeout
+    await page.locator('#node-code').fill('while True: pass\nout_val = 1');
+    await page.click('button:has-text("Save")');
+    await moveNode(page, 'InfiniteLoop', 0, 0);
+
+    // 2. Run and Wait for Timeout (Backend limit is 5s, test timeout is 30s)
+    await page.click('button:has-text("Run")');
+    
+    // Verify global toast error appears
+    const toast = page.getByRole('status');
+    await expect(toast).toBeVisible({ timeout: 20000 });
+    await expect(toast).toContainText('Execution Error');
+    await expect(toast).toContainText('timed out');
+  });
 });
