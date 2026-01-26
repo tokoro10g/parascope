@@ -69,11 +69,6 @@ class FolderUpdate(BaseModel):
     parent_id: Optional[UUID] = None
 
 
-class FolderUpdate(BaseModel):
-    name: Optional[str] = None
-    parent_id: Optional[UUID] = None
-
-
 class SheetBase(BaseModel):
     name: str
     owner_name: Optional[str] = None

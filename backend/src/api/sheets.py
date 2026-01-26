@@ -10,7 +10,18 @@ from sqlalchemy.orm import selectinload
 from ..core.auth import get_current_user
 from ..core.config import settings
 from ..core.database import get_db
-from ..models.sheet import AuditLog, Connection, Folder, Lock, Node, Sheet, SheetVersion, UserReadState, utcnow, make_aware
+from ..models.sheet import (
+    AuditLog,
+    Connection,
+    Folder,
+    Lock,
+    Node,
+    Sheet,
+    SheetVersion,
+    UserReadState,
+    make_aware,
+    utcnow,
+)
 from ..schemas.sheet import (
     AuditLogRead,
     FolderCreate,
@@ -22,7 +33,6 @@ from ..schemas.sheet import (
     SheetUpdate,
     SheetVersionCreate,
     SheetVersionRead,
-    UserReadStateRead,
 )
 
 router = APIRouter(prefix="/sheets", tags=["sheets"])

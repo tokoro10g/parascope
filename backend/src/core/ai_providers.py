@@ -15,7 +15,7 @@ class AIProvider(ABC):
         system_instruction: str,
         existing_code: str = "",
         existing_description: str = "",
-        urls: List[str] = [],
+        urls: List[str] = None,
         image: Optional[str] = None
     ) -> dict:
         pass
@@ -48,11 +48,13 @@ class GeminiProvider(AIProvider):
         system_instruction: str,
         existing_code: str = "",
         existing_description: str = "",
-        urls: List[str] = [],
+        urls: List[str] = None,
         image: Optional[str] = None,
     ) -> dict:
         from google import genai
 
+        if urls is None:
+            urls = []
         if not self.client:
             raise Exception("Gemini API key not configured")
 
@@ -116,9 +118,11 @@ class OpenAIProvider(AIProvider):
         system_instruction: str,
         existing_code: str = "",
         existing_description: str = "",
-        urls: List[str] = [],
+        urls: List[str] = None,
         image: Optional[str] = None,
     ) -> dict:
+        if urls is None:
+            urls = []
         if not self.client:
             raise Exception("OpenAI API key not configured")
 
@@ -177,9 +181,11 @@ class BedrockProvider(AIProvider):
         system_instruction: str,
         existing_code: str = "",
         existing_description: str = "",
-        urls: List[str] = [],
+        urls: List[str] = None,
         image: Optional[str] = None,
     ) -> dict:
+        if urls is None:
+            urls = []
         if not self.client:
             raise Exception("AWS/Bedrock not configured")
 

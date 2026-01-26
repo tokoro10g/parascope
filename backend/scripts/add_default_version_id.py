@@ -6,7 +6,9 @@ import sys
 sys.path.append(os.path.join(os.path.dirname(__file__), ".."))
 
 from sqlalchemy import text
+
 from src.core.database import engine
+
 
 async def migrate():
     async with engine.begin() as conn:

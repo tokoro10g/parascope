@@ -1,18 +1,17 @@
-import numpy as np
-import itertools
+from typing import Any, Dict, List
 from uuid import UUID
-from typing import List, Dict, Any
 
+import numpy as np
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
 
 from ..core.database import get_db
-from ..core.generator import CodeGenerator
 from ..core.execution import execute_full_script
+from ..core.generator import CodeGenerator
 from ..models.sheet import Sheet
-from ..schemas.sweep import SweepRequest, SweepResponse, SweepHeader
+from ..schemas.sweep import SweepHeader, SweepRequest, SweepResponse
 
 
 def serialize_result(val: Any) -> Any:
@@ -41,8 +40,8 @@ def generate_values(start: str | None, end: str | None, step: str | None, manual
         start_val = float(start)
         end_val = float(end)
         increment_val = float(step)
-    except ValueError:
-        raise HTTPException(status_code=400, detail="Start, End, and Increment values must be numeric strings.")
+    except ValueError as err:
+        raise HTTPException(status_code=400, detail="Start, End, and Increment values must be numeric strings.") from err
 
     if increment_val == 0:
         raise HTTPException(status_code=400, detail="Increment cannot be zero.")
@@ -95,7 +94,10 @@ async def sweep_sheet(
     
     if body.secondary_input_node_id:
         if str(body.secondary_input_node_id) not in node_map:
-             raise HTTPException(status_code=400, detail=f"Secondary input node {body.secondary_input_node_id} not found.")
+             raise HTTPException(
+                 status_code=400,
+                 detail=f"Secondary input node {body.secondary_input_node_id} not found."
+             )
         if str(body.secondary_input_node_id) == str(body.input_node_id):
              raise HTTPException(status_code=400, detail="Primary and Secondary inputs cannot be the same.")
 
@@ -140,7 +142,10 @@ async def sweep_sheet(
             })
 
     if len(scenarios) > 2000: # Allow slightly more for 2D
-        raise HTTPException(status_code=400, detail=f"Sweep generates too many steps ({len(scenarios)}). Limit is 2000.")
+        raise HTTPException(
+            status_code=400,
+            detail=f"Sweep generates too many steps ({len(scenarios)}). Limit is 2000."
+        )
 
     # 3. Prepare Headers
     headers = []

@@ -1,11 +1,10 @@
-import base64
-import json
 import logging
 import os
 
 from fastapi import APIRouter, HTTPException
 from pydantic import BaseModel
-from ..core.ai_providers import get_provider, get_available_providers
+
+from ..core.ai_providers import get_available_providers, get_provider
 
 router = APIRouter()
 

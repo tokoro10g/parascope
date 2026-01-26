@@ -1,6 +1,5 @@
-import traceback
 import uuid
-from typing import Any, Dict, Tuple
+from typing import Any, Dict
 from uuid import UUID
 
 from fastapi import APIRouter, Depends, HTTPException
@@ -11,9 +10,8 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
 
 from ..core.database import get_db
-from ..core.exceptions import GraphExecutionError
-from ..core.generator import CodeGenerator
 from ..core.execution import execute_full_script
+from ..core.generator import CodeGenerator
 from ..models.sheet import Connection, Node, Sheet
 from ..schemas.sheet import SheetCreate
 
@@ -66,21 +64,26 @@ async def _enrich_results(sheet: Sheet, raw_results: Dict[str, Any], db: AsyncSe
         
     for conn in sheet.connections:
         t_id = str(conn.target_id)
-        if t_id not in edge_map: edge_map[t_id] = {}
+        if t_id not in edge_map:
+            edge_map[t_id] = {}
         edge_map[t_id][conn.target_port] = (str(conn.source_id), conn.source_port)
 
-    # Pre-fetch nested sheets if any to avoid N+1 queries in loop
-    # (Although asyncpg is fast, batching handles high depth better)
+    # 3. Identify all nested sheets needed
     nested_sheet_ids = []
     for node in sheet.nodes:
         if node.type == 'sheet':
             sid = node.data.get('sheetId')
-            if sid: nested_sheet_ids.append(sid)
+            if sid:
+                nested_sheet_ids.append(sid)
             
     nested_sheets_map = {}
     if nested_sheet_ids:
         # We need to fetch full definitions
-        stmt = select(Sheet).where(Sheet.id.in_(nested_sheet_ids)).options(selectinload(Sheet.nodes), selectinload(Sheet.connections))
+        stmt = (
+            select(Sheet)
+            .where(Sheet.id.in_(nested_sheet_ids))
+            .options(selectinload(Sheet.nodes), selectinload(Sheet.connections))
+        )
         res = await db.execute(stmt)
         for s in res.scalars().all():
             nested_sheets_map[str(s.id)] = s

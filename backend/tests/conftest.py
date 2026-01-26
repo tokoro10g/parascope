@@ -12,7 +12,6 @@ sys.path.append(os.path.join(os.path.dirname(__file__), ".."))
 
 from src.core.database import Base, get_db
 from src.main import app
-from src.models.sheet import *  # Ensure all models are loaded for Base.metadata
 
 # Use the DATABASE_URL from environment (provided by docker-compose.test.yml)
 DATABASE_URL = os.getenv("DATABASE_URL")

@@ -7,11 +7,11 @@ import sys
 import threading
 import traceback
 import uuid
-from typing import Any, Dict, Optional, List
+from typing import Any, Dict, Optional
 
 from pydantic import BaseModel
-from RestrictedPython import compile_restricted, safe_globals, safe_builtins, utility_builtins
-from RestrictedPython.Eval import default_guarded_getiter, default_guarded_getitem
+from RestrictedPython import compile_restricted, safe_builtins, safe_globals, utility_builtins
+from RestrictedPython.Eval import default_guarded_getitem, default_guarded_getiter
 from RestrictedPython.Guards import (
     guarded_iter_unpack_sequence,
     guarded_unpack_sequence,
@@ -20,20 +20,20 @@ from RestrictedPython.Guards import (
 
 from .config import settings
 from .runtime import (
-    SheetBase,
-    NodeError,
-    ParascopeError,
-    NodeExecutionError,
     GraphStructureError,
+    NodeError,
+    NodeExecutionError,
+    ParascopeError,
+    SheetBase,
     ValueValidationError,
-    node,
-    sheet,
-    function_node,
     constant_node,
+    function_node,
     input_node,
-    output_node,
-    sheet_node,
     lut_node,
+    node,
+    output_node,
+    sheet,
+    sheet_node,
 )
 
 
@@ -56,8 +56,9 @@ def _persistent_worker_loop(task_queue, result_queue, runtime_classes):
 
     # Pre-import common scientific libraries
     import math
-    import numpy
+
     import networkx
+    import numpy
     
     # Setup RestrictedPython environment
     
@@ -120,13 +121,12 @@ def _persistent_worker_loop(task_queue, result_queue, runtime_classes):
             )
 
             # Capture stdout
-            old_stdout = sys.stdout
             redirected_output = io.StringIO()
             sys.stdout = redirected_output
 
             # Helper for print
-            def _print_(*args):
-                print(*args, file=redirected_output)
+            def _print_(*args, out=redirected_output):
+                return print(*args, file=out)
 
             def _write_(obj):
                 return obj
@@ -234,7 +234,7 @@ def _persistent_worker_loop(task_queue, result_queue, runtime_classes):
             # Critical failure in the loop (e.g. queue error)
             try:
                 result_queue.put({"success": False, "error": f"Worker internal error: {e}"})
-            except:
+            except Exception:
                 pass
 
 

@@ -1,13 +1,15 @@
-import textwrap
-import uuid
 import ast
 import re
-import networkx as nx
-from typing import Any, Dict, List, Optional, Set, Tuple
+import textwrap
+import uuid
+from typing import Any, Dict, List, Optional, Set
+
 from sqlalchemy import select
-from sqlalchemy.orm import selectinload
 from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy.orm import selectinload
+
 from ..models.sheet import Connection, Node, Sheet, SheetVersion
+
 
 class CodeGenerator:
     def __init__(self, session: AsyncSession):
@@ -313,7 +315,8 @@ except Exception as e:
             
             for conn in target_conns:
                 source_nid = str(conn.source_id)
-                if source_nid not in node_method_map: continue
+                if source_nid not in node_method_map:
+                    continue
                 
                 source_method = node_method_map[source_nid]
                 source_port = conn.source_port or 'output'
@@ -356,7 +359,13 @@ except Exception as e:
 
         return "\n".join(result_code)
 
-    def _generate_node_method(self, node: Node, method_name: str, inputs_config: Dict[str, str], arg_mapping: Dict[str, str] = None) -> str:
+    def _generate_node_method(
+        self,
+        node: Node,
+        method_name: str,
+        inputs_config: Dict[str, str],
+        arg_mapping: Dict[str, str] = None
+    ) -> str:
         nid = str(node.id)
         label_safe = node.label.replace("'", "\\'")
         arg_mapping = arg_mapping or {}
@@ -398,7 +407,8 @@ def {method_name}(self, {args_str}):
                 for out in node.outputs:
                     if isinstance(out, dict):
                         key = out.get("key")
-                        if key: ret_dict_entries.append(f"'{key}': {key}")
+                        if key:
+                            ret_dict_entries.append(f"'{key}': {key}")
             
             ret_stmt = f"    return {{{', '.join(ret_dict_entries)}}}" if ret_dict_entries else "    return {}"
 
@@ -414,7 +424,8 @@ def {method_name}(self, {args_str}):
             # Nested Sheet
             nested_id = node.data.get("sheetId")
             version_id = node.data.get("versionId")
-            if not nested_id: return "pass"
+            if not nested_id:
+                return "pass"
             
             processed_id = f"{nested_id}:{version_id}" if version_id else str(nested_id)
             nested_class = self._get_class_name(processed_id)
@@ -447,8 +458,10 @@ def {method_name}(self, {args_str}):
             else:
                 d_min = node.data.get("min")
                 d_max = node.data.get("max")
-                if d_min is not None: params.append(f"min={d_min}")
-                if d_max is not None: params.append(f"max={d_max}")
+                if d_min is not None:
+                    params.append(f"min={d_min}")
+                if d_max is not None:
+                    params.append(f"max={d_max}")
                 
             params.append(f"value={repr(val)}")
             params_str = ", ".join(params)
@@ -469,8 +482,10 @@ def {method_name}(self): pass
             else:
                 d_min = node.data.get("min")
                 d_max = node.data.get("max")
-                if d_min is not None: params.append(f"min={d_min}")
-                if d_max is not None: params.append(f"max={d_max}")
+                if d_min is not None:
+                    params.append(f"min={d_min}")
+                if d_max is not None:
+                    params.append(f"max={d_max}")
             
             params.append(f"value={repr(default_val)}")
             params_str = ", ".join(params)
@@ -489,16 +504,20 @@ def {method_name}(self): pass
             
             if arg_mapping:
                 for arg, port in arg_mapping.items():
-                    if port == 'min': dynamic_min_arg = arg
-                    if port == 'max': dynamic_max_arg = arg
+                    if port == 'min':
+                        dynamic_min_arg = arg
+                    if port == 'max':
+                        dynamic_max_arg = arg
             
             if not dynamic_min_arg:
                 d_min = node.data.get("min")
-                if d_min is not None and d_min != "": params.append(f"min={d_min}")
+                if d_min is not None and d_min != "":
+                    params.append(f"min={d_min}")
             
             if not dynamic_max_arg:
                 d_max = node.data.get("max")
-                if d_max is not None and d_max != "": params.append(f"max={d_max}")
+                if d_max is not None and d_max != "":
+                    params.append(f"max={d_max}")
             
             if params:
                 params_str = ", " + ", ".join(params)

@@ -1,7 +1,8 @@
-import inspect
 import traceback
-import networkx as nx
 from typing import Any, Dict, List, Optional, Union
+
+import networkx as nx
+
 
 class ParascopeError(Exception):
     """Base error for Parascope execution"""
@@ -57,7 +58,15 @@ def node(node_id: str, inputs: Dict[str, str] = None, type: str = "function", la
 def function_node(node_id: str, inputs: Dict[str, str] = None, label: str = None, **kwargs):
     return node(node_id, inputs=inputs, type="function", label=label, **kwargs)
 
-def constant_node(node_id: str, label: str = None, value: Any = None, min: float = None, max: float = None, options: List[str] = None, **kwargs):
+def constant_node(
+    node_id: str,
+    label: str = None,
+    value: Any = None,
+    min: float = None,
+    max: float = None,
+    options: List[str] = None,
+    **kwargs
+):
     """Decorator for Constant Nodes with built-in validation logic"""
     def decorator(func):
         # Configuration
@@ -86,7 +95,15 @@ def constant_node(node_id: str, label: str = None, value: Any = None, min: float
         return wrapper
     return decorator
 
-def input_node(node_id: str, label: str = None, value: Any = None, min: float = None, max: float = None, options: List[str] = None, **kwargs):
+def input_node(
+    node_id: str,
+    label: str = None,
+    value: Any = None,
+    min: float = None,
+    max: float = None,
+    options: List[str] = None,
+    **kwargs
+):
     """Decorator for Input Nodes with built-in validation logic"""
     def decorator(func):
         func._node_config = {
@@ -114,7 +131,14 @@ def input_node(node_id: str, label: str = None, value: Any = None, min: float = 
         return wrapper
     return decorator
 
-def output_node(node_id: str, inputs: Dict[str, str] = None, label: str = None, min: float = None, max: float = None, **kwargs):
+def output_node(
+    node_id: str,
+    inputs: Dict[str, str] = None,
+    label: str = None,
+    min: float = None,
+    max: float = None,
+    **kwargs
+):
     """Decorator for Output Nodes - Pass through logic with validation"""
     def decorator(func):
         func._node_config = {
@@ -131,14 +155,18 @@ def output_node(node_id: str, inputs: Dict[str, str] = None, label: str = None, 
             actual_max = kwargs.get('max', max)
             
             # Convert to number if necessary (they might be strings from inputs)
-            if 'min' in kwargs: actual_min = self.parse_number(actual_min)
-            if 'max' in kwargs: actual_max = self.parse_number(actual_max)
+            if 'min' in kwargs:
+                actual_min = self.parse_number(actual_min)
+            if 'max' in kwargs:
+                actual_max = self.parse_number(actual_max)
             
             # Store metadata for retrieval (always do this before validation)
             if hasattr(self, 'node_metadata'):
                 meta = {}
-                if actual_min is not None: meta['min'] = actual_min
-                if actual_max is not None: meta['max'] = actual_max
+                if actual_min is not None:
+                    meta['min'] = actual_min
+                if actual_max is not None:
+                    meta['max'] = actual_max
                 if meta:
                     self.node_metadata[node_id] = meta
 
@@ -315,20 +343,21 @@ class SheetBase:
         
         for name, method in methods.items():
             inputs = method._node_config.get('inputs', {})
-            for arg_name, src_ref in inputs.items():
-                if not src_ref: continue
+            for _arg_name, src_ref in inputs.items():
+                if not src_ref:
+                    continue
                 # Parse "MethodName:Port" or "MethodName"
                 src_method = src_ref.split(':')[0] if ':' in src_ref else src_ref
                 
                 if src_method in methods:
                     G.add_edge(src_method, name)
         
-        # 3. Topological Sort
+        # 3. Sort
         try:
             execution_order = list(nx.topological_sort(G))
-        except nx.NetworkXUnfeasible:
+        except nx.NetworkXUnfeasible as err:
             # Cycle detected
-            raise GraphStructureError("Cycle detected in sheet graph")
+            raise GraphStructureError("Cycle detected in sheet graph") from err
             
         # 4. Execute
         for name in execution_order:
