@@ -221,7 +221,7 @@ class BedrockProvider(AIProvider):
 
         body = json.dumps(
             {
-                "anthropic_version": "bedrock-2023-05-31",
+                "anthropic_version": settings.ANTHROPIC_VERSION,
                 "max_tokens": 4096,
                 "system": system_instruction,
                 "messages": [{"role": "user", "content": content}],

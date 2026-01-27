@@ -32,6 +32,7 @@ class Settings(BaseSettings):
     AWS_CONTAINER_CREDENTIALS_RELATIVE_URI: Optional[str] = None
     AWS_REGION: str = "us-east-1"
     BEDROCK_MODEL_ID: str = "anthropic.claude-3-5-haiku-20241022-v1:0"
+    ANTHROPIC_VERSION: str = "bedrock-2023-05-31"
 
     model_config = SettingsConfigDict(env_file=".env", extra="ignore")
 
