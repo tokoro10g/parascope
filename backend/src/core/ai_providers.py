@@ -177,12 +177,12 @@ class BedrockProvider(AIProvider):
 
             self.region = settings.AWS_REGION
             self.model_id = settings.BEDROCK_MODEL_ID
-            
+
             client_kwargs = {"region_name": self.region}
             if settings.AWS_ACCESS_KEY_ID and settings.AWS_SECRET_ACCESS_KEY:
                 client_kwargs["aws_access_key_id"] = settings.AWS_ACCESS_KEY_ID
                 client_kwargs["aws_secret_access_key"] = settings.AWS_SECRET_ACCESS_KEY
-            
+
             self.client = boto3.client("bedrock-runtime", **client_kwargs)
         except (ImportError, Exception):
             self.client = None

@@ -1,4 +1,5 @@
 from typing import Optional
+
 from pydantic import field_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
@@ -14,7 +15,7 @@ class Settings(BaseSettings):
     WORKER_COUNT: int = 5
     BACKEND_CORS_ORIGINS: str = "http://localhost:5173,http://localhost:3000"
     USERNAME_REGEX: Optional[str] = None
-    
+
     # Execution Environment
     EXTRA_ALLOWED_MODULES: set[str] = {"scipy"}
     EXTRA_PRELOAD_MODULES: set[str] = set()

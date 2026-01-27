@@ -41,7 +41,7 @@ async def get_genai_config():
 async def generate_function(request: GenerateFunctionRequest):
     try:
         provider = get_provider(request.provider)
-        
+
         system_instruction = """
         You are an expert Python engineer helping a user write a function for an engineering calculation tool.
         The user will provide a prompt describing what they want the function to do.

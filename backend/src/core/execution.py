@@ -9,15 +9,6 @@ import traceback
 import uuid
 from typing import Any, Dict, Optional
 
-from pydantic import BaseModel
-from RestrictedPython import compile_restricted, safe_builtins, safe_globals, utility_builtins
-from RestrictedPython.Eval import default_guarded_getitem, default_guarded_getiter
-from RestrictedPython.Guards import (
-    guarded_iter_unpack_sequence,
-    guarded_unpack_sequence,
-    safer_getattr,
-)
-
 from parascope_runtime import (
     GraphStructureError,
     NodeError,
@@ -34,9 +25,16 @@ from parascope_runtime import (
     sheet,
     sheet_node,
 )
+from pydantic import BaseModel
+from RestrictedPython import compile_restricted, safe_builtins, safe_globals, utility_builtins
+from RestrictedPython.Eval import default_guarded_getitem, default_guarded_getiter
+from RestrictedPython.Guards import (
+    guarded_iter_unpack_sequence,
+    guarded_unpack_sequence,
+    safer_getattr,
+)
 
 from .config import settings
-
 
 SYSTEM_ALLOWED_MODULES = {
     # Runtime Requirements & Stdlib Utilities

@@ -1,5 +1,4 @@
 import logging
-import os
 import traceback
 from contextlib import asynccontextmanager
 from pathlib import Path
