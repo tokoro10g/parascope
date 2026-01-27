@@ -17,25 +17,32 @@
 
 ## 🚀 Features
 
-*   **Visual Graph Editor**: Intuitive node-based interface built with [Rete.js](https://retejs.org/).
-*   **Python-Powered Calculations**: Backend execution engine runs Python code for function nodes, supporting libraries like `math`.
-*   **Nested Sheets**: Create reusable calculation modules (sheets) and import them into other sheets as single nodes.
-*   **Advanced Trade Studies**: Perform parameter sweeps and visualize results with Line, Bar, Scatter, and Timeline charts.
-*   **AI Assistance**: Generate function logic from natural language using Gemini AI.
+*   **Visual Graph Editor**: Intuitive node-based interface built with [Rete.js](https://retejs.org/) for defining complex engineering logic.
+*   **Python-Powered Calculations**: Secure backend execution engine runs Python code with support for `numpy`, `scipy`, and `networkx`.
+*   **Nested Sheets**: Create reusable calculation modules (sheets) and import them into other sheets as single nodes, enabling modular system design.
+*   **Advanced Trade Studies**: Perform parameter sweeps and visualize results with interactive Line, Bar, Scatter, and Timeline charts.
+*   **AI Assistance**: Generate function logic from natural language using Google Gemini, OpenAI, or AWS Bedrock.
+*   **Offline Execution**: Export sheets as standalone Python scripts that can be run offline using the `parascope-runtime` package.
+*   **Secure Runtime**: Sandboxed execution environment using `RestrictedPython` with configurable module allow-lists.
+*   **High Performance**: Optimized worker pool with module preloading and non-blocking architecture for responsive UI interactions.
 *   **Real-time Evaluation**: Instant feedback on calculation results as you modify the graph.
 *   **Engineering Examples**: Comes pre-seeded with examples like the Tsiolkovsky Rocket Equation, Aerodynamic Drag, and SSTO Feasibility checks.
-*   **Modern Stack**: Built with React, FastAPI, and PostgreSQL.
 
 ## 🛠️ Tech Stack
 
 ### Frontend
 *   **Framework**: React + TypeScript + Vite
-*   **Graph Library**: Rete.js (Classic Preset)
+*   **Graph Library**: Rete.js (Classic Preset) + elkjs (Auto-layout)
+*   **Visualization**: Apache ECharts (2D/3D Charts)
 *   **Styling**: CSS Modules, Lucide React (Icons)
+*   **Math Rendering**: KaTeX
 *   **Package Manager**: pnpm
 
 ### Backend
 *   **Framework**: FastAPI (Python 3.12)
+*   **Execution**: RestrictedPython (Secure Sandbox)
+*   **Scientific Stack**: NumPy, SciPy, NetworkX
+*   **AI Integration**: Google Gemini, OpenAI, AWS Bedrock
 *   **Database**: PostgreSQL
 *   **ORM**: SQLAlchemy (Async)
 *   **Runtime**: Docker / Docker Compose
