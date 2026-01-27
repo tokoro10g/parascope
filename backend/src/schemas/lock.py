@@ -2,7 +2,7 @@ from datetime import datetime
 from typing import Optional
 from uuid import UUID
 
-from pydantic import BaseModel
+from pydantic import BaseModel, ConfigDict
 
 
 class LockBase(BaseModel):
@@ -17,8 +17,7 @@ class LockRead(LockBase):
     last_save_at: Optional[datetime] = None
     tab_id: Optional[str] = None
 
-    class Config:
-        from_attributes = True
+    model_config = ConfigDict(from_attributes=True)
 
 
 class LockAcquire(BaseModel):
@@ -33,5 +32,4 @@ class SessionRead(LockBase):
     last_save_at: Optional[datetime] = None
     duration_since_save: Optional[float] = None  # Seconds
 
-    class Config:
-        from_attributes = True
+    model_config = ConfigDict(from_attributes=True)
