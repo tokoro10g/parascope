@@ -81,3 +81,13 @@ export async function zoomOut(page: Page, clicks = 3) {
     await page.waitForTimeout(100);
   }
 }
+
+/**
+ * Pause for a moment to make the interaction look more human-like in videos.
+ * Only active if VIDEO environment variable is set to 'on'.
+ */
+export async function humanDelay(page: Page, ms = 700) {
+  if (process.env.VIDEO === 'on') {
+    await page.waitForTimeout(ms);
+  }
+}
