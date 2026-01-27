@@ -61,7 +61,7 @@ class GeminiProvider(AIProvider):
 
             self.api_key = os.getenv("GEMINI_API_KEY")
             self.client = genai.Client(api_key=self.api_key) if self.api_key else None
-            self.model = os.getenv("GEMINI_MODEL", "gemini-2.0-flash-exp")
+            self.model = os.getenv("GEMINI_MODEL", "gemini-3-flash-preview")
         except ImportError:
             self.client = None
             self.api_key = None
