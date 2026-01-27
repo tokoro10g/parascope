@@ -1,0 +1,39 @@
+services:
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile.prod
+    ports:
+      - "${FRONTEND_PORT:-80}:80"
+    depends_on:
+      - backend
+
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile.prod
+    ports:
+      - "${BACKEND_PORT:-8000}:8000"
+    volumes:
+      - parascope_uploads:/app/uploads
+    environment:
+      - DATABASE_URL=postgresql+asyncpg://user:password@db:5432/parascope
+      # Allow requests from the frontend (served on same domain via Nginx proxy, but potentially needed if direct access or complex setup)
+      - BACKEND_CORS_ORIGINS=${BACKEND_CORS_ORIGINS:-http://${SERVER_HOSTNAME:-localhost},http://localhost}
+      - USERNAME_REGEX=${USERNAME_REGEX}
+      - GEMINI_API_KEY=${GEMINI_API_KEY}
+    depends_on:
+      - db
+
+  db:
+    image: postgres:15
+    environment:
+      - POSTGRES_USER=user
+      - POSTGRES_PASSWORD=password
+      - POSTGRES_DB=parascope
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+volumes:
+  postgres_data:
+  parascope_uploads:

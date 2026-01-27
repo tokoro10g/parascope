@@ -1,0 +1,16 @@
+FROM python:3.12-slim
+
+WORKDIR /app
+
+# Install uv
+RUN pip install uv
+
+COPY pyproject.toml ./
+
+# Create virtual environment and install dependencies
+RUN uv venv && uv pip install -r pyproject.toml --system
+
+COPY . .
+
+# Run without reload for production
+CMD ["uvicorn", "src.main:app", "--host", "0.0.0.0", "--port", "8000"]
