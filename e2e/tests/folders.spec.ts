@@ -31,10 +31,20 @@ test.describe('Folders & Organization', () => {
     
     // Create sheet inside folder
     await page.click('button:has-text("Create New Sheet")');
-    const sheetName = `Sheet_${Date.now()}`;
-    await page.locator('input[placeholder="Sheet Name"]').fill(sheetName);
-    await page.locator('input[placeholder="Sheet Name"]').press('Enter');
+    await page.waitForURL('**/sheet/**');
     
+    const sheetName = `Sheet_${Date.now()}`;
+    const nameInput = page.locator('input[placeholder="Sheet Name"]');
+    await expect(nameInput).toBeVisible();
+    
+    // Select all and type to ensure we replace the default "Untitled" name
+    await nameInput.click({ clickCount: 3 });
+    await nameInput.press('Control+A');
+    await nameInput.press('Backspace');
+    await nameInput.fill(sheetName);
+    await nameInput.press('Enter');
+    
+    // Add a node to make the sheet dirty and allow saving
     await page.click('button:has-text("Add Node")');
     await page.click('.add-menu-item:has-text("Constant")');
     await page.locator('#node-label').fill('trigger');
