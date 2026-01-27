@@ -63,6 +63,9 @@ class GeminiProvider(AIProvider):
             self.api_key = settings.GEMINI_API_KEY
             self.client = genai.Client(api_key=self.api_key) if self.api_key else None
             self.model = settings.GEMINI_MODEL
+
+            if self.model and self.model.startswith(("gemini-1", "gemini-2.0")):
+                raise ValueError(f"Model {self.model} is not supported. Please use Gemini 2.5 or newer.")
         except ImportError:
             self.client = None
             self.api_key = None

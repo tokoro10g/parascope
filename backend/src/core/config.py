@@ -1,4 +1,5 @@
 from typing import Optional
+from pydantic import field_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
@@ -20,6 +21,13 @@ class Settings(BaseSettings):
     # Gemini
     GEMINI_API_KEY: Optional[str] = None
     GEMINI_MODEL: str = "gemini-3-flash-preview"
+
+    @field_validator("GEMINI_MODEL")
+    @classmethod
+    def validate_gemini_model(cls, v: str) -> str:
+        if v.startswith(("gemini-1", "gemini-2.0")):
+            raise ValueError(f"Model {v} is not supported. Please use Gemini 2.5 or newer.")
+        return v
 
     # OpenAI
     OPENAI_API_KEY: Optional[str] = None
