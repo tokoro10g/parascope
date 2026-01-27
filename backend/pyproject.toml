@@ -30,8 +30,8 @@ test = [
     "httpx>=0.28.1",
 ]
 
-[tool.uv]
-dev-dependencies = [
+[dependency-groups]
+dev = [
     "ruff",
     "pytest",
     "httpx>=0.28.1",
