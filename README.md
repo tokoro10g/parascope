@@ -163,6 +163,11 @@ To run the E2E tests:
 docker-compose -f docker-compose.e2e.yml up --build --abort-on-container-exit --exit-code-from e2e-runner
 ```
 
+To record videos of the test execution (saved in `e2e/test-results/`):
+```bash
+docker compose -f docker-compose.e2e.yml run -e VIDEO=on e2e-runner
+```
+
 This will run the tests in a completely isolated Docker project, allowing you to run them even while the main development server is active.
 
 ## 🧪 Database Seeding
