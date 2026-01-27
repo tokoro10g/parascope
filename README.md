@@ -1,6 +1,19 @@
-# Parascope
+<div align="center">
+  <img src="frontend/public/parascope.svg" alt="Parascope Logo" width="120" height="120" />
 
-**Parascope** is a sophisticated node-based engineering calculation platform. It allows users to define complex engineering models using a visual graph interface, where nodes represent parameters, mathematical functions, or entire nested calculation sheets.
+  # Parascope
+
+  **A sophisticated node-based engineering calculation platform.**
+
+  [![CI](https://github.com/tokoro10g/parascope/actions/workflows/ci.yml/badge.svg)](https://github.com/tokoro10g/parascope/actions/workflows/ci.yml)
+  ![Python](https://img.shields.io/badge/python-3.12-blue.svg)
+  ![React](https://img.shields.io/badge/react-18-blue.svg)
+  ![License](https://img.shields.io/badge/license-MIT-green.svg)
+</div>
+
+---
+
+**Parascope** allows users to define complex engineering models using a visual graph interface, where nodes represent parameters, mathematical functions, or entire nested calculation sheets.
 
 ## 🚀 Features
 
