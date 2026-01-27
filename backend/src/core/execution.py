@@ -37,6 +37,26 @@ from .runtime import (
 )
 
 
+SYSTEM_ALLOWED_MODULES = {
+    # Requested System Modules
+    "math",
+    "numpy",
+    # Runtime Requirements & Stdlib Utilities
+    "networkx",
+    "json",
+    "datetime",
+    "time",
+    "random",
+    "itertools",
+    "functools",
+    "collections",
+    "re",
+    "traceback",
+}
+
+SYSTEM_PRELOAD_MODULES = SYSTEM_ALLOWED_MODULES.copy()
+
+
 class ExecutionResult(BaseModel):
     result: Optional[Any] = None
     stdout: str = ""
@@ -47,7 +67,7 @@ class ExecutionResult(BaseModel):
 # --- Persistent Worker Pool Implementation ---
 
 
-def _persistent_worker_loop(task_queue, result_queue, runtime_classes):
+def _persistent_worker_loop(task_queue, result_queue, runtime_classes, config_values):
     """
     Long-running worker loop.
     Pre-imports heavy libraries to save time on subsequent runs.
@@ -67,11 +87,17 @@ def _persistent_worker_loop(task_queue, result_queue, runtime_classes):
         lut_node,
     ) = runtime_classes
 
-    # Pre-import common scientific libraries
-    import math
+    allowed_modules = SYSTEM_ALLOWED_MODULES.union(config_values.get("extra_allowed_modules", set()))
+    preload_modules = SYSTEM_PRELOAD_MODULES.union(config_values.get("extra_preload_modules", set()))
 
-    import networkx
-    import numpy
+    # Pre-import common scientific libraries
+    preloaded_libs = {}
+    for mod_name in preload_modules:
+        try:
+            preloaded_libs[mod_name] = __import__(mod_name)
+        except ImportError:
+            # If a configured module is missing, we just ignore it (or could log it)
+            pass
 
     # Setup RestrictedPython environment
 
@@ -100,23 +126,6 @@ def _persistent_worker_loop(task_queue, result_queue, runtime_classes):
 
     # 2. Define Safe Import
     def safe_import(name, globals=None, locals=None, fromlist=(), level=0):
-        # Whitelist of allowed modules
-        allowed_modules = {
-            "math",
-            "numpy",
-            "scipy",
-            "networkx",
-            "json",
-            "datetime",
-            "time",
-            "random",
-            "itertools",
-            "functools",
-            "collections",
-            "re",
-            "traceback",
-        }
-
         # Check if the root module is allowed (e.g. numpy.linalg -> check numpy)
         root_name = name.split(".")[0]
 
@@ -208,12 +217,10 @@ def _persistent_worker_loop(task_queue, result_queue, runtime_classes):
                     "output_node": output_node,
                     "sheet_node": sheet_node,
                     "lut_node": lut_node,
-                    # Pre-injected Libraries
-                    "math": math,
-                    "numpy": numpy,
-                    "networkx": networkx,
                 }
             )
+            # Pre-injected Libraries
+            global_vars.update(preloaded_libs)
 
             success = False
             error = None
@@ -293,6 +300,10 @@ class WorkerHandle:
                         sheet_node,
                         lut_node,
                     ),
+                    {
+                        "extra_allowed_modules": settings.EXTRA_ALLOWED_MODULES,
+                        "extra_preload_modules": settings.EXTRA_PRELOAD_MODULES,
+                    },
                 ),
                 daemon=True,
             )
