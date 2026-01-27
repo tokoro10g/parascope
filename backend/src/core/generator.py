@@ -1,4 +1,5 @@
 import ast
+import asyncio
 import re
 import textwrap
 import uuid
@@ -164,7 +165,11 @@ except Exception as e:
         self.processed_ids.add(processed_id)
 
         # 1. Identify Nested Sheets and Process them first
-        for node in sheet.nodes:
+        for i, node in enumerate(sheet.nodes):
+            # Yield control periodically to avoid blocking event loop on large sheets
+            if i % 10 == 0:
+                await asyncio.sleep(0)
+
             if node.type == "sheet":
                 nested_sheet_id = node.data.get("sheetId")
                 nested_version_id = node.data.get("versionId")

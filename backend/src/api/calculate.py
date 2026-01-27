@@ -3,6 +3,7 @@ from typing import Any, Dict
 from uuid import UUID
 
 from fastapi import APIRouter, Depends, HTTPException
+from fastapi.concurrency import run_in_threadpool
 from fastapi.responses import PlainTextResponse
 from pydantic import BaseModel
 from sqlalchemy import select
@@ -194,7 +195,7 @@ async def calculate_preview(
     body: PreviewRequest,
     db: AsyncSession = Depends(get_db),
 ):
-    sheet = _construct_sheet(body)
+    sheet = await run_in_threadpool(_construct_sheet, body)
     return await _run_calculation(sheet, body.inputs, db)
 
 
@@ -203,7 +204,7 @@ async def generate_script_preview(
     body: PreviewRequest,
     db: AsyncSession = Depends(get_db),
 ):
-    sheet = _construct_sheet(body)
+    sheet = await run_in_threadpool(_construct_sheet, body)
     input_overrides = _get_input_overrides(sheet, body.inputs)
 
     generator = CodeGenerator(db)
