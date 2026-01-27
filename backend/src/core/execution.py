@@ -18,8 +18,7 @@ from RestrictedPython.Guards import (
     safer_getattr,
 )
 
-from .config import settings
-from .runtime import (
+from parascope_runtime import (
     GraphStructureError,
     NodeError,
     NodeExecutionError,
@@ -36,12 +35,14 @@ from .runtime import (
     sheet_node,
 )
 
+from .config import settings
+
 
 SYSTEM_ALLOWED_MODULES = {
-    # Requested System Modules
+    # Runtime Requirements & Stdlib Utilities
+    "parascope_runtime",
     "math",
     "numpy",
-    # Runtime Requirements & Stdlib Utilities
     "networkx",
     "json",
     "datetime",

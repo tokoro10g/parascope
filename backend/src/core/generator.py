@@ -20,6 +20,25 @@ class CodeGenerator:
         self.sheet_class_names: Dict[str, str] = {}
         self.used_class_names: Set[str] = set()
 
+    def _get_script_header(self) -> str:
+        runtime_imports = [
+            "GraphStructureError",
+            "NodeError",
+            "NodeExecutionError",
+            "ParascopeError",
+            "SheetBase",
+            "ValueValidationError",
+            "constant_node",
+            "function_node",
+            "input_node",
+            "lut_node",
+            "node",
+            "output_node",
+            "sheet",
+            "sheet_node",
+        ]
+        return f"import math\nimport numpy as np\nfrom parascope_runtime import {', '.join(runtime_imports)}\n\n"
+
     async def generate_full_script(self, root_sheet: Sheet, input_overrides: Dict[str, Any]) -> str:
         """
         Generates the complete Python script including all class definitions
@@ -29,8 +48,7 @@ class CodeGenerator:
         root_class_name = await self._process_sheet_recursive(root_sheet)
 
         # 2. Build the final script
-        # We assume SheetBase, NodeError, math, np are injected into globals
-        header = "import math\nimport numpy as np\n\n"
+        header = self._get_script_header()
 
         definitions_code = "\n\n".join(self.definitions)
 
@@ -68,8 +86,7 @@ finally:
         root_class_name = await self._process_sheet_recursive(root_sheet)
 
         # 2. Build the final script
-        # We assume SheetBase, NodeError, math, np are injected into globals
-        header = "import math\nimport numpy as np\n\n"
+        header = self._get_script_header()
 
         definitions_code = "\n\n".join(self.definitions)
 

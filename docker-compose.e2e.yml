@@ -18,8 +18,8 @@ services:
 
   backend-e2e:
     build:
-      context: ./backend
-      dockerfile: Dockerfile
+      context: .
+      dockerfile: backend/Dockerfile
     environment:
       - DATABASE_URL=postgresql+asyncpg://user:password@db-e2e:5432/parascope_e2e
       - BACKEND_CORS_ORIGINS=*

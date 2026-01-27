@@ -5,11 +5,16 @@ WORKDIR /app
 # Install uv
 RUN pip install uv
 
-COPY pyproject.toml ./
+# Copy the local packages first
+COPY packages /packages
+
+# Copy backend metadata
+COPY backend/pyproject.toml ./
 
 # Create virtual environment and install dependencies
 RUN uv venv && uv pip install -r pyproject.toml --system
 
-COPY . .
+# Copy backend source
+COPY backend .
 
 CMD ["uvicorn", "src.main:app", "--host", "0.0.0.0", "--port", "8000", "--reload"]

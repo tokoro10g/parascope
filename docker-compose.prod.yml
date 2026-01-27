@@ -10,8 +10,8 @@ services:
 
   backend:
     build:
-      context: ./backend
-      dockerfile: Dockerfile.prod
+      context: .
+      dockerfile: backend/Dockerfile.prod
     ports:
       - "${BACKEND_PORT:-8000}:8000"
     volumes:

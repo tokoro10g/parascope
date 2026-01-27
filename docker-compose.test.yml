@@ -3,8 +3,8 @@ name: parascope-test
 services:
   backend-test:
     build:
-      context: ./backend
-      dockerfile: Dockerfile
+      context: .
+      dockerfile: backend/Dockerfile
     volumes:
       - ./backend:/app
     environment:
