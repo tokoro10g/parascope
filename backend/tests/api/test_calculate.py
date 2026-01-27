@@ -8,7 +8,7 @@ from httpx import AsyncClient
 async def test_physics_simulation(client: AsyncClient):
     # 1. Create Sheet
     sheet_data = {"name": "Physics Calculation", "owner_name": "Tester"}
-    response = await client.post("/sheets/", json=sheet_data)
+    response = await client.post("/api/v1/sheets/", json=sheet_data)
     assert response.status_code == 200
     sheet = response.json()
     sheet_id = sheet["id"]
@@ -64,10 +64,10 @@ async def test_physics_simulation(client: AsyncClient):
         {"source_id": func_id, "target_id": output_id, "source_port": "result", "target_port": "value"},
     ]
 
-    await client.put(f"/sheets/{sheet_id}", json={"nodes": nodes, "connections": connections})
+    await client.put(f"/api/v1/sheets/{sheet_id}", json={"nodes": nodes, "connections": connections})
 
     # 3. Calculate
-    response = await client.post(f"/calculate/{sheet_id}")
+    response = await client.post(f"/api/v1/sheets/{sheet_id}/calculate")
     assert response.status_code == 200
     results = response.json()["results"]
 
@@ -80,7 +80,7 @@ async def test_physics_simulation(client: AsyncClient):
 @pytest.mark.asyncio
 async def test_nested_reuse(client: AsyncClient):
     # 1. Create CHILD Sheet (Multiplier)
-    child_res = await client.post("/sheets/", json={"name": "Doubler", "owner_name": "Tester"})
+    child_res = await client.post("/api/v1/sheets/", json={"name": "Doubler", "owner_name": "Tester"})
     child_id = child_res.json()["id"]
 
     in_id, calc_id, out_id = str(uuid4()), str(uuid4()), str(uuid4())
@@ -109,10 +109,10 @@ async def test_nested_reuse(client: AsyncClient):
         {"source_id": in_id, "target_id": calc_id, "source_port": "value", "target_port": "x"},
         {"source_id": calc_id, "target_id": out_id, "source_port": "y", "target_port": "value"},
     ]
-    await client.put(f"/sheets/{child_id}", json={"nodes": child_nodes, "connections": child_conns})
+    await client.put(f"/api/v1/sheets/{child_id}", json={"nodes": child_nodes, "connections": child_conns})
 
     # 2. Create PARENT Sheet
-    parent_res = await client.post("/sheets/", json={"name": "Parent"})
+    parent_res = await client.post("/api/v1/sheets/", json={"name": "Parent"})
     parent_id = parent_res.json()["id"]
 
     c1_id, sheet1_id, out1_id = str(uuid4()), str(uuid4()), str(uuid4())
@@ -147,10 +147,10 @@ async def test_nested_reuse(client: AsyncClient):
         {"source_id": c1_id, "target_id": sheet1_id, "source_port": "value", "target_port": "X"},
         {"source_id": sheet1_id, "target_id": out1_id, "source_port": "Y", "target_port": "value"},
     ]
-    await client.put(f"/sheets/{parent_id}", json={"nodes": parent_nodes, "connections": parent_conns})
+    await client.put(f"/api/v1/sheets/{parent_id}", json={"nodes": parent_nodes, "connections": parent_conns})
 
     # 3. Calculate
-    calc_res = await client.post(f"/calculate/{parent_id}")
+    calc_res = await client.post(f"/api/v1/sheets/{parent_id}/calculate")
     assert calc_res.status_code == 200
     results = calc_res.json()["results"]
     assert results[out1_id]["outputs"]["value"] == 10
@@ -158,7 +158,7 @@ async def test_nested_reuse(client: AsyncClient):
 
 @pytest.mark.asyncio
 async def test_option_validation(client: AsyncClient):
-    sheet_res = await client.post("/sheets/", json={"name": "Options"})
+    sheet_res = await client.post("/api/v1/sheets/", json={"name": "Options"})
     sheet_id = sheet_res.json()["id"]
 
     node_id = str(uuid4())
@@ -173,16 +173,16 @@ async def test_option_validation(client: AsyncClient):
             "outputs": [{"key": "value"}],
         }
     ]
-    await client.put(f"/sheets/{sheet_id}", json={"nodes": nodes, "connections": []})
+    await client.put(f"/api/v1/sheets/{sheet_id}", json={"nodes": nodes, "connections": []})
 
     # Valid
-    res = await client.post(f"/calculate/{sheet_id}")
+    res = await client.post(f"/api/v1/sheets/{sheet_id}/calculate")
     assert res.json()["results"][node_id]["valid"] is True
 
     # Invalid
     nodes[0]["data"]["value"] = "C"
-    await client.put(f"/sheets/{sheet_id}", json={"nodes": nodes})
-    res = await client.post(f"/calculate/{sheet_id}")
+    await client.put(f"/api/v1/sheets/{sheet_id}", json={"nodes": nodes})
+    res = await client.post(f"/api/v1/sheets/{sheet_id}/calculate")
     assert res.json()["results"][node_id]["valid"] is True  # Soft fail
     assert "is not in allowed options" in res.json()["results"][node_id]["error"]
 
@@ -207,14 +207,14 @@ async def test_calculate_preview(client: AsyncClient):
         "connections": [],
     }
 
-    response = await client.post("/calculate/", json={"graph": graph_data, "inputs": {}})
+    response = await client.post("/api/v1/calculate/", json={"graph": graph_data, "inputs": {}})
     assert response.status_code == 200
     assert response.json()["results"][node_id]["outputs"]["value"] == 42
 
 
 @pytest.mark.asyncio
 async def test_cycle_detection(client: AsyncClient):
-    sheet_res = await client.post("/sheets/", json={"name": "Cycle"})
+    sheet_res = await client.post("/api/v1/sheets/", json={"name": "Cycle"})
     sheet_id = sheet_res.json()["id"]
 
     n1, n2 = str(uuid4()), str(uuid4())
@@ -244,9 +244,9 @@ async def test_cycle_detection(client: AsyncClient):
         {"source_id": n1, "target_id": n2, "source_port": "y", "target_port": "x"},
         {"source_id": n2, "target_id": n1, "source_port": "y", "target_port": "x"},
     ]
-    await client.put(f"/sheets/{sheet_id}", json={"nodes": nodes, "connections": conns})
+    await client.put(f"/api/v1/sheets/{sheet_id}", json={"nodes": nodes, "connections": conns})
 
-    response = await client.post(f"/calculate/{sheet_id}")
+    response = await client.post(f"/api/v1/sheets/{sheet_id}/calculate")
     # The backend returns 200 with an 'error' field when calculation fails gracefully
     assert response.status_code == 200
     assert "Cycle detected" in response.json()["error"]
@@ -255,7 +255,7 @@ async def test_cycle_detection(client: AsyncClient):
 @pytest.mark.asyncio
 async def test_nested_error_propagation(client: AsyncClient):
     # 1. Create Child with error (division by zero)
-    child_res = await client.post("/sheets/", json={"name": "Divider"})
+    child_res = await client.post("/api/v1/sheets/", json={"name": "Divider"})
     child_id = child_res.json()["id"]
     n_id = str(uuid4())
     nodes = [
@@ -269,10 +269,10 @@ async def test_nested_error_propagation(client: AsyncClient):
             "outputs": [{"key": "x"}],
         }
     ]
-    await client.put(f"/sheets/{child_id}", json={"nodes": nodes})
+    await client.put(f"/api/v1/sheets/{child_id}", json={"nodes": nodes})
 
     # 2. Create Parent using that child
-    parent_res = await client.post("/sheets/", json={"name": "Parent"})
+    parent_res = await client.post("/api/v1/sheets/", json={"name": "Parent"})
     parent_id = parent_res.json()["id"]
     p_node_id = str(uuid4())
     p_nodes = [
@@ -285,10 +285,10 @@ async def test_nested_error_propagation(client: AsyncClient):
             "data": {"sheetId": child_id},
         }
     ]
-    await client.put(f"/sheets/{parent_id}", json={"nodes": p_nodes})
+    await client.put(f"/api/v1/sheets/{parent_id}", json={"nodes": p_nodes})
 
     # 3. Calculate Parent
-    response = await client.post(f"/calculate/{parent_id}")
+    response = await client.post(f"/api/v1/sheets/{parent_id}/calculate")
     assert response.status_code == 200
     results = response.json()["results"]
 
@@ -299,7 +299,7 @@ async def test_nested_error_propagation(client: AsyncClient):
 
 @pytest.mark.asyncio
 async def test_function_node_errors(client: AsyncClient):
-    sheet_res = await client.post("/sheets/", json={"name": "Error Sheet"})
+    sheet_res = await client.post("/api/v1/sheets/", json={"name": "Error Sheet"})
     sheet_id = sheet_res.json()["id"]
 
     # 1. Test Runtime Error (Division by zero)
@@ -315,9 +315,9 @@ async def test_function_node_errors(client: AsyncClient):
             "outputs": [{"key": "x"}],
         }
     ]
-    await client.put(f"/sheets/{sheet_id}", json={"nodes": nodes})
+    await client.put(f"/api/v1/sheets/{sheet_id}", json={"nodes": nodes})
 
-    response = await client.post(f"/calculate/{sheet_id}")
+    response = await client.post(f"/api/v1/sheets/{sheet_id}/calculate")
     assert response.status_code == 200
     res = response.json()
     assert res["results"][n1]["valid"] is False
@@ -325,9 +325,9 @@ async def test_function_node_errors(client: AsyncClient):
 
     # 2. Test Syntax Error
     nodes[0]["data"]["code"] = "x = (1 + 2"  # Missing closing parenthesis
-    await client.put(f"/sheets/{sheet_id}", json={"nodes": nodes})
+    await client.put(f"/api/v1/sheets/{sheet_id}", json={"nodes": nodes})
 
-    response = await client.post(f"/calculate/{sheet_id}")
+    response = await client.post(f"/api/v1/sheets/{sheet_id}/calculate")
     assert response.status_code == 200
     res = response.json()
     assert res["results"][n1]["valid"] is False

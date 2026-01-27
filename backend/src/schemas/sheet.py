@@ -1,8 +1,8 @@
 from datetime import datetime
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, List, Literal, Optional, Union
 from uuid import UUID
 
-from pydantic import BaseModel, ConfigDict
+from pydantic import BaseModel, ConfigDict, Field
 
 
 class PortDefinition(BaseModel):
@@ -11,24 +11,125 @@ class PortDefinition(BaseModel):
     label: Optional[str] = None
 
 
-class NodeBase(BaseModel):
-    type: str
+# --- Concrete Node Data Schemas ---
+
+class ParameterNodeData(BaseModel):
+    value: Any = None
+    min: Optional[float] = None
+    max: Optional[float] = None
+    dataType: Optional[str] = None  # "number", "option", etc.
+    options: Optional[List[str]] = None
+
+
+class FunctionNodeData(BaseModel):
+    code: str = ""
+
+
+class SheetNodeData(BaseModel):
+    sheetId: Optional[UUID] = None
+    versionId: Optional[UUID] = None
+
+
+class LUTRow(BaseModel):
+    key: Any
+    values: Dict[str, Any]
+
+
+class LUTData(BaseModel):
+    rows: List[LUTRow] = []
+
+
+class LUTNodeData(BaseModel):
+    lut: LUTData = Field(default_factory=LUTData)
+
+
+class OutputNodeData(BaseModel):
+    min: Optional[float] = None
+    max: Optional[float] = None
+
+
+# --- Discriminated Union for Nodes ---
+
+class NodeShared(BaseModel):
     label: str
     inputs: List[PortDefinition] = []
     outputs: List[PortDefinition] = []
     position_x: float
     position_y: float
+
+class ConstantNode(NodeShared):
+    type: Literal["constant"]
+    data: ParameterNodeData = Field(default_factory=ParameterNodeData)
+
+class InputNode(NodeShared):
+    type: Literal["input"]
+    data: ParameterNodeData = Field(default_factory=ParameterNodeData)
+
+class FunctionNode(NodeShared):
+    type: Literal["function"]
+    data: FunctionNodeData = Field(default_factory=FunctionNodeData)
+
+class SheetNode(NodeShared):
+    type: Literal["sheet"]
+    data: SheetNodeData = Field(default_factory=SheetNodeData)
+
+class LUTNode(NodeShared):
+    type: Literal["lut"]
+    data: LUTNodeData = Field(default_factory=LUTNodeData)
+
+class OutputNode(NodeShared):
+    type: Literal["output"]
+    data: OutputNodeData = Field(default_factory=OutputNodeData)
+
+class CommentNode(NodeShared):
+    type: Literal["comment"]
     data: Dict[str, Any] = {}
 
-
-class NodeCreate(NodeBase):
+# Node Creation Union
+class NodeCreateMixin(BaseModel):
     id: Optional[UUID] = None
 
+class ConstantNodeCreate(NodeCreateMixin, ConstantNode): pass
+class InputNodeCreate(NodeCreateMixin, InputNode): pass
+class FunctionNodeCreate(NodeCreateMixin, FunctionNode): pass
+class SheetNodeCreate(NodeCreateMixin, SheetNode): pass
+class LUTNodeCreate(NodeCreateMixin, LUTNode): pass
+class OutputNodeCreate(NodeCreateMixin, OutputNode): pass
+class CommentNodeCreate(NodeCreateMixin, CommentNode): pass
 
-class NodeRead(NodeBase):
+NodeCreate = Union[
+    ConstantNodeCreate,
+    InputNodeCreate,
+    FunctionNodeCreate,
+    SheetNodeCreate,
+    LUTNodeCreate,
+    OutputNodeCreate,
+    CommentNodeCreate
+]
+
+# Node Reading Union
+class NodeReadMixin(BaseModel):
     id: UUID
     sheet_id: UUID
     model_config = ConfigDict(from_attributes=True)
+
+class ConstantNodeRead(NodeReadMixin, ConstantNode): pass
+class InputNodeRead(NodeReadMixin, InputNode): pass
+class FunctionNodeRead(NodeReadMixin, FunctionNode): pass
+class SheetNodeRead(NodeReadMixin, SheetNode): pass
+class LUTNodeRead(NodeReadMixin, LUTNode): pass
+class OutputNodeRead(NodeReadMixin, OutputNode): pass
+class CommentNodeRead(NodeReadMixin, CommentNode): pass
+
+NodeRead = Union[
+    ConstantNodeRead,
+    InputNodeRead,
+    FunctionNodeRead,
+    SheetNodeRead,
+    LUTNodeRead,
+    OutputNodeRead,
+    CommentNodeRead
+]
 
 
 class ConnectionBase(BaseModel):

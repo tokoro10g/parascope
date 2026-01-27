@@ -41,12 +41,12 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-app.include_router(sheets.router)
-app.include_router(locks.router, prefix="/api")
-app.include_router(sweep.router)
-app.include_router(calculate.router)
-app.include_router(attachments.router)
-app.include_router(genai.router, prefix="/api/genai", tags=["genai"])
+app.include_router(sheets.router, prefix="/api/v1")
+app.include_router(locks.router, prefix="/api/v1")
+app.include_router(sweep.router, prefix="/api/v1")
+app.include_router(calculate.router, prefix="/api/v1")
+app.include_router(attachments.router, prefix="/api/v1")
+app.include_router(genai.router, prefix="/api/v1/genai", tags=["genai"])
 
 
 @app.exception_handler(Exception)

@@ -6,7 +6,7 @@ from httpx import AsyncClient
 
 @pytest.mark.asyncio
 async def test_genai_config(client: AsyncClient):
-    response = await client.get("/api/genai/config")
+    response = await client.get("/api/v1/genai/config")
     assert response.status_code == 200
     res = response.json()
     assert "enabled" in res
@@ -26,7 +26,7 @@ async def test_generate_function_mocked(client: AsyncClient):
 
     with patch("src.api.genai.get_provider", return_value=mock_provider):
         request_data = {"prompt": "Test prompt", "provider": "gemini"}
-        response = await client.post("/api/genai/generate_function", json=request_data)
+        response = await client.post("/api/v1/genai/generate_function", json=request_data)
 
         assert response.status_code == 200
         res = response.json()

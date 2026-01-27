@@ -172,7 +172,7 @@ export const api = {
     default_provider: string;
   }> {
     try {
-      const res = await fetch(`${API_BASE}/api/genai/config`, {
+      const res = await fetch(`${API_BASE}/api/v1/genai/config`, {
         headers: getHeaders(),
       });
       if (!res.ok)
@@ -196,7 +196,7 @@ export const api = {
     existingDescription: string = '',
     provider?: string,
   ): Promise<GenerateFunctionResponse> {
-    return request(`${API_BASE}/api/genai/generate_function`, {
+    return request(`${API_BASE}/api/v1/genai/generate_function`, {
       method: 'POST',
       headers: getHeaders({ 'Content-Type': 'application/json' }),
       body: JSON.stringify({
@@ -211,26 +211,26 @@ export const api = {
   },
 
   async listSheets(): Promise<SheetSummary[]> {
-    return request(`${API_BASE}/sheets/`, {
+    return request(`${API_BASE}/api/v1/sheets/`, {
       headers: getHeaders(),
     });
   },
 
   async listFolders(): Promise<Folder[]> {
-    return request(`${API_BASE}/sheets/folders`, {
+    return request(`${API_BASE}/api/v1/sheets/folders`, {
       headers: getHeaders(),
     });
   },
 
   async deleteFolder(folderId: string): Promise<void> {
-    return request(`${API_BASE}/sheets/folders/${folderId}`, {
+    return request(`${API_BASE}/api/v1/sheets/folders/${folderId}`, {
       method: 'DELETE',
       headers: getHeaders(),
     });
   },
 
   async createFolder(name: string, parent_id?: string): Promise<Folder> {
-    return request(`${API_BASE}/sheets/folders`, {
+    return request(`${API_BASE}/api/v1/sheets/folders`, {
       method: 'POST',
       headers: getHeaders({ 'Content-Type': 'application/json' }),
       body: JSON.stringify({ name, parent_id }),
@@ -238,7 +238,7 @@ export const api = {
   },
 
   async updateFolder(id: string, folder: Partial<Folder>): Promise<Folder> {
-    return request(`${API_BASE}/sheets/folders/${id}`, {
+    return request(`${API_BASE}/api/v1/sheets/folders/${id}`, {
       method: 'PUT',
       headers: getHeaders({ 'Content-Type': 'application/json' }),
       body: JSON.stringify(folder),
@@ -249,7 +249,7 @@ export const api = {
     name: string = 'Untitled',
     folder_id?: string,
   ): Promise<Sheet> {
-    return request(`${API_BASE}/sheets/`, {
+    return request(`${API_BASE}/api/v1/sheets/`, {
       method: 'POST',
       headers: getHeaders({ 'Content-Type': 'application/json' }),
       body: JSON.stringify({ name, folder_id }),
@@ -257,13 +257,13 @@ export const api = {
   },
 
   async getSheet(id: string): Promise<Sheet> {
-    return request(`${API_BASE}/sheets/${id}`, {
+    return request(`${API_BASE}/api/v1/sheets/${id}`, {
       headers: getHeaders(),
     });
   },
 
   async updateSheet(id: string, sheet: Partial<Sheet>): Promise<Sheet> {
-    return request(`${API_BASE}/sheets/${id}`, {
+    return request(`${API_BASE}/api/v1/sheets/${id}`, {
       method: 'PUT',
       headers: getHeaders({ 'Content-Type': 'application/json' }),
       body: JSON.stringify(sheet),
@@ -271,39 +271,39 @@ export const api = {
   },
 
   async duplicateSheet(id: string): Promise<Sheet> {
-    return request(`${API_BASE}/sheets/${id}/duplicate`, {
+    return request(`${API_BASE}/api/v1/sheets/${id}/duplicate`, {
       method: 'POST',
       headers: getHeaders(),
     });
   },
 
   async getSheetUsages(sheetId: string): Promise<SheetUsage[]> {
-    return request(`${API_BASE}/sheets/${sheetId}/usages`, {
+    return request(`${API_BASE}/api/v1/sheets/${sheetId}/usages`, {
       headers: getHeaders(),
     });
   },
 
   async deleteSheet(id: string): Promise<void> {
-    return request(`${API_BASE}/sheets/${id}`, {
+    return request(`${API_BASE}/api/v1/sheets/${id}`, {
       method: 'DELETE',
     });
   },
 
   async getSheetHistory(id: string): Promise<AuditLog[]> {
-    return request(`${API_BASE}/sheets/${id}/history`, {
+    return request(`${API_BASE}/api/v1/sheets/${id}/history`, {
       headers: getHeaders(),
     });
   },
 
   async markSheetAsRead(id: string): Promise<{ ok: boolean }> {
-    return request(`${API_BASE}/sheets/${id}/read`, {
+    return request(`${API_BASE}/api/v1/sheets/${id}/read`, {
       method: 'POST',
       headers: getHeaders(),
     });
   },
 
   async listSheetVersions(id: string): Promise<SheetVersion[]> {
-    return request(`${API_BASE}/sheets/${id}/versions`, {
+    return request(`${API_BASE}/api/v1/sheets/${id}/versions`, {
       headers: getHeaders(),
     });
   },
@@ -313,7 +313,7 @@ export const api = {
     version_tag: string,
     description?: string,
   ): Promise<SheetVersion> {
-    return request(`${API_BASE}/sheets/${id}/versions`, {
+    return request(`${API_BASE}/api/v1/sheets/${id}/versions`, {
       method: 'POST',
       headers: getHeaders({ 'Content-Type': 'application/json' }),
       body: JSON.stringify({ version_tag, description }),
@@ -321,7 +321,7 @@ export const api = {
   },
 
   async getVersion(sheetId: string, versionId: string): Promise<SheetVersion> {
-    return request(`${API_BASE}/sheets/${sheetId}/versions/${versionId}`, {
+    return request(`${API_BASE}/api/v1/sheets/${sheetId}/versions/${versionId}`, {
       headers: getHeaders(),
     });
   },
@@ -330,7 +330,7 @@ export const api = {
     sheetId: string,
     versionId: string | null,
   ): Promise<Sheet> {
-    return request(`${API_BASE}/sheets/${sheetId}`, {
+    return request(`${API_BASE}/api/v1/sheets/${sheetId}`, {
       method: 'PUT',
       headers: getHeaders({ 'Content-Type': 'application/json' }),
       body: JSON.stringify({ default_version_id: versionId }),
@@ -341,7 +341,7 @@ export const api = {
     sheetId: string,
     inputs: Record<string, { value: any }>,
   ): Promise<{ results: Record<string, NodeResult>; error?: string }> {
-    return request(`${API_BASE}/calculate/${sheetId}`, {
+    return request(`${API_BASE}/api/v1/sheets/${sheetId}/calculate`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(inputs),
@@ -352,7 +352,7 @@ export const api = {
     inputs: Record<string, { value: any }>,
     graph: Partial<Sheet>,
   ): Promise<{ results: Record<string, NodeResult>; error?: string }> {
-    return request(`${API_BASE}/calculate/`, {
+    return request(`${API_BASE}/api/v1/calculate/`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ inputs, graph }),
@@ -363,7 +363,7 @@ export const api = {
     sheetId: string,
     inputs: Record<string, { value: any }>,
   ): Promise<{ script: string }> {
-    return request(`${API_BASE}/calculate/${sheetId}/script`, {
+    return request(`${API_BASE}/api/v1/sheets/${sheetId}/script`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(inputs),
@@ -374,7 +374,7 @@ export const api = {
     inputs: Record<string, { value: any }>,
     graph: Partial<Sheet>,
   ): Promise<{ script: string }> {
-    return request(`${API_BASE}/calculate/script`, {
+    return request(`${API_BASE}/api/v1/calculate/script`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ inputs, graph }),
@@ -386,7 +386,7 @@ export const api = {
   ): Promise<{ filename: string; url: string }> {
     const formData = new FormData();
     formData.append('file', file);
-    return request(`${API_BASE}/attachments/upload`, {
+    return request(`${API_BASE}/api/v1/attachments/upload`, {
       method: 'POST',
       headers: getHeaders(),
       body: formData,
@@ -409,7 +409,7 @@ export const api = {
     secondaryIncrement?: string | null,
     secondaryManualValues?: string[] | null,
   ): Promise<SweepResponse> {
-    const res = await fetch(`${API_BASE}/sheets/${sheetId}/sweep`, {
+    const res = await fetch(`${API_BASE}/api/v1/sheets/${sheetId}/sweep`, {
       method: 'POST',
       headers: getHeaders({
         'Content-Type': 'application/json',
@@ -435,7 +435,7 @@ export const api = {
 
   // CONCURRENCY
   async acquireLock(sheetId: string, tabId: string): Promise<Lock> {
-    return request<Lock>(`${API_BASE}/api/sheets/${sheetId}/lock`, {
+    return request<Lock>(`${API_BASE}/api/v1/sheets/${sheetId}/lock`, {
       method: 'POST',
       headers: getHeaders({ 'Content-Type': 'application/json' }),
       body: JSON.stringify({ tab_id: tabId }),
@@ -449,7 +449,7 @@ export const api = {
   ): Promise<void> {
     const params = new URLSearchParams({ tab_id: tabId });
     return request<void>(
-      `${API_BASE}/api/sheets/${sheetId}/lock?${params.toString()}`,
+      `${API_BASE}/api/v1/sheets/${sheetId}/lock?${params.toString()}`,
       {
         method: 'DELETE',
         headers: getHeaders(),
@@ -459,7 +459,7 @@ export const api = {
   },
 
   async forceTakeoverLock(sheetId: string, tabId: string): Promise<Lock> {
-    return request<Lock>(`${API_BASE}/api/sheets/${sheetId}/lock/force`, {
+    return request<Lock>(`${API_BASE}/api/v1/sheets/${sheetId}/lock/force`, {
       method: 'POST',
       headers: getHeaders({ 'Content-Type': 'application/json' }),
       body: JSON.stringify({ tab_id: tabId }),
@@ -467,14 +467,14 @@ export const api = {
   },
 
   async getSessions(): Promise<Session[]> {
-    return request<Session[]>(`${API_BASE}/api/sessions`, {
+    return request<Session[]>(`${API_BASE}/api/v1/sessions`, {
       method: 'GET',
       headers: getHeaders(),
     });
   },
 
   getLock: (sheetId: string) => {
-    return request<Lock | null>(`${API_BASE}/api/sheets/${sheetId}/lock`, {
+    return request<Lock | null>(`${API_BASE}/api/v1/sheets/${sheetId}/lock`, {
       method: 'GET',
       headers: getHeaders(),
     });

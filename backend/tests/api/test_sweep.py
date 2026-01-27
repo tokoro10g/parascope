@@ -7,7 +7,7 @@ from httpx import AsyncClient
 @pytest.mark.asyncio
 async def test_sweep_execution(client: AsyncClient):
     # 1. Create Sheet for Sweep
-    sheet_res = await client.post("/sheets/", json={"name": "Sweep Sheet"})
+    sheet_res = await client.post("/api/v1/sheets/", json={"name": "Sweep Sheet"})
     sheet_id = sheet_res.json()["id"]
 
     v_id, a_id, func_id, out_id = str(uuid4()), str(uuid4()), str(uuid4()), str(uuid4())
@@ -55,7 +55,7 @@ async def test_sweep_execution(client: AsyncClient):
         {"source_id": a_id, "target_id": func_id, "source_port": "value", "target_port": "a"},
         {"source_id": func_id, "target_id": out_id, "source_port": "dist", "target_port": "value"},
     ]
-    await client.put(f"/sheets/{sheet_id}", json={"nodes": nodes, "connections": conns})
+    await client.put(f"/api/v1/sheets/{sheet_id}", json={"nodes": nodes, "connections": conns})
 
     # 2. Run 1D Sweep
     sweep_data = {
@@ -66,7 +66,7 @@ async def test_sweep_execution(client: AsyncClient):
         "output_node_ids": [out_id],
         "input_overrides": {},
     }
-    response = await client.post(f"/sheets/{sheet_id}/sweep", json=sweep_data)
+    response = await client.post(f"/api/v1/sheets/{sheet_id}/sweep", json=sweep_data)
     assert response.status_code == 200
     res = response.json()
     assert len(res["results"]) == 2  # 10 and 20
@@ -85,7 +85,7 @@ async def test_sweep_execution(client: AsyncClient):
         "output_node_ids": [out_id],
         "input_overrides": {},
     }
-    response = await client.post(f"/sheets/{sheet_id}/sweep", json=sweep_data_2d)
+    response = await client.post(f"/api/v1/sheets/{sheet_id}/sweep", json=sweep_data_2d)
     assert response.status_code == 200
     res = response.json()
     # (10, 20) x (0, 90) -> 4 steps

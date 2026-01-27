@@ -1,15 +1,19 @@
 from datetime import datetime, timedelta
+from typing import Any, Dict
 from uuid import UUID, uuid4
 
 from fastapi import APIRouter, Depends, HTTPException
+from fastapi.responses import PlainTextResponse
 from sqlalchemy import select, update
 from sqlalchemy.dialects.postgresql import insert
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
 
 from ..core.auth import get_current_user
+from ..core.calculation_service import run_calculation
 from ..core.config import settings
 from ..core.database import get_db
+from ..core.generator import CodeGenerator
 from ..models.sheet import (
     AuditLog,
     Connection,
@@ -210,6 +214,10 @@ async def create_sheet(
     # Map temp/client ID to DB ID if needed, but we expect client to provide UUIDs or we generate them
 
     for node_in in sheet_in.nodes:
+        # data is a Pydantic model (via Union), so we must dump it to a dict/json
+        # explicitly before passing to SQLAlchemy JSONB column.
+        node_data = node_in.data.model_dump(mode="json") if hasattr(node_in.data, "model_dump") else node_in.data
+
         db_node = Node(
             sheet_id=db_sheet.id,
             type=node_in.type,
@@ -218,7 +226,7 @@ async def create_sheet(
             outputs=[p.model_dump() for p in node_in.outputs],
             position_x=node_in.position_x,
             position_y=node_in.position_y,
-            data=node_in.data,
+            data=node_data,
         )
         if node_in.id:
             db_node.id = node_in.id
@@ -320,7 +328,8 @@ async def update_sheet(
 
                 # 2. Values & Core Config
                 old_data = old_node.data or {}
-                new_data = node_in.data or {}
+                # node_in.data might be a Pydantic model or dict
+                new_data = node_in.data.model_dump(mode="json") if hasattr(node_in.data, "model_dump") else (node_in.data or {})
 
                 for field in ["value", "code", "lut", "description"]:
                     if old_data.get(field) != new_data.get(field):
@@ -377,9 +386,13 @@ async def update_sheet(
 
         # Re-create Nodes
         for node_in in sheet_in.nodes:
+            # Handle data serialization for Pydantic models in Union
+            node_data = node_in.data.model_dump(mode="json") if hasattr(node_in.data, "model_dump") else node_in.data
+
             if node_in.type in ("input", "function", "sheet"):
-                if "value" in node_in.data:
-                    node_in.data.pop("value")
+                if "value" in node_data:
+                    node_data.pop("value")
+            
             db_node = Node(
                 sheet_id=db_sheet.id,
                 type=node_in.type,
@@ -388,7 +401,7 @@ async def update_sheet(
                 outputs=[p.model_dump() for p in node_in.outputs],
                 position_x=node_in.position_x,
                 position_y=node_in.position_y,
-                data=node_in.data,
+                data=node_data,
             )
             if node_in.id:
                 db_node.id = node_in.id
@@ -483,25 +496,54 @@ async def duplicate_sheet(sheet_id: UUID, db: AsyncSession = Depends(get_db)):
     return _sort_nodes(new_sheet)
 
 
-@router.delete("/{sheet_id}", status_code=204)
+@router.delete("/{sheet_id}")
 async def delete_sheet(sheet_id: UUID, db: AsyncSession = Depends(get_db)):
-    # Check if sheet is used in other sheets
-    query_deps = select(Sheet).join(Node).where(Node.type == "sheet", Node.data["sheetId"].astext == str(sheet_id))
-    result_deps = await db.execute(query_deps)
-    parent_sheet = result_deps.scalars().first()
+    sheet = await db.get(Sheet, sheet_id)
+    if not sheet:
+        raise HTTPException(status_code=404, detail="Sheet not found")
+    await db.delete(sheet)
+    await db.commit()
+    return {"ok": True}
 
-    if parent_sheet:
-        raise HTTPException(status_code=400, detail=f"Cannot delete sheet. It is used in '{parent_sheet.name}'")
 
-    query = select(Sheet).where(Sheet.id == sheet_id)
+@router.get("/{sheet_id}/script", response_class=PlainTextResponse)
+async def generate_script_sheet(
+    sheet_id: UUID,
+    db: AsyncSession = Depends(get_db),
+):
+    query = (
+        select(Sheet).where(Sheet.id == sheet_id).options(selectinload(Sheet.nodes), selectinload(Sheet.connections))
+    )
     result = await db.execute(query)
     sheet = result.scalar_one_or_none()
+
     if not sheet:
         raise HTTPException(status_code=404, detail="Sheet not found")
 
-    await db.delete(sheet)
-    await db.commit()
-    return None
+    input_overrides = {}
+    generator = CodeGenerator(db)
+    script = await generator.generate_full_script(sheet, input_overrides)
+    return script
+
+
+@router.post("/{sheet_id}/calculate")
+async def calculate_sheet(
+    sheet_id: UUID,
+    inputs: Dict[str, Dict[str, Any]] = None,
+    db: AsyncSession = Depends(get_db),
+):
+    if inputs is None:
+        inputs = {}
+    query = (
+        select(Sheet).where(Sheet.id == sheet_id).options(selectinload(Sheet.nodes), selectinload(Sheet.connections))
+    )
+    result = await db.execute(query)
+    sheet = result.scalar_one_or_none()
+
+    if not sheet:
+        raise HTTPException(status_code=404, detail="Sheet not found")
+
+    return await run_calculation(sheet, inputs, db)
 
 
 @router.get("/{sheet_id}/usages")

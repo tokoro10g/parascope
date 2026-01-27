@@ -192,8 +192,12 @@ except Exception as e:
                 nested_version_id = node.data.get("versionId")
 
                 if nested_version_id:
+                    # Ensure UUID
+                    if isinstance(nested_version_id, str):
+                        nested_version_id = uuid.UUID(nested_version_id)
+                    
                     # Fetch from snapshot
-                    stmt = select(SheetVersion).where(SheetVersion.id == uuid.UUID(nested_version_id))
+                    stmt = select(SheetVersion).where(SheetVersion.id == nested_version_id)
                     result = await self.session.execute(stmt)
                     version = result.scalars().first()
 
@@ -228,13 +232,17 @@ except Exception as e:
                             nodes=v_nodes,
                             connections=v_connections,
                         )
-                        await self._process_sheet_recursive(v_sheet, nested_version_id)
+                        await self._process_sheet_recursive(v_sheet, str(nested_version_id))
 
                 elif nested_sheet_id:
+                    # Ensure UUID
+                    if isinstance(nested_sheet_id, str):
+                        nested_sheet_id = uuid.UUID(nested_sheet_id)
+
                     # Fetch Latest (Live)
                     stmt = (
                         select(Sheet)
-                        .where(Sheet.id == uuid.UUID(nested_sheet_id))
+                        .where(Sheet.id == nested_sheet_id)
                         .options(selectinload(Sheet.nodes), selectinload(Sheet.connections))
                     )
                     result = await self.session.execute(stmt)
