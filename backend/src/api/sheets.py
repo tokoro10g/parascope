@@ -329,7 +329,11 @@ async def update_sheet(
                 # 2. Values & Core Config
                 old_data = old_node.data or {}
                 # node_in.data might be a Pydantic model or dict
-                new_data = node_in.data.model_dump(mode="json") if hasattr(node_in.data, "model_dump") else (node_in.data or {})
+                new_data = (
+                    node_in.data.model_dump(mode="json")
+                    if hasattr(node_in.data, "model_dump")
+                    else (node_in.data or {})
+                )
 
                 for field in ["value", "code", "lut", "description"]:
                     if old_data.get(field) != new_data.get(field):
@@ -392,7 +396,7 @@ async def update_sheet(
             if node_in.type in ("input", "function", "sheet"):
                 if "value" in node_data:
                     node_data.pop("value")
-            
+
             db_node = Node(
                 sheet_id=db_sheet.id,
                 type=node_in.type,

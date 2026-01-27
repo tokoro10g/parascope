@@ -1,6 +1,5 @@
 import uuid
 from typing import Any, Dict
-from uuid import UUID
 
 from fastapi import APIRouter, Depends
 from fastapi.concurrency import run_in_threadpool

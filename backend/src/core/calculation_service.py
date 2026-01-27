@@ -1,13 +1,12 @@
 from typing import Any, Dict
 
-from fastapi.concurrency import run_in_threadpool
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
 
+from ..models.sheet import Sheet
 from .execution import execute_full_script
 from .generator import CodeGenerator
-from ..models.sheet import Sheet
 
 
 def serialize_result(val: Any) -> Any:

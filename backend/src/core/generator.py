@@ -195,7 +195,7 @@ except Exception as e:
                     # Ensure UUID
                     if isinstance(nested_version_id, str):
                         nested_version_id = uuid.UUID(nested_version_id)
-                    
+
                     # Fetch from snapshot
                     stmt = select(SheetVersion).where(SheetVersion.id == nested_version_id)
                     result = await self.session.execute(stmt)
