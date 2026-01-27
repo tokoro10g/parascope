@@ -53,10 +53,43 @@ The easiest way to run Parascope is using Docker Compose.
     *   **Frontend**: Open [http://localhost:3000](http://localhost:3000) in your browser.
     *   **Backend API Docs**: Open [http://localhost:8000/docs](http://localhost:8000/docs).
 
+## 🚢 Production Deployment
+
+For production environments, Parascope provides a optimized Docker configuration using Nginx to serve the frontend and proxy requests to the backend.
+
+```bash
+docker-compose -f docker-compose.prod.yml up --build -d
+```
+
+This configuration:
+*   Uses a multi-stage build for the frontend to produce a lightweight static bundle.
+*   Serves the frontend via Nginx on port 80.
+*   Proxies API requests internally from Nginx to the backend service.
+*   Runs the backend in a production-optimized mode without hot-reloading.
+
+## 🐍 Offline Execution & Generated Scripts
+
+Parascope allows you to export your calculation sheets as standalone Python scripts. These scripts can be run offline without the Parascope server by using the `parascope-runtime` package.
+
+### Running Generated Scripts
+
+1.  **Export the script**: Use the "Generate Script" feature in the Parascope UI.
+2.  **Install the runtime**:
+    ```bash
+    pip install ./packages/parascope-runtime
+    ```
+3.  **Run your script**:
+    ```bash
+    python your_exported_script.py
+    ```
+
+The generated code includes all necessary logic, including nested sheets, which are reconstructed as Python classes.
+
 ## 📂 Project Structure
 
 ```
 parascope/
+├── .github/            # CI/CD workflows
 ├── backend/            # FastAPI application
 │   ├── src/
 │   │   ├── api/        # API Routes
@@ -68,7 +101,13 @@ parascope/
 │   ├── src/
 │   │   ├── components/ # React UI components
 │   │   └── rete/       # Rete.js customization
-└── docker-compose.yml  # Orchestration
+├── e2e/                # Playwright end-to-end tests
+├── packages/
+│   └── parascope-runtime/ # Standalone package for offline execution
+├── docker-compose.yml  # Dev orchestration
+├── docker-compose.prod.yml # Production orchestration
+├── docker-compose.test.yml # Backend test orchestration
+└── docker-compose.e2e.yml # E2E test orchestration
 ```
 
 ## ⚙️ Configuration
