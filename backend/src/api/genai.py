@@ -1,10 +1,10 @@
 import logging
-import os
 
 from fastapi import APIRouter, HTTPException
 from pydantic import BaseModel
 
 from ..core.ai_providers import get_available_providers, get_provider
+from ..core.config import settings
 
 router = APIRouter()
 
@@ -33,7 +33,7 @@ async def get_genai_config():
     return {
         "enabled": len(get_available_providers()) > 0,
         "available_providers": get_available_providers(),
-        "default_provider": os.getenv("DEFAULT_AI_PROVIDER", "gemini"),
+        "default_provider": settings.DEFAULT_AI_PROVIDER,
     }
 
 

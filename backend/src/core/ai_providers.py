@@ -1,9 +1,10 @@
 import base64
 import json
 import logging
-import os
 from abc import ABC, abstractmethod
 from typing import List, Optional
+
+from .config import settings
 
 logger = logging.getLogger(__name__)
 
@@ -53,15 +54,15 @@ class AIProvider(ABC):
 class GeminiProvider(AIProvider):
     @staticmethod
     def is_enabled() -> bool:
-        return bool(os.getenv("GEMINI_API_KEY"))
+        return bool(settings.GEMINI_API_KEY)
 
     def __init__(self):
         try:
             from google import genai
 
-            self.api_key = os.getenv("GEMINI_API_KEY")
+            self.api_key = settings.GEMINI_API_KEY
             self.client = genai.Client(api_key=self.api_key) if self.api_key else None
-            self.model = os.getenv("GEMINI_MODEL", "gemini-3-flash-preview")
+            self.model = settings.GEMINI_MODEL
         except ImportError:
             self.client = None
             self.api_key = None
@@ -114,15 +115,15 @@ class GeminiProvider(AIProvider):
 class OpenAIProvider(AIProvider):
     @staticmethod
     def is_enabled() -> bool:
-        return bool(os.getenv("OPENAI_API_KEY"))
+        return bool(settings.OPENAI_API_KEY)
 
     def __init__(self):
         try:
             from openai import OpenAI
 
-            self.api_key = os.getenv("OPENAI_API_KEY")
+            self.api_key = settings.OPENAI_API_KEY
             self.client = OpenAI(api_key=self.api_key) if self.api_key else None
-            self.model = os.getenv("OPENAI_MODEL", "o4-mini")
+            self.model = settings.OPENAI_MODEL
         except ImportError:
             self.client = None
             self.api_key = None
@@ -162,18 +163,24 @@ class BedrockProvider(AIProvider):
     @staticmethod
     def is_enabled() -> bool:
         return (
-            bool(os.getenv("AWS_ACCESS_KEY_ID") and os.getenv("AWS_SECRET_ACCESS_KEY"))
-            or bool(os.getenv("AWS_PROFILE"))
-            or bool(os.getenv("AWS_CONTAINER_CREDENTIALS_RELATIVE_URI"))
+            bool(settings.AWS_ACCESS_KEY_ID and settings.AWS_SECRET_ACCESS_KEY)
+            or bool(settings.AWS_PROFILE)
+            or bool(settings.AWS_CONTAINER_CREDENTIALS_RELATIVE_URI)
         )
 
     def __init__(self):
         try:
             import boto3
 
-            self.region = os.getenv("AWS_REGION", "us-east-1")
-            self.model_id = os.getenv("BEDROCK_MODEL_ID", "anthropic.claude-3-5-haiku-20241022-v1:0")
-            self.client = boto3.client("bedrock-runtime", region_name=self.region)
+            self.region = settings.AWS_REGION
+            self.model_id = settings.BEDROCK_MODEL_ID
+            
+            client_kwargs = {"region_name": self.region}
+            if settings.AWS_ACCESS_KEY_ID and settings.AWS_SECRET_ACCESS_KEY:
+                client_kwargs["aws_access_key_id"] = settings.AWS_ACCESS_KEY_ID
+                client_kwargs["aws_secret_access_key"] = settings.AWS_SECRET_ACCESS_KEY
+            
+            self.client = boto3.client("bedrock-runtime", **client_kwargs)
         except (ImportError, Exception):
             self.client = None
 
@@ -236,7 +243,7 @@ class BedrockProvider(AIProvider):
 
 def get_provider(provider_name: Optional[str] = None) -> AIProvider:
     if not provider_name:
-        provider_name = os.getenv("DEFAULT_AI_PROVIDER", "gemini")
+        provider_name = settings.DEFAULT_AI_PROVIDER
 
     if provider_name == "gemini":
         return GeminiProvider()

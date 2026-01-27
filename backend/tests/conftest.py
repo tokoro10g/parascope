@@ -10,11 +10,12 @@ from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker, create_asyn
 # Add backend root to path
 sys.path.append(os.path.join(os.path.dirname(__file__), ".."))
 
+from src.core.config import settings
 from src.core.database import Base, get_db
 from src.main import app
 
 # Use the DATABASE_URL from environment (provided by docker-compose.test.yml)
-DATABASE_URL = os.getenv("DATABASE_URL")
+DATABASE_URL = settings.DATABASE_URL
 
 
 @pytest.fixture(scope="session")

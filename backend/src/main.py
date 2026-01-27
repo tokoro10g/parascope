@@ -32,7 +32,7 @@ async def lifespan(app: FastAPI):
 
 app = FastAPI(title="Parascope Backend", lifespan=lifespan)
 
-origins = os.getenv("BACKEND_CORS_ORIGINS", "http://localhost:5173,http://localhost:3000").split(",")
+origins = settings.BACKEND_CORS_ORIGINS.split(",")
 
 app.add_middleware(
     CORSMiddleware,
