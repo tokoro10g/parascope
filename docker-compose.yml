@@ -24,11 +24,11 @@ services:
     volumes:
       - ./backend:/app
       - parascope_uploads:/app/uploads
+    env_file:
+      - .env
     environment:
       - DATABASE_URL=postgresql+asyncpg://user:password@db:5432/parascope
       - BACKEND_CORS_ORIGINS=${BACKEND_CORS_ORIGINS:-http://${SERVER_HOSTNAME:-localhost}:${FRONTEND_PORT:-3000},http://localhost:5173}
-      - USERNAME_REGEX=${USERNAME_REGEX}
-      - GEMINI_API_KEY=${GEMINI_API_KEY}
     depends_on:
       - db
 

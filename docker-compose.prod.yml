@@ -16,12 +16,13 @@ services:
       - "${BACKEND_PORT:-8000}:8000"
     volumes:
       - parascope_uploads:/app/uploads
+    env_file:
+      - .env
     environment:
       - DATABASE_URL=postgresql+asyncpg://user:password@db:5432/parascope
       # Allow requests from the frontend (served on same domain via Nginx proxy, but potentially needed if direct access or complex setup)
       - BACKEND_CORS_ORIGINS=${BACKEND_CORS_ORIGINS:-http://${SERVER_HOSTNAME:-localhost},http://localhost}
-      - USERNAME_REGEX=${USERNAME_REGEX}
-      - GEMINI_API_KEY=${GEMINI_API_KEY}
+      - DEBUG=false
     depends_on:
       - db
 
