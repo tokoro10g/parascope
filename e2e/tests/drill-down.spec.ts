@@ -49,8 +49,10 @@ test.describe('Drill-down & Overrides', () => {
   test('Context Menu Drill-down', async ({ page }) => {
     await page.click('button:has-text("Create New Sheet")');
     const subName = `Sub_${Date.now()}`;
-    await page.locator('input[placeholder="Sheet Name"]').fill(subName);
-    await page.locator('input[placeholder="Sheet Name"]').press('Enter');
+    const nameInput = page.locator('input[placeholder="Sheet Name"]');
+    await nameInput.fill(subName);
+    await nameInput.press('Enter');
+    await expect(nameInput).toHaveValue(subName);
     await zoomOut(page, 4);
 
     await page.click('button:has-text("Add Node")');
@@ -65,8 +67,10 @@ test.describe('Drill-down & Overrides', () => {
     await zoomOut(page, 4);
 
     await page.click('button:has-text("Import Sheet")');
-    await page.waitForTimeout(1000);
-    await page.click(`.explorer-item:has-text("${subName}")`);
+    // Wait for the sub-sheet to appear in the picker
+    const subSheetItem = page.locator('.explorer-item', { hasText: subName });
+    await expect(subSheetItem).toBeVisible({ timeout: 10000 });
+    await subSheetItem.click();
     await moveNode(page, subName, 0, 0);
 
     await page.click('button:has-text("Add Node")');
