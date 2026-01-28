@@ -8,8 +8,8 @@ RUN npm install -g pnpm && pnpm install --frozen-lockfile
 
 COPY . .
 
-# Set API base URL to root (relative) so Nginx proxy works
-ENV VITE_API_BASE_URL=/
+# Set API base URL to empty (relative) so Nginx proxy works
+ENV VITE_API_BASE_URL=""
 
 RUN pnpm build
 
