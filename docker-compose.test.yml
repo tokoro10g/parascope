@@ -5,6 +5,7 @@ services:
     build:
       context: .
       dockerfile: backend/Dockerfile
+    user: root
     volumes:
       - ./backend:/app
     environment:
