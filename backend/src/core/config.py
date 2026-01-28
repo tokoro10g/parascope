@@ -16,6 +16,13 @@ class Settings(BaseSettings):
     BACKEND_CORS_ORIGINS: str = "http://localhost:5173,http://localhost:3000"
     USERNAME_REGEX: str = r"^[a-zA-Z0-9_ ]+$"
 
+    @field_validator("USERNAME_REGEX", mode="before")
+    @classmethod
+    def default_regex_if_empty(cls, v: Optional[str]) -> str:
+        if not v:
+            return r"^[a-zA-Z0-9_ ]+$"
+        return v
+
     # Execution Environment
     EXTRA_ALLOWED_MODULES: set[str] = {"scipy"}
     EXTRA_PRELOAD_MODULES: set[str] = set()
