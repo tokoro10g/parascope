@@ -66,7 +66,7 @@ The easiest way to run Parascope is using Docker Compose.
 
 3.  **Start the application**:
     ```bash
-    docker-compose up --build
+    docker compose up --build
     ```
 
 4.  **Access the application**:
@@ -78,7 +78,7 @@ The easiest way to run Parascope is using Docker Compose.
 For production environments, Parascope provides a optimized Docker configuration using Nginx to serve the frontend and proxy requests to the backend.
 
 ```bash
-docker-compose -f docker-compose.prod.yml up --build -d
+docker compose -f docker-compose.prod.yml up --build -d
 ```
 
 This configuration:
@@ -145,7 +145,7 @@ Backend unit tests are containerized and run in an isolated environment using a 
 
 To run the backend tests:
 ```bash
-docker-compose -f docker-compose.test.yml up --build --abort-on-container-exit
+docker compose -f docker-compose.test.yml up --build --abort-on-container-exit
 ```
 
 This will:
@@ -160,7 +160,7 @@ E2E tests use Playwright to verify the full application stack.
 
 To run the E2E tests:
 ```bash
-docker-compose -f docker-compose.e2e.yml up --build --abort-on-container-exit --exit-code-from e2e-runner
+docker compose -f docker-compose.e2e.yml up --build --abort-on-container-exit --exit-code-from e2e-runner
 ```
 
 To record videos of the test execution (saved in `e2e/test-results/`):
