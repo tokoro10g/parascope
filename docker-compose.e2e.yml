@@ -48,6 +48,7 @@ services:
     working_dir: /work
     environment:
       - BASE_URL=http://frontend-e2e:3000
+      - VIDEO=${VIDEO:-off}
     depends_on:
       frontend-e2e:
         condition: service_healthy
