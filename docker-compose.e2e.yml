@@ -7,7 +7,6 @@ services:
       dockerfile: Dockerfile
     environment:
       - VITE_API_BASE_URL=http://backend-e2e:8000
-      - VITE_USERNAME_REGEX=^[a-zA-Z0-9_]+$
     depends_on:
       - backend-e2e
     healthcheck:
@@ -23,7 +22,6 @@ services:
     environment:
       - DATABASE_URL=postgresql+asyncpg://user:password@db-e2e:5432/parascope_e2e
       - BACKEND_CORS_ORIGINS=*
-      - USERNAME_REGEX=^[a-zA-Z0-9_]+$
       - DB_ECHO=false
     depends_on:
       db-e2e:

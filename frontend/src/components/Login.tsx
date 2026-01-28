@@ -11,7 +11,8 @@ export const Login: React.FC = () => {
   const navigate = useNavigate();
   const location = useLocation();
 
-  const usernameRegex = import.meta.env.VITE_USERNAME_REGEX;
+  const usernameRegex =
+    import.meta.env.VITE_USERNAME_REGEX || '^[a-zA-Z0-9_ ]+$';
   const usernameDescription = import.meta.env.VITE_USERNAME_DESCRIPTION;
 
   useEffect(() => {

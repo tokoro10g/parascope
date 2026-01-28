@@ -14,7 +14,7 @@ class Settings(BaseSettings):
     LOCK_TIMEOUT_SECONDS: int = 604800  # Time in seconds before a lock is considered stale (7 days)
     WORKER_COUNT: int = 5
     BACKEND_CORS_ORIGINS: str = "http://localhost:5173,http://localhost:3000"
-    USERNAME_REGEX: Optional[str] = None
+    USERNAME_REGEX: str = r"^[a-zA-Z0-9_ ]+$"
 
     # Execution Environment
     EXTRA_ALLOWED_MODULES: set[str] = {"scipy"}
