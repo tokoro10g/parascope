@@ -10,7 +10,6 @@ services:
     environment:
       - DATABASE_URL=postgresql+asyncpg://user:password@db-test:5432/parascope_test
       - BACKEND_CORS_ORIGINS=*
-      - USERNAME_REGEX=^[a-zA-Z0-9_]+$
       - GEMINI_API_KEY=${GEMINI_API_KEY}
     depends_on:
       db-test:
