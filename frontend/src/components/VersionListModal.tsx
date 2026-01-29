@@ -13,6 +13,7 @@ interface VersionListModalProps {
   onRestore: (version: SheetVersion) => void;
   onSetDefault: (versionId: string | null) => void;
   isDirty: boolean;
+  isReadOnly?: boolean;
 }
 
 export const VersionListModal: React.FC<VersionListModalProps> = ({
@@ -23,6 +24,7 @@ export const VersionListModal: React.FC<VersionListModalProps> = ({
   onRestore,
   onSetDefault,
   isDirty,
+  isReadOnly,
 }) => {
   const [versions, setVersions] = useState<SheetVersion[]>([]);
   const [isLoading, setIsLoading] = useState(false);
@@ -45,6 +47,7 @@ export const VersionListModal: React.FC<VersionListModalProps> = ({
   }, [sheetId]);
 
   const handleCreate = async () => {
+    if (isReadOnly) return;
     if (!newTag.trim()) {
       toast.error('Version tag is required');
       return;
@@ -87,18 +90,26 @@ export const VersionListModal: React.FC<VersionListModalProps> = ({
           <input
             value={newTag}
             onChange={(e) => setNewTag(e.target.value)}
-            placeholder="Tag (e.g. v1.0)"
+            disabled={isReadOnly}
+            placeholder={
+              isReadOnly
+                ? 'Cannot create versions in read-only mode'
+                : 'Tag (e.g. v1.0)'
+            }
             style={{
               flex: 1,
               padding: '8px',
               border: '1px solid var(--border-color)',
               borderRadius: '4px',
+              backgroundColor: isReadOnly
+                ? 'var(--panel-bg-secondary)'
+                : 'var(--input-bg)',
             }}
           />
           <button
             type="button"
             onClick={handleCreate}
-            disabled={isCreating || isDirty}
+            disabled={isCreating || isDirty || isReadOnly}
             className="btn primary"
             style={{
               padding: '8px 16px',
@@ -108,7 +119,7 @@ export const VersionListModal: React.FC<VersionListModalProps> = ({
             {isCreating ? 'Creating...' : 'Create'}
           </button>
         </div>
-        {isDirty && (
+        {isDirty && !isReadOnly && (
           <p
             style={{
               color: 'var(--danger-color)',
@@ -122,6 +133,7 @@ export const VersionListModal: React.FC<VersionListModalProps> = ({
         <textarea
           value={newDescription}
           onChange={(e) => setNewDescription(e.target.value)}
+          disabled={isReadOnly}
           placeholder="Description (optional)"
           rows={2}
           style={{
@@ -131,6 +143,9 @@ export const VersionListModal: React.FC<VersionListModalProps> = ({
             borderRadius: '4px',
             boxSizing: 'border-box',
             resize: 'vertical',
+            backgroundColor: isReadOnly
+              ? 'var(--panel-bg-secondary)'
+              : 'var(--input-bg)',
           }}
         />
       </div>

@@ -31,6 +31,7 @@ export const SheetEditorModals: React.FC = () => {
     setIsTakeOverModalOpen,
     lockedByOther,
     takeOver,
+    isReadOnly,
   } = useSheetEditor();
 
   return (
@@ -63,6 +64,7 @@ export const SheetEditorModals: React.FC = () => {
           onRestore={handleRestoreVersion}
           onSetDefault={handleSetDefault}
           isDirty={isDirty}
+          isReadOnly={isReadOnly}
         />
       )}
       {currentSheet && (
