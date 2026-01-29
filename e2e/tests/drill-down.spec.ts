@@ -49,7 +49,7 @@ test.describe('Drill-down & Overrides', () => {
   test('Context Menu Drill-down', async ({ page }) => {
     await page.click('button:has-text("Create New Sheet")');
     const subName = `Sub_${Date.now()}`;
-    const nameInput = page.locator('input[placeholder="Sheet Name"]');
+    const nameInput = page.locator('input[class="sheet-name-input"]');
     await nameInput.fill(subName);
     await nameInput.press('Enter');
     await expect(nameInput).toHaveValue(subName);

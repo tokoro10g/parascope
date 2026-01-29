@@ -60,7 +60,7 @@ export async function connectNodes(
   await page.mouse.move(sourceBox.x + sourceBox.width / 2, sourceBox.y + sourceBox.height / 2);
   await page.mouse.down();
   // Move in steps to ensure Rete registers the movement path
-  await page.mouse.move(targetBox.x + targetBox.width / 2, targetBox.y + targetBox.height / 2, { steps: 20 });
+  await page.mouse.move(targetBox.x + targetBox.width / 2, targetBox.y + targetBox.height / 2, { steps: 5 });
   await page.waitForTimeout(200); // Hold for a moment
   await page.mouse.up();
   
