@@ -183,7 +183,9 @@ export const useSweepState = () => {
 
         if (hasMin) {
           nextState.start = String(min);
-          const estimatedEnd = Math.max(currentVal * 2, min + 10);
+          // Set currentVal as midpoint: currentVal = (min + end) / 2 => end = 2 * currentVal - min
+          const idealEnd = 2 * currentVal - min;
+          const estimatedEnd = idealEnd > min ? idealEnd : min + 10;
           nextState.end = String(estimatedEnd);
           nextState.step = ((estimatedEnd - min) / 20).toPrecision(2);
           updateFn(nextState);
@@ -192,7 +194,9 @@ export const useSweepState = () => {
 
         if (hasMax) {
           nextState.end = String(max);
-          const estimatedStart = Math.min(currentVal / 2, max - 10);
+          // Set currentVal as midpoint: currentVal = (start + max) / 2 => start = 2 * currentVal - max
+          const idealStart = 2 * currentVal - max;
+          const estimatedStart = idealStart < max ? idealStart : max - 10;
           nextState.start = String(estimatedStart);
           nextState.step = ((max - estimatedStart) / 20).toPrecision(2);
           updateFn(nextState);
