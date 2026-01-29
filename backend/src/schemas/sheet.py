@@ -20,15 +20,18 @@ class ParameterNodeData(BaseModel):
     max: Optional[float] = None
     dataType: Optional[str] = None  # "number", "option", etc.
     options: Optional[List[str]] = None
+    description: Optional[str] = None
 
 
 class FunctionNodeData(BaseModel):
     code: str = ""
+    description: Optional[str] = None
 
 
 class SheetNodeData(BaseModel):
     sheetId: Optional[UUID] = None
     versionId: Optional[UUID] = None
+    versionTag: Optional[str] = None
 
 
 class LUTRow(BaseModel):
@@ -42,11 +45,13 @@ class LUTData(BaseModel):
 
 class LUTNodeData(BaseModel):
     lut: LUTData = Field(default_factory=LUTData)
+    description: Optional[str] = None
 
 
 class OutputNodeData(BaseModel):
     min: Optional[float] = None
     max: Optional[float] = None
+    description: Optional[str] = None
 
 
 # --- Discriminated Union for Nodes ---
@@ -90,9 +95,13 @@ class OutputNode(NodeShared):
     data: OutputNodeData = Field(default_factory=OutputNodeData)
 
 
+class CommentNodeData(BaseModel):
+    description: Optional[str] = ""
+
+
 class CommentNode(NodeShared):
     type: Literal["comment"]
-    data: Dict[str, Any] = {}
+    data: CommentNodeData = Field(default_factory=CommentNodeData)
 
 
 # Node Creation Union
