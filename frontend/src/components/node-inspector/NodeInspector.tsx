@@ -33,6 +33,7 @@ export const NodeInspector: React.FC<NodeInspectorProps> = ({
   const [showPreview, setShowPreview] = useState(false);
   const [dataLoaded, setDataLoaded] = useState(false);
   const [versions, setVersions] = useState<SheetVersion[]>([]);
+  const [nestedSheet, setNestedSheet] = useState<Sheet | null>(null);
 
   // AI State
   const [aiPrompt, setAiPrompt] = useState('');
@@ -61,11 +62,13 @@ export const NodeInspector: React.FC<NodeInspectorProps> = ({
       setAiUrls('');
       setAiImage(null);
       setVersions([]);
+      setNestedSheet(null);
 
       const currentData = { ...(node.data || {}) };
 
       if (node.type === 'sheet' && currentData.sheetId) {
         api.listSheetVersions(currentData.sheetId).then(setVersions);
+        api.getSheet(currentData.sheetId).then(setNestedSheet);
       }
 
       // Initialize defaults for new fields to avoid leaking state from previous node
@@ -246,22 +249,57 @@ export const NodeInspector: React.FC<NodeInspectorProps> = ({
       {node.type === 'sheet' && (
         <div className="form-group">
           <label htmlFor="sheet-version">Logic Version:</label>
-          <select
-            id="sheet-version"
-            value={data.versionId || ''}
-            onChange={(e) => {
-              const vid = e.target.value || null;
-              const tag = versions.find((v) => v.id === vid)?.version_tag;
-              setData({ ...data, versionId: vid, versionTag: tag });
-            }}
-          >
-            <option value="">Live (Latest Draft)</option>
-            {versions.map((v) => (
-              <option key={v.id} value={v.id}>
-                {v.version_tag} ({new Date(v.created_at).toLocaleDateString()})
+          <div style={{ display: 'flex', gap: '8px' }}>
+            <select
+              id="sheet-version"
+              value={data.versionId || ''}
+              onChange={(e) => {
+                const vid = e.target.value || null;
+                const tag = versions.find((v) => v.id === vid)?.version_tag;
+                setData({ ...data, versionId: vid, versionTag: tag });
+              }}
+              style={{ flex: 1 }}
+            >
+              <option value="">
+                Live (Latest Draft)
+                {nestedSheet && !nestedSheet.default_version_id
+                  ? ' [DEFAULT]'
+                  : ''}
               </option>
-            ))}
-          </select>
+              {versions.map((v) => (
+                <option key={v.id} value={v.id}>
+                  {v.version_tag} ({new Date(v.created_at).toLocaleDateString()})
+                  {nestedSheet?.default_version_id === v.id ? ' [DEFAULT]' : ''}
+                </option>
+              ))}
+            </select>
+            {nestedSheet?.default_version_id &&
+              data.versionId !== nestedSheet.default_version_id && (
+                <button
+                  type="button"
+                  className="btn"
+                  style={{
+                    padding: '4px 8px',
+                    fontSize: '0.85em',
+                    minWidth: 'unset',
+                  }}
+                  onClick={() => {
+                    const defaultVer = versions.find(
+                      (v) => v.id === nestedSheet.default_version_id,
+                    );
+                    if (defaultVer) {
+                      setData({
+                        ...data,
+                        versionId: defaultVer.id,
+                        versionTag: defaultVer.version_tag,
+                      });
+                    }
+                  }}
+                >
+                  Update to Default
+                </button>
+              )}
+          </div>
           <p
             className="help-text"
             style={{ fontSize: '0.8rem', color: '#666', marginTop: '4px' }}
