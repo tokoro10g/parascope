@@ -413,6 +413,7 @@ export function useSheetEditorLogic(): SheetEditorLogic {
                 setNodes([...editor.instance.getNodes()]);
                 setInitialLoadDone(true);
                 setIsLoading(false);
+                setIsDirty(false); // Explicitly reset dirty flag after loading a version
               });
             } else {
               setIsLoading(false);
