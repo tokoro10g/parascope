@@ -28,7 +28,7 @@ async def upload_file(file: UploadFile = File(...)):
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Could not save file: {str(e)}") from e
 
-    return {"filename": new_filename, "url": f"/attachments/{new_filename}"}
+    return {"filename": new_filename, "url": f"/api/v1/attachments/{new_filename}"}
 
 
 @router.get("/{filename}")

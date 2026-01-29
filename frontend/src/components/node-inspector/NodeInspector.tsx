@@ -97,14 +97,20 @@ export const NodeInspector: React.FC<NodeInspectorProps> = ({
   if (!isOpen || !node) return null;
 
   const transformUrl = (url: string) => {
-    if (url.startsWith('/attachments/')) {
-      return `${API_BASE}${url}`;
+    if (
+      url.startsWith('/attachments/') ||
+      url.startsWith('/api/v1/attachments/')
+    ) {
+      const normalizedUrl = url.startsWith('/attachments/')
+        ? `/api/v1${url}`
+        : url;
+      return `${API_BASE}${normalizedUrl}`;
     }
     return url;
   };
 
   const getAttachmentUrl = (filename: string) => {
-    return `/attachments/${filename}`;
+    return `/api/v1/attachments/${filename}`;
   };
 
   const handleSave = () => {

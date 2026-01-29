@@ -31,8 +31,14 @@ export class MarkdownControl extends ClassicPreset.Control {
 }
 
 const transformUrl = (url: string) => {
-  if (url.startsWith('/attachments/')) {
-    return `${API_BASE}${url}`;
+  if (
+    url.startsWith('/attachments/') ||
+    url.startsWith('/api/v1/attachments/')
+  ) {
+    const normalizedUrl = url.startsWith('/attachments/')
+      ? `/api/v1${url}`
+      : url;
+    return `${API_BASE}${normalizedUrl}`;
   }
   return url;
 };

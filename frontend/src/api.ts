@@ -321,9 +321,12 @@ export const api = {
   },
 
   async getVersion(sheetId: string, versionId: string): Promise<SheetVersion> {
-    return request(`${API_BASE}/api/v1/sheets/${sheetId}/versions/${versionId}`, {
-      headers: getHeaders(),
-    });
+    return request(
+      `${API_BASE}/api/v1/sheets/${sheetId}/versions/${versionId}`,
+      {
+        headers: getHeaders(),
+      },
+    );
   },
 
   async setDefaultVersion(

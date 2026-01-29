@@ -84,7 +84,7 @@ async def seed_database(session: AsyncSession):
         shutil.copy(source_image, upload_dir / target_name)
 
         rocket_func_data["attachment"] = target_name
-        rocket_func_data["description"] += f"\n\n![Attachment](/attachments/{target_name})"
+        rocket_func_data["description"] += f"\n\n![Attachment](/api/v1/attachments/{target_name})"
     else:
         print(f"Warning: Could not find seed image at {source_image}")
 
