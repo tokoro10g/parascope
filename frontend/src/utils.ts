@@ -145,14 +145,34 @@ export const syncNestedSheets = async (
 
   return { updatedNodes, connectionsChanged, validConnectionIds };
 };
+
+/**
+ * Constructs a URL for a nested sheet with the given parameters and optional versionId.
+ */
+export const getNestedSheetUrl = (
+  sheetId: string,
+  params: URLSearchParams,
+  versionId?: string,
+): string => {
+  const finalParams = new URLSearchParams(params);
+  if (versionId) {
+    finalParams.set('versionId', versionId);
+  }
+  const queryString = finalParams.toString();
+  return `/sheet/${sheetId}${queryString ? `?${queryString}` : ''}`;
+};
+
+/**
+ * Resolves the input parameters for a nested sheet node from its connections and results.
+ */
 export const resolveNestedSheetParams = (
   editor: NodeEditor<Schemes>,
   nodeId: string,
   lastResult: any,
   calculationInputs: any,
-): string => {
+): URLSearchParams => {
   const node = editor.getNode(nodeId);
-  if (!node?.data?.sheetId) return '';
+  if (!node?.data?.sheetId) return new URLSearchParams();
 
   const connections = editor
     .getConnections()
@@ -191,11 +211,7 @@ export const resolveNestedSheetParams = (
     }
   });
 
-  if (node.data.versionId) {
-    queryParams.set('versionId', node.data.versionId as string);
-  }
-
-  return queryParams.toString();
+  return queryParams;
 };
 
 export const fallbackCopy = (text: string) => {

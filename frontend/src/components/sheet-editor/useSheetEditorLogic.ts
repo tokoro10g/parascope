@@ -20,6 +20,7 @@ import type { NodeType } from '../../rete/types';
 import {
   createSocket,
   extractValuesFromResult,
+  getNestedSheetUrl,
   resolveNestedSheetParams,
 } from '../../utils';
 import type { SheetEditorContextType } from './SheetEditorContext';
@@ -672,15 +673,17 @@ export function useSheetEditorLogic(): SheetEditorLogic {
     (nodeId: string, newTab: boolean) => {
       if (!editor) return;
       const node = editor.instance.getNode(nodeId) as ParascopeNode;
-      const queryString = resolveNestedSheetParams(
+      const params = resolveNestedSheetParams(
         editor.instance,
         nodeId,
         lastResult,
         calculationInputs,
       );
-      const url = `/sheet/${node.data.sheetId}${
-        queryString ? `?${queryString}` : ''
-      }`;
+      const url = getNestedSheetUrl(
+        node.data.sheetId,
+        params,
+        node.data.versionId,
+      );
       if (newTab) {
         window.open(url, '_blank');
       } else {

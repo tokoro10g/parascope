@@ -2,7 +2,7 @@ import { useEffect } from 'react';
 import toast from 'react-hot-toast';
 import { api } from '../api';
 import type { NodeEditorWrapper, ParascopeNode } from '../rete';
-import { resolveNestedSheetParams } from '../utils';
+import { getNestedSheetUrl, resolveNestedSheetParams } from '../utils';
 
 export function useReteEvents(
   editor: NodeEditorWrapper | undefined,
@@ -158,15 +158,17 @@ export function useReteEvents(
       const handleEditNestedSheet = (nodeId: string) => {
         const node = editor.instance.getNode(nodeId);
         if (node?.data?.sheetId) {
-          const queryString = resolveNestedSheetParams(
+          const params = resolveNestedSheetParams(
             editor.instance,
             nodeId,
             lastResultRef.current,
             calculationInputsRef.current,
           );
-          const url = `/sheet/${node.data.sheetId}${
-            queryString ? `?${queryString}` : ''
-          }`;
+          const url = getNestedSheetUrl(
+            node.data.sheetId,
+            params,
+            node.data.versionId,
+          );
           window.open(url, '_blank');
         }
       };

@@ -8,7 +8,11 @@ import { API_BASE } from '../../api';
 import type { ParascopeNode } from '../../rete';
 import './SheetTable.css';
 import type { NodeResult } from '../../api';
-import { copyToClipboard, formatHumanReadableValue } from '../../utils';
+import {
+  copyToClipboard,
+  formatHumanReadableValue,
+  getNestedSheetUrl,
+} from '../../utils';
 import { ScrollablePanel } from '../ScrollablePanel';
 
 interface SheetTableProps {
@@ -336,8 +340,11 @@ export const SheetTable: React.FC<SheetTableProps> = ({
                                 }
                               }
                             }
-                            const queryString = params.toString();
-                            return `/sheet/${sheetId}${queryString ? `?${queryString}` : ''}`;
+                            return getNestedSheetUrl(
+                              sheetId,
+                              params,
+                              node.data?.versionId,
+                            );
                           })()}
                           target="_blank"
                           rel="noreferrer"
