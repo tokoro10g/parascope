@@ -38,3 +38,10 @@
   margin: 0;
   border: none;
 }
+
+/* Ensure connections and markers are behind nodes */
+.rete [data-testid="connection"],
+.rete svg:has(.marker) {
+  z-index: -1;
+  pointer-events: none;
+}
