@@ -12,9 +12,10 @@ This file serves as the primary source of truth and behavioral guidance for Gemi
 
 ## 2. Lessons Learned (Project Truths)
 - **Execution Recovery:** Workers MUST be hard-killed (`process.kill()`) on timeout. `terminate()` is insufficient for processes stuck in infinite Python loops and causes thread starvation in the executor pool.
+- **Error Categorization**: Distinguish between terminating exceptions (`NodeExecutionError` for logic/syntax) and non-terminating logic errors (`ValueValidationError`). Non-terminating errors should still return the calculated value but mark the node/scenario with metadata so the UI can visualize the warning without stopping the entire sheet.
+- **Monorepo Dev Workflow**: For internal libraries like `parascope-runtime`, use editable installs (`uv pip install -e`) and multi-directory reloads in Docker (`uvicorn --reload-dir /app --reload-dir /packages`). This ensures changes in shared libraries are immediately reflected in the backend without container restarts.
+- **Rete.js Layering**: Connections and their markers (arrow tips) in Rete v2 are often siblings or separate SVG layers. Use `z-index: -1` on `[data-testid="connection"]` and target markers via `svg:has(.marker)` or sibling selectors to push them behind nodes for better graph legibility.
 - **Nginx Timeouts:** Engineering calculations can be slow. Nginx `proxy_read_timeout` is set to `60s` to prevent premature connection drops.
-- **E2E Stability:** Parallel E2E execution is preferred for speed but requires a robust backend (the `kill()` fix) to handle intentional timeouts without crashing the suite.
-- **Schema Completeness:** Always verify that metadata fields like `description` or `versionTag` are explicitly added to Pydantic schemas, as they are not automatically exposed from JSONB fields.
 
 ## 3. Architecture Context Map
 - **Backend Entry:** `backend/src/main.py` (API Prefixes: `/api/v1`)
