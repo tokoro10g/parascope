@@ -74,8 +74,10 @@ export const NodeInspector: React.FC<NodeInspectorProps> = ({
       // Initialize defaults for new fields to avoid leaking state from previous node
       currentData.dataType = currentData.dataType || 'any';
       currentData.options = currentData.options || [];
-      currentData.min = currentData.min !== undefined ? currentData.min : undefined;
-      currentData.max = currentData.max !== undefined ? currentData.max : undefined;
+      currentData.min =
+        currentData.min !== undefined ? currentData.min : undefined;
+      currentData.max =
+        currentData.max !== undefined ? currentData.max : undefined;
 
       // Sync value from control if it exists, as it might be newer than data
       if (node.controls.value) {
@@ -268,7 +270,8 @@ export const NodeInspector: React.FC<NodeInspectorProps> = ({
               </option>
               {versions.map((v) => (
                 <option key={v.id} value={v.id}>
-                  {v.version_tag} ({new Date(v.created_at).toLocaleDateString()})
+                  {v.version_tag} ({new Date(v.created_at).toLocaleDateString()}
+                  )
                   {nestedSheet?.default_version_id === v.id ? ' [DEFAULT]' : ''}
                 </option>
               ))}
@@ -332,7 +335,8 @@ export const NodeInspector: React.FC<NodeInspectorProps> = ({
               </div>
               Using "Live" logic means this calculation will change
               automatically whenever the referenced sheet is updated. For
-              reliable results, please select a <strong>versioned snapshot</strong>.
+              reliable results, please select a{' '}
+              <strong>versioned snapshot</strong>.
               {nestedSheet && (
                 <div style={{ marginTop: '6px' }}>
                   If no suitable version exists, please ask{' '}

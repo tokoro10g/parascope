@@ -56,7 +56,6 @@ export const MarkdownControlComponent: React.FC<{ data: MarkdownControl }> = ({
   }, [data]);
 
   return (
-    // biome-ignore lint/a11y/noStaticElementInteractions: this is for Rete event management
     <div
       className="node-markdown-content"
       role="presentation"

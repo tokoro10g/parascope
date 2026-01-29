@@ -144,7 +144,7 @@ export function useReteEvents(
 
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [editor, onDelete, onSave, onPaste, onCopy]);
+  }, [editor, onDelete, onSave, onPaste, onCopy, readOnly]);
 
   useEffect(() => {
     if (editor) {

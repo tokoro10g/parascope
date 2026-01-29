@@ -92,7 +92,7 @@ export function CustomNode(props: any) {
         wrapper.removeEventListener('pointerdown', handlePointerDown);
       };
     }
-  }, [isEditing]);
+  }, [isEditing, type]);
 
   // Apply styles on every render to ensure they persist over Rete's updates
   useEffect(() => {
