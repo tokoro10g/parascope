@@ -21,9 +21,21 @@ jobs:
       - name: Install uv
         uses: astral-sh/setup-uv@v5
 
-      - name: Ruff Check
+      - name: Ruff Check (Backend)
         run: uv run ruff check .
         working-directory: backend
+
+      - name: Ruff Format Check (Backend)
+        run: uv run ruff format --check .
+        working-directory: backend
+
+      - name: Ruff Check (Runtime)
+        run: uv run ruff check .
+        working-directory: packages/parascope-runtime
+
+      - name: Ruff Format Check (Runtime)
+        run: uv run ruff format --check .
+        working-directory: packages/parascope-runtime
 
       - name: Run Backend Tests
         run: |
