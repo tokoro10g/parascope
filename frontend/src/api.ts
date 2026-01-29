@@ -72,6 +72,7 @@ async function request<T = any>(
 export interface Sheet {
   id: string;
   name: string;
+  owner_name?: string;
   folder_id?: string | null;
   default_version_id?: string | null;
   nodes: NodeData[];

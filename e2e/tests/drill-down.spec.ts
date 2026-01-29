@@ -71,6 +71,10 @@ test.describe('Drill-down & Overrides', () => {
     const subSheetItem = page.locator('.explorer-item', { hasText: subName });
     await expect(subSheetItem).toBeVisible({ timeout: 10000 });
     await subSheetItem.click();
+
+    // Close auto-opened inspector
+    await page.click('button:has-text("Cancel")');
+
     await moveNode(page, subName, 0, 0);
 
     await page.click('button:has-text("Add Node")');

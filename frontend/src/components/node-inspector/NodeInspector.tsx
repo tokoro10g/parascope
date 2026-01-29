@@ -1,6 +1,6 @@
 import type React from 'react';
 import { useEffect, useState } from 'react';
-import { API_BASE, api, type SheetVersion } from '../../api';
+import { API_BASE, api, type Sheet, type SheetVersion } from '../../api';
 import { Modal } from '../Modal';
 import { AIGenerator } from './AIGenerator';
 import { DescriptionEditor } from './DescriptionEditor';

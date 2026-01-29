@@ -87,11 +87,7 @@ test.describe('Metadata & Views', () => {
     await page.click('button:has-text("Import Sheet")');
     await page.locator(`.sheet-item:has-text("${childName}")`).click();
     
-    // Open Inspector via Context Menu to avoid dblclick opening nested sheet
-    const sheetNode = page.locator('.node-sheet').filter({ hasText: childName }).first();
-    await sheetNode.click({ button: 'right' });
-    await page.locator('div:text("Edit")').click();
-    
+    // Inspector now opens automatically on import
     await expect(page.locator('.modal-header h2')).toContainText('Edit Node: sheet');
     await expect(page.locator('#sheet-version option')).toHaveCount(2, { timeout: 10000 });
     
@@ -103,8 +99,10 @@ test.describe('Metadata & Views', () => {
     await page.click('button:has-text("Save")');
     await expect(page.locator('.modal-overlay')).not.toBeVisible();
 
-    // Verify Version Tag on Node (Look at the wrapper which contains both the node and the tag)
-    const nodeWrapper = page.locator('div:has(> .node-sheet)').first();
+    // Verify Version Tag on Node
+    // Need to move it down so it is not intercepted by the toolbar
+    await moveNode(page, childName, 0, 100);
+    const nodeWrapper = page.locator('div:has(> .node-sheet)').filter({ hasText: childName }).first();
     await expect(nodeWrapper).toContainText('v1.0.0');
 
     // Save Parent Sheet

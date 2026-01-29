@@ -67,6 +67,10 @@ test.describe('Nesting Sheets', () => {
     await page.waitForTimeout(1000);
     await page.click(`.explorer-item:has-text("${subSheetName}")`);
     await page.waitForTimeout(1000);
+    
+    // Close auto-opened inspector
+    await page.click('button:has-text("Cancel")');
+    
     await moveNode(page, subSheetName, 0, 0);
 
     // Add Constant 'r_in'
