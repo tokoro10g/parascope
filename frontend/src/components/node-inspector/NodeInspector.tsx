@@ -68,9 +68,11 @@ export const NodeInspector: React.FC<NodeInspectorProps> = ({
         api.listSheetVersions(currentData.sheetId).then(setVersions);
       }
 
-      // Initialize defaults for new fields
-      if (!currentData.dataType) currentData.dataType = 'any';
-      if (!currentData.options) currentData.options = [];
+      // Initialize defaults for new fields to avoid leaking state from previous node
+      currentData.dataType = currentData.dataType || 'any';
+      currentData.options = currentData.options || [];
+      currentData.min = currentData.min !== undefined ? currentData.min : undefined;
+      currentData.max = currentData.max !== undefined ? currentData.max : undefined;
 
       // Sync value from control if it exists, as it might be newer than data
       if (node.controls.value) {
