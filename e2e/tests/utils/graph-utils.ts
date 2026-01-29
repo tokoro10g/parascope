@@ -68,6 +68,50 @@ export async function connectNodes(
 }
 
 /**
+ * Delete a node from the Rete editor via context menu.
+ */
+export async function deleteNode(page: Page, nodeTitle: string) {
+  const node = page.locator('[data-testid="node"]').filter({ has: page.locator(`[data-testid="title"]:has-text("${nodeTitle}")`) });
+  await node.click({ button: 'right' });
+  await page.locator('div:text("Delete")').click();
+  await expect(node).not.toBeVisible();
+}
+
+/**
+ * Rename a port (input or output) of a node via the Inspector.
+ */
+export async function renamePort(
+  page: Page,
+  nodeTitle: string,
+  oldPortName: string,
+  newPortName: string,
+  type: 'input' | 'output'
+) {
+  const node = page.locator('[data-testid="node"]').filter({ has: page.locator(`[data-testid="title"]:has-text("${nodeTitle}")`) });
+  
+  // Open Inspector via context menu
+  await node.click({ button: 'right' });
+  await page.locator('div:text("Edit")').click();
+  await expect(page.locator('.modal-header h2')).toContainText('Edit Node:');
+
+  const columnTitle = type === 'input' ? 'Inputs' : 'Outputs';
+  const portInput = page.locator('.io-column')
+    .filter({ has: page.locator(`h3:has-text("${columnTitle}")`) })
+    .locator('input')
+    .filter({ hasValue: oldPortName });
+
+  await expect(portInput).toBeVisible();
+  await portInput.fill(newPortName);
+  
+  await page.click('button:has-text("Save")');
+  await expect(page.locator('.modal-overlay')).not.toBeVisible();
+  
+  // Verify renaming on the node itself
+  const portLabel = node.locator(`.${type}`).filter({ hasText: newPortName });
+  await expect(portLabel).toBeVisible();
+}
+
+/**
  * Zoom out to make more space on the canvas
  */
 export async function zoomOut(page: Page, clicks = 3) {
