@@ -17,7 +17,11 @@ import { useSheetManager } from '../../hooks/useSheetManager';
 import { useUnsavedChanges } from '../../hooks/useUnsavedChanges';
 import { createEditor, type ParascopeNode } from '../../rete';
 import type { NodeType } from '../../rete/types';
-import { createSocket, extractValuesFromResult } from '../../utils';
+import {
+  createSocket,
+  extractValuesFromResult,
+  resolveNestedSheetParams,
+} from '../../utils';
 import type { SheetEditorContextType } from './SheetEditorContext';
 import type { CalculationInputDefinition } from './types';
 import { useEditorSetup } from './useEditorSetup';
@@ -658,16 +662,15 @@ export function useSheetEditorLogic(): SheetEditorLogic {
     (nodeId: string, newTab: boolean) => {
       if (!editor) return;
       const node = editor.instance.getNode(nodeId) as ParascopeNode;
-      const params = new URLSearchParams();
-      if (lastResult?.[nodeId]) {
-        const nodeRes = lastResult[nodeId];
-        for (const [inputKey, inputVal] of Object.entries(
-          nodeRes.inputs || {},
-        )) {
-          params.set(inputKey, String(inputVal));
-        }
-      }
-      const url = `/sheet/${node.data.sheetId}?${params.toString()}`;
+      const queryString = resolveNestedSheetParams(
+        editor.instance,
+        nodeId,
+        lastResult,
+        calculationInputs,
+      );
+      const url = `/sheet/${node.data.sheetId}${
+        queryString ? `?${queryString}` : ''
+      }`;
       if (newTab) {
         window.open(url, '_blank');
       } else {
@@ -675,7 +678,14 @@ export function useSheetEditorLogic(): SheetEditorLogic {
         navigate(url);
       }
     },
-    [editor, lastResult, handleSaveSheet, getExportData, navigate],
+    [
+      editor,
+      lastResult,
+      calculationInputs,
+      handleSaveSheet,
+      getExportData,
+      navigate,
+    ],
   );
 
   useEditorSetup({

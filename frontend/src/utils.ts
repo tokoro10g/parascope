@@ -191,6 +191,10 @@ export const resolveNestedSheetParams = (
     }
   });
 
+  if (node.data.versionId) {
+    queryParams.set('versionId', node.data.versionId as string);
+  }
+
   return queryParams.toString();
 };
 
