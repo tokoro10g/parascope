@@ -396,6 +396,13 @@ export const api = {
     });
   },
 
+  async deleteAttachment(filename: string): Promise<{ ok: boolean }> {
+    return request(`${API_BASE}/api/v1/attachments/${filename}`, {
+      method: 'DELETE',
+      headers: getHeaders(),
+    });
+  },
+
   async sweepSheet(
     sheetId: string,
     inputNodeId: string,

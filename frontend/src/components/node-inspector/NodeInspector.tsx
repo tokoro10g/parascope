@@ -135,7 +135,15 @@ export const NodeInspector: React.FC<NodeInspectorProps> = ({
     }
   };
 
-  const handleRemoveAttachment = () => {
+  const handleRemoveAttachment = async () => {
+    if (data.attachment) {
+      try {
+        await api.deleteAttachment(data.attachment);
+      } catch (error) {
+        console.error('Delete failed:', error);
+        // We continue anyway to clear the UI state if the file is already gone or there's a minor error
+      }
+    }
     const newData = { ...data };
     delete newData.attachment;
     setData(newData);
