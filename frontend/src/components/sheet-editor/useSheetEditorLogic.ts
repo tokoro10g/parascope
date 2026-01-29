@@ -558,7 +558,16 @@ export function useSheetEditorLogic(): SheetEditorLogic {
       }
 
       const centerPos = calcCenterPosition();
-      await addNode(type, label, inputs, outputs, data, centerPos);
+      await addNode(
+        type,
+        label,
+        inputs,
+        outputs,
+        data,
+        centerPos,
+        true,
+        setEditingNode,
+      );
     } catch (e) {
       console.error(e);
       toast.error(`Error importing sheet: ${e}`);

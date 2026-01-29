@@ -307,6 +307,41 @@ export const NodeInspector: React.FC<NodeInspectorProps> = ({
             Choose "Live" for agile concurrent work, or a specific version to
             freeze the logic.
           </p>
+          {!data.versionId && (
+            <div
+              style={{
+                marginTop: '12px',
+                padding: '10px',
+                backgroundColor: 'rgba(211, 47, 47, 0.08)',
+                borderLeft: '4px solid #d32f2f',
+                color: '#d32f2f',
+                fontSize: '0.85rem',
+                lineHeight: '1.4',
+              }}
+            >
+              <div
+                style={{
+                  fontWeight: 600,
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '6px',
+                  marginBottom: '4px',
+                }}
+              >
+                ⚠️ Production Stability Risk
+              </div>
+              Using "Live" logic means this calculation will change
+              automatically whenever the referenced sheet is updated. For
+              reliable results, please select a <strong>versioned snapshot</strong>.
+              {nestedSheet && (
+                <div style={{ marginTop: '6px' }}>
+                  If no suitable version exists, please ask{' '}
+                  <strong>{nestedSheet.owner_name || 'the creator'}</strong> to
+                  create a new version of this sheet.
+                </div>
+              )}
+            </div>
+          )}
         </div>
       )}
 
