@@ -386,6 +386,7 @@ export function useSheetEditorLogic(): SheetEditorLogic {
       onSave: onSave,
     },
     { lastResultRef, calculationInputsRef },
+    isReadOnly,
   );
 
   useEffect(() => {

@@ -24,6 +24,7 @@ export function useReteEvents(
     lastResultRef: React.MutableRefObject<any>;
     calculationInputsRef: React.MutableRefObject<any>;
   },
+  readOnly = false,
 ) {
   const {
     setEditingNode,
@@ -53,7 +54,9 @@ export function useReteEvents(
         // Ctrl+S: Save (Allow even in inputs)
         if (e.key.toLowerCase() === 's') {
           e.preventDefault();
-          onSave?.();
+          if (!readOnly) {
+            onSave?.();
+          }
           return;
         }
 
