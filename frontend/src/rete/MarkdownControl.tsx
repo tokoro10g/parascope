@@ -59,8 +59,6 @@ export const MarkdownControlComponent: React.FC<{ data: MarkdownControl }> = ({
     // biome-ignore lint/a11y/noStaticElementInteractions: this is for Rete event management
     <div
       className="node-markdown-content"
-      onPointerDown={(e) => e.stopPropagation()}
-      onDoubleClick={(e) => e.stopPropagation()}
       role="presentation"
       style={{
         padding: '10px',
