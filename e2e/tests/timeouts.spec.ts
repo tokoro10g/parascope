@@ -37,7 +37,9 @@ test.describe('Safety & Limits', () => {
     await page.click('button:has-text("Save")');
     await moveNode(page, 'InfiniteLoop', 0, 0);
 
-    await page.click('button:has-text("Run")');
+    const runButton = page.locator('button:has-text("Run")');
+    await expect(runButton).toBeEnabled({ timeout: 10000 });
+    await runButton.click();
     
     const toast = page.getByRole('status');
     await expect(toast).toBeVisible({ timeout: 20000 });

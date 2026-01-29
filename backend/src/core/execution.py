@@ -334,8 +334,10 @@ class WorkerHandle:
                     return result
                 except pyqueue.Empty:
                     # Timeout: Kill and restart worker
-                    self.process.terminate()
-                    self.process.join()
+                    # Use kill() instead of terminate() to ensure stuck loops (like while True) are stopped immediately
+                    if self.process:
+                        self.process.kill()
+                        self.process.join(timeout=1.0)
                     self.process = None
                     return {"success": False, "error": "Execution timed out"}
 

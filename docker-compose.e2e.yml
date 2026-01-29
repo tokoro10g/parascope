@@ -1,24 +1,23 @@
 name: parascope-e2e
 
 services:
-  frontend-e2e:
+  frontend:
     build:
       context: ./frontend
-      dockerfile: Dockerfile
-    environment:
-      - VITE_API_BASE_URL=http://backend-e2e:8000
+      dockerfile: Dockerfile.prod
+    # No ports mapped to avoid collision with dev (accessed internally by e2e-runner)
     depends_on:
-      - backend-e2e
+      - backend
     healthcheck:
-      test: ["CMD-SHELL", "wget --no-verbose --tries=1 --spider http://localhost:3000/ || exit 1"]
+      test: ["CMD-SHELL", "wget --no-verbose --tries=1 --spider http://127.0.0.1/ || exit 1"]
       interval: 5s
       timeout: 5s
-      retries: 10
+      retries: 20
 
-  backend-e2e:
+  backend:
     build:
       context: .
-      dockerfile: backend/Dockerfile
+      dockerfile: backend/Dockerfile.prod
     environment:
       - DATABASE_URL=postgresql+asyncpg://user:password@db-e2e:5432/parascope_e2e
       - BACKEND_CORS_ORIGINS=*
@@ -47,10 +46,10 @@ services:
       - ./e2e:/work
     working_dir: /work
     environment:
-      - BASE_URL=http://frontend-e2e:3000
+      - BASE_URL=http://frontend
       - VIDEO=${VIDEO:-off}
     depends_on:
-      frontend-e2e:
+      frontend:
         condition: service_healthy
     command: >
       bash -c "npm install && npx playwright test"
