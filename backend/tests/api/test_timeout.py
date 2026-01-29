@@ -1,6 +1,8 @@
-import pytest
 from uuid import uuid4
+
+import pytest
 from httpx import AsyncClient
+
 
 @pytest.mark.asyncio
 async def test_execution_timeout(client: AsyncClient):
@@ -29,11 +31,11 @@ async def test_execution_timeout(client: AsyncClient):
 
     # 3. Calculate - this should hit the default 5s timeout
     # We use a long timeout for the client request itself to allow the backend to return its error
-    response = await client.post(f"/api/v1/sheets/{sheet_id}/calculate", timeout=10.0) 
-    
+    response = await client.post(f"/api/v1/sheets/{sheet_id}/calculate", timeout=10.0)
+
     assert response.status_code == 200
     res = response.json()
-    
+
     # The global calculation should report success=False or a top-level error
     assert "error" in res
     assert "timed out" in res["error"].lower()
