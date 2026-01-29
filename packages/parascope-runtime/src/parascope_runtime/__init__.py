@@ -448,7 +448,9 @@ class SheetBase:
 
             except ParascopeError as e:
                 # Hard fail but no traceback (for system-raised errors like LUT missing key)
-                self.register_error(node_id, str(e))
+                msg = str(e)
+                self.register_error(node_id, msg)
+                raise NodeExecutionError(msg) from e
 
             except Exception as e:
                 # Capture method-level errors (these are always visible)

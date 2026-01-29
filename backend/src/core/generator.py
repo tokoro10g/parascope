@@ -120,6 +120,11 @@ try:
                 if isinstance(node_res, dict):
                     if 'min' in node_res: meta['min'] = node_res['min']
                     if 'max' in node_res: meta['max'] = node_res['max']
+                    if 'error' in node_res:
+                        meta['error'] = node_res['error']
+                        # If an output failed, mark the step as errored if not already
+                        if "error" not in step_res:
+                            step_res["error"] = node_res['error']
                     
                     if 'value' in node_res:
                          final_val = node_res['value']
@@ -145,16 +150,23 @@ try:
             # Use results from partially executed sheet if available
             if "metadata" not in step_res: step_res["metadata"] = {{}}
             
-            # Extract metadata from raw_results if it exists (from partially successful nodes)
+            # Extract metadata from results if available (from partially successful nodes)
+            target_results = None
             if 'raw_results' in locals():
-                for node_id, node_res in raw_results.items():
+                target_results = raw_results
+            elif 'sweep_sheet_instance' in locals():
+                target_results = sweep_sheet_instance.results
+
+            if target_results:
+                for node_id, node_res in target_results.items():
                     if isinstance(node_res, dict):
                         m = {{}}
                         if 'min' in node_res: m['min'] = node_res['min']
                         if 'max' in node_res: m['max'] = node_res['max']
+                        if 'error' in node_res: m['error'] = node_res['error']
                         if m: step_res["metadata"][node_id] = m
             
-            # Add the global step error
+            # Add the global step error as a sibling to node keys in metadata
             step_res["metadata"]["error"] = msg
             
             # Ensure outputs are populated with None/Null for consistent structure
