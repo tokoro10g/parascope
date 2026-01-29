@@ -87,4 +87,5 @@ async def test_node_description_and_version_tag(client: AsyncClient):
     assert nodes_by_label["Comment"]["data"]["description"] == "Markdown comment content"
     
     # Verify Sheet versionTag (should be enriched by the API)
-    assert nodes_by_label["S1"]["data"]["versionTag"] == "v1.2.3"
+    # Note: Label "S1" is automatically synchronized to "Child Sheet"
+    assert nodes_by_label["Child Sheet"]["data"]["versionTag"] == "v1.2.3"

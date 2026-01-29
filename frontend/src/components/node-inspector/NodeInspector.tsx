@@ -242,7 +242,7 @@ export const NodeInspector: React.FC<NodeInspectorProps> = ({
           id="node-label"
           value={label}
           onChange={(e) => setLabel(e.target.value)}
-          disabled={isGenerating}
+          disabled={isGenerating || node.type === 'sheet'}
         />
       </div>
 

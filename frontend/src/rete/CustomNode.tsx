@@ -76,8 +76,10 @@ export function CustomNode(props: any) {
           const now = Date.now();
           if (now - lastClickRef.current < 300) {
             // Double click detected on title
-            e.stopPropagation(); // Stop bubbling to Rete (shuts down drag/global handlers)
-            setIsEditing(true);
+            if (type !== 'sheet') {
+              e.stopPropagation(); // Stop bubbling to Rete (shuts down drag/global handlers)
+              setIsEditing(true);
+            }
           }
           lastClickRef.current = now;
         }
