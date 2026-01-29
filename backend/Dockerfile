@@ -12,7 +12,9 @@ COPY packages /packages
 COPY backend/pyproject.toml ./
 
 # Create virtual environment and install dependencies
-RUN uv venv && uv pip install -r pyproject.toml --system
+RUN uv venv && \
+    uv pip install -e /packages/parascope-runtime --system && \
+    uv pip install -r pyproject.toml --system
 
 # Copy backend source
 COPY backend .
@@ -24,4 +26,4 @@ RUN useradd -m appuser && \
 
 USER appuser
 
-CMD ["uvicorn", "src.main:app", "--host", "0.0.0.0", "--port", "8000", "--reload"]
+CMD ["uvicorn", "src.main:app", "--host", "0.0.0.0", "--port", "8000", "--reload", "--reload-dir", "/app", "--reload-dir", "/packages"]

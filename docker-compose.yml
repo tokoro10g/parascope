@@ -23,6 +23,7 @@ services:
       - "${BACKEND_PORT:-8000}:8000"
     volumes:
       - ./backend:/app
+      - ./packages:/packages
       - parascope_uploads:/app/uploads
     env_file:
       - .env
