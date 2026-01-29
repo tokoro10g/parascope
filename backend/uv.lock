@@ -709,6 +709,9 @@ dependencies = [
 [package.metadata]
 requires-dist = [{ name = "networkx" }]
 
+[package.metadata.requires-dev]
+dev = [{ name = "ruff" }]
+
 [[package]]
 name = "pluggy"
 version = "1.6.0"
