@@ -2,6 +2,9 @@
   "name": "parascope-e2e",
   "version": "1.0.0",
   "description": "End-to-end tests for Parascope",
+  "engines": {
+    "node": ">=24.0.0"
+  },
   "main": "index.js",
   "devDependencies": {
     "@playwright/test": "^1.58.0"

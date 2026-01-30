@@ -7,7 +7,8 @@
 
   [![CI](https://github.com/tokoro10g/parascope/actions/workflows/ci.yml/badge.svg)](https://github.com/tokoro10g/parascope/actions/workflows/ci.yml)
   ![Python](https://img.shields.io/badge/python-3.12-blue.svg)
-  ![React](https://img.shields.io/badge/react-18-blue.svg)
+  ![React](https://img.shields.io/badge/react-19-blue.svg)
+  ![Node.js](https://img.shields.io/badge/node.js-24-green.svg)
   ![License](https://img.shields.io/badge/license-MIT-green.svg)
 </div>
 
@@ -31,20 +32,21 @@
 ## 🛠️ Tech Stack
 
 ### Frontend
-*   **Framework**: React + TypeScript + Vite
-*   **Graph Library**: Rete.js (Classic Preset) + elkjs (Auto-layout)
+*   **Framework**: React 19 + TypeScript + Vite
+*   **Graph Library**: Rete.js 2.0 (Classic Preset) + elkjs (Auto-layout)
 *   **Visualization**: Apache ECharts (2D/3D Charts)
 *   **Styling**: CSS Modules, Lucide React (Icons)
 *   **Math Rendering**: KaTeX
+*   **Node.js**: >= 24
 *   **Package Manager**: pnpm
 
 ### Backend
 *   **Framework**: FastAPI (Python 3.12)
 *   **Execution**: RestrictedPython (Secure Sandbox)
 *   **Scientific Stack**: NumPy, SciPy, NetworkX
-*   **AI Integration**: Google Gemini, OpenAI, AWS Bedrock
-*   **Database**: PostgreSQL
-*   **ORM**: SQLAlchemy (Async)
+*   **AI Integration**: google-genai, openai, boto3
+*   **Database**: PostgreSQL + asyncpg
+*   **ORM**: SQLAlchemy + Alembic
 *   **Runtime**: Docker / Docker Compose
 *   **Package Manager**: uv
 
