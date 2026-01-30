@@ -225,6 +225,22 @@ export const EditorBar: React.FC<EditorBarProps> = ({
           </span>
         </button>
 
+        {onOpenVersionList && (
+          <button
+            type="button"
+            onClick={(e) => {
+              onOpenVersionList();
+              e.currentTarget.blur();
+            }}
+            className="btn-add-menu-trigger"
+            title="Manage sheet versions"
+            style={{ marginLeft: '4px' }}
+          >
+            <Milestone size={18} />
+            <span style={{ marginLeft: '4px', fontSize: '0.9em' }}>Versions</span>
+          </button>
+        )}
+
         <div
           className="sheet-actions-group"
           ref={sheetMenuRef}
@@ -245,19 +261,6 @@ export const EditorBar: React.FC<EditorBarProps> = ({
               className="add-node-dropdown"
               style={{ left: 0, right: 'auto' }}
             >
-              {onOpenVersionList && (
-                <button
-                  type="button"
-                  onClick={() => {
-                    onOpenVersionList();
-                    setIsSheetMenuOpen(false);
-                  }}
-                  className="add-menu-item"
-                  style={{ color: 'var(--text-color)' }}
-                >
-                  <Milestone size={16} /> Version Control
-                </button>
-              )}
               {onCheckUsage && (
                 <button
                   type="button"
