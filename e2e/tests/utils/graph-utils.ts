@@ -178,6 +178,7 @@ export async function importSheet(page: Page, sheetName: string) {
   await page.click('button:has-text("Import Sheet")');
   // Try both .explorer-item and .sheet-item as different components might use them
   const item = page.locator(`.explorer-item:has-text("${sheetName}"), .sheet-item:has-text("${sheetName}")`);
+  await expect(item).toBeVisible({ timeout: 10000 });
   await item.click();
 }
 
@@ -204,6 +205,47 @@ export async function addNode(page: Page, type: string, label: string, value?: s
   
   await page.click('button:has-text("Save")');
   await expect(page.locator('.modal-overlay')).not.toBeVisible();
+}
+
+/**
+ * Verify a result in the Variables table.
+ */
+export async function verifyResult(page: Page, value: string) {
+  const resultCell = page.locator(`.sheet-table-cell-value:has-text("${value}")`);
+  await expect(resultCell).toBeVisible({ timeout: 10000 });
+}
+
+/**
+ * Change a value in the Variables table (input or constant).
+ */
+export async function changeTableInput(page: Page, name: string, value: string) {
+  const row = page
+    .locator('tr')
+    .filter({ has: page.locator('td').filter({ hasText: name }) });
+  await expect(row).toBeVisible();
+  const input = row.locator('input.sheet-table-input, select.sheet-table-input');
+  await expect(input).toBeVisible();
+
+  const tagName = await input.evaluate((el) => el.tagName.toLowerCase());
+
+  if (tagName === 'select') {
+    await input.selectOption(value);
+  } else {
+    await input.fill(value);
+    await input.press('Enter');
+  }
+}
+
+/**
+ * Create a new folder on the dashboard.
+ */
+export async function createFolder(page: Page, name: string) {
+  page.once('dialog', async dialog => {
+    await dialog.accept(name);
+  });
+  await page.click('button:has-text("New Folder")');
+  const folderLocator = page.locator(`.explorer-item:has-text("${name}"), .sheet-item:has-text("${name}")`);
+  await expect(folderLocator).toBeVisible();
 }
 
 /**
@@ -246,7 +288,7 @@ export async function createSheet(page: Page, name: string) {
   await expect(page.locator('.rete')).toBeVisible();
   
   // Rename the sheet
-  const nameInput = page.locator('.sheet-name-input, input[placeholder="Sheet Name"]');
+  const nameInput = page.getByPlaceholder('Sheet Name');
   await expect(nameInput).toBeVisible();
   await nameInput.fill(name);
   await nameInput.press('Enter');

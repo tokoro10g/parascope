@@ -1,3 +1,8 @@
+/**
+ * Sheet Versioning
+ * Goal: Verify that users can create and restore specific versions of their sheets.
+ */
+
 import { test, expect } from '@playwright/test';
 import {
   humanDelay,

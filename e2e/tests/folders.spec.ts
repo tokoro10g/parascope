@@ -1,60 +1,43 @@
 /**
  * Organizing Engineering Models (Folders)
  * Goal: Organize a growing collection of engineering models.
- * 
- * This test verifies:
- * 1. Creation of a new folder on the Dashboard.
- * 2. Navigating into a folder.
- * 3. Creating a new sheet *inside* a folder.
- * 4. Verifying folder contents and "Up" navigation.
  */
 
 import { test, expect } from '@playwright/test';
+import {
+  login,
+  createFolder,
+  createSheet,
+  addNode,
+  saveSheet,
+} from './utils/graph-utils';
 
 test.describe('Folders & Organization', () => {
   test.beforeEach(async ({ page }) => {
-    await page.goto('/login');
-    await page.locator('input[placeholder="Your Name"]').fill('organizer_user');
-    await page.click('button:has-text("Continue")');
-    await page.waitForURL('**/');
+    await login(page, 'organizer_user');
   });
 
   test('Folder and Sheet Lifecycle', async ({ page }) => {
     const folderName = `Folder_${Date.now()}`;
-    page.on('dialog', async dialog => {
-      await dialog.accept(folderName);
-    });
-    await page.click('button:has-text("New Folder")');
-    const folderLocator = page.locator(`.explorer-item:has-text("${folderName}")`);
-    await expect(folderLocator).toBeVisible();
+    await createFolder(page, folderName);
+
+    const folderLocator = page.locator(
+      `.explorer-item:has-text("${folderName}"), .sheet-item:has-text("${folderName}")`,
+    );
     await folderLocator.click();
-    
+
     // Create sheet inside folder
-    await page.click('button:has-text("Create New Sheet")');
-    await page.waitForURL('**/sheet/**');
-    
     const sheetName = `Sheet_${Date.now()}`;
-    const nameInput = page.locator('input[placeholder="Sheet Name"]');
-    await expect(nameInput).toBeVisible();
-    
-    // Select all and type to ensure we replace the default "Untitled" name
-    await nameInput.click({ clickCount: 3 });
-    await nameInput.press('Control+A');
-    await nameInput.press('Backspace');
-    await nameInput.fill(sheetName);
-    await nameInput.press('Enter');
-    
+    await createSheet(page, sheetName);
+
     // Add a node to make the sheet dirty and allow saving
-    await page.click('button:has-text("Add Node")');
-    await page.click('.add-menu-item:has-text("Constant")');
-    await page.locator('#node-label').fill('trigger');
-    await page.click('button:has-text("Save")');
-    
-    await page.click('button[title="Save Sheet"]');
-    await expect(page.locator('.unsaved-indicator-badge')).toBeHidden();
-    
+    await addNode(page, 'Constant', 'trigger');
+    await saveSheet(page);
+
     await page.goto('/');
     await folderLocator.click();
-    await expect(page.locator(`.explorer-item:has-text("${sheetName}")`)).toBeVisible();
+    await expect(
+      page.locator(`.explorer-item:has-text("${sheetName}")`),
+    ).toBeVisible();
   });
 });

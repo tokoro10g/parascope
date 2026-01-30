@@ -1,43 +1,43 @@
 /**
  * Table View & Data Export
  * Goal: Efficiently manage parameters and share results with spreadsheets.
- * 
- * This test verifies:
- * 1. Editing input values directly within the sidebar Table View.
- * 2. Automatic propagation of results after table edits.
- * 3. Exporting the results table to the clipboard in TSV format.
  */
 
 import { test, expect } from '@playwright/test';
-import { connectNodes, moveNode, zoomOut } from './utils/graph-utils';
+import {
+  connectNodes,
+  moveNode,
+  zoomOut,
+  login,
+  addNode,
+  runCalculation,
+  verifyResult,
+  changeTableInput,
+} from './utils/graph-utils';
 
 test.describe('Table Productivity', () => {
   test.beforeEach(async ({ page }) => {
-    await page.goto('/login');
-    await page.locator('input[placeholder="Your Name"]').fill('table_user');
-    await page.click('button:has-text("Continue")');
-    await page.waitForURL('**/');
+    await login(page, 'table_user');
   });
 
   test('Table Editing and TSV Export', async ({ page }) => {
     // Mock clipboard API
     await page.evaluate(() => {
-      (window as any).clipboardData = "";
-      Object.defineProperty(navigator, "clipboard", {
+      (window as any).clipboardData = '';
+      Object.defineProperty(navigator, 'clipboard', {
         value: {
-          writeText: async (text: string) => { (window as any).clipboardData = text; }
+          writeText: async (text: string) => {
+            (window as any).clipboardData = text;
+          },
         },
-        configurable: true
+        configurable: true,
       });
     });
 
     await page.click('button:has-text("Create New Sheet")');
     await zoomOut(page, 4);
 
-    await page.click('button:has-text("Add Node")');
-    await page.click('.add-menu-item:has-text("Input")');
-    await page.locator('#node-label').fill('factor');
-    await page.click('button:has-text("Save")');
+    await addNode(page, 'Input', 'factor');
     await moveNode(page, 'factor', -200, 0);
 
     await page.click('button:has-text("Add Node")');
@@ -47,26 +47,23 @@ test.describe('Table Productivity', () => {
     await page.click('button:has-text("Save")');
     await moveNode(page, 'doubler', 0, 0);
 
-    await page.click('button:has-text("Add Node")');
-    await page.click('.add-menu-item:has-text("Output")');
-    await page.locator('#node-label').fill('total');
-    await page.click('button:has-text("Save")');
+    await addNode(page, 'Output', 'total');
     await moveNode(page, 'total', 200, 0);
 
     await connectNodes(page, 'factor', 'value', 'doubler', 'x');
     await connectNodes(page, 'doubler', 'result', 'total', 'value');
 
     // Edit in table
-    const tableInput = page.locator('tr:has-text("factor") input.sheet-table-input');
-    await tableInput.fill('50');
-    await tableInput.press('Enter');
+    await changeTableInput(page, 'factor', '50');
 
-    await page.click('button:has-text("Run")');
-    await expect(page.locator('.sheet-table-cell-value:has-text("100")')).toBeVisible({ timeout: 5000 });
+    await runCalculation(page);
+    await verifyResult(page, '100');
 
     // Export
     await page.click('button:has-text("Copy Table")');
-    const clipboardText = await page.evaluate(() => (window as any).clipboardData);
+    const clipboardText = await page.evaluate(
+      () => (window as any).clipboardData,
+    );
     expect(clipboardText).toContain('factor');
     expect(clipboardText).toContain('total');
     expect(clipboardText).toContain('50');

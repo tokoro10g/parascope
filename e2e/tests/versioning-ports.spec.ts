@@ -1,3 +1,8 @@
+/**
+ * Versioning & Port Synchronization
+ * Goal: Ensure that nested sheet nodes strictly follow the I/O definition of their selected version.
+ */
+
 import { expect, test } from '@playwright/test';
 import {
   connectNodes,

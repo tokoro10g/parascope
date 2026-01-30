@@ -1,3 +1,8 @@
+/**
+ * Versioning & Locking
+ * Goal: Ensure that viewing a specific version URL is read-only and does not acquire a sheet lock.
+ */
+
 import { expect, test } from '@playwright/test';
 import { createSheet, createVersion, login, saveSheet } from './utils/graph-utils';
 
