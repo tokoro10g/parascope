@@ -45,3 +45,15 @@
   z-index: -1;
   pointer-events: none;
 }
+
+.rete [data-testid="connection"]:hover path {
+  stroke: #ff4757;
+  stroke-width: 10px;
+  cursor: pointer;
+}
+
+.rete span:has([data-testid="connection"]:hover) + svg .marker {
+  fill: #ff4757;
+  stroke: #ff4757;
+  stroke-width: 4px;
+}
