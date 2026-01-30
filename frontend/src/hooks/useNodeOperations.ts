@@ -22,6 +22,27 @@ export function useNodeOperations(
 ) {
   const editor = wrapper?.instance;
 
+  const getUniqueLabel = useCallback(
+    (label: string, type: NodeType, excludeNodeId?: string) => {
+      const isReservedType = type === 'input' || type === 'constant' || type === 'output';
+      if (!isReservedType) return label;
+
+      let newLabel = label;
+      let counter = 1;
+
+      const exists = (l: string) =>
+        nodes.some((n) => n.type === type && n.label === l && n.id !== excludeNodeId);
+
+      while (exists(newLabel)) {
+        newLabel = `${label} (${counter})`;
+        counter++;
+      }
+
+      return newLabel;
+    },
+    [nodes],
+  );
+
   const calcCenterPosition = useCallback(() => {
     if (!editor || !area) return { x: 0, y: 0 };
     const bounds = area.container.getBoundingClientRect();
@@ -56,9 +77,11 @@ export function useNodeOperations(
       if (!editor || !area) return;
       const id = uuidv4();
 
+      const uniqueLabel = getUniqueLabel(label, type);
+
       const node = new ParascopeNode(
         type,
-        label,
+        uniqueLabel,
         inputs,
         outputs,
         data,
@@ -85,7 +108,7 @@ export function useNodeOperations(
       setIsDirty(true);
       return node;
     },
-    [editor, area, handleCalculationInputChange, setIsDirty, wrapper],
+    [editor, area, handleCalculationInputChange, setIsDirty, wrapper, getUniqueLabel],
   );
 
   const handleDuplicateNode = useCallback(
@@ -95,7 +118,7 @@ export function useNodeOperations(
       if (!originalNode) return;
 
       const type = originalNode.type;
-      const label = `${originalNode.label} (copy)`;
+      const label = originalNode.label;
 
       const inputs = Object.keys(originalNode.inputs).map(createSocket);
       const outputs = Object.keys(originalNode.outputs).map(createSocket);
@@ -161,21 +184,7 @@ export function useNodeOperations(
       };
 
       if (updates.label && updates.label !== node.label) {
-        // Check for duplicate input/output names
-        if (node.type === 'input' || node.type === 'output') {
-          const existingNode = nodes.find(
-            (n) =>
-              n.type === node.type &&
-              n.label === updates.label &&
-              n.id !== nodeId,
-          );
-          if (existingNode) {
-            alert(
-              `An ${node.type} node with the name "${updates.label}" already exists.`,
-            );
-            return;
-          }
-        }
+        updates.label = getUniqueLabel(updates.label, updates.type || node.type, nodeId);
 
         if (node.type === 'input' || node.type === 'output') {
           const isDefaultLabel =
@@ -195,18 +204,8 @@ export function useNodeOperations(
       }
 
       if (updates.type && updates.type !== node.type) {
-        const existingNode = nodes.find(
-          (n) =>
-            n.type === updates.type &&
-            n.label === node.label &&
-            n.id !== nodeId,
-        );
-        if (existingNode) {
-          alert(
-            `An ${updates.type} node with the name "${node.label}" already exists.`,
-          );
-          return;
-        }
+        updates.label = getUniqueLabel(updates.label || node.label, updates.type, nodeId);
+
         if (node.type === 'input') {
           // An input node is going to be switched to a constant node. Warn the user.
           if (
@@ -317,7 +316,7 @@ export function useNodeOperations(
         });
       }
     },
-    [editor, area, nodes, setIsDirty, addHistoryAction, wrapper],
+    [editor, area, nodes, setIsDirty, addHistoryAction, wrapper, getUniqueLabel],
   );
 
   return {
