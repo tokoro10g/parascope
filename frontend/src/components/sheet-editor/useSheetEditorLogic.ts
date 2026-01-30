@@ -538,14 +538,29 @@ export function useSheetEditorLogic(): SheetEditorLogic {
 
     try {
       const fullSheet = await api.getSheet(sheet.id);
-      const { inputs, outputs } = resolveSheetPorts(fullSheet.nodes);
+      let sheetNodes = fullSheet.nodes;
+      const data: any = { sheetId: sheet.id };
+
+      if (fullSheet.default_version_id) {
+        data.versionId = fullSheet.default_version_id;
+        try {
+          const defaultVer = await api.getVersion(
+            sheet.id,
+            fullSheet.default_version_id,
+          );
+          if (defaultVer.data && Array.isArray(defaultVer.data.nodes)) {
+            sheetNodes = defaultVer.data.nodes;
+            data.versionTag = defaultVer.version_tag;
+          }
+        } catch (verErr) {
+          console.error('Failed to fetch default version details', verErr);
+        }
+      }
+
+      const { inputs, outputs } = resolveSheetPorts(sheetNodes);
 
       const type = 'sheet';
       const label = sheet.name;
-      const data: any = { sheetId: sheet.id };
-      if (fullSheet.default_version_id) {
-        data.versionId = fullSheet.default_version_id;
-      }
 
       const centerPos = calcCenterPosition();
       await addNode(

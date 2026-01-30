@@ -135,3 +135,43 @@ export async function humanDelay(page: Page, ms = 700) {
     await page.waitForTimeout(ms);
   }
 }
+
+/**
+ * Creates a new sheet with the given name.
+ */
+export async function createSheet(page: Page, name: string) {
+  // Go to root folder if not already there
+  if (!page.url().endsWith('/')) {
+    await page.goto('/');
+  }
+  
+  await page.click('button:has-text("New Sheet")');
+  
+  // Wait for modal input
+  const input = page.locator('input[placeholder="Sheet Name"]');
+  await expect(input).toBeVisible();
+  await input.fill(name);
+  
+  // Click Create and wait for modal to disappear
+  await page.click('button:has-text("Create")');
+  await expect(input).not.toBeVisible();
+  
+  // Wait for editor to load
+  await expect(page.locator('.rete')).toBeVisible();
+  
+  // Wait a bit for Rete to initialize
+  await page.waitForTimeout(1000);
+}
+
+/**
+ * Logs in to the application with the given username.
+ */
+export async function login(page: Page, username = 'TestUser') {
+  await page.goto('/');
+  // Check if already logged in (if reusing context/state)
+  if (await page.locator('input[placeholder="Your Name"]').isVisible()) {
+    await page.fill('input[placeholder="Your Name"]', username);
+    await page.click('button:has-text("Continue")');
+    await expect(page.locator('button:has-text("New Sheet")')).toBeVisible();
+  }
+}

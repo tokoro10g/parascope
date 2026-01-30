@@ -77,37 +77,57 @@ export const syncNestedSheets = async (
     sheet.connections.map((c) => c.id).filter((id): id is string => !!id),
   );
 
-  // Deduplicate sheet IDs to fetch each sheet only once
-  const uniqueSheetIds = new Set(
-    nestedSheetNodes.map((n) => n.data.sheetId).filter(Boolean),
-  );
-  const sheetMap = new Map<string, Sheet>();
+  // Deduplicate requests by creating a unique key for each sheet version config
+  const uniqueSheetRequests = new Set<string>();
+  nestedSheetNodes.forEach((n) => {
+    const sid = n.data?.sheetId;
+    const vid = n.data?.versionId;
+    if (sid) {
+      uniqueSheetRequests.add(`${sid}:${vid || 'live'}`);
+    }
+  });
+
+  const sheetDataMap = new Map<string, any>();
 
   await Promise.all(
-    Array.from(uniqueSheetIds).map(async (id) => {
+    Array.from(uniqueSheetRequests).map(async (key) => {
+      const [sid, vid] = key.split(':');
       try {
-        const s = await api.getSheet(id);
-        sheetMap.set(id, s);
+        if (vid && vid !== 'live') {
+          const v = await api.getVersion(sid, vid);
+          if (v.data) {
+            sheetDataMap.set(key, v.data);
+          }
+        } else {
+          const s = await api.getSheet(sid);
+          sheetDataMap.set(key, s);
+        }
       } catch (err) {
-        console.error(`Failed to fetch nested sheet ${id}`, err);
+        console.error(`Failed to fetch sheet data for ${key}`, err);
       }
     }),
   );
 
   for (const node of nestedSheetNodes) {
     try {
-      const childSheet = sheetMap.get(node.data.sheetId);
-      if (!childSheet) continue;
+      const key = `${node.data.sheetId}:${node.data.versionId || 'live'}`;
+      const childSheetData = sheetDataMap.get(key);
+      
+      if (!childSheetData) continue;
 
-      // Update Inputs (from child's Input nodes)
-      const newInputs = childSheet.nodes
-        .filter((n) => n.type === 'input')
-        .map((n) => createSocket(n.label));
+      const childNodes = Array.isArray(childSheetData.nodes)
+        ? childSheetData.nodes
+        : [];
 
-      // Update Outputs (from child's Output nodes and Constant nodes)
-      const newOutputs = childSheet.nodes
-        .filter((n) => n.type === 'output' || n.type === 'constant')
-        .map((n) => ({ key: n.label, socket_type: n.type }));
+      // Update Inputs
+      const newInputs = childNodes
+        .filter((n: any) => n.type === 'input')
+        .map((n: any) => createSocket(n.label));
+
+      // Update Outputs
+      const newOutputs = childNodes
+        .filter((n: any) => n.type === 'output' || n.type === 'constant')
+        .map((n: any) => ({ key: n.label, socket_type: n.type }));
 
       // Find the node in the array and update it
       const nodeIndex = updatedNodes.findIndex((n) => n.id === node.id);
@@ -120,9 +140,8 @@ export const syncNestedSheets = async (
       }
 
       // Validate Connections
-      // Remove connections to/from this node that reference non-existent sockets
-      const inputKeys = new Set(newInputs.map((i) => i.key));
-      const outputKeys = new Set(newOutputs.map((o) => o.key));
+      const inputKeys = new Set(newInputs.map((i: any) => i.key));
+      const outputKeys = new Set(newOutputs.map((o: any) => o.key));
 
       sheet.connections.forEach((c) => {
         if (c.target_id === node.id) {
@@ -211,11 +230,7 @@ export const resolveNestedSheetParams = (
     }
   });
 
-  return getNestedSheetUrl(
-    node.data.sheetId as string,
-    params,
-    node.data.versionId as string,
-  );
+  return queryParams;
 };
 
 export const resolveSheetPorts = (nodes: any[]) => {
