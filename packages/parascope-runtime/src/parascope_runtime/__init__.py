@@ -487,8 +487,8 @@ class SheetBase:
                             new_stack.append(new_frame)
                         else:
                             new_stack.append(frame)
-                    elif "core/runtime.py" not in frame.filename:
-                        # Keep external frames but skip our own runtime wrapper
+                    elif "parascope_runtime" not in frame.filename and "core/runtime.py" not in frame.filename:
+                        # Keep external frames but skip our own runtime wrapper and library internals
                         new_stack.append(frame)
 
                 if new_stack:
