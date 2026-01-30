@@ -47,13 +47,14 @@
 }
 
 .rete [data-testid="connection"]:hover path {
-  stroke: #ff4757;
+  stroke: #fcaf3e;
   stroke-width: 10px;
-  cursor: pointer;
+  transition: stroke-width 0.2s ease;
 }
 
 .rete span:has([data-testid="connection"]:hover) + svg .marker {
-  fill: #ff4757;
-  stroke: #ff4757;
+  fill: #fcaf3e;
+  stroke: #fcaf3e;
   stroke-width: 4px;
+  transition: stroke-width 0.2s ease;
 }
