@@ -214,7 +214,7 @@ class BedrockProvider(AIProvider):
                         "type": "base64",
                         "media_type": mime_type,
                         "data": encoded,
-                    }
+                    },
                 }
             )
 
