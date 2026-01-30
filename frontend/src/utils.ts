@@ -83,7 +83,7 @@ export const syncNestedSheets = async (
     const sid = n.data?.sheetId;
     const vid = n.data?.versionId;
     if (sid) {
-      uniqueSheetRequests.add(`${sid}:${vid || 'live'}`);
+      uniqueSheetRequests.add(`${sid}:${vid || 'draft'}`);
     }
   });
 
@@ -93,7 +93,7 @@ export const syncNestedSheets = async (
     Array.from(uniqueSheetRequests).map(async (key) => {
       const [sid, vid] = key.split(':');
       try {
-        if (vid && vid !== 'live') {
+        if (vid && vid !== 'draft') {
           const v = await api.getVersion(sid, vid);
           if (v.data) {
             sheetDataMap.set(key, v.data);
@@ -110,7 +110,7 @@ export const syncNestedSheets = async (
 
   for (const node of nestedSheetNodes) {
     try {
-      const key = `${node.data.sheetId}:${node.data.versionId || 'live'}`;
+      const key = `${node.data.sheetId}:${node.data.versionId || 'draft'}`;
       const childSheetData = sheetDataMap.get(key);
       
       if (!childSheetData) continue;

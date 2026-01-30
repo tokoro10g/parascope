@@ -174,19 +174,21 @@ export function CustomNode(props: any) {
             position: 'absolute',
             top: '-8px',
             right: '10px',
-            backgroundColor: data.data.versionTag ? '#f5f5f5' : '#e1bee7',
-            color: '#333',
+            backgroundColor: data.data.versionTag ? '#f5f5f5' : '#d32f2f',
+            color: data.data.versionTag ? '#333' : 'white',
             fontSize: '10px',
             fontWeight: 'bold',
             padding: '2px 6px',
             borderRadius: '4px',
             pointerEvents: 'none',
             zIndex: 2,
-            border: '1px solid #bdbdbd',
+            border: data.data.versionTag
+              ? '1px solid #bdbdbd'
+              : '1px solid #d32f2f',
             boxShadow: '0 1px 2px rgba(0,0,0,0.1)',
           }}
         >
-          {data.data.versionTag || 'Live'}
+          {data.data.versionTag || 'Draft'}
         </div>
       )}
       {Icon && (

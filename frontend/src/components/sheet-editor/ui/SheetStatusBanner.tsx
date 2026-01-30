@@ -44,45 +44,7 @@ export const SheetStatusBanner: React.FC = () => {
             minWidth: 'unset',
           }}
         >
-          Back to Live
-        </button>
-      </div>
-    );
-  }
-
-  if (!lockedByOther && currentSheet?.default_version_id) {
-    return (
-      <div
-        className="lock-banner"
-        style={{
-          backgroundColor: '#fff3e0',
-          color: '#e65100',
-          borderColor: '#ffe0b2',
-        }}
-      >
-        <span>
-          Status:{' '}
-          <strong>Draft (Default is {defaultVersionTag || 'Locked'})</strong>.
-          Changes here will not affect other sheets until a new version is
-          published and set as default.
-        </span>
-        <button
-          type="button"
-          onClick={() =>
-            navigate(
-              `/sheet/${sheetId}?versionId=${currentSheet.default_version_id}`,
-            )
-          }
-          className="btn"
-          style={{
-            backgroundColor: '#e65100',
-            color: 'white',
-            border: 'none',
-            padding: '5px 10px',
-            minWidth: 'unset',
-          }}
-        >
-          View Default
+          Open Draft
         </button>
       </div>
     );
@@ -107,7 +69,7 @@ export const SheetStatusBanner: React.FC = () => {
     );
   }
 
-  if (!lockedByOther && isReadOnly && !isLockLoading) {
+  if (isReadOnly && !isLockLoading) {
     return (
       <div className="lock-banner">
         <span>You are in Read-Only mode. Reload to acquire lock.</span>
@@ -123,5 +85,40 @@ export const SheetStatusBanner: React.FC = () => {
     );
   }
 
-  return null;
+  // Draft Banner (Show whenever editing the draft version and not locked)
+  return (
+    <div
+      className="lock-banner"
+      style={{
+        backgroundColor: '#fff3e0',
+        color: '#e65100',
+        borderColor: '#ffe0b2',
+      }}
+    >
+      <span>
+        You are editing the <strong>Draft</strong> version. These changes won't
+        affect other sheets until you publish a new version.
+      </span>
+      {currentSheet?.default_version_id && (
+        <button
+          type="button"
+          onClick={() =>
+            navigate(
+              `/sheet/${sheetId}?versionId=${currentSheet.default_version_id}`,
+            )
+          }
+          className="btn"
+          style={{
+            backgroundColor: '#e65100',
+            color: 'white',
+            border: 'none',
+            padding: '5px 10px',
+            minWidth: 'unset',
+          }}
+        >
+          Open default version ({defaultVersionTag})
+        </button>
+      )}
+    </div>
+  );
 };

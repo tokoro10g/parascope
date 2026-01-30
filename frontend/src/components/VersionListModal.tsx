@@ -173,9 +173,9 @@ export const VersionListModal: React.FC<VersionListModalProps> = ({
         >
           <div>
             <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-              <strong style={{ fontSize: '1.1em' }}>
-                Live (Bleeding Edge)
-              </strong>
+                <span className="version-tag">Draft</span>
+
+
               {!defaultVersionId && (
                 <span
                   style={{

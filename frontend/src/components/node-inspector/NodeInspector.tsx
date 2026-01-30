@@ -275,7 +275,7 @@ export const NodeInspector: React.FC<NodeInspectorProps> = ({
               style={{ flex: 1 }}
             >
               <option value="">
-                Live (Latest Draft)
+                Draft
                 {nestedSheet && !nestedSheet.default_version_id
                   ? ' [DEFAULT]'
                   : ''}
@@ -329,7 +329,7 @@ export const NodeInspector: React.FC<NodeInspectorProps> = ({
             className="help-text"
             style={{ fontSize: '0.8rem', color: '#666', marginTop: '4px' }}
           >
-            Choose "Live" for agile concurrent work, or a specific version to
+            Choose "Draft" for agile concurrent work, or a specific version to
             freeze the logic.
           </p>
           {!data.versionId && (
@@ -355,7 +355,7 @@ export const NodeInspector: React.FC<NodeInspectorProps> = ({
               >
                 ⚠️ Production Stability Risk
               </div>
-              Using "Live" logic means this calculation will change
+              Using "Draft" logic means this calculation will change
               automatically whenever the referenced sheet is updated. For
               reliable results, please select a{' '}
               <strong>versioned snapshot</strong>.
