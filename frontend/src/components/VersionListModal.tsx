@@ -1,4 +1,4 @@
-import { RotateCcw } from 'lucide-react';
+import { Milestone, RefreshCw, Star, Trash2 } from 'lucide-react';
 import type React from 'react';
 import { useCallback, useEffect, useState } from 'react';
 import toast from 'react-hot-toast';
@@ -12,8 +12,8 @@ interface VersionListModalProps {
   defaultVersionId?: string | null;
   onRestore: (version: SheetVersion) => void;
   onSetDefault: (versionId: string | null) => void;
-  isDirty: boolean;
-  isReadOnly?: boolean;
+  readOnly?: boolean;
+  isDirty?: boolean;
 }
 
 export const VersionListModal: React.FC<VersionListModalProps> = ({
@@ -23,8 +23,8 @@ export const VersionListModal: React.FC<VersionListModalProps> = ({
   defaultVersionId,
   onRestore,
   onSetDefault,
-  isDirty,
-  isReadOnly,
+  readOnly = false,
+  isDirty = false,
 }) => {
   const [versions, setVersions] = useState<SheetVersion[]>([]);
   const [isLoading, setIsLoading] = useState(false);
@@ -33,7 +33,6 @@ export const VersionListModal: React.FC<VersionListModalProps> = ({
   const [isCreating, setIsCreating] = useState(false);
 
   const loadVersions = useCallback(async () => {
-    if (!sheetId) return;
     setIsLoading(true);
     try {
       const data = await api.listSheetVersions(sheetId);
@@ -46,12 +45,17 @@ export const VersionListModal: React.FC<VersionListModalProps> = ({
     }
   }, [sheetId]);
 
-  const handleCreate = async () => {
-    if (isReadOnly) return;
+  const handleCreate = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (isDirty) {
+      toast.error('Please save your changes before creating a new version');
+      return;
+    }
     if (!newTag.trim()) {
       toast.error('Version tag is required');
       return;
     }
+
     setIsCreating(true);
     try {
       await api.createSheetVersion(sheetId, newTag, newDescription);
@@ -67,6 +71,21 @@ export const VersionListModal: React.FC<VersionListModalProps> = ({
     }
   };
 
+  const handleDelete = async (v: SheetVersion) => {
+    if (!window.confirm(`Are you sure you want to delete version "${v.version_tag}"? This cannot be undone.`)) {
+      return;
+    }
+
+    try {
+      await api.deleteVersion(sheetId, v.id);
+      toast.success(`Version ${v.version_tag} deleted`);
+      loadVersions();
+    } catch (e: any) {
+      console.error(e);
+      toast.error(`Failed to delete version: ${e.message}`);
+    }
+  };
+
   useEffect(() => {
     if (isOpen) {
       loadVersions();
@@ -75,304 +94,221 @@ export const VersionListModal: React.FC<VersionListModalProps> = ({
 
   return (
     <Modal isOpen={isOpen} onClose={onClose} title="Version Control">
-      {/* Creation Form */}
-      <div
-        style={{
-          marginBottom: '20px',
-          paddingBottom: '20px',
-          borderBottom: '1px solid var(--border-color)',
-        }}
-      >
-        <h3 style={{ fontSize: '1rem', marginTop: 0, marginBottom: '10px' }}>
-          Create New Version
-        </h3>
-        <div style={{ display: 'flex', gap: '10px', marginBottom: '10px' }}>
-          <input
-            value={newTag}
-            onChange={(e) => setNewTag(e.target.value)}
-            disabled={isReadOnly}
-            placeholder={
-              isReadOnly
-                ? 'Cannot create versions in read-only mode'
-                : 'Tag (e.g. v1.0)'
-            }
-            style={{
-              flex: 1,
-              padding: '8px',
-              border: '1px solid var(--border-color)',
-              borderRadius: '4px',
-              backgroundColor: isReadOnly
-                ? 'var(--panel-bg-secondary)'
-                : 'var(--input-bg)',
-            }}
-          />
-          <button
-            type="button"
-            onClick={handleCreate}
-            disabled={isCreating || isDirty || isReadOnly}
-            className="btn primary"
-            style={{
-              padding: '8px 16px',
-              minWidth: 'unset',
-            }}
-          >
-            {isCreating ? 'Creating...' : 'Create'}
-          </button>
-        </div>
-        {isDirty && !isReadOnly && (
-          <p
-            style={{
-              color: 'var(--danger-color)',
-              fontSize: '0.85em',
-              margin: '5px 0 0 0',
-            }}
-          >
-            Please save your changes before creating a new version.
-          </p>
-        )}
-        <textarea
-          value={newDescription}
-          onChange={(e) => setNewDescription(e.target.value)}
-          disabled={isReadOnly}
-          placeholder="Description (optional)"
-          rows={2}
+      {!readOnly && (
+        <form
+          onSubmit={handleCreate}
+          className="version-create-form"
           style={{
-            width: '100%',
-            padding: '8px',
-            border: '1px solid var(--border-color)',
-            borderRadius: '4px',
-            boxSizing: 'border-box',
-            resize: 'vertical',
-            backgroundColor: isReadOnly
-              ? 'var(--panel-bg-secondary)'
-              : 'var(--input-bg)',
+            marginBottom: '24px',
+            padding: '16px',
+            backgroundColor: 'var(--button-secondary-bg)',
+            borderRadius: '8px',
+            border: '1px solid var(--border-light)',
+            opacity: isDirty ? 0.7 : 1
           }}
-        />
-      </div>
+        >
+          <h3 style={{ marginTop: 0, marginBottom: '16px', fontSize: '1em', color: 'var(--text-color)' }}>
+            Create New Version
+          </h3>
+          {isDirty && (
+            <div style={{
+              fontSize: '0.85em',
+              color: 'var(--danger-color)',
+              marginBottom: '12px',
+              padding: '8px',
+              backgroundColor: 'rgba(var(--danger-color-rgb), 0.1)',
+              borderRadius: '4px',
+              border: '1px solid var(--danger-color)'
+            }}>
+              Please save your changes before creating a new version.
+            </div>
+          )}
+          <div className="form-group">
+            <label htmlFor="version-tag" style={{ color: 'var(--text-color)' }}>Version Tag (e.g. v1.0):</label>
+            <input
+              id="version-tag"
+              value={newTag}
+              onChange={(e) => setNewTag(e.target.value)}
+              placeholder="v1.0"
+              disabled={isCreating || isDirty}
+              style={{ backgroundColor: 'var(--input-bg)', color: 'var(--text-color)', border: '1px solid var(--border-color)' }}
+            />
+          </div>
+          <div className="form-group">
+            <label htmlFor="version-desc" style={{ color: 'var(--text-color)' }}>Description (Optional):</label>
+            <textarea
+              id="version-desc"
+              value={newDescription}
+              onChange={(e) => setNewDescription(e.target.value)}
+              placeholder="What changed in this version?"
+              disabled={isCreating || isDirty}
+              rows={2}
+              style={{ backgroundColor: 'var(--input-bg)', color: 'var(--text-color)', border: '1px solid var(--border-color)' }}
+            />
+          </div>
+          <button
+            type="submit"
+            className="btn primary"
+            disabled={isCreating || isDirty || !newTag.trim()}
+            style={{ width: '100%', marginTop: '8px' }}
+          >
+            {isCreating ? 'Creating...' : 'Create Version'}
+          </button>
+        </form>
+      )}
 
-      <h3 style={{ fontSize: '1rem', marginTop: 0, marginBottom: '10px' }}>
-        History
-      </h3>
-      <div
-        className="version-list"
-        style={{ maxHeight: '50vh', overflowY: 'auto' }}
-      >
+      <div className="version-list" style={{ maxHeight: '400px', overflowY: 'auto' }}>
         <div
+          className="version-item"
           style={{
-            padding: '12px',
-            border: '1px solid var(--border-color)',
-            borderRadius: '6px',
-            backgroundColor: !defaultVersionId
-              ? 'rgba(25, 118, 210, 0.1)'
-              : 'var(--panel-bg-secondary)',
-            marginBottom: '10px',
             display: 'flex',
             justifyContent: 'space-between',
             alignItems: 'center',
+            padding: '12px',
+            borderBottom: '1px solid var(--border-light)',
+            backgroundColor: !defaultVersionId ? 'rgba(var(--primary-color-rgb), 0.1)' : 'transparent'
           }}
         >
           <div>
             <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                <span className="version-tag">Draft</span>
+                <span className="version-tag" style={{ color: 'var(--text-color)', fontWeight: 'bold' }}>Draft</span>
 
 
               {!defaultVersionId && (
                 <span
                   style={{
+                    fontSize: '0.75em',
                     backgroundColor: 'var(--primary-color)',
                     color: 'white',
                     padding: '2px 6px',
                     borderRadius: '4px',
-                    fontSize: '0.75em',
                   }}
                 >
-                  Current Default
+                  DEFAULT
                 </span>
               )}
             </div>
-            <div
-              style={{
-                fontSize: '0.85em',
-                color: 'var(--text-secondary)',
-                marginTop: '4px',
-              }}
-            >
-              The latest saved state.
+            <div style={{ fontSize: '0.85em', color: 'var(--text-secondary)', marginTop: '4px' }}>
+              The current working state of the sheet.
             </div>
           </div>
-          {defaultVersionId && (
+          {defaultVersionId && !readOnly && (
             <button
               type="button"
+              className="btn btn-sm"
               onClick={() => onSetDefault(null)}
-              className="btn secondary"
-              style={{
-                padding: '4px 8px',
-                fontSize: '0.85em',
-                minWidth: 'unset',
-              }}
+              title="Set Draft as default"
             >
-              Set as Default
+              <Star size={14} /> Set Default
             </button>
           )}
         </div>
 
         {isLoading ? (
-          <div
-            style={{
-              textAlign: 'center',
-              padding: '20px',
-              color: 'var(--text-secondary)',
-            }}
-          >
+          <div style={{ padding: '20px', textAlign: 'center', color: 'var(--text-secondary)' }}>
             Loading versions...
           </div>
         ) : versions.length === 0 ? (
-          <div
-            style={{
-              textAlign: 'center',
-              padding: '20px',
-              color: 'var(--text-secondary)',
-            }}
-          >
+          <div style={{ padding: '40px', textAlign: 'center', color: 'var(--text-muted)' }}>
+            <Milestone size={48} style={{ opacity: 0.2, marginBottom: '12px' }} />
+            <br />
             No versions created yet
           </div>
         ) : (
-          <div
-            style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}
-          >
-            {versions.map((v) => (
-              <div
-                key={v.id}
-                style={{
-                  padding: '12px',
-                  border: '1px solid var(--border-color)',
-                  borderRadius: '6px',
-                  backgroundColor:
-                    v.id === defaultVersionId
-                      ? 'rgba(25, 118, 210, 0.1)'
-                      : 'var(--panel-bg-secondary)',
-                }}
-              >
-                <div
-                  style={{
-                    display: 'flex',
-                    justifyContent: 'space-between',
-                    alignItems: 'baseline',
-                    marginBottom: '4px',
-                  }}
-                >
+          versions.map((v) => (
+            <div
+              key={v.id}
+              className="version-item"
+              style={{
+                display: 'flex',
+                justifyContent: 'space-between',
+                alignItems: 'center',
+                padding: '12px',
+                borderBottom: '1px solid var(--border-light)',
+                backgroundColor:
+                  v.id === defaultVersionId
+                    ? 'rgba(var(--primary-color-rgb), 0.1)'
+                    : 'transparent',
+              }}
+            >
+              <div style={{ flex: 1, marginRight: '16px' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                  <strong style={{ fontSize: '1.1em', color: 'var(--text-color)' }}>{v.version_tag}</strong>
+                  {v.id === defaultVersionId && (
+                    <span
+                      style={{
+                        fontSize: '0.75em',
+                        backgroundColor: 'var(--primary-color)',
+                        color: 'white',
+                        padding: '2px 6px',
+                        borderRadius: '4px',
+                      }}
+                    >
+                      DEFAULT
+                    </span>
+                  )}
+                  <span style={{ fontSize: '0.8em', color: 'var(--text-muted)' }}>
+                    {new Date(v.created_at).toLocaleDateString()}
+                  </span>
+                </div>
+                {v.description && (
                   <div
-                    style={{
-                      display: 'flex',
-                      alignItems: 'center',
-                      gap: '8px',
-                    }}
-                  >
-                    <strong style={{ fontSize: '1.1em' }}>
-                      {v.version_tag}
-                    </strong>
-                    {v.id === defaultVersionId && (
-                      <span
-                        style={{
-                          backgroundColor: 'var(--primary-color)',
-                          color: 'white',
-                          padding: '2px 6px',
-                          borderRadius: '4px',
-                          fontSize: '0.75em',
-                        }}
-                      >
-                        Default
-                      </span>
-                    )}
-                  </div>
-                  <span
                     style={{
                       fontSize: '0.85em',
                       color: 'var(--text-secondary)',
+                      marginTop: '4px',
                     }}
                   >
-                    {new Date(v.created_at).toLocaleString()}
-                  </span>
-                </div>
-
-                <div
-                  style={{
-                    fontSize: '0.9em',
-                    marginBottom: '10px',
-                    color: 'var(--text-color)',
-                  }}
-                >
-                  {v.description || (
-                    <em style={{ color: 'var(--text-secondary)' }}>
-                      No description
-                    </em>
-                  )}
-                </div>
-
-                <div
-                  style={{
-                    display: 'flex',
-                    justifyContent: 'space-between',
-                    alignItems: 'center',
-                    fontSize: '0.85em',
-                    color: 'var(--text-secondary)',
-                  }}
-                >
-                  <span>By {v.created_by}</span>
-                  <div style={{ display: 'flex', gap: '8px' }}>
+                    {v.description}
+                  </div>
+                )}
+              </div>
+              <div style={{ display: 'flex', gap: '8px' }}>
+                {!readOnly && (
+                  <>
                     {v.id !== defaultVersionId && (
                       <button
                         type="button"
+                        className="btn btn-sm"
                         onClick={() => onSetDefault(v.id)}
-                        className="btn secondary"
-                        style={{
-                          padding: '4px 8px',
-                          fontSize: '0.85em',
-                          minWidth: 'unset',
-                        }}
+                        title="Set as default version for all users"
                       >
-                        Set as Default
+                        <Star size={14} /> Set Default
                       </button>
                     )}
-                    <a
-                      href={`/sheet/${sheetId}?versionId=${v.id}`}
-                      target="_blank"
-                      rel="noreferrer"
-                      className="btn"
-                      style={{
-                        padding: '4px 8px',
-                        fontSize: '0.85em',
-                        minWidth: 'unset',
-                      }}
-                    >
-                      View
-                    </a>
                     <button
                       type="button"
-                      onClick={() => {
-                        if (
-                          window.confirm(
-                            `Are you sure you want to restore version "${v.version_tag}"? This will overwrite your current sheet state.`,
-                          )
-                        ) {
-                          onRestore(v);
-                          onClose();
-                        }
-                      }}
-                      className="btn"
-                      style={{
-                        padding: '4px 8px',
-                        minWidth: 'unset',
-                        fontSize: '0.85em',
-                      }}
+                      className="btn btn-sm"
+                      onClick={() => onRestore(v)}
+                      title="Overwrite current sheet with this version"
                     >
-                      <RotateCcw size={14} /> Restore
+                      <RefreshCw size={14} /> Restore
                     </button>
-                  </div>
-                </div>
+                    {v.id !== defaultVersionId && (
+                      <button
+                        type="button"
+                        className="btn btn-sm danger"
+                        onClick={() => handleDelete(v)}
+                        title="Delete this version"
+                      >
+                        <Trash2 size={14} />
+                      </button>
+                    )}
+                  </>
+                )}
+                <a
+                  href={`/sheet/${sheetId}?versionId=${v.id}`}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="btn btn-sm"
+                  style={{ textDecoration: 'none' }}
+                  title="View this version in a new tab"
+                >
+                  View
+                </a>
               </div>
-            ))}
-          </div>
+            </div>
+          ))
         )}
       </div>
     </Modal>

@@ -23,6 +23,7 @@ export interface SheetEditorContextType {
   activeTab: 'editor' | 'variables' | 'descriptions';
   lockedByOther: string | null;
   defaultVersionTag: string | null;
+  autoCalculate: boolean;
 
   // Modals State
   isSheetPickerOpen: boolean;
@@ -40,6 +41,7 @@ export interface SheetEditorContextType {
   // Actions
   setEditingNode: (node: ParascopeNode | null) => void;
   setActiveTab: (tab: 'editor' | 'variables' | 'descriptions') => void;
+  setAutoCalculate: (auto: boolean) => void;
   setIsSheetPickerOpen: (open: boolean) => void;
   setIsUsageModalOpen: (open: boolean) => void;
   setIsVersionListOpen: (open: boolean) => void;

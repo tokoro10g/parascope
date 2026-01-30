@@ -22,6 +22,8 @@ export const SheetEditorPanel: React.FC = () => {
     handlePaste,
     setIsUsageModalOpen,
     setIsHistoryModalOpen,
+    autoCalculate,
+    setAutoCalculate,
     reteRef,
   } = useSheetEditor();
 
@@ -101,6 +103,8 @@ export const SheetEditorPanel: React.FC = () => {
           onPaste={handlePaste}
           onCheckUsage={() => setIsUsageModalOpen(true)}
           onOpenHistory={() => setIsHistoryModalOpen(true)}
+          autoCalculate={autoCalculate}
+          onToggleAutoCalculate={setAutoCalculate}
         />
         <div
           ref={reteRef}

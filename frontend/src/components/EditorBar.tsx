@@ -18,6 +18,8 @@ import {
   Sigma,
   Table,
   Undo,
+  Zap,
+  ZapOff,
 } from 'lucide-react';
 import type React from 'react';
 import { useEffect, useRef, useState } from 'react';
@@ -39,6 +41,8 @@ interface EditorBarProps {
   onPaste: () => void;
   onZoomToFit?: () => void;
   onCheckUsage?: () => void;
+  autoCalculate?: boolean;
+  onToggleAutoCalculate?: (auto: boolean) => void;
 }
 
 export const EditorBar: React.FC<EditorBarProps> = ({
@@ -56,6 +60,8 @@ export const EditorBar: React.FC<EditorBarProps> = ({
   onPaste,
   onZoomToFit,
   onCheckUsage,
+  autoCalculate = true,
+  onToggleAutoCalculate,
 }) => {
   const [name, setName] = useState(sheetName || '');
   const [isAddMenuOpen, setIsAddMenuOpen] = useState(false);
@@ -284,6 +290,35 @@ export const EditorBar: React.FC<EditorBarProps> = ({
       </div>
 
       <div className="toolbar-group history-group">
+        {onToggleAutoCalculate && (
+          <button
+            type="button"
+            onClick={(e) => {
+              onToggleAutoCalculate(!autoCalculate);
+              e.currentTarget.blur();
+            }}
+            title={autoCalculate ? 'Disable Auto-Calculation' : 'Enable Auto-Calculation'}
+            style={{
+              color: autoCalculate ? 'var(--primary-color)' : 'var(--text-muted)',
+              backgroundColor: autoCalculate ? 'rgba(var(--primary-color-rgb), 0.1)' : 'transparent',
+              borderColor: autoCalculate ? 'var(--primary-color)' : 'transparent',
+              padding: '4px 8px',
+              width: 'auto',
+              gap: '6px',
+            }}
+          >
+            {autoCalculate ? <Zap size={18} /> : <ZapOff size={18} />}
+            <span style={{ fontSize: '0.85em', fontWeight: 600 }}>Auto-calc</span>
+          </button>
+        )}
+        <div
+          style={{
+            width: '1px',
+            height: '20px',
+            backgroundColor: 'var(--border-color)',
+            margin: '0 4px',
+          }}
+        />
         <button
           type="button"
           onClick={(e) => {

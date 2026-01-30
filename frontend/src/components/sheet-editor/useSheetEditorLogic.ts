@@ -53,6 +53,7 @@ export function useSheetEditorLogic(): SheetEditorLogic {
   const [isVersionListOpen, setIsVersionListOpen] = useState(false);
   const [isTakeOverModalOpen, setIsTakeOverModalOpen] = useState(false);
   const [isHistoryModalOpen, setIsHistoryModalOpen] = useState(false);
+  const [autoCalculate, setAutoCalculate] = useState(true);
   const [initialLoadDone, setInitialLoadDone] = useState(false);
   const initialLoadDoneRef = useRef(false);
   const [defaultVersionTag, setDefaultVersionTag] = useState<string | null>(
@@ -205,6 +206,7 @@ export function useSheetEditorLogic(): SheetEditorLogic {
   }, [currentSheet?.default_version_id, sheetId]);
 
   const triggerAutoCalculation = useCallback(() => {
+    if (!autoCalculate) return;
     if (calculateTimeoutRef.current) {
       clearTimeout(calculateTimeoutRef.current);
     }
@@ -235,7 +237,7 @@ export function useSheetEditorLogic(): SheetEditorLogic {
         setNodes([...editor.instance.getNodes()]);
       }
     }, 50);
-  }, [getExportData, calculatePreview, editor, currentSheet]);
+  }, [getExportData, calculatePreview, editor, currentSheet, autoCalculate]);
 
   const handleCalculationInputChange = useCallback(
     (id: string, value: string) => {
@@ -402,14 +404,14 @@ export function useSheetEditorLogic(): SheetEditorLogic {
       if (versionId) {
         setIsLoading(true);
         Promise.all([api.getVersion(sheetId, versionId), api.getSheet(sheetId)])
-          .then(([v, liveSheet]) => {
+          .then(([v, draftSheet]) => {
             if (editor && v.data) {
               const tempSheet = {
                 ...v.data,
                 id: sheetId,
-                name: `${liveSheet.name} (${v.version_tag})`,
+                name: `${draftSheet.name} (${v.version_tag})`,
                 version_tag: v.version_tag,
-                default_version_id: liveSheet.default_version_id,
+                default_version_id: draftSheet.default_version_id,
               };
               setCurrentSheet(tempSheet);
               editor.loadSheet(tempSheet).then(() => {
@@ -767,6 +769,7 @@ export function useSheetEditorLogic(): SheetEditorLogic {
     activeTab,
     lockedByOther,
     defaultVersionTag,
+    autoCalculate,
     isSheetPickerOpen,
     isUsageModalOpen,
     isVersionListOpen,
@@ -778,6 +781,7 @@ export function useSheetEditorLogic(): SheetEditorLogic {
     reteRef: ref,
     setEditingNode,
     setActiveTab,
+    setAutoCalculate,
     setIsSheetPickerOpen,
     setIsUsageModalOpen,
     setIsVersionListOpen,

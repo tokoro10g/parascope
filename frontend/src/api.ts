@@ -330,6 +330,16 @@ export const api = {
     );
   },
 
+  async deleteVersion(sheetId: string, versionId: string): Promise<void> {
+    return request(
+      `${API_BASE}/api/v1/sheets/${sheetId}/versions/${versionId}`,
+      {
+        method: 'DELETE',
+      },
+    );
+  },
+
+
   async setDefaultVersion(
     sheetId: string,
     versionId: string | null,

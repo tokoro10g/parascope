@@ -64,7 +64,7 @@ export const SheetEditorModals: React.FC = () => {
           onRestore={handleRestoreVersion}
           onSetDefault={handleSetDefault}
           isDirty={isDirty}
-          isReadOnly={isReadOnly}
+          readOnly={isReadOnly}
         />
       )}
       {currentSheet && (
