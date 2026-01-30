@@ -129,16 +129,21 @@ export async function renamePort(
 export async function saveSheet(page: Page) {
   await page.click('button[title="Save Sheet"]');
   await expect(page.getByText('Sheet saved successfully').first()).toBeVisible();
+  // Also wait for unsaved badge to disappear if it exists
+  await expect(page.locator('.unsaved-indicator-badge')).toBeHidden();
 }
 
 /**
  * Create a new version of the current sheet.
  * Note: Sheet must be clean (saved) for the Create button to be enabled.
  */
-export async function createVersion(page: Page, tag: string) {
+export async function createVersion(page: Page, tag: string, description?: string) {
   await page.click('.btn-sheet-menu-trigger');
   await page.click('.add-menu-item:has-text("Version Control")');
   await page.locator('input[placeholder*="Tag"]').fill(tag);
+  if (description) {
+    await page.locator('textarea[placeholder*="Description"]').fill(description);
+  }
   
   const [response] = await Promise.all([
     page.waitForResponse(resp => resp.url().includes('/versions') && resp.request().method() === 'POST'),
@@ -147,6 +152,58 @@ export async function createVersion(page: Page, tag: string) {
   
   await page.click('.modal-close-btn');
   return response.json();
+}
+
+/**
+ * Restore a specific version of the sheet from the Version Control modal.
+ */
+export async function restoreVersion(page: Page, tag: string) {
+  await page.click('.btn-sheet-menu-trigger');
+  await page.click('.add-menu-item:has-text("Version Control")');
+  
+  const vItem = page.locator('.version-list > div').filter({ hasText: tag });
+  
+  page.once('dialog', async dialog => {
+    await dialog.accept();
+  });
+  
+  await vItem.getByRole('button', { name: 'Restore' }).click();
+  await page.waitForTimeout(1000); // Wait for restoration reload
+}
+
+/**
+ * Import another sheet into the current sheet.
+ */
+export async function importSheet(page: Page, sheetName: string) {
+  await page.click('button:has-text("Import Sheet")');
+  // Try both .explorer-item and .sheet-item as different components might use them
+  const item = page.locator(`.explorer-item:has-text("${sheetName}"), .sheet-item:has-text("${sheetName}")`);
+  await item.click();
+}
+
+/**
+ * Run the calculation.
+ */
+export async function runCalculation(page: Page) {
+  await page.click('button:has-text("Run")');
+}
+
+/**
+ * Add a node of a specific type.
+ */
+export async function addNode(page: Page, type: string, label: string, value?: string) {
+  await page.click('button:has-text("Add Node")');
+  await page.click(`.add-menu-item:has-text("${type}")`);
+  
+  if (label) {
+    await page.locator('#node-label').fill(label);
+  }
+  if (value !== undefined) {
+    await page.locator('#node-value').fill(value);
+  }
+  
+  await page.click('button:has-text("Save")');
+  await expect(page.locator('.modal-overlay')).not.toBeVisible();
 }
 
 /**

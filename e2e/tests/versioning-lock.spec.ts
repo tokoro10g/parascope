@@ -1,5 +1,5 @@
 import { expect, test } from '@playwright/test';
-import { createSheet, login } from './utils/graph-utils';
+import { createSheet, createVersion, login, saveSheet } from './utils/graph-utils';
 
 test.describe('Versioning & Locking', () => {
   test('Opening a version does not lock the sheet', async ({ browser }) => {
