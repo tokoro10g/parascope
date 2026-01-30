@@ -145,22 +145,21 @@ export async function createSheet(page: Page, name: string) {
     await page.goto('/');
   }
   
-  await page.click('button:has-text("New Sheet")');
-  
-  // Wait for modal input
-  const input = page.locator('input[placeholder="Sheet Name"]');
-  await expect(input).toBeVisible();
-  await input.fill(name);
-  
-  // Click Create and wait for modal to disappear
-  await page.click('button:has-text("Create")');
-  await expect(input).not.toBeVisible();
+  await page.click('button:has-text("Create New Sheet")');
   
   // Wait for editor to load
   await expect(page.locator('.rete')).toBeVisible();
   
-  // Wait a bit for Rete to initialize
-  await page.waitForTimeout(1000);
+  // Rename the sheet
+  // The input might have a placeholder "Sheet Name" or class "sheet-name-input"
+  const nameInput = page.locator('.sheet-name-input, input[placeholder="Sheet Name"]');
+  await expect(nameInput).toBeVisible();
+  await nameInput.fill(name);
+  await nameInput.press('Enter');
+  
+  // Wait for the name to be saved/updated (optional, but good practice)
+  // Maybe wait a tick
+  await page.waitForTimeout(500);
 }
 
 /**
@@ -168,10 +167,20 @@ export async function createSheet(page: Page, name: string) {
  */
 export async function login(page: Page, username = 'TestUser') {
   await page.goto('/');
-  // Check if already logged in (if reusing context/state)
-  if (await page.locator('input[placeholder="Your Name"]').isVisible()) {
-    await page.fill('input[placeholder="Your Name"]', username);
+  
+  // Wait for either the dashboard or the login form
+  const loginInput = page.locator('input[placeholder="Your Name"]');
+  const dashboardButton = page.locator('button:has-text("Create New Sheet")');
+  
+  await Promise.race([
+    loginInput.waitFor({ state: 'visible' }).catch(() => {}),
+    dashboardButton.waitFor({ state: 'visible' }).catch(() => {})
+  ]);
+
+  if (await loginInput.isVisible()) {
+    await loginInput.fill(username);
     await page.click('button:has-text("Continue")');
-    await expect(page.locator('button:has-text("New Sheet")')).toBeVisible();
+    // Ensure we reached the dashboard
+    await expect(page.locator('button:has-text("Create New Sheet")')).toBeVisible({ timeout: 10000 });
   }
 }

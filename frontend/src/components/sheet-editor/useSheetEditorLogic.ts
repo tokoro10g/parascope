@@ -97,14 +97,15 @@ export function useSheetEditorLogic(): SheetEditorLogic {
   const calculationInputsRef = useRef(calculationInputs);
   calculationInputsRef.current = calculationInputs;
 
+  const isVersionView = searchParams.has('versionId');
+
   const {
     lockedByOther,
     isLockedByMe,
     takeOver,
     isLoading: isLockLoading,
-  } = useSheetLock(sheetId || null);
+  } = useSheetLock(sheetId || null, !isVersionView);
 
-  const isVersionView = searchParams.has('versionId');
   const isReadOnly = !isLockedByMe || isLockLoading || isVersionView;
 
   const calculateTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(

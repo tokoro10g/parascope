@@ -22,12 +22,16 @@ test.describe('Versioning & Port Synchronization', () => {
     await page.click('button:has-text("Save")');
     await moveNode(page, 'y', 200, 0);
 
+    // Save Sheet before creating version
+    await page.click('button[title="Save Sheet"]');
+    await expect(page.getByText('Sheet saved successfully').first()).toBeVisible();
+
     // Create Version v1
     await page.click('.btn-sheet-menu-trigger');
     await page.click('.add-menu-item:has-text("Version Control")');
     await page.locator('input[placeholder*="Tag"]').fill('v1.0');
     await page.click('button:has-text("Create")');
-    await page.click('button[aria-label="Close"]');
+    await page.click('.modal-close-btn');
 
     // 2. Modify Child Sheet (v2 state)
     // Add Input: "z", Add Output: "w"
@@ -43,12 +47,16 @@ test.describe('Versioning & Port Synchronization', () => {
     await page.click('button:has-text("Save")');
     await moveNode(page, 'w', 200, 100);
 
+    // Save Sheet before creating version
+    await page.click('button[title="Save Sheet"]');
+    await expect(page.getByText('Sheet saved successfully').first()).toBeVisible();
+
     // Create Version v2
     await page.click('.btn-sheet-menu-trigger');
     await page.click('.add-menu-item:has-text("Version Control")');
     await page.locator('input[placeholder*="Tag"]').fill('v2.0');
     await page.click('button:has-text("Create")');
-    await page.click('button[aria-label="Close"]');
+    await page.click('.modal-close-btn');
 
     // 3. Create Parent Sheet
     await page.click('.nav-back-button');
@@ -65,22 +73,26 @@ test.describe('Versioning & Port Synchronization', () => {
     await page.locator('#sheet-version').selectOption(v1Value!);
     await page.click('button:has-text("Save")');
 
+    // Save Parent Sheet before reload
+    await page.click('button[title="Save Sheet"]');
+    await expect(page.getByText('Sheet saved successfully').first()).toBeVisible();
+
     // Verify v1 Ports: Should have x, y but NOT z, w
-    await expect(page.locator('.socket-input-title:has-text("x")')).toBeVisible();
-    await expect(page.locator('.socket-output-title:has-text("y")')).toBeVisible();
-    await expect(page.locator('.socket-input-title:has-text("z")')).not.toBeVisible();
-    await expect(page.locator('.socket-output-title:has-text("w")')).not.toBeVisible();
+    await expect(page.locator('.node-sheet .input').filter({ hasText: 'x' })).toBeVisible();
+    await expect(page.locator('.node-sheet .output').filter({ hasText: 'y' })).toBeVisible();
+    await expect(page.locator('.node-sheet .input').filter({ hasText: 'z' })).not.toBeVisible();
+    await expect(page.locator('.node-sheet .output').filter({ hasText: 'w' })).not.toBeVisible();
 
     // --- CRITICAL CHECK: Reload parent page and verify it stays on v1 ports ---
     // Even though live child has z/w, our node is pinned to v1.
     await page.reload();
-    await page.waitForTimeout(2000); // Wait for load and sync
+    await page.waitForTimeout(3000); // Wait for load and sync
     
     // Verify v1 Ports again after reload
-    await expect(page.locator('.socket-input-title:has-text("x")')).toBeVisible();
-    await expect(page.locator('.socket-output-title:has-text("y")')).toBeVisible();
-    await expect(page.locator('.socket-input-title:has-text("z")')).not.toBeVisible();
-    await expect(page.locator('.socket-output-title:has-text("w")')).not.toBeVisible();
+    await expect(page.locator('.node-sheet .input').filter({ hasText: 'x' })).toBeVisible();
+    await expect(page.locator('.node-sheet .output').filter({ hasText: 'y' })).toBeVisible();
+    await expect(page.locator('.node-sheet .input').filter({ hasText: 'z' })).not.toBeVisible();
+    await expect(page.locator('.node-sheet .output').filter({ hasText: 'w' })).not.toBeVisible();
     // --------------------------------------------------------------------------
 
     // 4. Update to v2.0
@@ -95,10 +107,10 @@ test.describe('Versioning & Port Synchronization', () => {
     await page.click('button:has-text("Save")');
 
     // Verify v2 Ports: Should have x, y, z, w
-    await expect(page.locator('.socket-input-title:has-text("x")')).toBeVisible();
-    await expect(page.locator('.socket-output-title:has-text("y")')).toBeVisible();
-    await expect(page.locator('.socket-input-title:has-text("z")')).toBeVisible();
-    await expect(page.locator('.socket-output-title:has-text("w")')).toBeVisible();
+    await expect(page.locator('.node-sheet .input').filter({ hasText: 'x' })).toBeVisible();
+    await expect(page.locator('.node-sheet .output').filter({ hasText: 'y' })).toBeVisible();
+    await expect(page.locator('.node-sheet .input').filter({ hasText: 'z' })).toBeVisible();
+    await expect(page.locator('.node-sheet .output').filter({ hasText: 'w' })).toBeVisible();
 
     // 5. Revert to v1.0
     await sheetNode.click({ button: 'right' });
@@ -107,9 +119,9 @@ test.describe('Versioning & Port Synchronization', () => {
     await page.click('button:has-text("Save")');
 
     // Verify v1 Ports again
-    await expect(page.locator('.socket-input-title:has-text("x")')).toBeVisible();
-    await expect(page.locator('.socket-output-title:has-text("y")')).toBeVisible();
-    await expect(page.locator('.socket-input-title:has-text("z")')).not.toBeVisible();
-    await expect(page.locator('.socket-output-title:has-text("w")')).not.toBeVisible();
+    await expect(page.locator('.node-sheet .input').filter({ hasText: 'x' })).toBeVisible();
+    await expect(page.locator('.node-sheet .output').filter({ hasText: 'y' })).toBeVisible();
+    await expect(page.locator('.node-sheet .input').filter({ hasText: 'z' })).not.toBeVisible();
+    await expect(page.locator('.node-sheet .output').filter({ hasText: 'w' })).not.toBeVisible();
   });
 });

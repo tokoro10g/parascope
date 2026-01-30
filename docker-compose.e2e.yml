@@ -48,8 +48,9 @@ services:
     environment:
       - BASE_URL=http://frontend
       - VIDEO=${VIDEO:-off}
+      - PLAYWRIGHT_ARGS=${PLAYWRIGHT_ARGS:-}
     depends_on:
       frontend:
         condition: service_healthy
     command: >
-      bash -c "npm install && npx playwright test"
+      bash -c "npm install && npx playwright test $$PLAYWRIGHT_ARGS"

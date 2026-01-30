@@ -4,7 +4,7 @@ import { v4 as uuidv4 } from 'uuid';
 import { api, type Lock } from '../api';
 import { useAuth } from '../contexts/AuthContext';
 
-export function useSheetLock(sheetId: string | null) {
+export function useSheetLock(sheetId: string | null, shouldLock = true) {
   const { user } = useAuth();
   const [lock, setLock] = useState<Lock | null>(null);
   const [isLockedByMe, setIsLockedByMe] = useState(false);
@@ -69,6 +69,12 @@ export function useSheetLock(sheetId: string | null) {
   const heartbeat = useCallback(async () => {
     if (!sheetId || !user) return;
 
+    // If strictly read-only mode (shouldLock=false), just check status
+    if (!shouldLock) {
+      checkStatus();
+      return;
+    }
+
     // If not locked by me, we just check status to see if it becomes free/changed
     // We do NOT attempt to acquire it even if it becomes free.
     // The user must reload or manually "Take Over" (which acts as acquire if free).
@@ -101,7 +107,7 @@ export function useSheetLock(sheetId: string | null) {
         }
       }
     }
-  }, [sheetId, user, isLockedByMe, checkStatus, tabId]);
+  }, [sheetId, user, isLockedByMe, checkStatus, tabId, shouldLock]);
 
   // Use a ref for heartbeat to access latest state without triggering effect re-run
   const heartbeatRef = useRef(heartbeat);
@@ -112,6 +118,11 @@ export function useSheetLock(sheetId: string | null) {
   // Main lifecycle effect for the lock session
   useEffect(() => {
     if (!sheetId || !user) return;
+
+    if (!shouldLock) {
+      checkStatus();
+      return;
+    }
 
     // 1. Initial acquire
     const initialAcquire = async () => {
@@ -170,7 +181,7 @@ export function useSheetLock(sheetId: string | null) {
       // verify isLockedByMeRef or similar if needed, but backend checks ownership safely.
       api.releaseLock(sheetId, tabId).catch(() => {});
     };
-  }, [sheetId, user, checkStatus, tabId]); // Strict dependency on Sheet ID, User, and checkStatus.
+  }, [sheetId, user, checkStatus, tabId, shouldLock]); // Strict dependency on Sheet ID, User, and checkStatus.
 
   const takeOver = async () => {
     if (!sheetId) return;
