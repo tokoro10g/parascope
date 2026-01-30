@@ -71,10 +71,10 @@ async def test_physics_simulation(client: AsyncClient):
     assert response.status_code == 200
     results = response.json()["results"]
 
-    assert results[mass_id]["outputs"]["value"] == 10
-    assert results[accel_id]["outputs"]["value"] == 9.8
-    assert results[func_id]["outputs"]["result"] == 98.0
-    assert results[output_id]["outputs"]["value"] == 98.0
+    assert results[mass_id]["outputs"]["value"] == "10"
+    assert results[accel_id]["outputs"]["value"] == "9.8"
+    assert float(results[func_id]["outputs"]["result"]) == 98.0
+    assert float(results[output_id]["outputs"]["value"]) == 98.0
 
 
 @pytest.mark.asyncio
@@ -153,7 +153,7 @@ async def test_nested_reuse(client: AsyncClient):
     calc_res = await client.post(f"/api/v1/sheets/{parent_id}/calculate")
     assert calc_res.status_code == 200
     results = calc_res.json()["results"]
-    assert results[out1_id]["outputs"]["value"] == 10
+    assert results[out1_id]["outputs"]["value"] == "10"
 
 
 @pytest.mark.asyncio
@@ -209,7 +209,7 @@ async def test_calculate_preview(client: AsyncClient):
 
     response = await client.post("/api/v1/calculate/", json={"graph": graph_data, "inputs": {}})
     assert response.status_code == 200
-    assert response.json()["results"][node_id]["outputs"]["value"] == 42
+    assert response.json()["results"][node_id]["outputs"]["value"] == "42"
 
 
 @pytest.mark.asyncio

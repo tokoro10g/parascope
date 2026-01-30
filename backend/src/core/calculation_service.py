@@ -7,20 +7,7 @@ from sqlalchemy.orm import selectinload
 from ..models.sheet import Sheet
 from .execution import execute_full_script
 from .generator import CodeGenerator
-
-
-def serialize_result(val: Any) -> Any:
-    if isinstance(val, dict):
-        return {k: serialize_result(v) for k, v in val.items()}
-    if isinstance(val, list):
-        return [serialize_result(v) for v in val]
-    if isinstance(val, bool):
-        return val
-    if isinstance(val, (int, float)):
-        return val  # Keep numbers as numbers
-    if val is None:
-        return None
-    return str(val)
+from .utils import serialize_result
 
 
 def get_input_overrides(sheet: Sheet, inputs: Dict[str, Dict[str, Any]]) -> Dict[str, Any]:

@@ -10,24 +10,9 @@ from sqlalchemy.orm import selectinload
 from ..core.database import get_db
 from ..core.execution import execute_full_script
 from ..core.generator import CodeGenerator
+from ..core.utils import serialize_result
 from ..models.sheet import Sheet
 from ..schemas.sweep import SweepHeader, SweepRequest, SweepResponse
-
-
-def serialize_result(val: Any) -> Any:
-    if val is None:
-        return None
-    if isinstance(val, dict):
-        # If it's a structured result object { "value": ..., "min": ..., "max": ... }
-        # we want to serialize its members but keep it as a dict
-        return {k: serialize_result(v) for k, v in val.items()}
-    if isinstance(val, list):
-        return [serialize_result(v) for v in val]
-    if isinstance(val, bool):
-        return val
-    if isinstance(val, (int, float)):
-        return str(val)
-    return val
 
 
 def generate_values(start: str | None, end: str | None, step: str | None, manual: List[str] | None) -> List[Any]:
