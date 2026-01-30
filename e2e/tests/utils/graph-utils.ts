@@ -138,16 +138,15 @@ export async function saveSheet(page: Page) {
  * Note: Sheet must be clean (saved) for the Create button to be enabled.
  */
 export async function createVersion(page: Page, tag: string, description?: string) {
-  await page.click('.btn-sheet-menu-trigger');
-  await page.click('.add-menu-item:has-text("Version Control")');
-  await page.locator('input[placeholder*="Tag"]').fill(tag);
+  await page.click('button:has-text("Versions")');
+  await page.locator('input[placeholder*="v1.0"]').fill(tag);
   if (description) {
-    await page.locator('textarea[placeholder*="Description"]').fill(description);
+    await page.locator('textarea[placeholder*="changed"]').fill(description);
   }
   
   const [response] = await Promise.all([
     page.waitForResponse(resp => resp.url().includes('/versions') && resp.request().method() === 'POST'),
-    page.click('button:has-text("Create")')
+    page.click('button:has-text("Create Version")')
   ]);
   
   await page.click('.modal-close-btn');
@@ -158,8 +157,7 @@ export async function createVersion(page: Page, tag: string, description?: strin
  * Restore a specific version of the sheet from the Version Control modal.
  */
 export async function restoreVersion(page: Page, tag: string) {
-  await page.click('.btn-sheet-menu-trigger');
-  await page.click('.add-menu-item:has-text("Version Control")');
+  await page.click('button:has-text("Versions")');
   
   const vItem = page.locator('.version-list > div').filter({ hasText: tag });
   

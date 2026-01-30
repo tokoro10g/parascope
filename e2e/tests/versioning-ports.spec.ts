@@ -70,7 +70,10 @@ test.describe('Versioning & Port Synchronization', () => {
 
     // Import Child Sheet
     await page.click('button:has-text("Import Sheet")');
-    await page.locator(`.sheet-item:has-text("${childName}")`).click();
+    // Use a more specific selector to avoid ambiguity
+    const childSheetItem = page.locator('.item-explorer .sheet-item').filter({ hasText: childName }).first();
+    await expect(childSheetItem).toBeVisible({ timeout: 10000 });
+    await childSheetItem.click();
 
     // Inspector opens. Select v1.0.
     await expect(page.locator('.modal-header h2')).toContainText('Edit Node: sheet');

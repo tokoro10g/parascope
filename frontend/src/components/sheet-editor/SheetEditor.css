@@ -154,7 +154,8 @@
   border-color: var(--primary-color);
 }
 
-.lock-banner {
+.lock-banner,
+.draft-status-banner {
   background: #fff3cd;
   color: #856404;
   padding: 10px 20px;
@@ -165,7 +166,8 @@
 }
 
 @media (prefers-color-scheme: dark) {
-  .lock-banner {
+  .lock-banner,
+  .draft-status-banner {
     background: #3a3014;
     color: #ffda6a;
     border-bottom-color: #554820;

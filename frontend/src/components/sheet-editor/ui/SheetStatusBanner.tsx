@@ -88,7 +88,7 @@ export const SheetStatusBanner: React.FC = () => {
   // Draft Banner (Show whenever editing the draft version and not locked)
   return (
     <div
-      className="lock-banner"
+      className="draft-status-banner"
       style={{
         backgroundColor: '#fff3e0',
         color: '#e65100',

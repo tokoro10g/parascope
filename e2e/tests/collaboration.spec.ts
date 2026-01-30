@@ -35,8 +35,10 @@ test.describe('Collaboration & Locking', () => {
     await pageB.getByRole('button', { name: 'Take Over' }).click();
     await pageB.click('button:has-text("Confirm Take Over")');
     
-    // User B should verify lock banner is gone
-    await expect(pageB.locator('.lock-banner')).toBeHidden();
+    // User B should verify lock warning is gone, but draft banner should be visible
+    await expect(pageB.locator('.lock-banner')).not.toContainText('Currently being edited by');
+    await expect(pageB.locator('.draft-status-banner')).toBeVisible();
+    await expect(pageB.locator('.draft-status-banner')).toContainText('You are editing the Draft version');
     
     // User B makes a change
     await addNode(pageB, 'Comment', 'Collaboration comment');

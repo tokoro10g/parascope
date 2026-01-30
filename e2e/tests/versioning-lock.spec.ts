@@ -39,9 +39,10 @@ test.describe('Versioning & Locking', () => {
     await login(pageB, 'User B');
     await pageB.goto(sheetUrl); // Live URL
 
-    // User B should NOT see lock banner
-    // If User A held the lock, this would be visible.
-    await expect(pageB.locator('.lock-banner')).toBeHidden();
+    // User B should NOT see lock warning, but should see draft banner
+    await expect(pageB.locator('.lock-banner')).not.toContainText('Currently being edited by');
+    await expect(pageB.locator('.draft-status-banner')).toBeVisible();
+    await expect(pageB.locator('.draft-status-banner')).toContainText('You are editing the Draft version');
     
     // User B should be able to edit (e.g. Add Node)
     await pageB.click('button:has-text("Add Node")');
