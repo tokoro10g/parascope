@@ -206,12 +206,12 @@ export function useSheetEditorLogic(): SheetEditorLogic {
   }, [currentSheet?.default_version_id, sheetId]);
 
   const triggerAutoCalculation = useCallback(() => {
-    if (!autoCalculate) return;
     if (calculateTimeoutRef.current) {
       clearTimeout(calculateTimeoutRef.current);
     }
 
     calculateTimeoutRef.current = setTimeout(async () => {
+      if (!autoCalculate) return;
       const graph = getExportData();
       if (!graph.nodes.length) return;
 
