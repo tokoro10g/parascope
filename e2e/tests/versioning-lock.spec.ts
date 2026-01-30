@@ -17,23 +17,10 @@ test.describe('Versioning & Locking', () => {
     await pageA.click('button:has-text("Save")'); // Modal save
 
     // Save Sheet before creating version
-    await pageA.click('button[title="Save Sheet"]');
-    await expect(pageA.getByText('Sheet saved successfully').first()).toBeVisible();
+    await saveSheet(pageA);
 
     // Create Version v1
-    await pageA.click('.btn-sheet-menu-trigger');
-    await pageA.click('.add-menu-item:has-text("Version Control")');
-    await pageA.locator('input[placeholder*="Tag"]').fill('v1.0');
-    
-    // Capture version ID from response
-    const [response] = await Promise.all([
-      pageA.waitForResponse(resp => resp.url().includes('/versions') && resp.request().method() === 'POST'),
-      pageA.click('button:has-text("Create")')
-    ]);
-    const versionData = await response.json();
-    const versionId = versionData.id;
-    
-    await pageA.click('.modal-close-btn');
+    const { id: versionId } = await createVersion(pageA, 'v1.0');
 
     // User A switches to viewing v1.0 (via URL)
     await pageA.goto(`${sheetUrl}?versionId=${versionId}`);

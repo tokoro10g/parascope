@@ -78,6 +78,24 @@ export async function deleteNode(page: Page, nodeTitle: string) {
 }
 
 /**
+ * Open the inspector modal for a node via context menu.
+ */
+export async function openNodeInspector(page: Page, nodeTitle: string) {
+  const node = page.locator('[data-testid="node"]').filter({ has: page.locator(`[data-testid="title"]:has-text("${nodeTitle}")`) });
+  await node.click({ button: 'right' });
+  await page.locator('div:text("Edit")').click();
+  await expect(page.locator('.modal-header h2')).toContainText('Edit Node:');
+}
+
+/**
+ * Get a locator for a port (input/output) on a node.
+ */
+export function getPortLocator(page: Page, nodeTitle: string, portName: string, type: 'input' | 'output') {
+  const node = page.locator('[data-testid="node"]').filter({ has: page.locator(`[data-testid="title"]:has-text("${nodeTitle}")`) });
+  return node.locator(`.${type}`).filter({ hasText: portName });
+}
+
+/**
  * Rename a port (input or output) of a node via the Inspector.
  */
 export async function renamePort(
@@ -87,12 +105,7 @@ export async function renamePort(
   newPortName: string,
   type: 'input' | 'output'
 ) {
-  const node = page.locator('[data-testid="node"]').filter({ has: page.locator(`[data-testid="title"]:has-text("${nodeTitle}")`) });
-  
-  // Open Inspector via context menu
-  await node.click({ button: 'right' });
-  await page.locator('div:text("Edit")').click();
-  await expect(page.locator('.modal-header h2')).toContainText('Edit Node:');
+  await openNodeInspector(page, nodeTitle);
 
   const columnTitle = type === 'input' ? 'Inputs' : 'Outputs';
   const portInput = page.locator('.io-column')
@@ -107,8 +120,33 @@ export async function renamePort(
   await expect(page.locator('.modal-overlay')).not.toBeVisible();
   
   // Verify renaming on the node itself
-  const portLabel = node.locator(`.${type}`).filter({ hasText: newPortName });
-  await expect(portLabel).toBeVisible();
+  await expect(getPortLocator(page, nodeTitle, newPortName, type)).toBeVisible();
+}
+
+/**
+ * Save the current sheet and wait for the success toast.
+ */
+export async function saveSheet(page: Page) {
+  await page.click('button[title="Save Sheet"]');
+  await expect(page.getByText('Sheet saved successfully').first()).toBeVisible();
+}
+
+/**
+ * Create a new version of the current sheet.
+ * Note: Sheet must be clean (saved) for the Create button to be enabled.
+ */
+export async function createVersion(page: Page, tag: string) {
+  await page.click('.btn-sheet-menu-trigger');
+  await page.click('.add-menu-item:has-text("Version Control")');
+  await page.locator('input[placeholder*="Tag"]').fill(tag);
+  
+  const [response] = await Promise.all([
+    page.waitForResponse(resp => resp.url().includes('/versions') && resp.request().method() === 'POST'),
+    page.click('button:has-text("Create")')
+  ]);
+  
+  await page.click('.modal-close-btn');
+  return response.json();
 }
 
 /**
@@ -151,14 +189,12 @@ export async function createSheet(page: Page, name: string) {
   await expect(page.locator('.rete')).toBeVisible();
   
   // Rename the sheet
-  // The input might have a placeholder "Sheet Name" or class "sheet-name-input"
   const nameInput = page.locator('.sheet-name-input, input[placeholder="Sheet Name"]');
   await expect(nameInput).toBeVisible();
   await nameInput.fill(name);
   await nameInput.press('Enter');
   
-  // Wait for the name to be saved/updated (optional, but good practice)
-  // Maybe wait a tick
+  // Wait for the name to be saved/updated
   await page.waitForTimeout(500);
 }
 
