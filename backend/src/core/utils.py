@@ -1,5 +1,6 @@
 from typing import Any
 
+
 def serialize_result(val: Any) -> Any:
     """
     Serializes calculation results for API response.

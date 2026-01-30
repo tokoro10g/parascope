@@ -761,6 +761,7 @@ async def get_version(sheet_id: UUID, version_id: UUID, db: AsyncSession = Depen
     version.created_at = make_aware(version.created_at)
     return version
 
+
 @router.delete("/{sheet_id}/versions/{version_id}")
 async def delete_version(sheet_id: UUID, version_id: UUID, db: AsyncSession = Depends(get_db)):
     # 1. Verify existence and sheet_id match
@@ -769,13 +770,15 @@ async def delete_version(sheet_id: UUID, version_id: UUID, db: AsyncSession = De
     version = result.scalar_one_or_none()
     if not version:
         raise HTTPException(status_code=404, detail="Version not found")
-    
+
     # 2. Prevent deleting default version
     sheet_query = select(Sheet).where(Sheet.id == sheet_id)
     sheet_result = await db.execute(sheet_query)
     sheet = sheet_result.scalar_one_or_none()
     if sheet and sheet.default_version_id == version_id:
-        raise HTTPException(status_code=400, detail="Cannot delete the default version. Set another version as default first.")
+        raise HTTPException(
+            status_code=400, detail="Cannot delete the default version. Set another version as default first."
+        )
 
     # 3. Delete
     await db.delete(version)

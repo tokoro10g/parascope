@@ -237,7 +237,9 @@ export const EditorBar: React.FC<EditorBarProps> = ({
             style={{ marginLeft: '4px' }}
           >
             <Milestone size={18} />
-            <span style={{ marginLeft: '4px', fontSize: '0.9em' }}>Versions</span>
+            <span style={{ marginLeft: '4px', fontSize: '0.9em' }}>
+              Versions
+            </span>
           </button>
         )}
 
@@ -300,18 +302,30 @@ export const EditorBar: React.FC<EditorBarProps> = ({
               onToggleAutoCalculate(!autoCalculate);
               e.currentTarget.blur();
             }}
-            title={autoCalculate ? 'Disable Auto-Calculation' : 'Enable Auto-Calculation'}
+            title={
+              autoCalculate
+                ? 'Disable Auto-Calculation'
+                : 'Enable Auto-Calculation'
+            }
             style={{
-              color: autoCalculate ? 'var(--primary-color)' : 'var(--text-muted)',
-              backgroundColor: autoCalculate ? 'rgba(var(--primary-color-rgb), 0.1)' : 'transparent',
-              borderColor: autoCalculate ? 'var(--primary-color)' : 'transparent',
+              color: autoCalculate
+                ? 'var(--primary-color)'
+                : 'var(--text-muted)',
+              backgroundColor: autoCalculate
+                ? 'rgba(var(--primary-color-rgb), 0.1)'
+                : 'transparent',
+              borderColor: autoCalculate
+                ? 'var(--primary-color)'
+                : 'transparent',
               padding: '4px 8px',
               width: 'auto',
               gap: '6px',
             }}
           >
             {autoCalculate ? <Zap size={18} /> : <ZapOff size={18} />}
-            <span style={{ fontSize: '0.85em', fontWeight: 600 }}>Auto-calc</span>
+            <span style={{ fontSize: '0.85em', fontWeight: 600 }}>
+              Auto-calc
+            </span>
           </button>
         )}
         <div

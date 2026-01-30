@@ -339,7 +339,6 @@ export const api = {
     );
   },
 
-
   async setDefaultVersion(
     sheetId: string,
     versionId: string | null,

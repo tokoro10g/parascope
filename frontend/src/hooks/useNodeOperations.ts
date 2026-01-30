@@ -24,14 +24,17 @@ export function useNodeOperations(
 
   const getUniqueLabel = useCallback(
     (label: string, type: NodeType, excludeNodeId?: string) => {
-      const isReservedType = type === 'input' || type === 'constant' || type === 'output';
+      const isReservedType =
+        type === 'input' || type === 'constant' || type === 'output';
       if (!isReservedType) return label;
 
       let newLabel = label;
       let counter = 1;
 
       const exists = (l: string) =>
-        nodes.some((n) => n.type === type && n.label === l && n.id !== excludeNodeId);
+        nodes.some(
+          (n) => n.type === type && n.label === l && n.id !== excludeNodeId,
+        );
 
       while (exists(newLabel)) {
         newLabel = `${label} (${counter})`;
@@ -108,7 +111,14 @@ export function useNodeOperations(
       setIsDirty(true);
       return node;
     },
-    [editor, area, handleCalculationInputChange, setIsDirty, wrapper, getUniqueLabel],
+    [
+      editor,
+      area,
+      handleCalculationInputChange,
+      setIsDirty,
+      wrapper,
+      getUniqueLabel,
+    ],
   );
 
   const handleDuplicateNode = useCallback(
@@ -184,7 +194,11 @@ export function useNodeOperations(
       };
 
       if (updates.label && updates.label !== node.label) {
-        updates.label = getUniqueLabel(updates.label, updates.type || node.type, nodeId);
+        updates.label = getUniqueLabel(
+          updates.label,
+          updates.type || node.type,
+          nodeId,
+        );
 
         if (node.type === 'input' || node.type === 'output') {
           const isDefaultLabel =
@@ -204,7 +218,11 @@ export function useNodeOperations(
       }
 
       if (updates.type && updates.type !== node.type) {
-        updates.label = getUniqueLabel(updates.label || node.label, updates.type, nodeId);
+        updates.label = getUniqueLabel(
+          updates.label || node.label,
+          updates.type,
+          nodeId,
+        );
 
         if (node.type === 'input') {
           // An input node is going to be switched to a constant node. Warn the user.
@@ -316,7 +334,7 @@ export function useNodeOperations(
         });
       }
     },
-    [editor, area, nodes, setIsDirty, addHistoryAction, wrapper, getUniqueLabel],
+    [editor, area, setIsDirty, addHistoryAction, wrapper, getUniqueLabel],
   );
 
   return {

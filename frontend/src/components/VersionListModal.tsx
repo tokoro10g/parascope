@@ -72,7 +72,11 @@ export const VersionListModal: React.FC<VersionListModalProps> = ({
   };
 
   const handleDelete = async (v: SheetVersion) => {
-    if (!window.confirm(`Are you sure you want to delete version "${v.version_tag}"? This cannot be undone.`)) {
+    if (
+      !window.confirm(
+        `Are you sure you want to delete version "${v.version_tag}"? This cannot be undone.`,
+      )
+    ) {
       return;
     }
 
@@ -104,38 +108,58 @@ export const VersionListModal: React.FC<VersionListModalProps> = ({
             backgroundColor: 'var(--button-secondary-bg)',
             borderRadius: '8px',
             border: '1px solid var(--border-light)',
-            opacity: isDirty ? 0.7 : 1
+            opacity: isDirty ? 0.7 : 1,
           }}
         >
-          <h3 style={{ marginTop: 0, marginBottom: '16px', fontSize: '1em', color: 'var(--text-color)' }}>
+          <h3
+            style={{
+              marginTop: 0,
+              marginBottom: '16px',
+              fontSize: '1em',
+              color: 'var(--text-color)',
+            }}
+          >
             Create New Version
           </h3>
           {isDirty && (
-            <div style={{
-              fontSize: '0.85em',
-              color: 'var(--danger-color)',
-              marginBottom: '12px',
-              padding: '8px',
-              backgroundColor: 'rgba(var(--danger-color-rgb), 0.1)',
-              borderRadius: '4px',
-              border: '1px solid var(--danger-color)'
-            }}>
+            <div
+              style={{
+                fontSize: '0.85em',
+                color: 'var(--danger-color)',
+                marginBottom: '12px',
+                padding: '8px',
+                backgroundColor: 'rgba(var(--danger-color-rgb), 0.1)',
+                borderRadius: '4px',
+                border: '1px solid var(--danger-color)',
+              }}
+            >
               Please save your changes before creating a new version.
             </div>
           )}
           <div className="form-group">
-            <label htmlFor="version-tag" style={{ color: 'var(--text-color)' }}>Version Tag (e.g. v1.0):</label>
+            <label htmlFor="version-tag" style={{ color: 'var(--text-color)' }}>
+              Version Tag (e.g. v1.0):
+            </label>
             <input
               id="version-tag"
               value={newTag}
               onChange={(e) => setNewTag(e.target.value)}
               placeholder="v1.0"
               disabled={isCreating || isDirty}
-              style={{ backgroundColor: 'var(--input-bg)', color: 'var(--text-color)', border: '1px solid var(--border-color)' }}
+              style={{
+                backgroundColor: 'var(--input-bg)',
+                color: 'var(--text-color)',
+                border: '1px solid var(--border-color)',
+              }}
             />
           </div>
           <div className="form-group">
-            <label htmlFor="version-desc" style={{ color: 'var(--text-color)' }}>Description (Optional):</label>
+            <label
+              htmlFor="version-desc"
+              style={{ color: 'var(--text-color)' }}
+            >
+              Description (Optional):
+            </label>
             <textarea
               id="version-desc"
               value={newDescription}
@@ -143,7 +167,11 @@ export const VersionListModal: React.FC<VersionListModalProps> = ({
               placeholder="What changed in this version?"
               disabled={isCreating || isDirty}
               rows={2}
-              style={{ backgroundColor: 'var(--input-bg)', color: 'var(--text-color)', border: '1px solid var(--border-color)' }}
+              style={{
+                backgroundColor: 'var(--input-bg)',
+                color: 'var(--text-color)',
+                border: '1px solid var(--border-color)',
+              }}
             />
           </div>
           <button
@@ -157,7 +185,10 @@ export const VersionListModal: React.FC<VersionListModalProps> = ({
         </form>
       )}
 
-      <div className="version-list" style={{ maxHeight: '400px', overflowY: 'auto' }}>
+      <div
+        className="version-list"
+        style={{ maxHeight: '400px', overflowY: 'auto' }}
+      >
         <div
           className="version-item"
           style={{
@@ -166,13 +197,19 @@ export const VersionListModal: React.FC<VersionListModalProps> = ({
             alignItems: 'center',
             padding: '12px',
             borderBottom: '1px solid var(--border-light)',
-            backgroundColor: !defaultVersionId ? 'rgba(var(--primary-color-rgb), 0.1)' : 'transparent'
+            backgroundColor: !defaultVersionId
+              ? 'rgba(var(--primary-color-rgb), 0.1)'
+              : 'transparent',
           }}
         >
           <div>
             <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                <span className="version-tag" style={{ color: 'var(--text-color)', fontWeight: 'bold' }}>Draft</span>
-
+              <span
+                className="version-tag"
+                style={{ color: 'var(--text-color)', fontWeight: 'bold' }}
+              >
+                Draft
+              </span>
 
               {!defaultVersionId && (
                 <span
@@ -188,7 +225,13 @@ export const VersionListModal: React.FC<VersionListModalProps> = ({
                 </span>
               )}
             </div>
-            <div style={{ fontSize: '0.85em', color: 'var(--text-secondary)', marginTop: '4px' }}>
+            <div
+              style={{
+                fontSize: '0.85em',
+                color: 'var(--text-secondary)',
+                marginTop: '4px',
+              }}
+            >
               The current working state of the sheet.
             </div>
           </div>
@@ -205,12 +248,27 @@ export const VersionListModal: React.FC<VersionListModalProps> = ({
         </div>
 
         {isLoading ? (
-          <div style={{ padding: '20px', textAlign: 'center', color: 'var(--text-secondary)' }}>
+          <div
+            style={{
+              padding: '20px',
+              textAlign: 'center',
+              color: 'var(--text-secondary)',
+            }}
+          >
             Loading versions...
           </div>
         ) : versions.length === 0 ? (
-          <div style={{ padding: '40px', textAlign: 'center', color: 'var(--text-muted)' }}>
-            <Milestone size={48} style={{ opacity: 0.2, marginBottom: '12px' }} />
+          <div
+            style={{
+              padding: '40px',
+              textAlign: 'center',
+              color: 'var(--text-muted)',
+            }}
+          >
+            <Milestone
+              size={48}
+              style={{ opacity: 0.2, marginBottom: '12px' }}
+            />
             <br />
             No versions created yet
           </div>
@@ -232,8 +290,14 @@ export const VersionListModal: React.FC<VersionListModalProps> = ({
               }}
             >
               <div style={{ flex: 1, marginRight: '16px' }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                  <strong style={{ fontSize: '1.1em', color: 'var(--text-color)' }}>{v.version_tag}</strong>
+                <div
+                  style={{ display: 'flex', alignItems: 'center', gap: '8px' }}
+                >
+                  <strong
+                    style={{ fontSize: '1.1em', color: 'var(--text-color)' }}
+                  >
+                    {v.version_tag}
+                  </strong>
                   {v.id === defaultVersionId && (
                     <span
                       style={{
@@ -247,7 +311,9 @@ export const VersionListModal: React.FC<VersionListModalProps> = ({
                       DEFAULT
                     </span>
                   )}
-                  <span style={{ fontSize: '0.8em', color: 'var(--text-muted)' }}>
+                  <span
+                    style={{ fontSize: '0.8em', color: 'var(--text-muted)' }}
+                  >
                     {new Date(v.created_at).toLocaleDateString()}
                   </span>
                 </div>

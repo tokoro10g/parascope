@@ -112,7 +112,7 @@ export const syncNestedSheets = async (
     try {
       const key = `${node.data.sheetId}:${node.data.versionId || 'draft'}`;
       const childSheetData = sheetDataMap.get(key);
-      
+
       if (!childSheetData) continue;
 
       const childNodes = Array.isArray(childSheetData.nodes)
