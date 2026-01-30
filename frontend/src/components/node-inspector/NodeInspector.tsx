@@ -1,6 +1,7 @@
 import type React from 'react';
 import { useEffect, useState } from 'react';
 import { API_BASE, api, type Sheet, type SheetVersion } from '../../api';
+import { resolveSheetPorts } from '../../utils';
 import { Modal } from '../Modal';
 import { AIGenerator } from './AIGenerator';
 import { DescriptionEditor } from './DescriptionEditor';
@@ -259,6 +260,17 @@ export const NodeInspector: React.FC<NodeInspectorProps> = ({
                 const vid = e.target.value || null;
                 const tag = versions.find((v) => v.id === vid)?.version_tag;
                 setData({ ...data, versionId: vid, versionTag: tag });
+
+                if (vid && data.sheetId) {
+                  api.getVersion(data.sheetId, vid).then((ver) => {
+                    if (ver.data && Array.isArray(ver.data.nodes)) {
+                      const { inputs: newInputs, outputs: newOutputs } =
+                        resolveSheetPorts(ver.data.nodes);
+                      setInputs(newInputs as any);
+                      setOutputs(newOutputs as any);
+                    }
+                  });
+                }
               }}
               style={{ flex: 1 }}
             >
@@ -296,6 +308,16 @@ export const NodeInspector: React.FC<NodeInspectorProps> = ({
                         versionId: defaultVer.id,
                         versionTag: defaultVer.version_tag,
                       });
+                      api
+                        .getVersion(data.sheetId, defaultVer.id)
+                        .then((ver) => {
+                          if (ver.data && Array.isArray(ver.data.nodes)) {
+                            const { inputs: newInputs, outputs: newOutputs } =
+                              resolveSheetPorts(ver.data.nodes);
+                            setInputs(newInputs as any);
+                            setOutputs(newOutputs as any);
+                          }
+                        });
                     }
                   }}
                 >

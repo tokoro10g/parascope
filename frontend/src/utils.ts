@@ -211,7 +211,26 @@ export const resolveNestedSheetParams = (
     }
   });
 
-  return queryParams;
+  return getNestedSheetUrl(
+    node.data.sheetId as string,
+    params,
+    node.data.versionId as string,
+  );
+};
+
+export const resolveSheetPorts = (nodes: any[]) => {
+  const inputs = nodes
+    .filter((n) => n.type === 'input')
+    .map((n) => createSocket(n.label));
+
+  const outputs = nodes
+    .filter((n) => n.type === 'output' || n.type === 'constant')
+    .map((n) => ({
+      key: n.label,
+      socket_type: n.type,
+    }));
+
+  return { inputs, outputs };
 };
 
 export const fallbackCopy = (text: string) => {

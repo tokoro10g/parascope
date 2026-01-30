@@ -22,6 +22,7 @@ import {
   extractValuesFromResult,
   getNestedSheetUrl,
   resolveNestedSheetParams,
+  resolveSheetPorts,
 } from '../../utils';
 import type { SheetEditorContextType } from './SheetEditorContext';
 import type { CalculationInputDefinition } from './types';
@@ -537,19 +538,7 @@ export function useSheetEditorLogic(): SheetEditorLogic {
 
     try {
       const fullSheet = await api.getSheet(sheet.id);
-
-      const inputs = fullSheet.nodes
-        .filter((n: { type: string }) => n.type === 'input')
-        .map((n: { label: string }) => createSocket(n.label));
-
-      const outputs = fullSheet.nodes
-        .filter(
-          (n: { type: string }) => n.type === 'output' || n.type === 'constant',
-        )
-        .map((n: { label: string; type: string }) => ({
-          key: n.label,
-          socket_type: n.type,
-        }));
+      const { inputs, outputs } = resolveSheetPorts(fullSheet.nodes);
 
       const type = 'sheet';
       const label = sheet.name;
