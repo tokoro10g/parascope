@@ -179,9 +179,6 @@ class BedrockProvider(AIProvider):
             self.model_id = settings.BEDROCK_MODEL_ID
 
             client_kwargs = {"region_name": self.region}
-            if settings.AWS_ACCESS_KEY_ID and settings.AWS_SECRET_ACCESS_KEY:
-                client_kwargs["aws_access_key_id"] = settings.AWS_ACCESS_KEY_ID
-                client_kwargs["aws_secret_access_key"] = settings.AWS_SECRET_ACCESS_KEY
 
             self.client = boto3.client("bedrock-runtime", **client_kwargs)
         except (ImportError, Exception):
@@ -200,24 +197,23 @@ class BedrockProvider(AIProvider):
             raise Exception("AWS/Bedrock not configured")
 
         user_prompt = self._build_user_prompt(prompt, urls, existing_code, existing_description)
-        content = [{"text": user_prompt}]
+        content = [{"type": "text", "text": user_prompt}]
 
         if image:
             if "," in image:
                 header, encoded = image.split(",", 1)
                 mime_type = header.split(":")[1].split(";")[0]
-                ext = mime_type.split("/")[-1]
-                if ext == "jpeg":
-                    ext = "jpg"
             else:
                 encoded = image
-                ext = "png"
+                mime_type = "image/png"
 
             content.append(
                 {
-                    "image": {
-                        "format": ext,
-                        "source": {"bytes": base64.b64decode(encoded)},
+                    "type": "image",
+                    "source": {
+                        "type": "base64",
+                        "media_type": mime_type,
+                        "data": encoded,
                     }
                 }
             )
