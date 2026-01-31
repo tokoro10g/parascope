@@ -194,7 +194,7 @@ export const VersionListModal: React.FC<VersionListModalProps> = ({
           style={{
             display: 'flex',
             justifyContent: 'space-between',
-	    overflowWrap: 'anywhere',
+            overflowWrap: 'anywhere',
             alignItems: 'center',
             padding: '12px',
             borderBottom: '1px solid var(--border-light)',
@@ -281,7 +281,7 @@ export const VersionListModal: React.FC<VersionListModalProps> = ({
               style={{
                 display: 'flex',
                 justifyContent: 'space-between',
-	        overflowWrap: 'anywhere',
+                overflowWrap: 'anywhere',
                 alignItems: 'center',
                 padding: '12px',
                 borderBottom: '1px solid var(--border-light)',
