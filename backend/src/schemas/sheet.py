@@ -2,7 +2,7 @@ from datetime import datetime
 from typing import Any, Dict, List, Literal, Optional, Union
 from uuid import UUID
 
-from pydantic import BaseModel, ConfigDict, Field
+from pydantic import BaseModel, ConfigDict, Field, field_validator
 
 
 class PortDefinition(BaseModel):
@@ -283,12 +283,23 @@ class SheetVersionCreate(BaseModel):
     description: Optional[str] = None
 
 
+class SheetSnapshot(BaseModel):
+    nodes: List[NodeRead] = []
+    connections: List[ConnectionRead] = []
+
+    @field_validator("nodes")
+    @classmethod
+    def sort_nodes(cls, v: List[NodeRead]) -> List[NodeRead]:
+        v.sort(key=lambda n: (n.position_x, n.position_y))
+        return v
+
+
 class SheetVersionRead(BaseModel):
     id: UUID
     sheet_id: UUID
     version_tag: str
     description: Optional[str]
-    data: Dict[str, Any]
+    data: SheetSnapshot
     created_at: datetime
     created_by: str
     model_config = ConfigDict(from_attributes=True)
