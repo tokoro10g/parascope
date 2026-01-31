@@ -209,9 +209,11 @@ export const SheetTable: React.FC<SheetTableProps> = ({
               <table style={{ width: '100%', borderCollapse: 'collapse' }}>
                 <thead>
                   <tr>
-                    <th>Name</th>
-                    <th>Type</th>
-                    <th className="sheet-table-header-right">Value</th>
+                    <th className="overflow-anywhere">Name</th>
+                    <th className="overflow-anywhere">Type</th>
+                    <th className="sheet-table-header-right overflow-anywhere">
+                      Value
+                    </th>
                   </tr>
                 </thead>
 
@@ -245,10 +247,10 @@ export const SheetTable: React.FC<SheetTableProps> = ({
 
                     return (
                       <tr key={node.id} onClick={() => onSelectNode(node.id)}>
-                        <td>{name}</td>
+                        <td className="overflow-anywhere">{name}</td>
                         <td>{node.type}</td>
                         <td
-                          className={`sheet-table-cell-value ${
+                          className={`sheet-table-cell-value overflow-anywhere ${
                             hasError && !isCalculating
                               ? 'value-error'
                               : !isEditable && displayValue !== '?'

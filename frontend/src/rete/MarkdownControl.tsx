@@ -57,7 +57,7 @@ export const MarkdownControlComponent: React.FC<{ data: MarkdownControl }> = ({
 
   return (
     <div
-      className="node-markdown-content"
+      className="node-markdown-content overflow-anywhere"
       role="presentation"
       style={{
         padding: '10px',

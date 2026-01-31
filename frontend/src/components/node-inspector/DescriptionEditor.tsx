@@ -89,7 +89,7 @@ export const DescriptionEditor: React.FC<DescriptionEditorProps> = ({
 
         {showPreview ? (
           <div
-            className="markdown-preview"
+            className="markdown-preview overflow-anywhere"
             style={{
               border: '1px solid var(--border-color)',
               padding: '10px',

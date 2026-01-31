@@ -89,6 +89,8 @@
 .node-comment .title,
 .node-lut .title {
   cursor: text;
+  overflow-wrap: anywhere;
+  word-break: break-word;
 }
 
 /* Title Input during editing */
