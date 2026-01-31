@@ -91,13 +91,6 @@ async def _enrich_nodes_with_external_data(sheet: Sheet, db: AsyncSession):
                 node.data = new_data
 
 
-def _sort_nodes(sheet: Sheet) -> Sheet:
-    if sheet.nodes:
-        # Sort by X then Y to match frontend table view
-        sheet.nodes.sort(key=lambda n: (n.position_x, n.position_y))
-    return sheet
-
-
 @router.post("/folders", response_model=FolderRead)
 async def create_folder(folder_in: FolderCreate, db: AsyncSession = Depends(get_db)):
     db_folder = Folder(name=folder_in.name, parent_id=folder_in.parent_id)
@@ -267,7 +260,7 @@ async def create_sheet(
     await db.commit()
     await db.refresh(db_sheet, attribute_names=["nodes", "connections"])
     await _enrich_nodes_with_external_data(db_sheet, db)
-    return _sort_nodes(db_sheet)
+    return db_sheet
 
 
 @router.get("/{sheet_id}", response_model=SheetRead)
@@ -281,7 +274,7 @@ async def read_sheet(sheet_id: UUID, db: AsyncSession = Depends(get_db)):
         raise HTTPException(status_code=404, detail="Sheet not found")
 
     await _enrich_nodes_with_external_data(sheet, db)
-    return _sort_nodes(sheet)
+    return sheet
 
 
 @router.put("/{sheet_id}", response_model=SheetRead)
@@ -450,7 +443,7 @@ async def update_sheet(
     await db.commit()
     await db.refresh(db_sheet, attribute_names=["nodes", "connections"])
     await _enrich_nodes_with_external_data(db_sheet, db)
-    return _sort_nodes(db_sheet)
+    return db_sheet
 
 
 @router.post("/{sheet_id}/duplicate", response_model=SheetRead)
@@ -512,7 +505,7 @@ async def duplicate_sheet(sheet_id: UUID, db: AsyncSession = Depends(get_db)):
     await db.commit()
     await db.refresh(new_sheet, attribute_names=["nodes", "connections"])
     await _enrich_nodes_with_external_data(new_sheet, db)
-    return _sort_nodes(new_sheet)
+    return new_sheet
 
 
 @router.delete("/{sheet_id}")

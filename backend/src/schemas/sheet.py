@@ -244,6 +244,12 @@ class SheetRead(SheetBase):
     connections: List[ConnectionRead]
     model_config = ConfigDict(from_attributes=True)
 
+    @field_validator("nodes")
+    @classmethod
+    def sort_nodes(cls, v: List[NodeRead]) -> List[NodeRead]:
+        v.sort(key=lambda n: (n.position_x, n.position_y))
+        return v
+
 
 class SheetSummary(SheetBase):
     id: UUID
