@@ -8,6 +8,7 @@ services:
     user: root
     volumes:
       - ./backend:/app
+      - /app/.venv
     environment:
       - DATABASE_URL=postgresql+asyncpg://user:password@db-test:5432/parascope_test
       - BACKEND_CORS_ORIGINS=*

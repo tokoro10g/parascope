@@ -645,7 +645,7 @@ async def get_sheet_history(
 
     # 2. Fetch logs
     query = select(AuditLog).where(AuditLog.sheet_id == sheet_id)
-    
+
     if before_timestamp:
         query = query.where(AuditLog.timestamp <= before_timestamp)
     if after_timestamp:

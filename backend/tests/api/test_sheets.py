@@ -189,12 +189,11 @@ async def test_history_filtering(client: AsyncClient):
         ]
     }
     await client.put(f"/api/v1/sheets/{sheet_id}", json=update1, headers={"X-Parascope-User": "User1"})
-    
+
     # Fetch history to get timestamp 1
     response = await client.get(f"/api/v1/sheets/{sheet_id}/history")
     history1 = response.json()
     assert len(history1) == 1
-    ts1 = history1[0]["timestamp"]
 
     # 3. Make Update 2 (Change value to 3)
     update2 = {
@@ -215,7 +214,7 @@ async def test_history_filtering(client: AsyncClient):
     response = await client.get(f"/api/v1/sheets/{sheet_id}/history")
     history2 = response.json()
     assert len(history2) == 2
-    ts2 = history2[0]["timestamp"] # Most recent
+    ts2 = history2[0]["timestamp"]  # Most recent
 
     # 4. Make Update 3 (Change value to 4)
     update3 = {
@@ -233,18 +232,18 @@ async def test_history_filtering(client: AsyncClient):
     await client.put(f"/api/v1/sheets/{sheet_id}", json=update3, headers={"X-Parascope-User": "User1"})
 
     # 5. Test 'before_timestamp' (Should exclude Update 3)
-    # Use ts2 which is the timestamp of Update 2. 
+    # Use ts2 which is the timestamp of Update 2.
     response = await client.get(f"/api/v1/sheets/{sheet_id}/history", params={"before_timestamp": ts2})
     assert response.status_code == 200
     filtered_history_before = response.json()
-    
+
     # Should contain Update 2 and Update 1
     assert len(filtered_history_before) >= 2
-    
+
     # 6. Test 'after_timestamp' (Should exclude Update 1)
     response = await client.get(f"/api/v1/sheets/{sheet_id}/history", params={"after_timestamp": ts2})
     assert response.status_code == 200
     filtered_history_after = response.json()
-    
+
     # Should contain Update 3 and Update 2
     assert len(filtered_history_after) >= 2
