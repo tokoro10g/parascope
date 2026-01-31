@@ -160,3 +160,91 @@ async def test_sheet_usages(client: AsyncClient):
     assert usages[0]["parent_sheet_id"] == parent_id
     # Parent has no inputs, so it should be importable/root
     assert usages[0]["can_import"] is True
+
+
+@pytest.mark.asyncio
+async def test_history_filtering(client: AsyncClient):
+    # 1. Create Sheet with a node
+    sheet_data = {
+        "name": "History Filter Sheet",
+        "nodes": [{"type": "constant", "label": "C1", "position_x": 0, "position_y": 0, "data": {"value": 1}}],
+    }
+    response = await client.post("/api/v1/sheets/", json=sheet_data)
+    assert response.status_code == 200
+    sheet = response.json()
+    sheet_id = sheet["id"]
+    node_id = sheet["nodes"][0]["id"]
+
+    # 2. Make Update 1 (Change value to 2)
+    update1 = {
+        "nodes": [
+            {
+                "id": node_id,
+                "type": "constant",
+                "label": "C1",
+                "position_x": 0,
+                "position_y": 0,
+                "data": {"value": 2},
+            }
+        ]
+    }
+    await client.put(f"/api/v1/sheets/{sheet_id}", json=update1, headers={"X-Parascope-User": "User1"})
+    
+    # Fetch history to get timestamp 1
+    response = await client.get(f"/api/v1/sheets/{sheet_id}/history")
+    history1 = response.json()
+    assert len(history1) == 1
+    ts1 = history1[0]["timestamp"]
+
+    # 3. Make Update 2 (Change value to 3)
+    update2 = {
+        "nodes": [
+            {
+                "id": node_id,
+                "type": "constant",
+                "label": "C1",
+                "position_x": 0,
+                "position_y": 0,
+                "data": {"value": 3},
+            }
+        ]
+    }
+    await client.put(f"/api/v1/sheets/{sheet_id}", json=update2, headers={"X-Parascope-User": "User1"})
+
+    # Fetch history to get timestamp 2
+    response = await client.get(f"/api/v1/sheets/{sheet_id}/history")
+    history2 = response.json()
+    assert len(history2) == 2
+    ts2 = history2[0]["timestamp"] # Most recent
+
+    # 4. Make Update 3 (Change value to 4)
+    update3 = {
+        "nodes": [
+            {
+                "id": node_id,
+                "type": "constant",
+                "label": "C1",
+                "position_x": 0,
+                "position_y": 0,
+                "data": {"value": 4},
+            }
+        ]
+    }
+    await client.put(f"/api/v1/sheets/{sheet_id}", json=update3, headers={"X-Parascope-User": "User1"})
+
+    # 5. Test 'before_timestamp' (Should exclude Update 3)
+    # Use ts2 which is the timestamp of Update 2. 
+    response = await client.get(f"/api/v1/sheets/{sheet_id}/history", params={"before_timestamp": ts2})
+    assert response.status_code == 200
+    filtered_history_before = response.json()
+    
+    # Should contain Update 2 and Update 1
+    assert len(filtered_history_before) >= 2
+    
+    # 6. Test 'after_timestamp' (Should exclude Update 1)
+    response = await client.get(f"/api/v1/sheets/{sheet_id}/history", params={"after_timestamp": ts2})
+    assert response.status_code == 200
+    filtered_history_after = response.json()
+    
+    # Should contain Update 3 and Update 2
+    assert len(filtered_history_after) >= 2
