@@ -113,6 +113,8 @@
 
 .explorer-item-name {
   font-weight: 600;
+  overflow-wrap: anywhere;
+  word-break: break-word;
 }
 
 .explorer-item-subtext {

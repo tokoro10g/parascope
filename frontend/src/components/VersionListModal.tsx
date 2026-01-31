@@ -190,11 +190,10 @@ export const VersionListModal: React.FC<VersionListModalProps> = ({
         style={{ maxHeight: '400px', overflowY: 'auto' }}
       >
         <div
-          className="version-item"
+          className="version-item overflow-anywhere"
           style={{
             display: 'flex',
             justifyContent: 'space-between',
-            overflowWrap: 'anywhere',
             alignItems: 'center',
             padding: '12px',
             borderBottom: '1px solid var(--border-light)',
@@ -277,11 +276,10 @@ export const VersionListModal: React.FC<VersionListModalProps> = ({
           versions.map((v) => (
             <div
               key={v.id}
-              className="version-item"
+              className="version-item overflow-anywhere"
               style={{
                 display: 'flex',
                 justifyContent: 'space-between',
-                overflowWrap: 'anywhere',
                 alignItems: 'center',
                 padding: '12px',
                 borderBottom: '1px solid var(--border-light)',

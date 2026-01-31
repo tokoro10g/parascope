@@ -139,7 +139,7 @@ export const HistoryModal: React.FC<HistoryModalProps> = ({
                         key={`${change.timestamp}-${i}`}
                         className={`history-timeline-item ${change.is_unread ? 'unread' : ''}`}
                       >
-                        <div className="history-timeline-meta">
+                        <div className="history-timeline-meta overflow-anywhere">
                           <span className="history-user">
                             {change.user_name}
                           </span>
@@ -147,7 +147,7 @@ export const HistoryModal: React.FC<HistoryModalProps> = ({
                             {new Date(change.timestamp).toLocaleString()}
                           </span>
                         </div>
-                        <div className="history-timeline-delta">
+                        <div className="history-timeline-delta overflow-anywhere">
                           <span className="delta-field">{change.field}</span>
                           <span className="delta-values">
                             {formatValue(change.old)} →{' '}

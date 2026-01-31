@@ -62,7 +62,8 @@ export const DeleteConfirmationModal: React.FC<
           </p>
         )}
         <p style={{ marginBottom: '10px' }}>
-          Please type <strong>{itemName}</strong> to confirm:
+          Please type <strong className="overflow-anywhere">{itemName}</strong>{' '}
+          to confirm:
         </p>
         <input
           type="text"

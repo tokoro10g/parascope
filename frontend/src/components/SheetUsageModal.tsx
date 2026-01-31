@@ -152,7 +152,10 @@ export const SheetUsageModal: React.FC<SheetUsageModalProps> = ({
                       borderBottom: '1px solid var(--border-color-secondary)',
                     }}
                   >
-                    <td style={{ padding: '8px' }}>
+                    <td
+                      style={{ padding: '8px' }}
+                      className="overflow-anywhere"
+                    >
                       <a
                         href={`/sheet/${usage.parent_sheet_id}`}
                         target="_blank"
