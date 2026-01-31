@@ -621,6 +621,7 @@ export function useSheetEditorLogic(): SheetEditorLogic {
       editor.updateNodeValues(
         inputValues,
         lastResult ? extractValuesFromResult(lastResult) : {},
+        lastResult || {},
       );
     }
   }, [editor, inputProps, lastResult]);

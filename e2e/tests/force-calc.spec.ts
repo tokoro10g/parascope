@@ -96,6 +96,25 @@ test.describe('Force Calculator', () => {
     await humanDelay(page);
     const resultCell = page.locator('.sheet-table-cell-value:has-text("98")');
     await expect(resultCell).toBeVisible({ timeout: 5000 });
+
+    await test.step('Verify intermediate socket values', async () => {
+      // Mass node output value
+      const massNode = page.locator('[data-testid="node"]').filter({ has: page.locator('[data-testid="title"]:has-text("Mass [kg]")') });
+      await expect(massNode.locator('.socket-value')).toContainText(/^10(\.0+)?$/);
+
+      // Acceleration node output value
+      const accelNode = page.locator('[data-testid="node"]').filter({ has: page.locator('[data-testid="title"]:has-text("Acceleration [m/s2]")') });
+      await expect(accelNode.locator('.socket-value')).toContainText(/^9\.8(\.0+)?$/);
+
+      // Force Calculation output value (force_n)
+      const forceCalcNode = page.locator('[data-testid="node"]').filter({ has: page.locator('[data-testid="title"]:has-text("Force Calculation")') });
+      await expect(forceCalcNode.locator('.socket-value').filter({ hasText: /^98(\.0+)?$/ })).toBeVisible();
+
+      // Final Force input value (should also show 98 on the left)
+      const finalForceNode = page.locator('[data-testid="node"]').filter({ has: page.locator('[data-testid="title"]:has-text("Final Force [N]")') });
+      await expect(finalForceNode.locator('.socket-value')).toContainText(/^98(\.0+)?$/);
+    });
+
     await humanDelay(page, 2000); // Hold final result for a bit in video
   });
 });

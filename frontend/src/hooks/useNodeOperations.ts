@@ -4,7 +4,7 @@ import type { AreaPlugin } from 'rete-area-plugin';
 import { v4 as uuidv4 } from 'uuid';
 import type { Sheet } from '../api';
 import type { NodeEditorWrapper } from '../rete';
-import { ParascopeNode, socket } from '../rete';
+import { ParascopeNode } from '../rete';
 import type { NodeType, NodeUpdates, Schemes } from '../rete/types';
 import { createSocket } from '../utils';
 
@@ -310,9 +310,12 @@ export function useNodeOperations(
           socketUpdates.forEach((item) => {
             const sockets = isInput ? n.inputs : n.outputs;
             if (!sockets[item.key]) {
-              if (isInput)
-                n.addInput(item.key, new Classic.Input(socket, item.key));
-              else n.addOutput(item.key, new Classic.Output(socket, item.key));
+              const s = new Classic.Socket('socket');
+              (s as any).portKey = item.key;
+              (s as any).isOutput = !isInput;
+
+              if (isInput) n.addInput(item.key, new Classic.Input(s, item.key));
+              else n.addOutput(item.key, new Classic.Output(s, item.key));
             }
           });
 
