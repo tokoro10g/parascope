@@ -94,6 +94,7 @@ export const InputControlComponent: React.FC<{ data: InputControl }> = ({
       onKeyDown={(e) => {
         if (e.key === 'Enter') {
           handleBlur();
+          (e.currentTarget as HTMLInputElement).blur();
         }
         e.stopPropagation();
       }}
@@ -107,7 +108,7 @@ export const InputControlComponent: React.FC<{ data: InputControl }> = ({
         borderColor: error ? 'red' : undefined,
       }}
       title={error || ''}
-      className={data.readonly ? 'node-input-readonly' : 'node-input'}
+      className={data.readonly ? 'control-input-readonly' : 'control-input'}
     />
   );
 };

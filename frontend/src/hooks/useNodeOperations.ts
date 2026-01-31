@@ -82,21 +82,47 @@ export function useNodeOperations(
 
       const uniqueLabel = getUniqueLabel(label, type);
 
-      const node = new ParascopeNode(
-        type,
-        uniqueLabel,
-        inputs,
-        outputs,
-        data,
-        (val) => {
-          if (type === 'input') {
-            handleCalculationInputChange(id, String(val));
-          } else {
-            setIsDirty(true);
-            wrapper?.triggerGraphChange();
-          }
-        },
-      );
+      const node = new ParascopeNode(type, uniqueLabel, inputs, outputs, data);
+
+      node.onChange = (_val) => {
+        // No-op on change to prevent heavy auto-calc on every keystroke
+      };
+
+      node.onCommit = (oldVal, newVal) => {
+        if (oldVal === newVal) return;
+
+        // Trigger calculation and state updates only when value is committed (blur/Enter)
+        if (node.type === 'input') {
+          handleCalculationInputChange(id, String(newVal));
+        } else {
+          setIsDirty(true);
+          wrapper?.triggerGraphChange();
+        }
+
+        if (node.type !== 'input' && addHistoryAction) {
+          addHistoryAction({
+            redo: () => {
+              const n = editor.getNode(id);
+              const control = n?.controls.value as any; // InputControl
+              if (control) {
+                control.setValue(newVal);
+                wrapper?.triggerGraphChange();
+              }
+            },
+            undo: () => {
+              const n = editor.getNode(id);
+              const control = n?.controls.value as any; // InputControl
+              if (control) {
+                control.setValue(oldVal);
+                wrapper?.triggerGraphChange();
+              }
+            },
+          });
+        }
+      };
+
+      node.setupControl();
+
       node.id = id;
       node.dbId = id;
 
@@ -118,6 +144,7 @@ export function useNodeOperations(
       setIsDirty,
       wrapper,
       getUniqueLabel,
+      addHistoryAction,
     ],
   );
 

@@ -283,40 +283,48 @@ export async function createEditor(container: HTMLElement) {
             inputs,
             outputs,
             n.data || {},
-            (val) => {
-              if (n.type === 'input') {
-                if (onInputValueChange && n.id)
-                  onInputValueChange(n.id, String(val));
-              } else {
-                notifyGraphChange();
-              }
-            },
-            (oldVal, newVal) => {
-              if (n.type !== 'input' && n.id) {
-                history.add({
-                  redo: () => {
-                    const node = instance.getNode(n.id!);
-                    const control = node?.controls.value as InputControl;
-                    if (control) {
-                      control.setValue(newVal);
-                      notifyGraphChange();
-                    }
-                  },
-                  undo: () => {
-                    const node = instance.getNode(n.id!);
-                    const control = node?.controls.value as InputControl;
-                    if (control) {
-                      control.setValue(oldVal);
-                      notifyGraphChange();
-                    }
-                  },
-                });
-              }
-            },
           );
+
+          node.onChange = (_val) => {
+            // No-op on change to prevent heavy auto-calc on every keystroke
+          };
+
+          node.onCommit = (oldVal, newVal) => {
+            if (oldVal === newVal) return;
+
+            // Trigger calculation and state updates only when value is committed (blur/Enter)
+            if (node.type === 'input') {
+              if (onInputValueChange && node.id)
+                onInputValueChange(node.id, String(newVal));
+            } else {
+              notifyGraphChange();
+            }
+
+            if (node.type !== 'input' && node.id) {
+              history.add({
+                redo: () => {
+                  const n = instance.getNode(node.id);
+                  const control = n?.controls.value as InputControl;
+                  if (control) {
+                    control.setValue(newVal);
+                    notifyGraphChange();
+                  }
+                },
+                undo: () => {
+                  const n = instance.getNode(node.id);
+                  const control = n?.controls.value as InputControl;
+                  if (control) {
+                    control.setValue(oldVal);
+                    notifyGraphChange();
+                  }
+                },
+              });
+            }
+          };
+
+          node.setupControl();
           node.id = n.id; // Use the DB ID as the Rete ID
           node.dbId = n.id;
-          // node.label is already set by super(label)
 
           await instance.addNode(node);
 
