@@ -1,11 +1,12 @@
 import type React from 'react';
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { ClassicPreset } from 'rete';
 
 export class InputControl extends ClassicPreset.Control {
   private listeners: (() => void)[] = [];
   public value: string | number;
   public onChange?: (value: any) => void;
+  public onCommit?: (oldValue: any, newValue: any) => void;
   public readonly: boolean;
   public error: string | null = null;
 
@@ -14,11 +15,13 @@ export class InputControl extends ClassicPreset.Control {
     options: {
       readonly?: boolean;
       change?: (value: any) => void;
+      commit?: (oldValue: any, newValue: any) => void;
     } = {},
   ) {
     super();
     this.value = value;
     this.onChange = options.change;
+    this.onCommit = options.commit;
     this.readonly = options.readonly || false;
   }
 
@@ -49,6 +52,7 @@ export const InputControlComponent: React.FC<{ data: InputControl }> = ({
 }) => {
   const [value, setValue] = useState(data.value);
   const [error, setError] = useState<string | null>(data.error);
+  const initialValue = useRef(data.value);
 
   useEffect(() => {
     setValue(data.value);
@@ -70,10 +74,29 @@ export const InputControlComponent: React.FC<{ data: InputControl }> = ({
     }
   };
 
+  const handleFocus = () => {
+    initialValue.current = data.value;
+  };
+
+  const handleBlur = () => {
+    if (initialValue.current !== data.value) {
+      data.onCommit?.(initialValue.current, data.value);
+      initialValue.current = data.value;
+    }
+  };
+
   return (
     <input
       value={value}
       onChange={handleChange}
+      onFocus={handleFocus}
+      onBlur={handleBlur}
+      onKeyDown={(e) => {
+        if (e.key === 'Enter') {
+          handleBlur();
+        }
+        e.stopPropagation();
+      }}
       readOnly={data.readonly}
       onPointerDown={(e) => e.stopPropagation()}
       onDoubleClick={(e) => e.stopPropagation()}

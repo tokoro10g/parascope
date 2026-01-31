@@ -15,6 +15,7 @@ export class ParascopeNode extends Classic.Node {
   public y = 0;
   public data: Record<string, any>;
   public onChange?: (value: any) => void;
+  public onCommit?: (oldValue: any, newValue: any) => void;
   public error?: string;
 
   constructor(
@@ -24,11 +25,13 @@ export class ParascopeNode extends Classic.Node {
     outputs: { key: string; socket_type: string }[],
     data: Record<string, any> = {},
     onChange?: (value: any) => void,
+    onCommit?: (oldValue: any, newValue: any) => void,
   ) {
     super(label);
     this.type = type;
     this.data = data;
     this.onChange = onChange;
+    this.onCommit = onCommit;
 
     inputs.forEach((inp) => {
       this.addInput(inp.key, new Classic.Input(socket, inp.key));
@@ -52,6 +55,7 @@ export class ParascopeNode extends Classic.Node {
   setupControl() {
     const data = this.data;
     const onChange = this.onChange;
+    const onCommit = this.onCommit;
 
     if (this.controls.value) {
       this.removeControl('value');
@@ -110,6 +114,7 @@ export class ParascopeNode extends Classic.Node {
         new InputControl(value, {
           readonly: false,
           change: onChange,
+          commit: onCommit,
         }),
       );
     } else if (this.type === 'output') {

@@ -291,6 +291,28 @@ export async function createEditor(container: HTMLElement) {
                 notifyGraphChange();
               }
             },
+            (oldVal, newVal) => {
+              if (n.type !== 'input' && n.id) {
+                history.add({
+                  redo: () => {
+                    const node = instance.getNode(n.id!);
+                    const control = node?.controls.value as InputControl;
+                    if (control) {
+                      control.setValue(newVal);
+                      notifyGraphChange();
+                    }
+                  },
+                  undo: () => {
+                    const node = instance.getNode(n.id!);
+                    const control = node?.controls.value as InputControl;
+                    if (control) {
+                      control.setValue(oldVal);
+                      notifyGraphChange();
+                    }
+                  },
+                });
+              }
+            },
           );
           node.id = n.id; // Use the DB ID as the Rete ID
           node.dbId = n.id;
