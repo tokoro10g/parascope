@@ -14,6 +14,7 @@ export class ParascopeNode extends Classic.Node {
   public x = 0;
   public y = 0;
   public data: Record<string, any>;
+  public calculatedValues: Record<string, any> = {};
   public onChange?: (value: any) => void;
   public onCommit?: (oldValue: any, newValue: any) => void;
   public error?: string;
@@ -34,16 +35,24 @@ export class ParascopeNode extends Classic.Node {
     this.onCommit = onCommit;
 
     inputs.forEach((inp) => {
-      this.addInput(inp.key, new Classic.Input(socket, inp.key));
+      const s = new Classic.Socket('socket');
+      (s as any).portKey = inp.key;
+      (s as any).isOutput = false;
+      this.addInput(inp.key, new Classic.Input(s, inp.key));
     });
 
     outputs.forEach((out) => {
       const s = new Classic.Socket('socket');
+      (s as any).portKey = out.key;
+      (s as any).isOutput = true;
       const output = new Classic.Output(s, out.key);
-      if (type === 'sheet') {
-        output.socket = new Classic.Socket(
+      if (this.type === 'sheet') {
+        const sheetSocket = new Classic.Socket(
           out.socket_type === 'constant' ? 'socket-constant' : 'socket-output',
         );
+        (sheetSocket as any).portKey = out.key;
+        (sheetSocket as any).isOutput = true;
+        output.socket = sheetSocket;
       }
 
       this.addOutput(out.key, output);

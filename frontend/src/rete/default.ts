@@ -443,8 +443,36 @@ export async function createEditor(container: HTMLElement) {
     updateNodeValues: (
       inputs: Record<string, any>,
       outputs: Record<string, any>,
+      fullResult?: Record<string, any>,
     ) => {
       instance.getNodes().forEach((node) => {
+        // Update calculated values for displaying at sockets
+        if (fullResult && fullResult[node.id]) {
+          const nodeRes = fullResult[node.id];
+          if (nodeRes.outputs) {
+            (node as ParascopeNode).calculatedValues = { ...nodeRes.outputs };
+
+            // Also update output sockets directly
+            Object.entries(nodeRes.outputs).forEach(([key, val]) => {
+              const output = node.outputs[key];
+              if (output && output.socket) {
+                (output.socket as any).value = val;
+              }
+            });
+          }
+
+          if (nodeRes.inputs) {
+            // Also update input sockets directly if present in result
+            Object.entries(nodeRes.inputs).forEach(([key, val]) => {
+              const input = node.inputs[key];
+              if (input && input.socket) {
+                (input.socket as any).value = val;
+              }
+            });
+          }
+          area.update('node', node.id);
+        }
+
         const valueControl = node.controls
           .value as Classic.InputControl<'text'>;
         if (!valueControl) return;

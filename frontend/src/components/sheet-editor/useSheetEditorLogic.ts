@@ -236,7 +236,7 @@ export function useSheetEditorLogic(): SheetEditorLogic {
 
       const result = await calculatePreview(apiInputs, fullGraph);
       if (editor && result) {
-        editor.updateNodeValues({}, extractValuesFromResult(result));
+        editor.updateNodeValues({}, extractValuesFromResult(result), result);
         setNodes([...editor.instance.getNodes()]);
       }
     }, 50);
@@ -326,6 +326,7 @@ export function useSheetEditorLogic(): SheetEditorLogic {
       editor.updateNodeValues(
         calculationInputsRef.current,
         extractValuesFromResult(lastResult || {}),
+        lastResult || {},
       );
     }
     handleSaveSheet(getExportData());
@@ -464,6 +465,7 @@ export function useSheetEditorLogic(): SheetEditorLogic {
       editor.updateNodeValues(
         calculationInputs,
         extractValuesFromResult(lastResult || {}),
+        lastResult || {},
       );
       const nodes = [...editor.instance.getNodes()];
       nodes.forEach((n) => {
@@ -640,7 +642,7 @@ export function useSheetEditorLogic(): SheetEditorLogic {
       const result = await calculatePreview(apiInputs, graph, true);
 
       if (editor && result) {
-        editor.updateNodeValues({}, extractValuesFromResult(result));
+        editor.updateNodeValues({}, extractValuesFromResult(result), result);
         setNodes([...editor.instance.getNodes()]);
       }
     } catch (e: any) {
