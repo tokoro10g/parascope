@@ -7,9 +7,11 @@ import { test, expect } from '@playwright/test';
 import { login, addNode } from './utils/graph-utils';
 
 test.describe('Collaboration & Locking', () => {
-  test('Two users interacting with the same sheet', async ({ browser }) => {
+  test('Two users interacting with the same sheet', async ({ browser }, testInfo) => {
+    const recordVideo = testInfo.project.use.video === 'on' ? { dir: testInfo.outputPath('videos') } : undefined;
+
     // 1. User A creates a sheet
-    const contextA = await browser.newContext();
+    const contextA = await browser.newContext({ recordVideo });
     const pageA = await contextA.newPage();
     await login(pageA, 'User A');
     
@@ -18,7 +20,7 @@ test.describe('Collaboration & Locking', () => {
     const sheetUrl = pageA.url();
 
     // 2. User B opens the same sheet
-    const contextB = await browser.newContext();
+    const contextB = await browser.newContext({ recordVideo });
     const pageB = await contextB.newPage();
     await login(pageB, 'User B');
     
@@ -36,7 +38,7 @@ test.describe('Collaboration & Locking', () => {
     await pageB.click('button:has-text("Confirm Take Over")');
     
     // User B should verify lock warning is gone, but draft banner should be visible
-    await expect(pageB.locator('.lock-banner')).not.toContainText('Currently being edited by');
+    await expect(pageB.locator('.lock-banner')).not.toBeVisible();
     await expect(pageB.locator('.draft-status-banner')).toBeVisible();
     await expect(pageB.locator('.draft-status-banner')).toContainText('You are editing the Draft version');
     

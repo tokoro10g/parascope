@@ -7,9 +7,11 @@ import { expect, test } from '@playwright/test';
 import { createSheet, createVersion, login, saveSheet } from './utils/graph-utils';
 
 test.describe('Versioning & Locking', () => {
-  test('Opening a version does not lock the sheet', async ({ browser }) => {
+  test('Opening a version does not lock the sheet', async ({ browser }, testInfo) => {
+    const recordVideo = testInfo.project.use.video === 'on' ? { dir: testInfo.outputPath('videos') } : undefined;
+
     // 1. User A creates a sheet
-    const contextA = await browser.newContext();
+    const contextA = await browser.newContext({ recordVideo });
     const pageA = await contextA.newPage();
     await login(pageA, 'User A');
     await createSheet(pageA, 'LockTest_Sheet');
@@ -34,13 +36,13 @@ test.describe('Versioning & Locking', () => {
     // The previous implementation logic.isReadOnly should be true.
     
     // 2. User B opens the Live sheet
-    const contextB = await browser.newContext();
+    const contextB = await browser.newContext({ recordVideo });
     const pageB = await contextB.newPage();
     await login(pageB, 'User B');
     await pageB.goto(sheetUrl); // Live URL
 
     // User B should NOT see lock warning, but should see draft banner
-    await expect(pageB.locator('.lock-banner')).not.toContainText('Currently being edited by');
+    await expect(pageB.locator('.lock-banner')).not.toBeVisible();
     await expect(pageB.locator('.draft-status-banner')).toBeVisible();
     await expect(pageB.locator('.draft-status-banner')).toContainText('You are editing the Draft version');
     
