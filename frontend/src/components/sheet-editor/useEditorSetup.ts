@@ -9,7 +9,11 @@ interface UseEditorSetupProps {
   handleNodeUpdate: (nodeId: string, updates: any) => Promise<void>;
   handleDuplicateNode: (nodeId: string) => Promise<void>;
   handleDelete: (nodeIds: string[]) => Promise<void>;
-  handleAddNode: (type: any) => Promise<void>;
+  handleAddNode: (
+    type: any,
+    position?: { x: number; y: number },
+    connectionInfo?: any,
+  ) => Promise<void>;
   setIsDirty: (dirty: boolean) => void;
   triggerAutoCalculation: () => void;
   handleCalculationInputChange: (id: string, value: string) => void;
@@ -70,7 +74,8 @@ export function useEditorSetup({
         },
         onNodeDuplicate: handleDuplicateNode,
         onNodeRemove: async (nodeId: string) => await handleDelete([nodeId]),
-        onAddNode: (type: any) => handleAddNode(type),
+        onAddNode: (type: any, position?: any, connectionInfo?: any) =>
+          handleAddNode(type, position, connectionInfo),
       });
 
       editor.setNodeDoubleClickListener((id: string) => {

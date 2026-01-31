@@ -49,6 +49,8 @@ export async function createEditor(container: HTMLElement) {
   const selector = AreaExtensions.selector();
   const contextMenu = createContextMenuPlugin(
     instance,
+    area,
+    connection,
     contextMenuCallbacks,
     () =>
       instance
@@ -174,7 +176,7 @@ export async function createEditor(container: HTMLElement) {
 
   area.addPipe((context) => {
     if (context.type === 'pointerdown') {
-      lastPointerDownTarget = context.data.event.target;
+      lastPointerDownTarget = (context.data as any).event.target;
     }
     if (context.type === 'nodepicked') {
       const nodeId = context.data.id;

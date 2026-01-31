@@ -14,7 +14,9 @@ export class Connection<
 export type Schemes = GetSchemes<
   ParascopeNode,
   Connection<ParascopeNode, ParascopeNode>
->;
+> & {
+  Pipe: any;
+};
 
 export type AreaExtra =
   | Area2D<Schemes>

@@ -218,13 +218,16 @@ export function useReteEvents(
 
         if (sheetNode && otherNode) {
           const nestedSheetId = sheetNode.data?.sheetId;
+          const versionId = sheetNode.data?.versionId;
           const portKey = isInputToSheet
             ? connection.targetInput
             : connection.sourceOutput;
 
           if (nestedSheetId && portKey) {
             try {
-              const nestedSheet = await api.getSheet(nestedSheetId);
+              const nestedSheet = versionId
+                ? (await api.getVersion(nestedSheetId, versionId)).data
+                : await api.getSheet(nestedSheetId);
 
               // 1. Sync Target Node (Sheet Node) Ports if stale
               const expectedInputs = nestedSheet.nodes

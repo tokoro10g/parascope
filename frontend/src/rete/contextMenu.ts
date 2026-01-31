@@ -1,7 +1,9 @@
 import type { NodeEditor } from 'rete';
+import type { AreaPlugin } from 'rete-area-plugin';
+import { ConnectionPlugin } from 'rete-connection-plugin';
 import { ContextMenuPlugin } from 'rete-context-menu-plugin';
 import { copyToClipboard } from '../utils';
-import type { Schemes } from './types';
+import type { AreaExtra, Schemes } from './types';
 
 export interface ContextMenuCallbacks {
   onNodeEdit?: (nodeId: string) => void;
@@ -18,61 +20,103 @@ export interface ContextMenuCallbacks {
       | 'comment'
       | 'lut'
       | 'sheet',
+    position: { x: number; y: number },
+    connectionInfo?: {
+      source?: { nodeId: string; portKey: string };
+      target?: { nodeId: string; portKey: string };
+    },
   ) => void;
 }
 
+export type PendingConnection = {
+  source?: { nodeId: string; portKey: string };
+  target?: { nodeId: string; portKey: string };
+};
+
 export function createContextMenuPlugin(
   editor: NodeEditor<Schemes>,
+  area: AreaPlugin<Schemes, AreaExtra>,
+  connection: ConnectionPlugin<Schemes, AreaExtra>,
   callbacks: ContextMenuCallbacks,
   getSelectedNodes: () => Schemes['Node'][],
 ) {
-  return new ContextMenuPlugin<Schemes>({
+  const plugin = new ContextMenuPlugin<Schemes>({
     items: (context) => {
-      if (context === 'root') {
-        return {
-          searchBar: false,
-          list: [
+      const isPending = (context as any)?.type === 'pending-connection';
+      
+      if (context === 'root' || isPending) {
+        const pending = isPending ? (context as any).data as PendingConnection : undefined;
+
+        const list = [];
+
+        // Helper to add node with pending connection info
+        const add = (type: any) => {
+          const pointer = area.area.pointer;
+          callbacks.onAddNode?.(type, pointer, pending);
+        };
+
+        if (!pending || pending.source) {
+          // If dragging FROM an output, we want to add an Output node
+          list.push({
+            label: 'Add Output',
+            key: 'add-output',
+            handler: () => add('output'),
+          });
+        }
+
+        if (!pending || pending.target) {
+          // If dragging TO an input, we want to add an Input or Constant node
+          list.push(
             {
               label: 'Add Constant',
               key: 'add-constant',
-              handler: () => callbacks.onAddNode?.('constant'),
-            },
-            {
-              label: 'Add Function',
-              key: 'add-function',
-              handler: () => callbacks.onAddNode?.('function'),
+              handler: () => add('constant'),
             },
             {
               label: 'Add Input',
               key: 'add-input',
-              handler: () => callbacks.onAddNode?.('input'),
+              handler: () => add('input'),
             },
-            {
-              label: 'Add Output',
-              key: 'add-output',
-              handler: () => callbacks.onAddNode?.('output'),
-            },
-            {
-              label: 'Add Comment',
-              key: 'add-comment',
-              handler: () => callbacks.onAddNode?.('comment'),
-            },
+          );
+        }
+
+        if (!pending) {
+          list.push({
+            label: 'Add Function',
+            key: 'add-function',
+            handler: () => add('function'),
+          });
+
+          list.push(
             {
               label: 'Add Lookup Table',
               key: 'add-lut',
-              handler: () => callbacks.onAddNode?.('lut'),
+              handler: () => add('lut'),
             },
             {
               label: 'Import Sheet',
               key: 'import-sheet',
-              handler: () => callbacks.onAddNode?.('sheet'),
+              handler: () => add('sheet'),
             },
-          ],
+          );
+
+          list.push({
+            label: 'Add Comment',
+            key: 'add-comment',
+            handler: () => add('comment'),
+          });
+        }
+
+        return {
+          searchBar: false,
+          list,
         };
       }
 
+      const anyContext = context as any;
+
       // Check for connection (has source/target)
-      if ('source' in context && 'target' in context) {
+      if (anyContext && 'source' in anyContext && 'target' in anyContext) {
         return {
           searchBar: false,
           list: [
@@ -80,7 +124,7 @@ export function createContextMenuPlugin(
               label: 'Delete',
               key: 'delete',
               handler: async () => {
-                await editor.removeConnection(context.id);
+                await editor.removeConnection(anyContext.id);
               },
             },
           ],
@@ -89,7 +133,7 @@ export function createContextMenuPlugin(
 
       // Node
       const selectedNodes = getSelectedNodes();
-      const isSelected = selectedNodes.some((n) => n.id === context.id);
+      const isSelected = selectedNodes.some((n) => n.id === anyContext.id);
 
       if (selectedNodes.length > 1 && isSelected) {
         return {
@@ -102,13 +146,13 @@ export function createContextMenuPlugin(
 
       const items = [];
 
-      if (context.type === 'sheet') {
+      if (anyContext.type === 'sheet') {
         items.push({
           label: 'Open in New Tab',
           key: 'edit-sheet',
           handler: () => {
             if (callbacks.onEditNestedSheet)
-              callbacks.onEditNestedSheet(context.id);
+              callbacks.onEditNestedSheet(anyContext.id);
           },
         });
       }
@@ -117,26 +161,26 @@ export function createContextMenuPlugin(
         label: 'Edit',
         key: 'edit',
         handler: () => {
-          if (callbacks.onNodeEdit) callbacks.onNodeEdit(context.id);
+          if (callbacks.onNodeEdit) callbacks.onNodeEdit(anyContext.id);
         },
       });
 
-      if (context.type === 'input') {
+      if (anyContext.type === 'input') {
         items.push({
           label: 'Switch to Constant',
           key: 'switch-to-constant',
           handler: () => {
             if (callbacks.onNodeTypeChange)
-              callbacks.onNodeTypeChange(context.id, 'constant');
+              callbacks.onNodeTypeChange(anyContext.id, 'constant');
           },
         });
-      } else if (context.type === 'constant') {
+      } else if (anyContext.type === 'constant') {
         items.push({
           label: 'Switch to Input',
           key: 'switch-to-input',
           handler: () => {
             if (callbacks.onNodeTypeChange)
-              callbacks.onNodeTypeChange(context.id, 'input');
+              callbacks.onNodeTypeChange(anyContext.id, 'input');
           },
         });
       }
@@ -147,14 +191,14 @@ export function createContextMenuPlugin(
           key: 'duplicate',
           handler: () => {
             if (callbacks.onNodeDuplicate)
-              callbacks.onNodeDuplicate(context.id);
+              callbacks.onNodeDuplicate(anyContext.id);
           },
         },
         {
           label: 'Copy URL',
           key: 'copy-url',
           handler: () => {
-            const url = `${window.location.origin}${window.location.pathname}${window.location.search}#${context.id}`;
+            const url = `${window.location.origin}${window.location.pathname}${window.location.search}#${anyContext.id}`;
             copyToClipboard(url);
           },
         },
@@ -163,7 +207,7 @@ export function createContextMenuPlugin(
           key: 'delete',
           handler: async () => {
             if (callbacks.onNodeRemove) {
-              await callbacks.onNodeRemove(context.id);
+              await callbacks.onNodeRemove(anyContext.id);
             }
           },
         },
@@ -175,4 +219,39 @@ export function createContextMenuPlugin(
       };
     },
   });
+
+  connection.addPipe((context) => {
+    if (context.type === 'connectiondrop') {
+      const { initial, socket, created } = context.data;
+      if (!created && !socket) {
+        const pointer = area.area.pointer;
+        const { x, y, k } = area.area.transform;
+        const rect = area.container.getBoundingClientRect();
+        const screenX = pointer.x * k + x + rect.left;
+        const screenY = pointer.y * k + y + rect.top;
+
+        const pending: PendingConnection =
+          initial.side === 'output'
+            ? { source: { nodeId: initial.nodeId, portKey: initial.key } }
+            : { target: { nodeId: initial.nodeId, portKey: initial.key } };
+
+        // Small delay to ensure pointer events are processed
+        setTimeout(() => {
+          area.emit({
+            type: 'contextmenu',
+            data: {
+              event: new MouseEvent('contextmenu', {
+                clientX: screenX,
+                clientY: screenY,
+              }),
+              context: { type: 'pending-connection', data: pending } as any,
+            },
+          });
+        }, 50);
+      }
+    }
+    return context;
+  });
+
+  return plugin;
 }

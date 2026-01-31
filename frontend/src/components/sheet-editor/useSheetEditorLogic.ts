@@ -16,6 +16,7 @@ import { useSheetLock } from '../../hooks/useSheetLock';
 import { useSheetManager } from '../../hooks/useSheetManager';
 import { useUnsavedChanges } from '../../hooks/useUnsavedChanges';
 import { createEditor, type ParascopeNode } from '../../rete';
+import { Connection } from '../../rete/types';
 import type { NodeType } from '../../rete/types';
 import {
   createSocket,
@@ -53,6 +54,11 @@ export function useSheetEditorLogic(): SheetEditorLogic {
   const [isVersionListOpen, setIsVersionListOpen] = useState(false);
   const [isTakeOverModalOpen, setIsTakeOverModalOpen] = useState(false);
   const [isHistoryModalOpen, setIsHistoryModalOpen] = useState(false);
+  const [pendingConnection, setPendingConnection] = useState<{
+    source?: { nodeId: string; portKey: string };
+    target?: { nodeId: string; portKey: string };
+    position?: { x: number; y: number };
+  } | null>(null);
   const [autoCalculate, setAutoCalculate] = useState(true);
   const [initialLoadDone, setInitialLoadDone] = useState(false);
   const initialLoadDoneRef = useRef(false);
@@ -479,46 +485,56 @@ export function useSheetEditorLogic(): SheetEditorLogic {
     }
   }, [editor, calculationInputs, lastResult]);
 
-  const handleAddNode = async (type: NodeType) => {
+  const handleAddNode = async (
+    type: NodeType,
+    position?: { x: number; y: number },
+    connectionInfo?: {
+      source?: { nodeId: string; portKey: string };
+      target?: { nodeId: string; portKey: string };
+    },
+  ) => {
     if (!editor || !currentSheet) return;
-
-    if (type === 'sheet') {
-      setIsSheetPickerOpen(true);
-      return;
-    }
-
-    let label: string = type;
-    let inputs: { key: string; socket_type: string }[] = [];
-    let outputs: { key: string; socket_type: string }[] = [];
-    let data: Record<string, any> = {};
+  
+          if (type === 'sheet') {
+            setPendingConnection({ ...connectionInfo, position });
+            setIsSheetPickerOpen(true);
+            return;
+          }
+      
+          let label: string =
+            connectionInfo?.source?.portKey ||
+            connectionInfo?.target?.portKey ||
+            type;
+          let inputs: { key: string; socket_type: string }[] = [];
+          let outputs: { key: string; socket_type: string }[] = [];    let data: Record<string, any> = {};
 
     switch (type) {
       case 'constant':
-        label = 'Constant';
+        if (!connectionInfo) label = 'Constant';
         outputs = [createSocket('value')];
         data = { value: 0 };
         break;
       case 'function':
-        label = 'Function';
-        inputs = [createSocket('x')];
+        if (!connectionInfo) label = 'Force Calculation'; // Default for new function nodes
+        inputs = [createSocket('x'), createSocket('y')];
         outputs = [createSocket('result')];
-        data = {};
+        data = { code: 'result = x + y' };
         break;
       case 'input':
-        label = 'Input';
+        if (!connectionInfo) label = 'Input';
         outputs = [createSocket('value')];
         data = {};
         break;
       case 'output':
-        label = 'Output';
+        if (!connectionInfo) label = 'Output';
         inputs = [createSocket('value')];
         break;
       case 'comment':
-        label = 'Comment';
+        if (!connectionInfo) label = 'Comment';
         data = {};
         break;
       case 'lut':
-        label = 'LUT';
+        if (!connectionInfo) label = 'LUT';
         inputs = [createSocket('key')];
         outputs = [createSocket('Output 1')];
         data = {
@@ -529,17 +545,54 @@ export function useSheetEditorLogic(): SheetEditorLogic {
         break;
     }
 
-    const centerPos = calcCenterPosition();
-    await addNode(
+    const nodePos = position || calcCenterPosition();
+    const node = await addNode(
       type,
       label,
       inputs,
       outputs,
       data,
-      centerPos,
-      true,
+      nodePos,
+      !connectionInfo, // Don't auto-edit if we are connecting
       setEditingNode,
     );
+
+    if (node && connectionInfo) {
+      // Auto-connect
+      if (connectionInfo.source) {
+        const sourceNode = editor.instance.getNode(connectionInfo.source.nodeId);
+        if (sourceNode) {
+          // Find first available input on new node
+          const targetPort = Object.keys(node.inputs)[0];
+          if (targetPort) {
+            await editor.addConnection(
+              new Connection(
+                sourceNode,
+                connectionInfo.source.portKey,
+                node,
+                targetPort,
+              ),
+            );
+          }
+        }
+      } else if (connectionInfo.target) {
+        const targetNode = editor.instance.getNode(connectionInfo.target.nodeId);
+        if (targetNode) {
+          // Find first available output on new node
+          const sourcePort = Object.keys(node.outputs)[0];
+          if (sourcePort) {
+            await editor.addConnection(
+              new Connection(
+                node,
+                sourcePort,
+                targetNode,
+                connectionInfo.target.portKey,
+              ),
+            );
+          }
+        }
+      }
+    }
   };
 
   const handleImportSheet = async (sheet: Sheet) => {
@@ -570,22 +623,66 @@ export function useSheetEditorLogic(): SheetEditorLogic {
       const { inputs, outputs } = resolveSheetPorts(sheetNodes);
 
       const type = 'sheet';
-      const label = sheet.name;
+      const label =
+        pendingConnection?.source?.portKey ||
+        pendingConnection?.target?.portKey ||
+        sheet.name;
 
-      const centerPos = calcCenterPosition();
-      await addNode(
+      const nodePos = pendingConnection?.position || calcCenterPosition();
+      const node = await addNode(
         type,
         label,
         inputs,
         outputs,
         data,
-        centerPos,
-        true,
+        nodePos,
+        !pendingConnection,
         setEditingNode,
       );
+
+      if (node && pendingConnection) {
+        // Auto-connect
+        if (pendingConnection.source) {
+          const sourceNode = editor.instance.getNode(
+            pendingConnection.source.nodeId,
+          );
+          if (sourceNode) {
+            const targetPort = Object.keys(node.inputs)[0];
+            if (targetPort) {
+              await editor.addConnection(
+                new Connection(
+                  sourceNode,
+                  pendingConnection.source.portKey,
+                  node,
+                  targetPort,
+                ),
+              );
+            }
+          }
+        } else if (pendingConnection.target) {
+          const targetNode = editor.instance.getNode(
+            pendingConnection.target.nodeId,
+          );
+          if (targetNode) {
+            const sourcePort = Object.keys(node.outputs)[0];
+            if (sourcePort) {
+              await editor.addConnection(
+                new Connection(
+                  node,
+                  sourcePort,
+                  targetNode,
+                  pendingConnection.target.portKey,
+                ),
+              );
+            }
+          }
+        }
+      }
+      setPendingConnection(null);
     } catch (e) {
       console.error(e);
       toast.error(`Error importing sheet: ${e}`);
+      setPendingConnection(null);
     }
   };
 
