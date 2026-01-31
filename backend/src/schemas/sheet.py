@@ -151,7 +151,6 @@ NodeCreate = Union[
 # Node Reading Union
 class NodeReadMixin(BaseModel):
     id: UUID
-    sheet_id: UUID
     model_config = ConfigDict(from_attributes=True)
 
 
@@ -203,7 +202,6 @@ class ConnectionCreate(ConnectionBase):
 
 class ConnectionRead(ConnectionBase):
     id: UUID
-    sheet_id: UUID
     model_config = ConfigDict(from_attributes=True)
 
 
