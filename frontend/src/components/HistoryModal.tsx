@@ -12,6 +12,8 @@ interface HistoryModalProps {
   onClose: () => void;
   sheetId: string;
   nodes: ParascopeNode[];
+  before?: string;
+  after?: string;
 }
 
 const formatValue = (val: any) => {
@@ -51,6 +53,8 @@ export const HistoryModal: React.FC<HistoryModalProps> = ({
   onClose,
   sheetId,
   nodes,
+  before,
+  after,
 }) => {
   const [history, setHistory] = useState<AuditLog[]>([]);
   const [isLoading, setIsLoading] = useState(false);
@@ -59,14 +63,14 @@ export const HistoryModal: React.FC<HistoryModalProps> = ({
     if (!sheetId) return;
     setIsLoading(true);
     try {
-      const data = await api.getSheetHistory(sheetId);
+      const data = await api.getSheetHistory(sheetId, { before, after });
       setHistory(data);
     } catch (e) {
       console.error(e);
     } finally {
       setIsLoading(false);
     }
-  }, [sheetId]);
+  }, [sheetId, before, after]);
 
   useEffect(() => {
     if (isOpen) {

@@ -23,6 +23,7 @@ export interface SheetEditorContextType {
   activeTab: 'editor' | 'variables' | 'descriptions';
   lockedByOther: string | null;
   defaultVersionTag: string | null;
+  currentVersionCreatedAt: string | null;
   autoCalculate: boolean;
 
   // Modals State

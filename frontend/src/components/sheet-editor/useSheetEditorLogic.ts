@@ -59,6 +59,9 @@ export function useSheetEditorLogic(): SheetEditorLogic {
   const [defaultVersionTag, setDefaultVersionTag] = useState<string | null>(
     null,
   );
+  const [currentVersionCreatedAt, setCurrentVersionCreatedAt] = useState<
+    string | null
+  >(null);
   const [isMobile, setIsMobile] = useState(window.innerWidth <= 768);
   const [activeTab, setActiveTab] = useState<
     'editor' | 'variables' | 'descriptions'
@@ -414,6 +417,7 @@ export function useSheetEditorLogic(): SheetEditorLogic {
                 default_version_id: draftSheet.default_version_id,
               };
               setCurrentSheet(tempSheet);
+              setCurrentVersionCreatedAt(v.created_at);
               editor.loadSheet(tempSheet).then(() => {
                 setNodes([...editor.instance.getNodes()]);
                 setInitialLoadDone(true);
@@ -428,6 +432,7 @@ export function useSheetEditorLogic(): SheetEditorLogic {
       } else {
         handleLoadSheet(sheetId).finally(() => {
           setInitialLoadDone(true);
+          setCurrentVersionCreatedAt(null);
         });
       }
     }
@@ -769,6 +774,7 @@ export function useSheetEditorLogic(): SheetEditorLogic {
     activeTab,
     lockedByOther,
     defaultVersionTag,
+    currentVersionCreatedAt,
     autoCalculate,
     isSheetPickerOpen,
     isUsageModalOpen,

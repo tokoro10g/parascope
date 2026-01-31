@@ -32,6 +32,7 @@ export const SheetEditorModals: React.FC = () => {
     lockedByOther,
     takeOver,
     isReadOnly,
+    currentVersionCreatedAt,
   } = useSheetEditor();
 
   return (
@@ -73,6 +74,7 @@ export const SheetEditorModals: React.FC = () => {
           onClose={() => setIsHistoryModalOpen(false)}
           sheetId={currentSheet.id}
           nodes={nodes}
+          before={currentVersionCreatedAt || undefined}
         />
       )}
       <Modal

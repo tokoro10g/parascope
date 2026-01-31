@@ -627,6 +627,8 @@ async def get_sheet_usages(sheet_id: UUID, db: AsyncSession = Depends(get_db)):
 @router.get("/{sheet_id}/history", response_model=list[AuditLogRead])
 async def get_sheet_history(
     sheet_id: UUID,
+    before_timestamp: datetime | None = None,
+    after_timestamp: datetime | None = None,
     db: AsyncSession = Depends(get_db),
     user_id: str | None = Depends(get_current_user),
 ):
@@ -642,7 +644,14 @@ async def get_sheet_history(
             last_read = read_state.last_read_at
 
     # 2. Fetch logs
-    query = select(AuditLog).where(AuditLog.sheet_id == sheet_id).order_by(AuditLog.timestamp.desc()).limit(10)
+    query = select(AuditLog).where(AuditLog.sheet_id == sheet_id)
+    
+    if before_timestamp:
+        query = query.where(AuditLog.timestamp <= before_timestamp)
+    if after_timestamp:
+        query = query.where(AuditLog.timestamp >= after_timestamp)
+
+    query = query.order_by(AuditLog.timestamp.desc()).limit(10)
     result = await db.execute(query)
     logs = result.scalars().all()
 

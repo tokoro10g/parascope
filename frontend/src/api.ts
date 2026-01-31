@@ -290,10 +290,19 @@ export const api = {
     });
   },
 
-  async getSheetHistory(id: string): Promise<AuditLog[]> {
-    return request(`${API_BASE}/api/v1/sheets/${id}/history`, {
-      headers: getHeaders(),
-    });
+  async getSheetHistory(
+    id: string,
+    options: { before?: string; after?: string } = {},
+  ): Promise<AuditLog[]> {
+    const params = new URLSearchParams();
+    if (options.before) params.append('before_timestamp', options.before);
+    if (options.after) params.append('after_timestamp', options.after);
+    return request(
+      `${API_BASE}/api/v1/sheets/${id}/history?${params.toString()}`,
+      {
+        headers: getHeaders(),
+      },
+    );
   },
 
   async markSheetAsRead(id: string): Promise<{ ok: boolean }> {
