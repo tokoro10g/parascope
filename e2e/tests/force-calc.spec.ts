@@ -43,12 +43,10 @@ test.describe('Force Calculator', () => {
     // Remove defaults (x and result)
     await page
       .locator('.io-column:has-text("Inputs") li')
-      .filter({ has: page.locator('input').filter({ hasValue: 'x' }) })
       .locator('button.danger')
       .click();
     await page
       .locator('.io-column:has-text("Outputs") li')
-      .filter({ has: page.locator('input').filter({ hasValue: 'result' }) })
       .locator('button.danger')
       .click();
 

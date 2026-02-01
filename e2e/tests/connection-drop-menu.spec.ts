@@ -60,7 +60,16 @@ test.describe('Connection Drop Context Menu', () => {
     await zoomOut(page, 2);
 
     // 1. Add a Function node
-    await addNode(page, 'Function', 'MyFunc');
+    await page.click('button:has-text("Add Node")');
+    await page.click('.add-menu-item:has-text("Function")');
+    await page.locator('#node-label').fill('MyFunc');
+
+    // Add y input
+    await page.click('button:has-text("+ Add Input")');
+    await page.locator('.io-column:has-text("Inputs") li input').last().fill('y');
+
+    await page.locator('#node-code').fill('result = x + y');
+    await page.click('button:has-text("Save")');
 
     // 2. Drag from "x" socket to create Constant
     const node = page.locator('[data-testid="node"]').filter({ has: page.locator(`[data-testid="title"]:has-text("MyFunc")`) });

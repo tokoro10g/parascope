@@ -54,11 +54,6 @@ export function useSheetEditorLogic(): SheetEditorLogic {
   const [isVersionListOpen, setIsVersionListOpen] = useState(false);
   const [isTakeOverModalOpen, setIsTakeOverModalOpen] = useState(false);
   const [isHistoryModalOpen, setIsHistoryModalOpen] = useState(false);
-  const [pendingConnection, setPendingConnection] = useState<{
-    source?: { nodeId: string; portKey: string };
-    target?: { nodeId: string; portKey: string };
-    position?: { x: number; y: number };
-  } | null>(null);
   const [autoCalculate, setAutoCalculate] = useState(true);
   const [initialLoadDone, setInitialLoadDone] = useState(false);
   const initialLoadDoneRef = useRef(false);
@@ -495,18 +490,18 @@ export function useSheetEditorLogic(): SheetEditorLogic {
   ) => {
     if (!editor || !currentSheet) return;
   
-          if (type === 'sheet') {
-            setPendingConnection({ ...connectionInfo, position });
-            setIsSheetPickerOpen(true);
-            return;
-          }
+    if (type === 'sheet') {
+      setIsSheetPickerOpen(true);
+      return;
+    }
       
-          let label: string =
-            connectionInfo?.source?.portKey ||
-            connectionInfo?.target?.portKey ||
-            type;
-          let inputs: { key: string; socket_type: string }[] = [];
-          let outputs: { key: string; socket_type: string }[] = [];    let data: Record<string, any> = {};
+    let label: string =
+      connectionInfo?.source?.portKey ||
+      connectionInfo?.target?.portKey ||
+      type;
+    let inputs: { key: string; socket_type: string }[] = [];
+    let outputs: { key: string; socket_type: string }[] = [];
+    let data: Record<string, any> = {};
 
     switch (type) {
       case 'constant':
@@ -515,10 +510,10 @@ export function useSheetEditorLogic(): SheetEditorLogic {
         data = { value: 0 };
         break;
       case 'function':
-        if (!connectionInfo) label = 'Force Calculation'; // Default for new function nodes
-        inputs = [createSocket('x'), createSocket('y')];
+        if (!connectionInfo) label = 'Function';
+        inputs = [createSocket('x')];
         outputs = [createSocket('result')];
-        data = { code: 'result = x + y' };
+        data = {};
         break;
       case 'input':
         if (!connectionInfo) label = 'Input';
@@ -623,66 +618,22 @@ export function useSheetEditorLogic(): SheetEditorLogic {
       const { inputs, outputs } = resolveSheetPorts(sheetNodes);
 
       const type = 'sheet';
-      const label =
-        pendingConnection?.source?.portKey ||
-        pendingConnection?.target?.portKey ||
-        sheet.name;
+      const label = sheet.name;
 
-      const nodePos = pendingConnection?.position || calcCenterPosition();
-      const node = await addNode(
+      const centerPos = calcCenterPosition();
+      await addNode(
         type,
         label,
         inputs,
         outputs,
         data,
-        nodePos,
-        !pendingConnection,
+        centerPos,
+        true,
         setEditingNode,
       );
-
-      if (node && pendingConnection) {
-        // Auto-connect
-        if (pendingConnection.source) {
-          const sourceNode = editor.instance.getNode(
-            pendingConnection.source.nodeId,
-          );
-          if (sourceNode) {
-            const targetPort = Object.keys(node.inputs)[0];
-            if (targetPort) {
-              await editor.addConnection(
-                new Connection(
-                  sourceNode,
-                  pendingConnection.source.portKey,
-                  node,
-                  targetPort,
-                ),
-              );
-            }
-          }
-        } else if (pendingConnection.target) {
-          const targetNode = editor.instance.getNode(
-            pendingConnection.target.nodeId,
-          );
-          if (targetNode) {
-            const sourcePort = Object.keys(node.outputs)[0];
-            if (sourcePort) {
-              await editor.addConnection(
-                new Connection(
-                  node,
-                  sourcePort,
-                  targetNode,
-                  pendingConnection.target.portKey,
-                ),
-              );
-            }
-          }
-        }
-      }
-      setPendingConnection(null);
     } catch (e) {
       console.error(e);
       toast.error(`Error importing sheet: ${e}`);
-      setPendingConnection(null);
     }
   };
 

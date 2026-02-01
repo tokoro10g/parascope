@@ -26,15 +26,13 @@ test.describe('Error Handling', () => {
     await page.click('.add-menu-item:has-text("Function")');
     await page.locator('#node-label').fill('ZeroDivNode');
 
-    // Cleanup defaults
+    // Remove defaults (x and result)
     await page
       .locator('.io-column:has-text("Inputs") li')
-      .filter({ has: page.locator('input').filter({ hasValue: 'x' }) })
       .locator('button.danger')
       .click();
     await page
       .locator('.io-column:has-text("Outputs") li')
-      .filter({ has: page.locator('input').filter({ hasValue: 'result' }) })
       .locator('button.danger')
       .click();
 
