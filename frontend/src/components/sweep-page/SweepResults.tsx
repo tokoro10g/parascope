@@ -1,6 +1,6 @@
 import type { EChartsOption } from 'echarts';
 import ReactECharts from 'echarts-for-react';
-import { ChartArea, Table, TriangleAlert } from 'lucide-react';
+import { ChartArea, ExternalLink, Table, TriangleAlert } from 'lucide-react';
 import type React from 'react';
 import { useMemo, useRef, useState } from 'react';
 import toast from 'react-hot-toast';
@@ -121,10 +121,17 @@ export const SweepResults: React.FC<SweepResultsProps> = ({
               to={`/sheet/${sheetId}`}
               target="_blank"
               rel="noreferrer"
-              style={{ color: 'inherit', textDecoration: 'none' }}
+              style={{
+                color: 'inherit',
+                textDecoration: 'none',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '8px',
+              }}
               title="Open Sheet Editor in New Tab"
             >
               {sheetName || 'Loading...'}
+              <ExternalLink size={18} />
             </Link>
           ) : (
             sheetName || 'Loading...'
