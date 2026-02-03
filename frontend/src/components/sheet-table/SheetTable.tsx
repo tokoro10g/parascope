@@ -244,11 +244,14 @@ export const SheetTable: React.FC<SheetTableProps> = ({
                     }
 
                     const hasError = !!node.error;
+                    const typeClass = `cell-type-${node.type}`;
 
                     return (
                       <tr key={node.id} onClick={() => onSelectNode(node.id)}>
-                        <td className="overflow-anywhere">{name}</td>
-                        <td>{node.type}</td>
+                        <td className={`overflow-anywhere ${typeClass}`}>
+                          {name}
+                        </td>
+                        <td className={typeClass}>{node.type}</td>
                         <td
                           className={`sheet-table-cell-value overflow-anywhere ${
                             hasError && !isCalculating
