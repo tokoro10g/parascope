@@ -308,12 +308,14 @@ export async function humanDelay(page: Page, ms = 700) {
  */
 export async function createSheet(page: Page, name: string) {
   await test.step(`Create sheet "${name}"`, async () => {
-    // Go to root folder if not already there
-    if (!page.url().endsWith('/')) {
+    // Only go to root if we are not already on a dashboard/folder view
+    // We check if the Create New Sheet button is visible
+    const createBtn = page.locator('button:has-text("Create New Sheet")');
+    if (!(await createBtn.isVisible())) {
       await page.goto('/');
     }
     
-    await page.click('button:has-text("Create New Sheet")');
+    await createBtn.click();
     
     // Wait for editor to load
     await expect(page.locator('.rete')).toBeVisible();
