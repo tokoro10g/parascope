@@ -28,3 +28,8 @@
   --ifm-color-primary-lightest: #4fddbf;
   --docusaurus-highlighted-code-line-bg: rgba(0, 0, 0, 0.3);
 }
+
+/* Invert logo color in dark mode */
+[data-theme='dark'] .navbar__logo {
+  filter: invert(100%);
+}
