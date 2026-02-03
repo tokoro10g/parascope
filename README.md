@@ -3,7 +3,7 @@
 
   # Parascope
 
-  **A sophisticated node-based engineering calculation platform.**
+  **A node-based engineering calculation platform for agile teams and hobbyists.**
 
   [![CI](https://github.com/tokoro10g/parascope/actions/workflows/ci.yml/badge.svg)](https://github.com/tokoro10g/parascope/actions/workflows/ci.yml)
   ![Python](https://img.shields.io/badge/python-3.12-blue.svg)

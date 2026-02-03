@@ -6,7 +6,7 @@ import type * as Preset from '@docusaurus/preset-classic';
 
 const config: Config = {
   title: 'Parascope',
-  tagline: 'A sophisticated node-based engineering calculation platform',
+  tagline: 'A node-based engineering calculation platform for agile teams and hobbyists',
   favicon: 'img/favicon.ico',
 
   // Future flags, see https://docusaurus.io/docs/api/docusaurus-config#future

@@ -5,7 +5,7 @@ slug: /intro
 
 # Introduction
 
-**Parascope** is a sophisticated node-based engineering calculation platform designed to help engineers define, visualize, and solve complex system models.
+**Parascope** is a node-based engineering calculation platform designed for agile teams and hobbyists to define, visualize, and solve complex system models.
 
 ## What is Parascope?
 
