@@ -7,7 +7,7 @@ import type * as Preset from '@docusaurus/preset-classic';
 const config: Config = {
   title: 'Parascope',
   tagline: 'A node-based engineering calculation platform for agile teams and hobbyists',
-  favicon: 'img/favicon.ico',
+  favicon: 'img/parascope.svg',
 
   // Future flags, see https://docusaurus.io/docs/api/docusaurus-config#future
   future: {
@@ -64,7 +64,7 @@ const config: Config = {
       title: 'Parascope',
       logo: {
         alt: 'Parascope Logo',
-        src: 'img/logo.svg',
+        src: 'img/parascope.svg',
       },
       items: [
         {
