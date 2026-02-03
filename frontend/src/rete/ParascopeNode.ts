@@ -99,7 +99,12 @@ export class ParascopeNode extends Classic.Node {
         new DropdownControl(
           data.options,
           String(data.value ?? data.options[0] ?? ''),
-          (val) => onChange?.(val),
+          (val) => {
+            const oldVal = data.value;
+            data.value = val;
+            onChange?.(val);
+            onCommit?.(oldVal, val);
+          },
         ),
       );
       return;
