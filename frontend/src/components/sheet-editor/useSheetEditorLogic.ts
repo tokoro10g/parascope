@@ -458,6 +458,7 @@ export function useSheetEditorLogic(): SheetEditorLogic {
     if (editor && location.hash) {
       const nodeId = location.hash.substring(1);
       editor.zoomToNode(nodeId);
+      editor.selectNode(nodeId, false);
     }
   }, [editor, location.hash]);
 

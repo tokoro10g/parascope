@@ -372,6 +372,7 @@ export async function createEditor(container: HTMLElement) {
               const node = instance.getNode(focusNodeId);
               if (node) {
                 await AreaExtensions.zoomAt(area, [node]);
+                selectableNodes.select(node.id, false);
               } else {
                 await AreaExtensions.zoomAt(area, instance.getNodes());
               }
