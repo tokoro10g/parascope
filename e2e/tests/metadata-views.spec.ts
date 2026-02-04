@@ -113,9 +113,9 @@ test.describe('Metadata & Views', () => {
 
     // 4. Verify "Used In" (Usage View)
     await page.click('.btn-sheet-menu-trigger');
-    await page.click('.add-menu-item:has-text("Check Usage")');
+    await page.click('.add-menu-item:has-text("Find Usage")');
 
-    const usageModal = page.locator('.modal-content:has-text("Parent Sheets")');
+    const usageModal = page.locator('.modal-content:has-text("Find Usage")');
     await expect(usageModal).toBeVisible();
     await expect(usageModal).toContainText(parentName);
     await page.click('button:has-text("Close")');

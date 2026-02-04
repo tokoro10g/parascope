@@ -284,6 +284,7 @@ export async function zoomOut(page: Page, clicks = 3) {
     if (!box) return;
 
     await page.mouse.move(box.x + box.width / 2, box.y + box.height / 2);
+    await page.waitForTimeout(100);
     for (let i = 0; i < clicks; i++) {
       await page.mouse.wheel(0, 500);
       await page.waitForTimeout(100);
