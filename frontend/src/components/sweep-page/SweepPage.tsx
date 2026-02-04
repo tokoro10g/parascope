@@ -5,7 +5,7 @@ import {
   type PanelImperativeHandle,
   Separator,
 } from 'react-resizable-panels';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
 
 import { NavBar } from '../NavBar';
@@ -16,6 +16,7 @@ import { useSweepState } from './useSweepState';
 
 export const SweepPage: React.FC = () => {
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
   const { user, logout } = useAuth();
   const [isMobile, setIsMobile] = useState(window.innerWidth <= 768);
   const [activeTab, setActiveTab] = useState<'config' | 'results'>('config');
@@ -203,6 +204,7 @@ export const SweepPage: React.FC = () => {
             <SweepResults
               sheetName={sheet?.name || 'Loading...'}
               sheetId={sheetId}
+              versionId={searchParams.get('versionId') || undefined}
               results={results}
               metadata={metadata}
               headers={headers}

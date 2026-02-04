@@ -14,6 +14,7 @@ import './SweepPage.css';
 interface SweepResultsProps {
   sheetName: string;
   sheetId?: string;
+  versionId?: string;
   results: any[][] | null;
   metadata?: Record<string, any>[] | null;
   headers: SweepHeader[];
@@ -30,6 +31,7 @@ interface SweepResultsProps {
 export const SweepResults: React.FC<SweepResultsProps> = ({
   sheetName,
   sheetId,
+  versionId,
   results,
   metadata,
   headers,
@@ -118,7 +120,11 @@ export const SweepResults: React.FC<SweepResultsProps> = ({
         <h2 className="sweep-header sweep-header-title">
           {sheetId ? (
             <Link
-              to={`/sheet/${sheetId}`}
+              to={
+                versionId
+                  ? `/sheet/${sheetId}?versionId=${versionId}`
+                  : `/sheet/${sheetId}`
+              }
               target="_blank"
               rel="noreferrer"
               style={{
