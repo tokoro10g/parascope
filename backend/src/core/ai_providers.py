@@ -103,7 +103,7 @@ class GeminiProvider(AIProvider):
             genai.types.Tool(google_search=genai.types.GoogleSearch()),
         ]
 
-        response = self.client.models.generate_content(
+        response = await self.client.aio.models.generate_content(
             model=self.model,
             contents=[genai.types.Content(role="user", parts=parts)],
             config=genai.types.GenerateContentConfig(
@@ -122,10 +122,10 @@ class OpenAIProvider(AIProvider):
 
     def __init__(self):
         try:
-            from openai import OpenAI
+            from openai import AsyncOpenAI
 
             self.api_key = settings.OPENAI_API_KEY
-            self.client = OpenAI(api_key=self.api_key) if self.api_key else None
+            self.client = AsyncOpenAI(api_key=self.api_key) if self.api_key else None
             self.model = settings.OPENAI_MODEL
         except ImportError:
             self.client = None
@@ -151,7 +151,7 @@ class OpenAIProvider(AIProvider):
                 image = f"data:image/png;base64,{image}"
             user_content.append({"type": "image_url", "image_url": {"url": image}})
 
-        response = self.client.chat.completions.create(
+        response = await self.client.chat.completions.create(
             model=self.model,
             messages=[
                 {"role": "system", "content": system_instruction},
@@ -193,6 +193,8 @@ class BedrockProvider(AIProvider):
         urls: List[str] = None,
         image: Optional[str] = None,
     ) -> dict:
+        from starlette.concurrency import run_in_threadpool
+
         if not self.client:
             raise Exception("AWS/Bedrock not configured")
 
@@ -227,7 +229,7 @@ class BedrockProvider(AIProvider):
             }
         )
 
-        response = self.client.invoke_model(modelId=self.model_id, body=body)
+        response = await run_in_threadpool(self.client.invoke_model, modelId=self.model_id, body=body)
         response_body = json.loads(response.get("body").read())
         result_text = response_body["content"][0]["text"]
 
