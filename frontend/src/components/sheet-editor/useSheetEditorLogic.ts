@@ -420,6 +420,7 @@ export function useSheetEditorLogic(): SheetEditorLogic {
               };
               setCurrentSheet(tempSheet);
               setCurrentVersionCreatedAt(v.created_at);
+              document.title = `${tempSheet.name} - Parascope`;
               editor.loadSheet(tempSheet).then(() => {
                 setNodes([...editor.instance.getNodes()]);
                 setInitialLoadDone(true);
