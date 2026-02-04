@@ -11,7 +11,7 @@ from ..core.database import get_db
 from ..core.execution import execute_full_script
 from ..core.generator import CodeGenerator
 from ..core.utils import serialize_result
-from ..models.sheet import Sheet
+from ..models.sheet import Connection, Node, Sheet, SheetVersion
 from ..schemas.sweep import SweepHeader, SweepRequest, SweepResponse
 
 
@@ -72,6 +72,45 @@ async def sweep_sheet(
 
     if not sheet:
         raise HTTPException(status_code=404, detail="Sheet not found")
+
+    # Override sheet content if version_id is provided
+    if body.version_id:
+        v_query = select(SheetVersion).where(SheetVersion.id == body.version_id, SheetVersion.sheet_id == sheet_id)
+        v_res = await db.execute(v_query)
+        version = v_res.scalar_one_or_none()
+        if not version:
+            raise HTTPException(status_code=404, detail="Version not found")
+
+        # Map version data back to Sheet model structure for generator
+        version_nodes = []
+        for n_data in version.data.get("nodes", []):
+            node = Node(
+                id=UUID(n_data["id"]),
+                type=n_data["type"],
+                label=n_data["label"],
+                inputs=n_data["inputs"],
+                outputs=n_data["outputs"],
+                position_x=n_data["position_x"],
+                position_y=n_data["position_y"],
+                data=n_data["data"],
+            )
+            version_nodes.append(node)
+
+        version_connections = []
+        for c_data in version.data.get("connections", []):
+            conn = Connection(
+                id=UUID(c_data["id"]),
+                source_id=UUID(c_data["source_id"]),
+                target_id=UUID(c_data["target_id"]),
+                source_port=c_data["source_port"],
+                target_port=c_data["target_port"],
+                source_handle=c_data.get("source_handle"),
+                target_handle=c_data.get("target_handle"),
+            )
+            version_connections.append(conn)
+
+        sheet.nodes = version_nodes
+        sheet.connections = version_connections
 
     # Validate Nodes
     node_map = {str(n.id): n for n in sheet.nodes}

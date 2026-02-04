@@ -40,6 +40,12 @@ export const SheetTablePanel: React.FC = () => {
           if (Object.keys(calculationInputs).length > 0) {
             params.set('overrides', JSON.stringify(calculationInputs));
           }
+          const versionId = new URLSearchParams(window.location.search).get(
+            'versionId',
+          );
+          if (versionId) {
+            params.set('versionId', versionId);
+          }
           window.open(`/sheet/${sheetId}/sweep?${params.toString()}`, '_blank');
         }}
         isCalculating={isCalculating}

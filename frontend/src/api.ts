@@ -431,6 +431,7 @@ export const api = {
     manualValues: string[] | null,
     outputNodeIds: string[],
     inputOverrides: Record<string, string>,
+    versionId?: string,
     // Secondary Input
     secondaryInputNodeId?: string,
     secondaryStartValue?: string | null,
@@ -445,6 +446,7 @@ export const api = {
       }),
       body: JSON.stringify({
         input_node_id: inputNodeId,
+        version_id: versionId,
         start_value: startValue,
         end_value: endValue,
         increment: increment,

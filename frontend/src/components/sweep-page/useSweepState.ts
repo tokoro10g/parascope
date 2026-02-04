@@ -84,14 +84,22 @@ export const useSweepState = () => {
   // Load Sheet
   useEffect(() => {
     if (sheetId) {
-      api
-        .getSheet(sheetId)
-        .then((loadedSheet) => {
+      const versionId = searchParams.get('versionId');
+      const loadPromise = versionId
+        ? api.getVersion(sheetId, versionId).then((v) => ({
+            ...v.data,
+            id: sheetId,
+            name: `${v.version_tag} (Version)`,
+          }))
+        : api.getSheet(sheetId);
+
+      loadPromise
+        .then((loadedSheet: any) => {
           setSheet(loadedSheet);
           document.title = `Sweep: ${loadedSheet.name} - Parascope`;
           // Initialize overrides with default values
           const defaults: Record<string, string> = {};
-          loadedSheet.nodes.forEach((n) => {
+          loadedSheet.nodes.forEach((n: any) => {
             if (['constant', 'input'].includes(n.type)) {
               if (n.data && n.data.value !== undefined) {
                 defaults[n.id!] = String(n.data.value);
@@ -110,7 +118,7 @@ export const useSweepState = () => {
           toast.error(msg);
         });
     }
-  }, [sheetId]);
+  }, [sheetId, searchParams]);
 
   // Sync state to URL
   useEffect(() => {
@@ -141,6 +149,11 @@ export const useSweepState = () => {
         params.set('overrides', JSON.stringify(inputOverrides));
       }
 
+      const versionId = searchParams.get('versionId');
+      if (versionId) {
+        params.set('versionId', versionId);
+      }
+
       setSearchParams(params, { replace: true });
     }, 500);
 
@@ -151,6 +164,7 @@ export const useSweepState = () => {
     outputNodeIds,
     inputOverrides,
     setSearchParams,
+    searchParams,
   ]);
 
   const handleSweepInputChange = useCallback(
@@ -377,6 +391,7 @@ export const useSweepState = () => {
         primary.manualValues,
         outputNodeIds,
         currentOverrides,
+        searchParams.get('versionId') || undefined,
         // Secondary
         secondaryInput.nodeId || undefined,
         secondary.start,

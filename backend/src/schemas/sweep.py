@@ -6,6 +6,7 @@ from pydantic import BaseModel
 
 class SweepRequest(BaseModel):
     input_node_id: UUID
+    version_id: UUID | None = None
     start_value: str | None = None
     end_value: str | None = None
     increment: str | None = None
