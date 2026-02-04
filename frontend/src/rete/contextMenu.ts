@@ -1,6 +1,6 @@
 import type { NodeEditor } from 'rete';
 import type { AreaPlugin } from 'rete-area-plugin';
-import { ConnectionPlugin } from 'rete-connection-plugin';
+import type { ConnectionPlugin } from 'rete-connection-plugin';
 import { ContextMenuPlugin } from 'rete-context-menu-plugin';
 import { copyToClipboard } from '../utils';
 import type { AreaExtra, Schemes } from './types';
@@ -43,9 +43,11 @@ export function createContextMenuPlugin(
   const plugin = new ContextMenuPlugin<Schemes>({
     items: (context) => {
       const isPending = (context as any)?.type === 'pending-connection';
-      
+
       if (context === 'root' || isPending) {
-        const pending = isPending ? (context as any).data as PendingConnection : undefined;
+        const pending = isPending
+          ? ((context as any).data as PendingConnection)
+          : undefined;
 
         const list = [];
 

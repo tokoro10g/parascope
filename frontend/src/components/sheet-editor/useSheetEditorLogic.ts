@@ -16,8 +16,8 @@ import { useSheetLock } from '../../hooks/useSheetLock';
 import { useSheetManager } from '../../hooks/useSheetManager';
 import { useUnsavedChanges } from '../../hooks/useUnsavedChanges';
 import { createEditor, type ParascopeNode } from '../../rete';
-import { Connection } from '../../rete/types';
 import type { NodeType } from '../../rete/types';
+import { Connection } from '../../rete/types';
 import {
   createSocket,
   extractValuesFromResult,
@@ -491,12 +491,12 @@ export function useSheetEditorLogic(): SheetEditorLogic {
     },
   ) => {
     if (!editor || !currentSheet) return;
-  
+
     if (type === 'sheet') {
       setIsSheetPickerOpen(true);
       return;
     }
-      
+
     let label: string =
       connectionInfo?.source?.portKey ||
       connectionInfo?.target?.portKey ||
@@ -557,7 +557,9 @@ export function useSheetEditorLogic(): SheetEditorLogic {
     if (node && connectionInfo) {
       // Auto-connect
       if (connectionInfo.source) {
-        const sourceNode = editor.instance.getNode(connectionInfo.source.nodeId);
+        const sourceNode = editor.instance.getNode(
+          connectionInfo.source.nodeId,
+        );
         if (sourceNode) {
           // Find first available input on new node
           const targetPort = Object.keys(node.inputs)[0];
@@ -573,7 +575,9 @@ export function useSheetEditorLogic(): SheetEditorLogic {
           }
         }
       } else if (connectionInfo.target) {
-        const targetNode = editor.instance.getNode(connectionInfo.target.nodeId);
+        const targetNode = editor.instance.getNode(
+          connectionInfo.target.nodeId,
+        );
         if (targetNode) {
           // Find first available output on new node
           const sourcePort = Object.keys(node.outputs)[0];

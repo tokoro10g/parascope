@@ -7,7 +7,7 @@ from fastapi.responses import PlainTextResponse
 from sqlalchemy import select, update
 from sqlalchemy.dialects.postgresql import insert
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy.orm import selectinload, defer
+from sqlalchemy.orm import defer, selectinload
 
 from ..core.auth import get_current_user
 from ..core.calculation_service import run_calculation

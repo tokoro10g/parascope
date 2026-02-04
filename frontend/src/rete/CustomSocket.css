@@ -38,7 +38,7 @@
   white-space: nowrap;
   pointer-events: none;
   z-index: 10;
-  text-shadow: 
+  text-shadow:
     0 0 4px var(--bg-color),
     0 0 4px var(--bg-color),
     0 0 4px var(--bg-color);

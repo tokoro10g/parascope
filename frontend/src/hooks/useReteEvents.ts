@@ -455,5 +455,6 @@ export function useReteEvents(
     calculationInputsRef,
     onDelete,
     onViewportChange,
+    readOnly,
   ]);
 }

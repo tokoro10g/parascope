@@ -425,6 +425,7 @@ export const useSweepState = () => {
     outputNodeIds,
     inputOverrides,
     nodes,
+    searchParams.get,
   ]);
 
   // Auto-run logic

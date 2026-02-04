@@ -450,7 +450,7 @@ export async function createEditor(container: HTMLElement) {
     ) => {
       instance.getNodes().forEach((node) => {
         // Update calculated values for displaying at sockets
-        if (fullResult && fullResult[node.id]) {
+        if (fullResult?.[node.id]) {
           const nodeRes = fullResult[node.id];
           if (nodeRes.outputs) {
             (node as ParascopeNode).calculatedValues = { ...nodeRes.outputs };
@@ -458,7 +458,7 @@ export async function createEditor(container: HTMLElement) {
             // Update output sockets
             Object.entries(nodeRes.outputs).forEach(([key, val]) => {
               const output = node.outputs[key];
-              if (output && output.socket) {
+              if (output?.socket) {
                 (output.socket as any).value = val;
               }
             });
@@ -468,7 +468,7 @@ export async function createEditor(container: HTMLElement) {
             // Update input sockets
             Object.entries(nodeRes.inputs).forEach(([key, val]) => {
               const input = node.inputs[key];
-              if (input && input.socket) {
+              if (input?.socket) {
                 (input.socket as any).value = val;
               }
             });
@@ -479,12 +479,11 @@ export async function createEditor(container: HTMLElement) {
           (node as ParascopeNode).calculatedValues = {};
           for (const key in node.inputs) {
             const input = node.inputs[key];
-            if (input && input.socket) (input.socket as any).value = undefined;
+            if (input?.socket) (input.socket as any).value = undefined;
           }
           for (const key in node.outputs) {
             const output = node.outputs[key];
-            if (output && output.socket)
-              (output.socket as any).value = undefined;
+            if (output?.socket) (output.socket as any).value = undefined;
           }
           area.update('node', node.id);
         }

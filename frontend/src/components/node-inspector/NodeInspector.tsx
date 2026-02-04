@@ -1,11 +1,6 @@
 import type React from 'react';
 import { useEffect, useState } from 'react';
-import {
-  API_BASE,
-  api,
-  type Sheet,
-  type SheetVersionSummary,
-} from '../../api';
+import { API_BASE, api, type Sheet, type SheetVersionSummary } from '../../api';
 import { resolveSheetPorts } from '../../utils';
 import { Modal } from '../Modal';
 import { AIGenerator } from './AIGenerator';
