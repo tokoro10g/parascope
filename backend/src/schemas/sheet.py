@@ -307,3 +307,13 @@ class SheetVersionRead(BaseModel):
     created_at: datetime
     created_by: str
     model_config = ConfigDict(from_attributes=True)
+
+
+class SheetVersionSummary(BaseModel):
+    id: UUID
+    sheet_id: UUID
+    version_tag: str
+    description: Optional[str]
+    created_at: datetime
+    created_by: str
+    model_config = ConfigDict(from_attributes=True)

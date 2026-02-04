@@ -97,14 +97,17 @@ export interface AuditLog {
   is_unread?: boolean;
 }
 
-export interface SheetVersion {
+export interface SheetVersionSummary {
   id: string;
   sheet_id: string;
   version_tag: string;
   description?: string;
-  data: any;
   created_at: string;
   created_by: string;
+}
+
+export interface SheetVersion extends SheetVersionSummary {
+  data: any;
 }
 
 export interface Folder {
@@ -312,7 +315,7 @@ export const api = {
     });
   },
 
-  async listSheetVersions(id: string): Promise<SheetVersion[]> {
+  async listSheetVersions(id: string): Promise<SheetVersionSummary[]> {
     return request(`${API_BASE}/api/v1/sheets/${id}/versions`, {
       headers: getHeaders(),
     });

@@ -2,7 +2,7 @@ import { Milestone, RefreshCw, Star, Trash2 } from 'lucide-react';
 import type React from 'react';
 import { useCallback, useEffect, useState } from 'react';
 import toast from 'react-hot-toast';
-import { api, type SheetVersion } from '../api';
+import { api, type SheetVersion, type SheetVersionSummary } from '../api';
 import { Modal } from './Modal';
 
 interface VersionListModalProps {
@@ -26,11 +26,12 @@ export const VersionListModal: React.FC<VersionListModalProps> = ({
   readOnly = false,
   isDirty = false,
 }) => {
-  const [versions, setVersions] = useState<SheetVersion[]>([]);
+  const [versions, setVersions] = useState<SheetVersionSummary[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [newTag, setNewTag] = useState('');
   const [newDescription, setNewDescription] = useState('');
   const [isCreating, setIsCreating] = useState(false);
+  const [isRestoring, setIsRestoring] = useState<string | null>(null);
 
   const loadVersions = useCallback(async () => {
     setIsLoading(true);
@@ -71,7 +72,20 @@ export const VersionListModal: React.FC<VersionListModalProps> = ({
     }
   };
 
-  const handleDelete = async (v: SheetVersion) => {
+  const handleRestore = async (v: SheetVersionSummary) => {
+    setIsRestoring(v.id);
+    try {
+      const fullVersion = await api.getVersion(sheetId, v.id);
+      onRestore(fullVersion);
+    } catch (e: any) {
+      console.error(e);
+      toast.error(`Failed to load version details: ${e.message}`);
+    } finally {
+      setIsRestoring(null);
+    }
+  };
+
+  const handleDelete = async (v: SheetVersionSummary) => {
     if (
       !window.confirm(
         `Are you sure you want to delete version "${v.version_tag}"? This cannot be undone.`,
@@ -345,10 +359,15 @@ export const VersionListModal: React.FC<VersionListModalProps> = ({
                     <button
                       type="button"
                       className="btn btn-sm"
-                      onClick={() => onRestore(v)}
+                      onClick={() => handleRestore(v)}
+                      disabled={isRestoring === v.id}
                       title="Overwrite current sheet with this version"
                     >
-                      <RefreshCw size={14} /> Restore
+                      <RefreshCw
+                        size={14}
+                        className={isRestoring === v.id ? 'spin' : ''}
+                      />{' '}
+                      {isRestoring === v.id ? 'Restoring...' : 'Restore'}
                     </button>
                     {v.id !== defaultVersionId && (
                       <button

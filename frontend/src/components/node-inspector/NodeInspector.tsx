@@ -1,6 +1,12 @@
 import type React from 'react';
 import { useEffect, useState } from 'react';
-import { API_BASE, api, type Sheet, type SheetVersion } from '../../api';
+import {
+  API_BASE,
+  api,
+  type Sheet,
+  type SheetVersion,
+  type SheetVersionSummary,
+} from '../../api';
 import { resolveSheetPorts } from '../../utils';
 import { Modal } from '../Modal';
 import { AIGenerator } from './AIGenerator';
@@ -33,7 +39,7 @@ export const NodeInspector: React.FC<NodeInspectorProps> = ({
   >([]);
   const [showPreview, setShowPreview] = useState(false);
   const [dataLoaded, setDataLoaded] = useState(false);
-  const [versions, setVersions] = useState<SheetVersion[]>([]);
+  const [versions, setVersions] = useState<SheetVersionSummary[]>([]);
   const [nestedSheet, setNestedSheet] = useState<Sheet | null>(null);
 
   // AI State

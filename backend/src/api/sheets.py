@@ -7,7 +7,7 @@ from fastapi.responses import PlainTextResponse
 from sqlalchemy import select, update
 from sqlalchemy.dialects.postgresql import insert
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy.orm import selectinload
+from sqlalchemy.orm import selectinload, defer
 
 from ..core.auth import get_current_user
 from ..core.calculation_service import run_calculation
@@ -37,6 +37,7 @@ from ..schemas.sheet import (
     SheetUpdate,
     SheetVersionCreate,
     SheetVersionRead,
+    SheetVersionSummary,
 )
 
 router = APIRouter(prefix="/sheets", tags=["sheets"])
@@ -743,9 +744,14 @@ async def create_version(
     return db_version
 
 
-@router.get("/{sheet_id}/versions", response_model=list[SheetVersionRead])
+@router.get("/{sheet_id}/versions", response_model=list[SheetVersionSummary])
 async def list_versions(sheet_id: UUID, db: AsyncSession = Depends(get_db)):
-    query = select(SheetVersion).where(SheetVersion.sheet_id == sheet_id).order_by(SheetVersion.created_at.desc())
+    query = (
+        select(SheetVersion)
+        .where(SheetVersion.sheet_id == sheet_id)
+        .order_by(SheetVersion.created_at.desc())
+        .options(defer(SheetVersion.data))
+    )
     result = await db.execute(query)
     versions = result.scalars().all()
     for v in versions:
