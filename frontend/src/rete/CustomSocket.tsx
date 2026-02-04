@@ -21,19 +21,9 @@ export function CustomSocket(props: { data: ClassicPreset.Socket }) {
         <div
           className="socket-value"
           style={{
-            position: 'absolute',
             ...(isOutput
               ? { left: '100%', marginLeft: '8px' }
               : { right: '100%', marginRight: '8px' }),
-            top: '50%',
-            transform: 'translateY(-50%)',
-            fontSize: '12px',
-            fontWeight: 'bold',
-            color: 'var(--text-color)',
-            fontFamily: 'monospace',
-            whiteSpace: 'nowrap',
-            pointerEvents: 'none',
-            zIndex: 10,
           }}
         >
           {formatHumanReadableValue(String(value))}
