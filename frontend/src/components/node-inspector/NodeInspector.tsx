@@ -4,7 +4,6 @@ import {
   API_BASE,
   api,
   type Sheet,
-  type SheetVersion,
   type SheetVersionSummary,
 } from '../../api';
 import { resolveSheetPorts } from '../../utils';
