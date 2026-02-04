@@ -27,7 +27,20 @@ export const SheetUsageModal: React.FC<SheetUsageModalProps> = ({
       setLoading(true);
       api
         .getSheetUsages(sheetId)
-        .then(setUsages)
+        .then((data) => {
+          // Sort alphabetically by parent sheet name, then by path
+          const sorted = [...data].sort((a, b) => {
+            const nameCompare = a.parent_sheet_name.localeCompare(
+              b.parent_sheet_name,
+            );
+            if (nameCompare !== 0) return nameCompare;
+
+            const pathA = a.node_path.map((n) => n.label).join(' > ');
+            const pathB = b.node_path.map((n) => n.label).join(' > ');
+            return pathA.localeCompare(pathB);
+          });
+          setUsages(sorted);
+        })
         .catch((err) => {
           console.error(err);
           toast.error('Failed to load usages');
@@ -118,7 +131,7 @@ export const SheetUsageModal: React.FC<SheetUsageModalProps> = ({
     <Modal
       isOpen={isOpen}
       onClose={onClose}
-      title="Parent Sheets"
+      title="Find Usage"
       footer={footer}
       maxWidth="800px"
     >
@@ -157,7 +170,7 @@ export const SheetUsageModal: React.FC<SheetUsageModalProps> = ({
                       className="overflow-anywhere"
                     >
                       <a
-                        href={`/sheet/${usage.parent_sheet_id}`}
+                        href={`/sheet/${usage.parent_sheet_id}#${usage.node_path[0].id}`}
                         target="_blank"
                         rel="noopener noreferrer"
                         style={{

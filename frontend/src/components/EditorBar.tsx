@@ -273,7 +273,7 @@ export const EditorBar: React.FC<EditorBarProps> = ({
                   className="add-menu-item"
                   style={{ color: 'var(--text-color)' }}
                 >
-                  <Share2 size={16} /> Check Usage
+                  <Share2 size={16} /> Find Usage
                 </button>
               )}
               {onOpenHistory && (
