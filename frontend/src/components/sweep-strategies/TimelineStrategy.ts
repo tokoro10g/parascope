@@ -50,13 +50,10 @@ export class TimelineStrategy implements VisualizationStrategy {
     }
 
     // Final Segment Logic
+    // We want the timeline to end EXACTLY at the last input value to avoid ECharts auto-adding a tick
     let finalEnd = currentStart;
-    if (results.length > 1) {
-      const lastInput = parseFloat(String(results[results.length - 1][0]));
-      const secondLastInput = parseFloat(
-        String(results[results.length - 2][0]),
-      );
-      finalEnd = lastInput + (lastInput - secondLastInput);
+    if (results.length > 0) {
+      finalEnd = parseFloat(String(results[results.length - 1][0]));
     } else {
       finalEnd = currentStart + 1;
     }
