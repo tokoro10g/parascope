@@ -1,4 +1,4 @@
-import { useEffect } from 'react';
+import { useEffect, useRef } from 'react';
 import toast from 'react-hot-toast';
 import { api } from '../api';
 import type { NodeEditorWrapper, ParascopeNode } from '../rete';
@@ -42,6 +42,7 @@ export function useReteEvents(
   } = callbacks;
 
   const { lastResultRef, calculationInputsRef } = refs;
+  const warnedReadOnlyRef = useRef(false);
 
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
@@ -299,6 +300,15 @@ export function useReteEvents(
       });
 
       const updateNodesState = () => {
+        if (readOnly && !warnedReadOnlyRef.current) {
+          warnedReadOnlyRef.current = true;
+          // Use setTimeout to ensure the alert doesn't block the UI thread during event processing
+          setTimeout(() => {
+            alert(
+              'Note: You are editing a read-only sheet. Your changes cannot be saved to this version/snapshot.',
+            );
+          }, 10);
+        }
         setIsDirty(true);
         const nodes = [...editor.instance.getNodes()];
 
