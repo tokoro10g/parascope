@@ -86,10 +86,13 @@ export const useSweepState = () => {
     if (sheetId) {
       const versionId = searchParams.get('versionId');
       const loadPromise = versionId
-        ? api.getVersion(sheetId, versionId).then((v) => ({
+        ? Promise.all([
+            api.getVersion(sheetId, versionId),
+            api.getSheet(sheetId),
+          ]).then(([v, draftSheet]) => ({
             ...v.data,
             id: sheetId,
-            name: `${v.version_tag} (Version)`,
+            name: `${draftSheet.name} (${v.version_tag})`,
           }))
         : api.getSheet(sheetId);
 
