@@ -261,15 +261,27 @@ export const NodeInspector: React.FC<NodeInspectorProps> = ({
                 const tag = versions.find((v) => v.id === vid)?.version_tag;
                 setData({ ...data, versionId: vid, versionTag: tag });
 
-                if (vid && data.sheetId) {
-                  api.getVersion(data.sheetId, vid).then((ver) => {
-                    if (ver.data && Array.isArray(ver.data.nodes)) {
-                      const { inputs: newInputs, outputs: newOutputs } =
-                        resolveSheetPorts(ver.data.nodes);
-                      setInputs(newInputs as any);
-                      setOutputs(newOutputs as any);
-                    }
-                  });
+                if (data.sheetId) {
+                  if (vid) {
+                    api.getVersion(data.sheetId, vid).then((ver) => {
+                      if (ver.data && Array.isArray(ver.data.nodes)) {
+                        const { inputs: newInputs, outputs: newOutputs } =
+                          resolveSheetPorts(ver.data.nodes);
+                        setInputs(newInputs as any);
+                        setOutputs(newOutputs as any);
+                      }
+                    });
+                  } else {
+                    // Switching to Draft: Fetch latest sheet logic
+                    api.getSheet(data.sheetId).then((sheet) => {
+                      if (sheet.nodes && Array.isArray(sheet.nodes)) {
+                        const { inputs: newInputs, outputs: newOutputs } =
+                          resolveSheetPorts(sheet.nodes);
+                        setInputs(newInputs as any);
+                        setOutputs(newOutputs as any);
+                      }
+                    });
+                  }
                 }
               }}
               style={{ flex: 1 }}
