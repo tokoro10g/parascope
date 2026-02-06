@@ -40,7 +40,7 @@ from ..schemas.sheet import (
     SheetVersionRead,
     SheetVersionSummary,
 )
-from .calculate import PreviewRequest, _construct_sheet
+from .calculate import PreviewRequest, construct_sheet
 
 router = APIRouter(prefix="/sheets", tags=["sheets"])
 
@@ -565,7 +565,7 @@ async def calculate_sheet(
             graph={"name": "Snapshot", "nodes": version.data["nodes"], "connections": version.data["connections"]},
             inputs=inputs,
         )
-        sheet = await run_in_threadpool(_construct_sheet, mock_body)
+        sheet = await run_in_threadpool(construct_sheet, mock_body)
     else:
         # Default: Calculate Draft
         query = (

@@ -20,7 +20,7 @@ class PreviewRequest(BaseModel):
     graph: SheetCreate
 
 
-def _construct_sheet(body: PreviewRequest) -> Sheet:
+def construct_sheet(body: PreviewRequest) -> Sheet:
     sheet_id = uuid.uuid4()
     nodes = []
     for n in body.graph.nodes:
@@ -51,7 +51,7 @@ async def calculate_preview(
     body: PreviewRequest,
     db: AsyncSession = Depends(get_db),
 ):
-    sheet = await run_in_threadpool(_construct_sheet, body)
+    sheet = await run_in_threadpool(construct_sheet, body)
     return await run_calculation(sheet, body.inputs, db)
 
 
@@ -60,7 +60,7 @@ async def generate_script_preview(
     body: PreviewRequest,
     db: AsyncSession = Depends(get_db),
 ):
-    sheet = await run_in_threadpool(_construct_sheet, body)
+    sheet = await run_in_threadpool(construct_sheet, body)
     input_overrides = get_input_overrides(sheet, body.inputs)
 
     generator = CodeGenerator(db)
