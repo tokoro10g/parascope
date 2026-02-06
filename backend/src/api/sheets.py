@@ -3,6 +3,7 @@ from typing import Any, Dict
 from uuid import UUID, uuid4
 
 from fastapi import APIRouter, Depends, HTTPException
+from fastapi.concurrency import run_in_threadpool
 from fastapi.responses import PlainTextResponse
 from sqlalchemy import select, update
 from sqlalchemy.dialects.postgresql import insert
@@ -39,6 +40,7 @@ from ..schemas.sheet import (
     SheetVersionRead,
     SheetVersionSummary,
 )
+from .calculate import PreviewRequest, _construct_sheet
 
 router = APIRouter(prefix="/sheets", tags=["sheets"])
 
@@ -542,19 +544,38 @@ async def generate_script_sheet(
 @router.post("/{sheet_id}/calculate")
 async def calculate_sheet(
     sheet_id: UUID,
+    version_id: UUID | None = None,
     inputs: Dict[str, Dict[str, Any]] = None,
     db: AsyncSession = Depends(get_db),
 ):
     if inputs is None:
         inputs = {}
-    query = (
-        select(Sheet).where(Sheet.id == sheet_id).options(selectinload(Sheet.nodes), selectinload(Sheet.connections))
-    )
-    result = await db.execute(query)
-    sheet = result.scalar_one_or_none()
 
-    if not sheet:
-        raise HTTPException(status_code=404, detail="Sheet not found")
+    if version_id:
+        # 1. Fetch Version
+        v_query = select(SheetVersion).where(SheetVersion.id == version_id, SheetVersion.sheet_id == sheet_id)
+        v_res = await db.execute(v_query)
+        version = v_res.scalar_one_or_none()
+        if not version:
+            raise HTTPException(status_code=404, detail="Version not found")
+
+        # 2. Construct transient Sheet object for runner
+        # We wrap data in a PreviewRequest-like structure to reuse _construct_sheet
+        mock_body = PreviewRequest(
+            graph={"name": "Snapshot", "nodes": version.data["nodes"], "connections": version.data["connections"]},
+            inputs=inputs,
+        )
+        sheet = await run_in_threadpool(_construct_sheet, mock_body)
+    else:
+        # Default: Calculate Draft
+        query = (
+            select(Sheet).where(Sheet.id == sheet_id).options(selectinload(Sheet.nodes), selectinload(Sheet.connections))
+        )
+        result = await db.execute(query)
+        sheet = result.scalar_one_or_none()
+
+        if not sheet:
+            raise HTTPException(status_code=404, detail="Sheet not found")
 
     return await run_calculation(sheet, inputs, db)
 
@@ -567,6 +588,7 @@ async def get_sheet_usages(sheet_id: UUID, version_id: UUID | None = None, db: A
     If version_id is provided, searches for usages of that specific version.
     If version_id is None, searches for usages of the 'Draft' version.
     Returns the path of node IDs to reach the current sheet instance.
+    Includes usages found in parent Drafts AND parent Snapshots (Versions).
     """
 
     # Queue: (current_sheet_id, current_version_id, list_of_nodes_trace)
@@ -583,54 +605,81 @@ async def get_sheet_usages(sheet_id: UUID, version_id: UUID | None = None, db: A
             continue
         visited.add((curr_id, curr_vid))
 
-        # 1. Find parents (active sheets/drafts that contain curr_id as a node)
-        query = (
+        # --- 1. Find parents in DRAFTS (Node table) ---
+        query_drafts = (
             select(Node, Sheet)
             .join(Sheet, Node.sheet_id == Sheet.id)
             .where(Node.type == "sheet", Node.data["sheetId"].astext == curr_id)
             .options(selectinload(Sheet.nodes))
         )
 
-        # Apply version filter for the first level of the search
-        # Note: Recursive parents are always searched as Drafts (curr_vid=None for next level)
         if curr_vid:
-            query = query.where(Node.data["versionId"].astext == curr_vid)
+            query_drafts = query_drafts.where(Node.data["versionId"].astext == curr_vid)
         else:
             from sqlalchemy import or_
 
-            query = query.where(or_(Node.data["versionId"].astext == None, Node.data["versionId"].astext == ""))
+            query_drafts = query_drafts.where(or_(Node.data["versionId"].astext == None, Node.data["versionId"].astext == ""))
 
-        result = await db.execute(query)
-        parents = result.all()
-
-        for node_instance, parent_sheet in parents:
+        result_drafts = await db.execute(query_drafts)
+        for node_instance, parent_sheet in result_drafts.all():
             has_inputs = any(n.type == "input" for n in parent_sheet.nodes)
-
             new_trace = [{"id": str(node_instance.id), "label": node_instance.label}] + trace
 
-            if not has_inputs:
-                valid_roots.append(
-                    {
-                        "parent_sheet_id": parent_sheet.id,
-                        "parent_sheet_name": parent_sheet.name,
-                        "node_path": new_trace,
-                        "can_import": True,
-                    }
-                )
-            else:
-                if len(new_trace) == 1:
-                    valid_roots.append(
-                        {
-                            "parent_sheet_id": parent_sheet.id,
-                            "parent_sheet_name": parent_sheet.name,
-                            "node_path": new_trace,
-                            "can_import": False,
-                        }
-                    )
+            usage_info = {
+                "parent_sheet_id": parent_sheet.id,
+                "parent_sheet_name": parent_sheet.name,
+                "parent_version_id": None,
+                "parent_version_tag": "Draft",
+                "node_path": new_trace,
+                "can_import": not has_inputs,
+            }
 
-                if len(new_trace) < 10:
-                    # When moving up, the parent we found is a Draft
-                    queue.append((str(parent_sheet.id), None, new_trace))
+            if not has_inputs or len(new_trace) == 1:
+                valid_roots.append(usage_info)
+
+            if has_inputs and len(new_trace) < 10:
+                queue.append((str(parent_sheet.id), None, new_trace))
+
+        # --- 2. Find parents in SNAPSHOTS (SheetVersion table) ---
+        # We use a raw SQL approach for complex JSONB search to be efficient
+        # Search for: nodes that have type='sheet' and data.sheetId = curr_id and data.versionId = curr_vid
+        from sqlalchemy import text
+
+        version_sql = text(
+            """
+            SELECT sv.id, sv.sheet_id, s.name, sv.version_tag, node->>'id' as node_id, node->>'label' as node_label, sv.data->'nodes' as all_nodes
+            FROM sheet_versions sv
+            JOIN sheets s ON s.id = sv.sheet_id,
+            jsonb_array_elements(sv.data->'nodes') AS node
+            WHERE node->>'type' = 'sheet'
+              AND node->'data'->>'sheetId' = :sheet_id
+              AND (
+                (CAST(:version_id AS TEXT) IS NULL AND (node->'data'->'versionId' IS NULL OR node->'data'->>'versionId' = ''))
+                OR (node->'data'->>'versionId' = CAST(:version_id AS TEXT))
+              )
+        """
+        )
+
+        v_result = await db.execute(version_sql, {"sheet_id": curr_id, "version_id": curr_vid})
+        for v_id, s_id, s_name, v_tag, n_id, n_label, all_nodes in v_result.all():
+            # Check if this snapshot had inputs
+            has_inputs = any(n.get("type") == "input" for n in all_nodes)
+            new_trace = [{"id": n_id, "label": n_label}] + trace
+
+            usage_info = {
+                "parent_sheet_id": s_id,
+                "parent_sheet_name": s_name,
+                "parent_version_id": v_id,
+                "parent_version_tag": v_tag,
+                "node_path": new_trace,
+                "can_import": not has_inputs,
+            }
+
+            if not has_inputs or len(new_trace) == 1:
+                valid_roots.append(usage_info)
+
+            if has_inputs and len(new_trace) < 10:
+                queue.append((str(s_id), str(v_id), new_trace))
 
     return valid_roots
 

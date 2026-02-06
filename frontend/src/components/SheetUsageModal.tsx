@@ -62,8 +62,12 @@ export const SheetUsageModal: React.FC<SheetUsageModalProps> = ({
     setImportingId(targetNodeId);
 
     try {
-      // Calculate ROOT sheet
-      const response = await api.calculate(usage.parent_sheet_id, {});
+      // Calculate ROOT sheet (Draft or Specific Version)
+      const response = await api.calculate(
+        usage.parent_sheet_id,
+        {},
+        usage.parent_version_id || undefined,
+      );
 
       // Traverse down the path to find the specific instance results
       let currentContext = response.results;
@@ -179,7 +183,11 @@ export const SheetUsageModal: React.FC<SheetUsageModalProps> = ({
                       className="overflow-anywhere"
                     >
                       <a
-                        href={`/sheet/${usage.parent_sheet_id}#${usage.node_path[0].id}`}
+                        href={`/sheet/${usage.parent_sheet_id}${
+                          usage.parent_version_id
+                            ? `?versionId=${usage.parent_version_id}`
+                            : ''
+                        }#${usage.node_path[0].id}`}
                         target="_blank"
                         rel="noopener noreferrer"
                         style={{
@@ -191,7 +199,11 @@ export const SheetUsageModal: React.FC<SheetUsageModalProps> = ({
                           gap: '4px',
                         }}
                       >
-                        {usage.parent_sheet_name} <ExternalLink size={12} />
+                        {usage.parent_sheet_name}{' '}
+                        <span style={{ fontWeight: 'normal', opacity: 0.8 }}>
+                          ({usage.parent_version_tag || 'Draft'})
+                        </span>{' '}
+                        <ExternalLink size={12} />
                       </a>
                       {usage.can_import ? (
                         <div

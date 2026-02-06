@@ -165,6 +165,8 @@ export interface Session {
 export interface SheetUsage {
   parent_sheet_id: string;
   parent_sheet_name: string;
+  parent_version_id?: string | null;
+  parent_version_tag?: string | null;
   node_path: { id: string; label: string }[];
   can_import: boolean;
 }
@@ -374,12 +376,18 @@ export const api = {
   async calculate(
     sheetId: string,
     inputs: Record<string, { value: any }>,
+    versionId?: string,
   ): Promise<{ results: Record<string, NodeResult>; error?: string }> {
-    return request(`${API_BASE}/api/v1/sheets/${sheetId}/calculate`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(inputs),
-    });
+    const params = new URLSearchParams();
+    if (versionId) params.append('version_id', versionId);
+    return request(
+      `${API_BASE}/api/v1/sheets/${sheetId}/calculate?${params.toString()}`,
+      {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(inputs),
+      },
+    );
   },
 
   async calculatePreview(
