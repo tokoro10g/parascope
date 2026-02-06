@@ -310,7 +310,14 @@ export function useNodeOperations(
           socketUpdates.forEach((item) => {
             const sockets = isInput ? n.inputs : n.outputs;
             if (!sockets[item.key]) {
-              const s = new Classic.Socket('socket');
+              let socketName = 'socket';
+              if (!isInput && n.type === 'sheet') {
+                socketName =
+                  (item as any).socket_type === 'constant'
+                    ? 'socket-constant'
+                    : 'socket-output';
+              }
+              const s = new Classic.Socket(socketName);
               (s as any).portKey = item.key;
               (s as any).isOutput = !isInput;
 

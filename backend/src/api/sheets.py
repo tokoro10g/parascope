@@ -5,7 +5,7 @@ from uuid import UUID, uuid4
 from fastapi import APIRouter, Depends, HTTPException
 from fastapi.concurrency import run_in_threadpool
 from fastapi.responses import PlainTextResponse
-from sqlalchemy import select, update
+from sqlalchemy import or_, select, text, update
 from sqlalchemy.dialects.postgresql import insert
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import defer, selectinload
@@ -569,7 +569,9 @@ async def calculate_sheet(
     else:
         # Default: Calculate Draft
         query = (
-            select(Sheet).where(Sheet.id == sheet_id).options(selectinload(Sheet.nodes), selectinload(Sheet.connections))
+            select(Sheet)
+            .where(Sheet.id == sheet_id)
+            .options(selectinload(Sheet.nodes), selectinload(Sheet.connections))
         )
         result = await db.execute(query)
         sheet = result.scalar_one_or_none()
@@ -616,9 +618,9 @@ async def get_sheet_usages(sheet_id: UUID, version_id: UUID | None = None, db: A
         if curr_vid:
             query_drafts = query_drafts.where(Node.data["versionId"].astext == curr_vid)
         else:
-            from sqlalchemy import or_
-
-            query_drafts = query_drafts.where(or_(Node.data["versionId"].astext == None, Node.data["versionId"].astext == ""))
+            query_drafts = query_drafts.where(
+                or_(Node.data["versionId"].is_(None), Node.data["versionId"].astext == "")
+            )
 
         result_drafts = await db.execute(query_drafts)
         for node_instance, parent_sheet in result_drafts.all():
@@ -643,18 +645,19 @@ async def get_sheet_usages(sheet_id: UUID, version_id: UUID | None = None, db: A
         # --- 2. Find parents in SNAPSHOTS (SheetVersion table) ---
         # We use a raw SQL approach for complex JSONB search to be efficient
         # Search for: nodes that have type='sheet' and data.sheetId = curr_id and data.versionId = curr_vid
-        from sqlalchemy import text
 
         version_sql = text(
             """
-            SELECT sv.id, sv.sheet_id, s.name, sv.version_tag, node->>'id' as node_id, node->>'label' as node_label, sv.data->'nodes' as all_nodes
+            SELECT sv.id, sv.sheet_id, s.name, sv.version_tag, node->>'id' as node_id, node->>'label' as node_label,
+              sv.data->'nodes' as all_nodes
             FROM sheet_versions sv
             JOIN sheets s ON s.id = sv.sheet_id,
             jsonb_array_elements(sv.data->'nodes') AS node
             WHERE node->>'type' = 'sheet'
               AND node->'data'->>'sheetId' = :sheet_id
               AND (
-                (CAST(:version_id AS TEXT) IS NULL AND (node->'data'->'versionId' IS NULL OR node->'data'->>'versionId' = ''))
+                (CAST(:version_id AS TEXT) IS NULL
+                  AND (node->'data'->'versionId' IS NULL OR node->'data'->>'versionId' = ''))
                 OR (node->'data'->>'versionId' = CAST(:version_id AS TEXT))
               )
         """
