@@ -611,15 +611,15 @@ async def get_sheet_usages(sheet_id: UUID, version_id: UUID | None = None, db: A
         query_drafts = (
             select(Node, Sheet)
             .join(Sheet, Node.sheet_id == Sheet.id)
-            .where(Node.type == "sheet", Node.data["sheetId"].astext == curr_id)
+            .where(Node.type == "sheet", Node.data["sheetId"].astext == str(curr_id))
             .options(selectinload(Sheet.nodes))
         )
 
         if curr_vid:
-            query_drafts = query_drafts.where(Node.data["versionId"].astext == curr_vid)
+            query_drafts = query_drafts.where(Node.data["versionId"].astext == str(curr_vid))
         else:
             query_drafts = query_drafts.where(
-                or_(Node.data["versionId"].is_(None), Node.data["versionId"].astext == "")
+                or_(Node.data["versionId"].astext.is_(None), Node.data["versionId"].astext == "")
             )
 
         result_drafts = await db.execute(query_drafts)
