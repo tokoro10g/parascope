@@ -304,7 +304,7 @@ export const NodeInspector: React.FC<NodeInspectorProps> = ({
               data.versionId !== nestedSheet.default_version_id && (
                 <button
                   type="button"
-                  className="btn"
+                  className="btn primary"
                   style={{
                     padding: '4px 8px',
                     fontSize: '0.85em',
