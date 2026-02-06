@@ -127,16 +127,31 @@ export const syncNestedSheets = async (
       // Update Outputs
       const newOutputs = childNodes
         .filter((n: any) => n.type === 'output' || n.type === 'constant')
-        .map((n: any) => ({ key: n.label, socket_type: n.type }));
+        .map((n: any) => ({
+          key: n.label,
+          socket_type: n.type === 'constant' ? 'constant' : 'output',
+        }));
 
-      // Find the node in the array and update it
-      const nodeIndex = updatedNodes.findIndex((n) => n.id === node.id);
-      if (nodeIndex !== -1) {
-        updatedNodes[nodeIndex] = {
-          ...updatedNodes[nodeIndex],
-          inputs: newInputs,
-          outputs: newOutputs,
-        };
+      // Check if anything actually changed to avoid unnecessary re-renders
+      const currentInputs = node.inputs || [];
+      const currentOutputs = node.outputs || [];
+
+      const inputsChanged =
+        JSON.stringify(currentInputs) !== JSON.stringify(newInputs);
+      const outputsChanged =
+        JSON.stringify(currentOutputs) !== JSON.stringify(newOutputs);
+
+      if (inputsChanged || outputsChanged) {
+        // Find the node in the array and update it
+        const nodeIndex = updatedNodes.findIndex((n) => n.id === node.id);
+        if (nodeIndex !== -1) {
+          updatedNodes[nodeIndex] = {
+            ...updatedNodes[nodeIndex],
+            inputs: newInputs,
+            outputs: newOutputs,
+          };
+        }
+        connectionsChanged = true;
       }
 
       // Validate Connections
