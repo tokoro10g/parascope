@@ -119,18 +119,9 @@ export const syncNestedSheets = async (
         ? childSheetData.nodes
         : [];
 
-      // Update Inputs
-      const newInputs = childNodes
-        .filter((n: any) => n.type === 'input')
-        .map((n: any) => createSocket(n.label));
-
-      // Update Outputs
-      const newOutputs = childNodes
-        .filter((n: any) => n.type === 'output' || n.type === 'constant')
-        .map((n: any) => ({
-          key: n.label,
-          socket_type: n.type === 'constant' ? 'constant' : 'output',
-        }));
+      // Update Inputs and Outputs using consolidated logic
+      const { inputs: newInputs, outputs: newOutputs } =
+        resolveSheetPorts(childNodes);
 
       // Check if anything actually changed to avoid unnecessary re-renders
       const currentInputs = node.inputs || [];
@@ -251,14 +242,22 @@ export const resolveNestedSheetParams = (
 export const resolveSheetPorts = (nodes: any[]) => {
   const inputs = nodes
     .filter((n) => n.type === 'input')
-    .map((n) => createSocket(n.label));
+    .map((n) => createSocket(n.label))
+    .sort((a, b) => a.key.localeCompare(b.key));
 
   const outputs = nodes
     .filter((n) => n.type === 'output' || n.type === 'constant')
     .map((n) => ({
       key: n.label,
       socket_type: n.type,
-    }));
+    }))
+    .sort((a, b) => {
+      // 'constant' comes before 'output'
+      if (a.socket_type === 'constant' && b.socket_type === 'output') return -1;
+      if (a.socket_type === 'output' && b.socket_type === 'constant') return 1;
+      // Otherwise sort alphabetically by key
+      return a.key.localeCompare(b.key);
+    });
 
   return { inputs, outputs };
 };
