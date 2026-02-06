@@ -560,55 +560,64 @@ async def calculate_sheet(
 
 
 @router.get("/{sheet_id}/usages")
-async def get_sheet_usages(sheet_id: UUID, db: AsyncSession = Depends(get_db)):
+async def get_sheet_usages(sheet_id: UUID, version_id: UUID | None = None, db: AsyncSession = Depends(get_db)):
     """
     Returns a list of 'Root Sheets' that ultimately use this sheet.
     A Root Sheet is an ancestor that has NO 'input' nodes (self-contained simulation).
+    If version_id is provided, searches for usages of that specific version.
+    If version_id is None, searches for usages of the 'Draft' version.
     Returns the path of node IDs to reach the current sheet instance.
     """
 
-    # Queue: (current_sheet_id, list_of_nodes_trace)
+    # Queue: (current_sheet_id, current_version_id, list_of_nodes_trace)
     # trace: [NodeInstance_in_Parent, NodeInstance_in_GrandParent...]
 
-    queue = [(str(sheet_id), [])]
+    queue = [(str(sheet_id), str(version_id) if version_id else None, [])]
     valid_roots = []
-    visited = set()  # (sheet_id) to avoid cycles
+    visited = set()  # (sheet_id, version_id) to avoid cycles
 
     while queue:
-        curr_id, trace = queue.pop(0)
+        curr_id, curr_vid, trace = queue.pop(0)
 
-        if curr_id in visited:
+        if (curr_id, curr_vid) in visited:
             continue
-        visited.add(curr_id)
+        visited.add((curr_id, curr_vid))
 
-        # 1. Find parents (sheets that contain curr_id as a node)
+        # 1. Find parents (active sheets/drafts that contain curr_id as a node)
         query = (
             select(Node, Sheet)
             .join(Sheet, Node.sheet_id == Sheet.id)
             .where(Node.type == "sheet", Node.data["sheetId"].astext == curr_id)
-            .options(selectinload(Sheet.nodes))  # Load nodes to check for inputs
+            .options(selectinload(Sheet.nodes))
         )
+
+        # Apply version filter for the first level of the search
+        # Note: Recursive parents are always searched as Drafts (curr_vid=None for next level)
+        if curr_vid:
+            query = query.where(Node.data["versionId"].astext == curr_vid)
+        else:
+            from sqlalchemy import or_
+
+            query = query.where(or_(Node.data["versionId"].astext == None, Node.data["versionId"].astext == ""))
+
         result = await db.execute(query)
         parents = result.all()
 
         for node_instance, parent_sheet in parents:
-            # Check if parent has inputs
             has_inputs = any(n.type == "input" for n in parent_sheet.nodes)
 
             new_trace = [{"id": str(node_instance.id), "label": node_instance.label}] + trace
 
             if not has_inputs:
-                # Found a root!
                 valid_roots.append(
                     {
                         "parent_sheet_id": parent_sheet.id,
                         "parent_sheet_name": parent_sheet.name,
-                        "node_path": new_trace,  # RootInstance -> ... -> LeafInstance
+                        "node_path": new_trace,
                         "can_import": True,
                     }
                 )
             else:
-                # Show direct parents even if they have inputs (but not importable)
                 if len(new_trace) == 1:
                     valid_roots.append(
                         {
@@ -619,8 +628,9 @@ async def get_sheet_usages(sheet_id: UUID, db: AsyncSession = Depends(get_db)):
                         }
                     )
 
-                if len(new_trace) < 10:  # Depth limit
-                    queue.append((str(parent_sheet.id), new_trace))
+                if len(new_trace) < 10:
+                    # When moving up, the parent we found is a Draft
+                    queue.append((str(parent_sheet.id), None, new_trace))
 
     return valid_roots
 

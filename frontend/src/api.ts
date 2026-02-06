@@ -75,6 +75,7 @@ export interface Sheet {
   owner_name?: string;
   folder_id?: string | null;
   default_version_id?: string | null;
+  version_tag?: string;
   nodes: NodeData[];
   connections: ConnectionData[];
 }
@@ -281,10 +282,18 @@ export const api = {
     });
   },
 
-  async getSheetUsages(sheetId: string): Promise<SheetUsage[]> {
-    return request(`${API_BASE}/api/v1/sheets/${sheetId}/usages`, {
-      headers: getHeaders(),
-    });
+  async getSheetUsages(
+    sheetId: string,
+    versionId?: string,
+  ): Promise<SheetUsage[]> {
+    const params = new URLSearchParams();
+    if (versionId) params.append('version_id', versionId);
+    return request(
+      `${API_BASE}/api/v1/sheets/${sheetId}/usages?${params.toString()}`,
+      {
+        headers: getHeaders(),
+      },
+    );
   },
 
   async deleteSheet(id: string): Promise<void> {

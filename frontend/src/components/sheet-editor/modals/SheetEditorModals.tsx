@@ -53,6 +53,11 @@ export const SheetEditorModals: React.FC = () => {
           isOpen={isUsageModalOpen}
           onClose={() => setIsUsageModalOpen(false)}
           sheetId={currentSheet.id}
+          versionId={
+            new URLSearchParams(window.location.search).get('versionId') ||
+            undefined
+          }
+          versionTag={currentSheet.version_tag}
           onImportInputs={handleImportInputs}
         />
       )}

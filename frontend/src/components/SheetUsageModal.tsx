@@ -9,6 +9,8 @@ interface SheetUsageModalProps {
   isOpen: boolean;
   onClose: () => void;
   sheetId: string;
+  versionId?: string;
+  versionTag?: string;
   onImportInputs: (inputs: Record<string, string>) => void;
 }
 
@@ -16,6 +18,8 @@ export const SheetUsageModal: React.FC<SheetUsageModalProps> = ({
   isOpen,
   onClose,
   sheetId,
+  versionId,
+  versionTag,
   onImportInputs,
 }) => {
   const [usages, setUsages] = useState<SheetUsage[]>([]);
@@ -26,7 +30,7 @@ export const SheetUsageModal: React.FC<SheetUsageModalProps> = ({
     if (isOpen && sheetId) {
       setLoading(true);
       api
-        .getSheetUsages(sheetId)
+        .getSheetUsages(sheetId, versionId)
         .then((data) => {
           // Sort alphabetically by parent sheet name, then by path
           const sorted = [...data].sort((a, b) => {
@@ -47,7 +51,7 @@ export const SheetUsageModal: React.FC<SheetUsageModalProps> = ({
         })
         .finally(() => setLoading(false));
     }
-  }, [isOpen, sheetId]);
+  }, [isOpen, sheetId, versionId]);
 
   if (!isOpen) return null;
 
@@ -131,11 +135,16 @@ export const SheetUsageModal: React.FC<SheetUsageModalProps> = ({
     <Modal
       isOpen={isOpen}
       onClose={onClose}
-      title="Find Usage"
+      title={
+        versionTag ? `Find Usage (${versionTag})` : 'Find Usage (Draft)'
+      }
       footer={footer}
       maxWidth="800px"
     >
-      <p>This sheet is used in the following upper-level sheets:</p>
+      <p>
+        This {versionTag ? `version (${versionTag})` : 'draft'} is used in the
+        following upper-level sheets:
+      </p>
       {loading ? (
         <div style={{ padding: '20px', textAlign: 'center' }}>Loading...</div>
       ) : usages.length === 0 ? (
