@@ -165,6 +165,34 @@ export function CustomNode(props: any) {
 
   const Icon = icons[type];
 
+  const getVersionBadgeStyles = () => {
+    const { versionId, versionTag, defaultVersionId } = data.data;
+    if (!versionTag) {
+      // Draft
+      return {
+        backgroundColor: '#d32f2f',
+        borderColor: '#d32f2f',
+        color: 'white',
+      };
+    }
+    if (versionId === defaultVersionId) {
+      // Default version
+      return {
+        backgroundColor: '#2e7d32',
+        borderColor: '#2e7d32',
+        color: 'white',
+      };
+    }
+    // Specific version, but not default
+    return {
+      backgroundColor: '#f9a825',
+      borderColor: '#f9a825',
+      color: 'white',
+    };
+  };
+
+  const badgeStyles = getVersionBadgeStyles();
+
   return (
     <div ref={ref} style={{ position: 'relative' }}>
       <Presets.classic.Node {...props} />
@@ -174,17 +202,15 @@ export function CustomNode(props: any) {
             position: 'absolute',
             top: '-8px',
             right: '10px',
-            backgroundColor: data.data.versionTag ? '#f5f5f5' : '#d32f2f',
-            color: data.data.versionTag ? '#333' : 'white',
+            backgroundColor: badgeStyles.backgroundColor,
+            color: badgeStyles.color,
             fontSize: '10px',
             fontWeight: 'bold',
             padding: '2px 6px',
             borderRadius: '4px',
             pointerEvents: 'none',
             zIndex: 2,
-            border: data.data.versionTag
-              ? '1px solid #bdbdbd'
-              : '1px solid #d32f2f',
+            border: `1px solid ${badgeStyles.borderColor}`,
             boxShadow: '0 1px 2px rgba(0,0,0,0.1)',
           }}
         >

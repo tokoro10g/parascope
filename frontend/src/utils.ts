@@ -88,19 +88,22 @@ export const syncNestedSheets = async (
   });
 
   const sheetDataMap = new Map<string, any>();
+  const sheetMetadataMap = new Map<string, Sheet>();
 
   await Promise.all(
     Array.from(uniqueSheetRequests).map(async (key) => {
       const [sid, vid] = key.split(':');
       try {
+        const fullSheet = await api.getSheet(sid);
+        sheetMetadataMap.set(sid, fullSheet);
+
         if (vid && vid !== 'draft') {
           const v = await api.getVersion(sid, vid);
           if (v.data) {
             sheetDataMap.set(key, v.data);
           }
         } else {
-          const s = await api.getSheet(sid);
-          sheetDataMap.set(key, s);
+          sheetDataMap.set(key, fullSheet);
         }
       } catch (err) {
         console.error(`Failed to fetch sheet data for ${key}`, err);
@@ -110,8 +113,10 @@ export const syncNestedSheets = async (
 
   for (const node of nestedSheetNodes) {
     try {
-      const key = `${node.data.sheetId}:${node.data.versionId || 'draft'}`;
+      const sid = node.data.sheetId;
+      const key = `${sid}:${node.data.versionId || 'draft'}`;
       const childSheetData = sheetDataMap.get(key);
+      const metadata = sheetMetadataMap.get(sid);
 
       if (!childSheetData) continue;
 
@@ -132,7 +137,10 @@ export const syncNestedSheets = async (
       const outputsChanged =
         JSON.stringify(currentOutputs) !== JSON.stringify(newOutputs);
 
-      if (inputsChanged || outputsChanged) {
+      const defaultVid = metadata?.default_version_id || null;
+      const defaultChanged = node.data.defaultVersionId !== defaultVid;
+
+      if (inputsChanged || outputsChanged || defaultChanged) {
         // Find the node in the array and update it
         const nodeIndex = updatedNodes.findIndex((n) => n.id === node.id);
         if (nodeIndex !== -1) {
@@ -140,6 +148,10 @@ export const syncNestedSheets = async (
             ...updatedNodes[nodeIndex],
             inputs: newInputs,
             outputs: newOutputs,
+            data: {
+              ...updatedNodes[nodeIndex].data,
+              defaultVersionId: defaultVid,
+            },
           };
         }
       }

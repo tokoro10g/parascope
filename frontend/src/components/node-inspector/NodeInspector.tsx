@@ -259,7 +259,13 @@ export const NodeInspector: React.FC<NodeInspectorProps> = ({
               onChange={(e) => {
                 const vid = e.target.value || null;
                 const tag = versions.find((v) => v.id === vid)?.version_tag;
-                setData({ ...data, versionId: vid, versionTag: tag });
+                const defaultVid = nestedSheet?.default_version_id || null;
+                setData({
+                  ...data,
+                  versionId: vid,
+                  versionTag: tag,
+                  defaultVersionId: defaultVid,
+                });
 
                 if (data.sheetId) {
                   if (vid) {
@@ -319,6 +325,7 @@ export const NodeInspector: React.FC<NodeInspectorProps> = ({
                         ...data,
                         versionId: defaultVer.id,
                         versionTag: defaultVer.version_tag,
+                        defaultVersionId: nestedSheet.default_version_id,
                       });
                       api
                         .getVersion(data.sheetId, defaultVer.id)
