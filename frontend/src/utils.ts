@@ -142,7 +142,6 @@ export const syncNestedSheets = async (
             outputs: newOutputs,
           };
         }
-        connectionsChanged = true;
       }
 
       // Validate Connections
