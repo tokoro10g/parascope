@@ -74,6 +74,24 @@
   box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
 }
 
+.link-button {
+  background: none;
+  border: none;
+  padding: 0;
+  color: inherit;
+  font-size: inherit;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-family: inherit;
+  min-width: auto;
+}
+
+.link-button:hover {
+  text-decoration: underline;
+}
+
 @media (max-width: 600px) {
   .dashboard-header {
     flex-direction: column;

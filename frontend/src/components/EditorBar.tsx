@@ -127,29 +127,12 @@ export const EditorBar: React.FC<EditorBarProps> = ({
           className="sheet-name-input"
           placeholder="Sheet Name"
           disabled={readOnly}
-          style={readOnly ? { cursor: 'not-allowed', opacity: 0.7 } : {}}
         />
         <span
-          className="unsaved-indicator-badge"
+          className={`unsaved-indicator-badge ${isDirty ? '' : 'hidden'}`}
           title="Unsaved changes"
-          style={{
-            color: 'orange',
-            fontSize: '0.8em',
-            fontWeight: '600',
-            display: 'flex',
-            alignItems: 'center',
-            gap: '4px',
-            backgroundColor: isDirty ? 'rgba(255, 165, 0, 0.1)' : 'transparent',
-            padding: '2px 8px',
-            borderRadius: '12px',
-            border: isDirty
-              ? '1px solid rgba(255, 165, 0, 0.3)'
-              : '1px solid transparent',
-            visibility: isDirty ? 'visible' : 'hidden',
-            userSelect: 'none',
-          }}
         >
-          <span style={{ fontSize: '1.2em' }}>●</span>
+          <span>●</span>
           Unsaved
         </span>
       </div>
@@ -307,35 +290,13 @@ export const EditorBar: React.FC<EditorBarProps> = ({
                 ? 'Disable Auto-Calculation'
                 : 'Enable Auto-Calculation'
             }
-            style={{
-              color: autoCalculate
-                ? 'var(--primary-color)'
-                : 'var(--text-muted)',
-              backgroundColor: autoCalculate
-                ? 'rgba(var(--primary-color-rgb), 0.1)'
-                : 'transparent',
-              borderColor: autoCalculate
-                ? 'var(--primary-color)'
-                : 'transparent',
-              padding: '4px 8px',
-              width: 'auto',
-              gap: '6px',
-            }}
+            className={`btn-auto-calc ${autoCalculate ? 'active' : ''}`}
           >
             {autoCalculate ? <Zap size={18} /> : <ZapOff size={18} />}
-            <span style={{ fontSize: '0.85em', fontWeight: 600 }}>
-              Auto-calc
-            </span>
+            <span>Auto-calc</span>
           </button>
         )}
-        <div
-          style={{
-            width: '1px',
-            height: '20px',
-            backgroundColor: 'var(--border-color)',
-            margin: '0 4px',
-          }}
-        />
+        <div className="toolbar-separator" />
         <button
           type="button"
           onClick={(e) => {
@@ -389,23 +350,16 @@ export const EditorBar: React.FC<EditorBarProps> = ({
       </div>
 
       <div className="toolbar-group save-group">
-        <div
-          style={{
-            width: '1px',
-            height: '20px',
-            backgroundColor: 'var(--border-color)',
-            margin: '0 4px',
-          }}
-        />
+        <div className="toolbar-separator" />
         <button
           type="button"
           onClick={(e) => {
             onSaveSheet();
             e.currentTarget.blur();
           }}
+          className="btn-save"
           disabled={!isDirty || readOnly}
           title={readOnly ? 'Read Only' : 'Save Sheet'}
-          style={readOnly ? { cursor: 'not-allowed', opacity: 0.5 } : undefined}
         >
           <Save size={18} />
         </button>

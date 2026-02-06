@@ -33,25 +33,17 @@ export const SheetEditor: React.FC = () => {
 
         <SheetMobileTabs />
 
-        <div
-          className="editor-content"
-          style={{ display: 'flex', flex: 1, minHeight: 0, overflow: 'hidden' }}
-        >
+        <div className="editor-content">
           <div className="editor-main-wrapper">
             <Group
               id="editor-group"
               orientation="horizontal"
-              style={{ width: '100%', height: '100%' }}
+              className="editor-group"
             >
               <SheetEditorPanel />
 
               <Separator
-                style={{
-                  width: isMobile ? '0' : '4px',
-                  background: '#ccc',
-                  cursor: 'col-resize',
-                  display: isMobile ? 'none' : 'block',
-                }}
+                className={`resizable-separator ${isMobile ? 'mobile-hidden' : ''}`}
               />
 
               <SheetTablePanel />
