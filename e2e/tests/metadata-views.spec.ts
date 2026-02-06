@@ -62,7 +62,8 @@ test.describe('Metadata & Views', () => {
     await saveSheet(page);
 
     // Create a Version
-    await createVersion(page, 'v1.0.0', 'Initial version');
+    const version = await createVersion(page, 'v1.0.0', 'Initial version');
+    const childId = page.url().split('/').pop()?.split('?')[0];
 
     // 2. Create Parent Sheet
     await page.click('.nav-back-button'); // Go to dashboard
@@ -93,8 +94,8 @@ test.describe('Metadata & Views', () => {
     await saveSheet(page);
 
     // 3. Verify Descriptions in Inspector (re-opening)
-    await page.click('.nav-back-button'); // Go to dashboard
-    await page.locator(`.sheet-item:has-text("${childName}")`).click();
+    // We navigate directly to the version we want to check usage for
+    await page.goto(`/sheet/${childId}?versionId=${version.id}`);
     await expect(page.locator('.loading-overlay')).not.toBeVisible();
 
     // Check Constant Description
@@ -117,6 +118,7 @@ test.describe('Metadata & Views', () => {
 
     const usageModal = page.locator('.modal-content:has-text("Find Usage")');
     await expect(usageModal).toBeVisible();
+    await expect(usageModal).toContainText('Find Usage (v1.0.0)');
     await expect(usageModal).toContainText(parentName);
     await page.click('button:has-text("Close")');
   });
