@@ -139,9 +139,7 @@ export const SheetUsageModal: React.FC<SheetUsageModalProps> = ({
     <Modal
       isOpen={isOpen}
       onClose={onClose}
-      title={
-        versionTag ? `Find Usage (${versionTag})` : 'Find Usage (Draft)'
-      }
+      title={versionTag ? `Find Usage (${versionTag})` : 'Find Usage (Draft)'}
       footer={footer}
       maxWidth="800px"
     >
