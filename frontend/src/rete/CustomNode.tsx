@@ -1,9 +1,12 @@
 import {
+  AlertTriangle,
   CaseLower,
+  Check,
   Import,
   LogIn,
   LogOut,
   MessageSquare,
+  RefreshCw,
   Sigma,
   Table,
 } from 'lucide-react';
@@ -173,6 +176,7 @@ export function CustomNode(props: any) {
         backgroundColor: '#d32f2f',
         borderColor: '#d32f2f',
         color: 'white',
+        Icon: AlertTriangle,
       };
     }
     if (versionId === defaultVersionId) {
@@ -181,6 +185,7 @@ export function CustomNode(props: any) {
         backgroundColor: '#2e7d32',
         borderColor: '#2e7d32',
         color: 'white',
+        Icon: Check,
       };
     }
     // Specific version, but not default
@@ -188,10 +193,12 @@ export function CustomNode(props: any) {
       backgroundColor: '#f9a825',
       borderColor: '#f9a825',
       color: 'white',
+      Icon: RefreshCw,
     };
   };
 
   const badgeStyles = getVersionBadgeStyles();
+  const BadgeIcon = badgeStyles.Icon;
 
   return (
     <div ref={ref} style={{ position: 'relative' }}>
@@ -200,20 +207,24 @@ export function CustomNode(props: any) {
         <div
           style={{
             position: 'absolute',
-            top: '-8px',
+            top: '-16px',
             right: '10px',
             backgroundColor: badgeStyles.backgroundColor,
             color: badgeStyles.color,
-            fontSize: '10px',
+            fontSize: '11px',
             fontWeight: 'bold',
-            padding: '2px 6px',
+            padding: '3px 8px',
             borderRadius: '4px',
             pointerEvents: 'none',
             zIndex: 2,
             border: `1px solid ${badgeStyles.borderColor}`,
             boxShadow: '0 1px 2px rgba(0,0,0,0.1)',
+            display: 'flex',
+            alignItems: 'center',
+            gap: '5px',
           }}
         >
+          <BadgeIcon size={12} strokeWidth={3} />
           {data.data.versionTag || 'Draft'}
         </div>
       )}
