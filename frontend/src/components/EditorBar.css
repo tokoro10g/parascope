@@ -53,8 +53,32 @@
   box-shadow: 0 0 0 2px rgba(100, 108, 255, 0.2);
 }
 
-.sheet-name {
-  font-weight: bold;
+.sheet-name-input:disabled {
+  cursor: not-allowed;
+  opacity: 0.7;
+}
+
+.unsaved-indicator-badge {
+  color: orange;
+  font-size: 0.8em;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  background-color: rgba(255, 165, 0, 0.1);
+  padding: 2px 8px;
+  border-radius: 12px;
+  border: 1px solid rgba(255, 165, 0, 0.3);
+  user-select: none;
+}
+
+.unsaved-indicator-badge.hidden {
+  visibility: hidden;
+}
+
+.unsaved-indicator-badge span {
+  font-size: 1.2em;
+  line-height: 1;
 }
 
 /* Add Menu Styles */
@@ -119,12 +143,6 @@
   margin-bottom: 0;
 }
 
-.menu-separator {
-  height: 1px;
-  background-color: var(--border-color-translucent);
-  margin: 6px 4px;
-}
-
 /* Node Type Specific Coloring - Higher Specificity to override container styles */
 .editor-bar .add-node-dropdown .item-constant {
   background-color: #ec407a;
@@ -162,15 +180,6 @@
   background-color: #43a047;
 }
 
-.editor-bar .add-node-dropdown .item-sheet {
-  background-color: #00bcd4;
-  border-color: #0097a7;
-  color: white;
-}
-.editor-bar .add-node-dropdown .item-sheet:hover {
-  background-color: #00acc1;
-}
-
 .editor-bar .add-node-dropdown .item-lut {
   background-color: #673ab7;
   border-color: #512da8;
@@ -193,4 +202,47 @@
 .add-menu-item svg {
   stroke-width: 2.5px;
   flex-shrink: 0;
+}
+
+.toolbar .btn-auto-calc {
+  padding: 4px 8px;
+  width: auto;
+  min-width: auto;
+  height: auto;
+  gap: 6px;
+  transition: all 0.2s ease;
+  background-color: transparent;
+  border: 1px solid transparent;
+  color: var(--text-muted);
+}
+
+.toolbar .btn-auto-calc:hover {
+  background-color: var(--panel-bg-translucent);
+}
+
+.toolbar .btn-auto-calc.active {
+  color: var(--primary-color);
+  background-color: rgba(var(--primary-color-rgb), 0.1);
+  border-color: var(--primary-color);
+}
+
+.toolbar .btn-auto-calc.active:hover {
+  background-color: rgba(var(--primary-color-rgb), 0.15);
+}
+
+.btn-auto-calc span {
+  font-size: 0.85em;
+  font-weight: 600;
+}
+
+.toolbar-separator {
+  width: 1px;
+  height: 20px;
+  background-color: var(--border-color);
+  margin: 0 4px;
+}
+
+.btn-save:disabled {
+  cursor: not-allowed;
+  opacity: 0.5;
 }
