@@ -141,6 +141,32 @@ Key variables:
 *   `FRONTEND_PORT`: Port for the frontend application (default: `3000`).
 *   `BACKEND_PORT`: Port for the backend API (default: `8000`).
 
+## ✨ Linting & Formatting
+
+Parascope uses strict linting and formatting to maintain code quality.
+
+### Backend (Python)
+We use [Ruff](https://docs.astral.sh/ruff/) for linting, import sorting, and formatting.
+```bash
+cd backend
+# Check for linting issues and import sorting
+uv run ruff check .
+# Automatically fix linting issues and sort imports
+uv run ruff check --fix .
+# Format the code
+uv run ruff format .
+```
+
+### Frontend (TypeScript)
+We use [Biome](https://biomejs.dev/) for linting and formatting.
+```bash
+cd frontend
+# Check for linting and formatting issues
+pnpm lint
+# Automatically fix issues and format the code
+pnpm format
+```
+
 ## 🧪 Testing
 
 Backend unit tests are containerized and run in an isolated environment using a separate database.

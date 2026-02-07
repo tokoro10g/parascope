@@ -60,6 +60,27 @@ docker compose down -v
 docker compose up --build
 ```
 
+### Linting & Formatting
+
+Maintaining consistent code style is important. We use automated tools for both parts of the stack.
+
+#### Backend (Ruff)
+Ruff handles linting, import sorting, and formatting for Python code.
+```bash
+cd backend
+uv run ruff check .        # Check for issues
+uv run ruff check --fix .  # Fix issues and sort imports
+uv run ruff format .       # Format code
+```
+
+#### Frontend (Biome)
+Biome handles linting and formatting for the TypeScript frontend.
+```bash
+cd frontend
+pnpm lint    # Check for issues
+pnpm format  # Fix issues and format code
+```
+
 ---
 
 ## Alternative: Manual Local Setup
