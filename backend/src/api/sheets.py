@@ -192,7 +192,7 @@ async def _check_for_updates(sheet_id: UUID, user_name: str, db: AsyncSession) -
 @router.get("/", response_model=list[SheetSummary])
 async def list_sheets(
     skip: int = 0,
-    limit: int = 100,
+    limit: int = 1000,
     db: AsyncSession = Depends(get_db),
     user_id: str | None = Depends(get_current_user),
 ):

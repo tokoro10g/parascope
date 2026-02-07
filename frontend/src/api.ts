@@ -218,9 +218,23 @@ export const api = {
   },
 
   async listSheets(): Promise<SheetSummary[]> {
-    return request(`${API_BASE}/api/v1/sheets/`, {
-      headers: getHeaders(),
-    });
+    const allSheets: SheetSummary[] = [];
+    const limit = 1000;
+    let skip = 0;
+
+    while (true) {
+      const sheets = await request<SheetSummary[]>(
+        `${API_BASE}/api/v1/sheets/?skip=${skip}&limit=${limit}`,
+        {
+          headers: getHeaders(),
+        },
+      );
+      allSheets.push(...sheets);
+      if (sheets.length < limit) break;
+      skip += limit;
+    }
+
+    return allSheets;
   },
 
   async listFolders(): Promise<Folder[]> {
