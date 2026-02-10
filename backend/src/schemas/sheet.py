@@ -7,8 +7,6 @@ from pydantic import BaseModel, ConfigDict, Field, field_validator
 
 class PortDefinition(BaseModel):
     key: str
-    socket_type: Optional[str] = None
-    label: Optional[str] = None
 
 
 # --- Concrete Node Data Schemas ---
@@ -192,8 +190,6 @@ class ConnectionBase(BaseModel):
     target_id: UUID
     source_port: str
     target_port: str
-    source_handle: Optional[str] = None
-    target_handle: Optional[str] = None
 
 
 class ConnectionCreate(ConnectionBase):

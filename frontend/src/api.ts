@@ -123,8 +123,8 @@ export interface NodeData {
   label: string;
   position_x: number;
   position_y: number;
-  inputs: { key: string; socket_type: string }[];
-  outputs: { key: string; socket_type: string }[];
+  inputs: { key: string }[];
+  outputs: { key: string }[];
   data: Record<string, any>;
 }
 

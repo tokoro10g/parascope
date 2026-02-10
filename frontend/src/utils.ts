@@ -33,7 +33,7 @@ export const extractValuesFromResult = (
   return values;
 };
 
-export const createSocket = (key: string) => ({ key, socket_type: 'any' });
+export const createSocket = (key: string) => ({ key });
 
 export const formatLocalTime = (
   dateStr: string,

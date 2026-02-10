@@ -104,8 +104,6 @@ async def sweep_sheet(
                 target_id=UUID(c_data["target_id"]),
                 source_port=c_data["source_port"],
                 target_port=c_data["target_port"],
-                source_handle=c_data.get("source_handle"),
-                target_handle=c_data.get("target_handle"),
             )
             version_connections.append(conn)
 

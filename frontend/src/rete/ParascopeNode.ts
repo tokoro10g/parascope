@@ -22,8 +22,8 @@ export class ParascopeNode extends Classic.Node {
   constructor(
     type: NodeType,
     label: string,
-    inputs: { key: string; socket_type: string }[],
-    outputs: { key: string; socket_type: string }[],
+    inputs: { key: string; socket_type?: string }[],
+    outputs: { key: string; socket_type?: string }[],
     data: Record<string, any> = {},
     onChange?: (value: any) => void,
     onCommit?: (oldValue: any, newValue: any) => void,

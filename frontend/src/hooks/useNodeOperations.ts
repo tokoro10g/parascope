@@ -70,8 +70,8 @@ export function useNodeOperations(
     async (
       type: NodeType,
       label: string,
-      inputs: { key: string; socket_type: string }[],
-      outputs: { key: string; socket_type: string }[],
+      inputs: { key: string; socket_type?: string }[],
+      outputs: { key: string; socket_type?: string }[],
       data: Record<string, any>,
       position: { x: number; y: number },
       shouldEdit = false,
@@ -212,11 +212,9 @@ export function useNodeOperations(
         data: JSON.parse(JSON.stringify(node.data)),
         inputs: Object.keys(node.inputs).map((key) => ({
           key,
-          socket_type: 'socket',
         })),
         outputs: Object.keys(node.outputs).map((key) => ({
           key,
-          socket_type: 'socket',
         })),
       };
 

@@ -253,8 +253,6 @@ async def create_sheet(
             target_id=conn_in.target_id,
             source_port=conn_in.source_port,
             target_port=conn_in.target_port,
-            source_handle=conn_in.source_handle,
-            target_handle=conn_in.target_handle,
         )
         if conn_in.id:
             db_conn.id = conn_in.id
@@ -431,7 +429,6 @@ async def update_sheet(
         if sheet_in.nodes is None:
             db_sheet.connections = []
 
-        # Re-create Connections
         for conn_in in sheet_in.connections:
             db_conn = Connection(
                 sheet_id=db_sheet.id,
@@ -439,10 +436,9 @@ async def update_sheet(
                 target_id=conn_in.target_id,
                 source_port=conn_in.source_port,
                 target_port=conn_in.target_port,
-                source_handle=conn_in.source_handle,
-                target_handle=conn_in.target_handle,
             )
             db.add(db_conn)
+
     await db.commit()
     await db.refresh(db_sheet, attribute_names=["nodes", "connections"])
     await _enrich_nodes_with_external_data(db_sheet, db)
@@ -500,8 +496,6 @@ async def duplicate_sheet(sheet_id: UUID, db: AsyncSession = Depends(get_db)):
                 target_id=node_id_map[conn.target_id],
                 source_port=conn.source_port,
                 target_port=conn.target_port,
-                source_handle=conn.source_handle,
-                target_handle=conn.target_handle,
             )
             db.add(new_conn)
 
@@ -786,8 +780,6 @@ async def create_version(
                 "target_id": str(c.target_id),
                 "source_port": c.source_port,
                 "target_port": c.target_port,
-                "source_handle": c.source_handle,
-                "target_handle": c.target_handle,
             }
             for c in sheet.connections
         ],

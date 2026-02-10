@@ -64,7 +64,7 @@ class Node(Base):
     label: Mapped[str] = mapped_column(String)
 
     # Explicit IO definitions as requested
-    # Structure: [{"key": "x", "socket_type": "number"}, ...]
+    # Structure: [{"key": "x"}, ...]
     inputs: Mapped[List[Any]] = mapped_column(JSONB, default=list)
     outputs: Mapped[List[Any]] = mapped_column(JSONB, default=list)
 
@@ -87,9 +87,6 @@ class Connection(Base):
     source_port: Mapped[str] = mapped_column(String)
     target_id: Mapped[uuid.UUID] = mapped_column(ForeignKey("nodes.id"))
     target_port: Mapped[str] = mapped_column(String)
-
-    source_handle: Mapped[Optional[str]] = mapped_column(String, nullable=True)
-    target_handle: Mapped[Optional[str]] = mapped_column(String, nullable=True)
 
     sheet: Mapped["Sheet"] = relationship(back_populates="connections")
 
