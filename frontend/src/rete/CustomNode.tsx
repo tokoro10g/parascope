@@ -2,6 +2,7 @@ import {
   AlertTriangle,
   CaseLower,
   Check,
+  EyeOff,
   Import,
   LogIn,
   LogOut,
@@ -137,6 +138,11 @@ export function CustomNode(props: any) {
         const title = nodeEl.querySelector('.title') as HTMLElement;
         if (title) {
           title.style.paddingRight = '30px'; // Make space for the icon
+          if (data.data.hidden) {
+            title.style.paddingLeft = '30px'; // Make space for the hidden icon
+          } else {
+            title.style.paddingLeft = '';
+          }
         }
       }
     }
@@ -206,6 +212,21 @@ export function CustomNode(props: any) {
   return (
     <div ref={ref} style={{ position: 'relative' }}>
       <Presets.classic.Node {...props} />
+      {data.data.hidden && (
+        <div
+          style={{
+            position: 'absolute',
+            top: '8px',
+            left: '8px',
+            pointerEvents: 'none',
+            color: type === 'comment' ? '#424242' : 'white',
+            zIndex: 1,
+          }}
+          title="Hidden from table and nested sheets"
+        >
+          <EyeOff size={16} />
+        </div>
+      )}
       {type === 'sheet' && (
         <div
           style={{
