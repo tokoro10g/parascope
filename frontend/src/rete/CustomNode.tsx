@@ -171,7 +171,7 @@ export function CustomNode(props: any) {
   const getVersionBadgeStyles = () => {
     const { versionId, versionTag, defaultVersionId } = data.data;
     if (!versionTag) {
-      // Draft
+      // Draft - Always red
       return {
         backgroundColor: '#d32f2f',
         borderColor: '#d32f2f',
@@ -179,7 +179,10 @@ export function CustomNode(props: any) {
         Icon: AlertTriangle,
       };
     }
-    if (versionId === defaultVersionId) {
+
+    // Check if current version is the default one
+    // Normalize to null for comparison
+    if ((versionId || null) === (defaultVersionId || null)) {
       // Default version
       return {
         backgroundColor: '#2e7d32',

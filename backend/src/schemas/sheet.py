@@ -30,6 +30,8 @@ class SheetNodeData(BaseModel):
     sheetId: Optional[UUID] = None
     versionId: Optional[UUID] = None
     versionTag: Optional[str] = None
+    defaultVersionId: Optional[UUID] = None
+    ownerName: Optional[str] = None
 
 
 class LUTRow(BaseModel):

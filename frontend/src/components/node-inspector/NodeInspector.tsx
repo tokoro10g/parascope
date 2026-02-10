@@ -1,6 +1,6 @@
 import type React from 'react';
 import { useEffect, useState } from 'react';
-import { API_BASE, api, type Sheet, type SheetVersionSummary } from '../../api';
+import { API_BASE, api, type SheetVersionSummary } from '../../api';
 import { resolveSheetPorts } from '../../utils';
 import { Modal } from '../Modal';
 import { AIGenerator } from './AIGenerator';
@@ -34,7 +34,6 @@ export const NodeInspector: React.FC<NodeInspectorProps> = ({
   const [showPreview, setShowPreview] = useState(false);
   const [dataLoaded, setDataLoaded] = useState(false);
   const [versions, setVersions] = useState<SheetVersionSummary[]>([]);
-  const [nestedSheet, setNestedSheet] = useState<Sheet | null>(null);
 
   // AI State
   const [aiPrompt, setAiPrompt] = useState('');
@@ -63,13 +62,11 @@ export const NodeInspector: React.FC<NodeInspectorProps> = ({
       setAiUrls('');
       setAiImage(null);
       setVersions([]);
-      setNestedSheet(null);
 
       const currentData = { ...(node.data || {}) };
 
       if (node.type === 'sheet' && currentData.sheetId) {
         api.listSheetVersions(currentData.sheetId).then(setVersions);
-        api.getSheet(currentData.sheetId).then(setNestedSheet);
       }
 
       // Initialize defaults for new fields to avoid leaking state from previous node
@@ -259,12 +256,10 @@ export const NodeInspector: React.FC<NodeInspectorProps> = ({
               onChange={(e) => {
                 const vid = e.target.value || null;
                 const tag = versions.find((v) => v.id === vid)?.version_tag;
-                const defaultVid = nestedSheet?.default_version_id || null;
                 setData({
                   ...data,
                   versionId: vid,
                   versionTag: tag,
-                  defaultVersionId: defaultVid,
                 });
 
                 if (data.sheetId) {
@@ -294,20 +289,17 @@ export const NodeInspector: React.FC<NodeInspectorProps> = ({
             >
               <option value="">
                 Draft
-                {nestedSheet && !nestedSheet.default_version_id
-                  ? ' [DEFAULT]'
-                  : ''}
+                {!data.defaultVersionId ? ' [DEFAULT]' : ''}
               </option>
               {versions.map((v) => (
                 <option key={v.id} value={v.id}>
                   {v.version_tag} ({new Date(v.created_at).toLocaleDateString()}
-                  )
-                  {nestedSheet?.default_version_id === v.id ? ' [DEFAULT]' : ''}
+                  ){data.defaultVersionId === v.id ? ' [DEFAULT]' : ''}
                 </option>
               ))}
             </select>
-            {nestedSheet?.default_version_id &&
-              data.versionId !== nestedSheet.default_version_id && (
+            {data.defaultVersionId &&
+              data.versionId !== data.defaultVersionId && (
                 <button
                   type="button"
                   className="btn primary"
@@ -318,14 +310,13 @@ export const NodeInspector: React.FC<NodeInspectorProps> = ({
                   }}
                   onClick={() => {
                     const defaultVer = versions.find(
-                      (v) => v.id === nestedSheet.default_version_id,
+                      (v) => v.id === data.defaultVersionId,
                     );
                     if (defaultVer) {
                       setData({
                         ...data,
                         versionId: defaultVer.id,
                         versionTag: defaultVer.version_tag,
-                        defaultVersionId: nestedSheet.default_version_id,
                       });
                       api
                         .getVersion(data.sheetId, defaultVer.id)
@@ -378,13 +369,11 @@ export const NodeInspector: React.FC<NodeInspectorProps> = ({
               automatically whenever the referenced sheet is updated. For
               reliable results, please select a{' '}
               <strong>versioned snapshot</strong>.
-              {nestedSheet && (
-                <div style={{ marginTop: '6px' }}>
-                  If no suitable version exists, please ask{' '}
-                  <strong>{nestedSheet.owner_name || 'the creator'}</strong> to
-                  create a new version of this sheet.
-                </div>
-              )}
+              <div style={{ marginTop: '6px' }}>
+                If no suitable version exists, please ask{' '}
+                <strong>{data.ownerName || 'the creator'}</strong> to create a
+                new version of this sheet.
+              </div>
             </div>
           )}
         </div>

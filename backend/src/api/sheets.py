@@ -73,24 +73,33 @@ async def _enrich_nodes_with_external_data(sheet: Sheet, db: AsyncSession):
         result = await db.execute(query)
         version_map = {str(row.id): row.version_tag for row in result.all()}
 
-    # 2. Enrich Sheet Labels (Sync name)
-    sheet_name_map = {}
+    # 2. Enrich Sheet Labels (Sync name) and Default Version IDs
+    sheet_info_map = {}
     if sheet_ids:
-        query = select(Sheet.id, Sheet.name).where(Sheet.id.in_(sheet_ids))
+        query = select(Sheet.id, Sheet.name, Sheet.default_version_id, Sheet.owner_name).where(Sheet.id.in_(sheet_ids))
         result = await db.execute(query)
-        sheet_name_map = {str(row.id): row.name for row in result.all()}
+        for row in result.all():
+            sheet_info_map[str(row.id)] = {
+                "name": row.name,
+                "default_version_id": str(row.default_version_id) if row.default_version_id else None,
+                "owner_name": row.owner_name,
+            }
 
     # Update node data and label
     for node in sheet.nodes:
         if node.type == "sheet":
             sid = node.data.get("sheetId")
-            if sid and sid in sheet_name_map:
-                node.label = sheet_name_map[sid]
+            if sid and sid in sheet_info_map:
+                node.label = sheet_info_map[sid]["name"]
 
-            vid = node.data.get("versionId")
-            if vid and vid in version_map:
                 new_data = dict(node.data)
-                new_data["versionTag"] = version_map[vid]
+                new_data["defaultVersionId"] = sheet_info_map[sid]["default_version_id"]
+                new_data["ownerName"] = sheet_info_map[sid]["owner_name"]
+
+                vid = node.data.get("versionId")
+                if vid and vid in version_map:
+                    new_data["versionTag"] = version_map[vid]
+
                 node.data = new_data
 
 
@@ -822,6 +831,38 @@ async def get_version(sheet_id: UUID, version_id: UUID, db: AsyncSession = Depen
     version = result.scalar_one_or_none()
     if not version:
         raise HTTPException(status_code=404, detail="Version not found")
+
+    # Enrich labels and version tags
+    # We create temporary Node objects to use _enrich_nodes_with_external_data
+    temp_nodes = []
+    original_nodes = version.data.get("nodes", [])
+    for n in original_nodes:
+        temp_nodes.append(
+            Node(
+                id=UUID(n["id"]),
+                type=n["type"],
+                label=n["label"],
+                inputs=n["inputs"],
+                outputs=n["outputs"],
+                data=n["data"],
+            )
+        )
+    temp_sheet = Sheet(nodes=temp_nodes)
+    await _enrich_nodes_with_external_data(temp_sheet, db)
+
+    # Update version.data with enriched nodes while preserving positions
+    new_nodes = []
+    for i, n in enumerate(temp_sheet.nodes):
+        enriched_node = original_nodes[i].copy()
+        enriched_node["label"] = n.label
+        enriched_node["data"] = n.data
+        new_nodes.append(enriched_node)
+
+    version.data = {
+        "nodes": new_nodes,
+        "connections": version.data.get("connections", []),
+    }
+
     version.created_at = make_aware(version.created_at)
     return version
 

@@ -501,8 +501,8 @@ export function useSheetEditorLogic(): SheetEditorLogic {
       connectionInfo?.source?.portKey ||
       connectionInfo?.target?.portKey ||
       type;
-    let inputs: { key: string; socket_type: string }[] = [];
-    let outputs: { key: string; socket_type: string }[] = [];
+    let inputs: { key: string; socket_type?: string }[] = [];
+    let outputs: { key: string; socket_type?: string }[] = [];
     let data: Record<string, any> = {};
 
     switch (type) {

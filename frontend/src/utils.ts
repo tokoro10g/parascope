@@ -94,15 +94,12 @@ export const syncNestedSheets = async (
     Array.from(uniqueSheetRequests).map(async (key) => {
       const [sid, vid] = key.split(':');
       try {
-        const fullSheet = await api.getSheet(sid);
-        sheetMetadataMap.set(sid, fullSheet);
-
         if (vid && vid !== 'draft') {
           const v = await api.getVersion(sid, vid);
-          if (v.data) {
-            sheetDataMap.set(key, v.data);
-          }
+          if (v.data) sheetDataMap.set(key, v.data);
         } else {
+          const fullSheet = await api.getSheet(sid);
+          sheetMetadataMap.set(sid, fullSheet);
           sheetDataMap.set(key, fullSheet);
         }
       } catch (err) {
@@ -124,11 +121,9 @@ export const syncNestedSheets = async (
         ? childSheetData.nodes
         : [];
 
-      // Update Inputs and Outputs using consolidated logic
       const { inputs: newInputs, outputs: newOutputs } =
         resolveSheetPorts(childNodes);
 
-      // Check if anything actually changed to avoid unnecessary re-renders
       const currentInputs = node.inputs || [];
       const currentOutputs = node.outputs || [];
 
@@ -137,11 +132,13 @@ export const syncNestedSheets = async (
       const outputsChanged =
         JSON.stringify(currentOutputs) !== JSON.stringify(newOutputs);
 
-      const defaultVid = metadata?.default_version_id || null;
-      const defaultChanged = node.data.defaultVersionId !== defaultVid;
+      const latestDefaultVid = metadata
+        ? metadata.default_version_id || null
+        : node.data.defaultVersionId;
+      const defaultChanged =
+        metadata && node.data.defaultVersionId !== latestDefaultVid;
 
       if (inputsChanged || outputsChanged || defaultChanged) {
-        // Find the node in the array and update it
         const nodeIndex = updatedNodes.findIndex((n) => n.id === node.id);
         if (nodeIndex !== -1) {
           updatedNodes[nodeIndex] = {
@@ -150,7 +147,7 @@ export const syncNestedSheets = async (
             outputs: newOutputs,
             data: {
               ...updatedNodes[nodeIndex].data,
-              defaultVersionId: defaultVid,
+              defaultVersionId: latestDefaultVid,
             },
           };
         }

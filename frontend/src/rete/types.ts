@@ -36,6 +36,6 @@ export interface NodeUpdates {
   label?: string;
   type?: NodeType;
   data?: Record<string, any>;
-  inputs?: { key: string; socket_type: string }[];
-  outputs?: { key: string; socket_type: string }[];
+  inputs?: { key: string; socket_type?: string }[];
+  outputs?: { key: string; socket_type?: string }[];
 }
