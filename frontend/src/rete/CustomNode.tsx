@@ -260,6 +260,10 @@ export function CustomNode(props: any) {
             e.stopPropagation(); // Prevent Rete shortcuts while typing
           }}
           onPointerDown={(e) => e.stopPropagation()}
+          onMouseDown={(e) => e.stopPropagation()}
+          onPointerUp={(e) => e.stopPropagation()}
+          onMouseUp={(e) => e.stopPropagation()}
+          onClick={(e) => e.stopPropagation()}
           className="node-title-input"
         />
       )}
