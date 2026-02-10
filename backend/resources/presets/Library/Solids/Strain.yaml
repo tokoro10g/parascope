@@ -1,0 +1,9 @@
+name: "Mechanical Strain"
+nodes:
+  dl: { type: input, label: "Delta L [m]" }
+  l0: { type: input, label: "Original L [m]" }
+  calc:
+    type: function
+    code: "Strain = dl / l0"
+    inputs: { dl: dl, l0: l0 }
+  out: { type: output, label: "Strain", input: calc.Strain }

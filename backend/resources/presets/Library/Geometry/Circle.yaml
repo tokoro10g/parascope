@@ -1,0 +1,11 @@
+name: "Circle Area & Perimeter"
+nodes:
+  r: { type: input, label: "Radius [m]" }
+  calc:
+    type: function
+    code: |
+      Area = math.pi * r**2
+      Perimeter = 2 * math.pi * r
+    inputs: { r: r }
+  out_a: { type: output, label: "Area [m2]", input: calc.Area }
+  out_p: { type: output, label: "Perimeter [m]", input: calc.Perimeter }

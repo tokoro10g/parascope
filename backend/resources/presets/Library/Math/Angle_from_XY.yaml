@@ -1,0 +1,9 @@
+name: "Angle from XY"
+nodes:
+  x: { type: input, label: "X" }
+  y: { type: input, label: "Y" }
+  calc:
+    type: function
+    code: "angle_deg = math.degrees(math.atan2(y, x))"
+    inputs: { x: x, y: y }
+  out: { type: output, label: "Angle [deg]", input: calc.angle_deg }

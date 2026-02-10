@@ -1,0 +1,9 @@
+name: "Newton's Second Law (F=ma)"
+nodes:
+  m: { type: input, label: "Mass [kg]" }
+  a: { type: input, label: "Acceleration [m/s2]" }
+  calc:
+    type: function
+    code: "Force = m * a"
+    inputs: { m: m, a: a }
+  out: { type: output, label: "Force [N]", input: calc.Force }

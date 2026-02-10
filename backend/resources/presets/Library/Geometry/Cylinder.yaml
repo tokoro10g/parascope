@@ -1,0 +1,12 @@
+name: "Cylinder Volume & Surface Area"
+nodes:
+  r: { type: input, label: "Radius [m]" }
+  h: { type: input, label: "Height [m]" }
+  calc:
+    type: function
+    code: |
+      Volume = math.pi * r**2 * h
+      SurfaceArea = 2 * math.pi * r * (r + h)
+    inputs: { r: r, h: h }
+  out_v: { type: output, label: "Volume [m3]", input: calc.Volume }
+  out_s: { type: output, label: "Surface Area [m2]", input: calc.SurfaceArea }

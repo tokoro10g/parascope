@@ -1,6 +1,7 @@
 import shutil
 import uuid
 from pathlib import Path
+from typing import Optional
 
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -17,48 +18,64 @@ async def seed_database(session: AsyncSession):
         print(f"Presets directory not found at {presets_dir}. Skipping seed.")
         return
 
-    print("Seeding database from YAML presets (two-pass)...")
+    print("Seeding database from YAML presets (recursive two-pass)...")
     importer = SheetImporter(session, resource_dirs=[resource_dir])
     
     # Store parsed data for second pass
     pending_sheets = [] # list of (Sheet object, yaml_data dict, base_path Path)
+    folder_cache = {} # path_str -> Folder object
 
-    # Recursive crawl
-    for folder_path in presets_dir.iterdir():
-        if not folder_path.is_dir():
-            continue
-
-        folder_name = folder_path.name
+    async def get_or_create_folder(rel_path: Path) -> Optional[uuid.UUID]:
+        if rel_path == Path("."):
+            return None
         
-        # Check/Create Folder
-        result = await session.execute(select(Folder).where(Folder.name == folder_name))
+        path_str = str(rel_path)
+        if path_str in folder_cache:
+            return folder_cache[path_str].id
+        
+        # Ensure parent exists
+        parent_id = await get_or_create_folder(rel_path.parent)
+        
+        # Check DB
+        folder_name = rel_path.name
+        result = await session.execute(
+            select(Folder).where(Folder.name == folder_name, Folder.parent_id == parent_id)
+        )
         folder = result.scalar_one_or_none()
+        
         if not folder:
-            print(f"Creating folder: {folder_name}")
-            folder = Folder(id=uuid.uuid4(), name=folder_name)
+            print(f"Creating folder: {rel_path}")
+            folder = Folder(id=uuid.uuid4(), name=folder_name, parent_id=parent_id)
             session.add(folder)
             await session.flush()
-        else:
-            print(f"Folder '{folder_name}' already exists.")
+        
+        folder_cache[path_str] = folder
+        return folder.id
 
-        # Pass 1: Create all Sheet records
-        for yaml_file in folder_path.glob("*.yaml"):
-            try:
-                content = yaml_file.read_text()
-                import yaml as pyyaml
-                data = pyyaml.safe_load(content)
-                sheet_name = data.get("name")
-                
-                result = await session.execute(select(Sheet).where(Sheet.name == sheet_name, Sheet.folder_id == folder.id))
-                if result.scalar_one_or_none():
-                    print(f"Sheet '{sheet_name}' already exists in '{folder_name}'. Skipping.")
-                    continue
-                
-                print(f"Pass 1: Creating sheet record for {sheet_name}")
-                sheet = await importer.create_sheet_record(data, folder_id=folder.id)
-                pending_sheets.append((sheet, data, yaml_file.parent))
-            except Exception as e:
-                print(f"Failed to parse {yaml_file} in Pass 1: {e}")
+    # Pass 1: Recursive crawl to create folders and Sheet records
+    for yaml_file in presets_dir.rglob("*.yaml"):
+        try:
+            rel_folder_path = yaml_file.parent.relative_to(presets_dir)
+            folder_id = await get_or_create_folder(rel_folder_path)
+            
+            content = yaml_file.read_text()
+            import yaml as pyyaml
+            data = pyyaml.safe_load(content)
+            sheet_name = data.get("name")
+            
+            # Check if sheet already exists in this specific folder
+            result = await session.execute(
+                select(Sheet).where(Sheet.name == sheet_name, Sheet.folder_id == folder_id)
+            )
+            if result.scalar_one_or_none():
+                # print(f"Sheet '{sheet_name}' already exists. Skipping Pass 1.")
+                continue
+            
+            print(f"Pass 1: Creating sheet record for {sheet_name}")
+            sheet = await importer.create_sheet_record(data, folder_id=folder_id)
+            pending_sheets.append((sheet, data, yaml_file.parent))
+        except Exception as e:
+            print(f"Failed to parse {yaml_file} in Pass 1: {e}")
 
     await session.flush()
 
@@ -72,5 +89,6 @@ async def seed_database(session: AsyncSession):
 
     await session.commit()
     print("Database seeding completed.")
+
 
 

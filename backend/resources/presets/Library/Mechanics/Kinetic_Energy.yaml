@@ -1,0 +1,9 @@
+name: "Kinetic Energy"
+nodes:
+  m: { type: input, label: "Mass [kg]" }
+  v: { type: input, label: "Velocity [m/s]" }
+  calc:
+    type: function
+    code: "Energy = 0.5 * m * v**2"
+    inputs: { m: m, v: v }
+  out: { type: output, label: "Energy [J]", input: calc.Energy }

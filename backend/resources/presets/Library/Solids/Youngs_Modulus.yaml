@@ -1,0 +1,9 @@
+name: "Young's Modulus (E)"
+nodes:
+  stress: { type: input, label: "Stress [Pa]" }
+  strain: { type: input, label: "Strain" }
+  calc:
+    type: function
+    code: "E = stress / strain"
+    inputs: { stress: stress, strain: strain }
+  out: { type: output, label: "E [Pa]", input: calc.E }

@@ -1,0 +1,11 @@
+name: "Sphere Volume & Surface Area"
+nodes:
+  r: { type: input, label: "Radius [m]" }
+  calc:
+    type: function
+    code: |
+      Volume = (4/3) * math.pi * r**3
+      SurfaceArea = 4 * math.pi * r**2
+    inputs: { r: r }
+  out_v: { type: output, label: "Volume [m3]", input: calc.Volume }
+  out_s: { type: output, label: "Surface Area [m2]", input: calc.SurfaceArea }

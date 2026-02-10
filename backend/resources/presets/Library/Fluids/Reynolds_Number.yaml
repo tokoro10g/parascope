@@ -1,0 +1,11 @@
+name: "Reynolds Number (Re)"
+nodes:
+  rho: { type: input, label: "Density [kg/m3]" }
+  v: { type: input, label: "Velocity [m/s]" }
+  l: { type: input, label: "Length [m]" }
+  mu: { type: input, label: "Dynamic Viscosity [Pa·s]" }
+  calc:
+    type: function
+    code: "Re = (rho * v * l) / mu"
+    inputs: { rho: rho, v: v, l: l, mu: mu }
+  out: { type: output, label: "Re", input: calc.Re }

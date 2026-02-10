@@ -1,0 +1,12 @@
+name: "Rectangle Area & Perimeter"
+nodes:
+  w: { type: input, label: "Width [m]" }
+  h: { type: input, label: "Height [m]" }
+  calc:
+    type: function
+    code: |
+      Area = w * h
+      Perimeter = 2 * (w + h)
+    inputs: { w: w, h: h }
+  out_a: { type: output, label: "Area [m2]", input: calc.Area }
+  out_p: { type: output, label: "Perimeter [m]", input: calc.Perimeter }

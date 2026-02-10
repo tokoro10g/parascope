@@ -1,0 +1,9 @@
+name: "Mechanical Stress"
+nodes:
+  f: { type: input, label: "Force [N]" }
+  a: { type: input, label: "Area [m2]" }
+  calc:
+    type: function
+    code: "Stress = f / a"
+    inputs: { f: f, a: a }
+  out: { type: output, label: "Stress [Pa]", input: calc.Stress }

@@ -1,0 +1,12 @@
+name: "Ideal Gas Law (Pressure)"
+nodes:
+  n: { type: input, label: "Amount (n) [mol]" }
+  t: { type: input, label: "Temperature (T) [K]" }
+  v: { type: input, label: "Volume (V) [m3]" }
+  calc:
+    type: function
+    code: |
+      R = 8.31446 # J/(mol·K)
+      Pressure = (n * R * t) / v
+    inputs: { n: n, t: t, v: v }
+  out: { type: output, label: "Pressure [Pa]", input: calc.Pressure }

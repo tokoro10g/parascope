@@ -1,0 +1,9 @@
+name: "Ohm's Law (Voltage)"
+nodes:
+  i: { type: input, label: "Current (I) [A]" }
+  r: { type: input, label: "Resistance (R) [Ω]" }
+  calc:
+    type: function
+    code: "Voltage = i * r"
+    inputs: { i: i, r: r }
+  out: { type: output, label: "Voltage [V]", input: calc.Voltage }

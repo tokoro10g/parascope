@@ -1,0 +1,11 @@
+name: "Heat Conduction"
+nodes:
+  k: { type: input, label: "Conductivity (k) [W/m·K]" }
+  a: { type: input, label: "Area [m2]" }
+  dt: { type: input, label: "Delta T [K]" }
+  d: { type: input, label: "Thickness [m]" }
+  calc:
+    type: function
+    code: "HeatFlow = (k * a * dt) / d"
+    inputs: { k: k, a: a, dt: dt, d: d }
+  out: { type: output, label: "HeatFlow [W]", input: calc.HeatFlow }
