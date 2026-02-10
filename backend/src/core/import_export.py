@@ -1,11 +1,14 @@
 import re
 import uuid
 import yaml
+import shutil
+from pathlib import Path
 from typing import Any, Dict, List, Optional
 from pydantic import BaseModel, Field
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select
 from ..models.sheet import Sheet, Node, Connection
+from .config import settings
 
 class YAMLNode(BaseModel):
     type: str
@@ -17,6 +20,7 @@ class YAMLNode(BaseModel):
     code: Optional[str] = None
     sheet_name: Optional[str] = None
     input: Optional[str] = None # Shortcut for single input (e.g. for outputs)
+    attachment: Optional[str] = None # Filename relative to preset file or resource dir
 
 class YAMLSheet(BaseModel):
     name: str
@@ -24,9 +28,10 @@ class YAMLSheet(BaseModel):
     nodes: Dict[str, YAMLNode]
 
 class SheetImporter:
-    def __init__(self, session: AsyncSession):
+    def __init__(self, session: AsyncSession, resource_dirs: List[Path] = None):
         self.session = session
         self.sheet_id_cache = {} # name -> id
+        self.resource_dirs = resource_dirs or []
 
     async def _get_sheet_id_by_name(self, name: str) -> uuid.UUID:
         if name in self.sheet_id_cache:
@@ -53,7 +58,7 @@ class SheetImporter:
         self.sheet_id_cache[yaml_sheet.name] = sheet_id
         return sheet
 
-    async def import_nodes_and_connections(self, sheet: Sheet, yaml_data: Dict[str, Any]):
+    async def import_nodes_and_connections(self, sheet: Sheet, yaml_data: Dict[str, Any], base_path: Optional[Path] = None):
         yaml_sheet = YAMLSheet(**yaml_data)
         sheet_id = sheet.id
         
@@ -64,6 +69,10 @@ class SheetImporter:
         grid_size = 20
         col_x = {0: 40, 1: 440, 2: 840}
         col_y = {0: 40, 1: 40, 2: 40}
+
+        # Ensure upload dir exists
+        upload_dir = Path(settings.UPLOAD_DIR)
+        upload_dir.mkdir(parents=True, exist_ok=True)
 
         # First pass: Create Nodes
         for yaml_id, node_data in yaml_sheet.nodes.items():
@@ -78,6 +87,33 @@ class SheetImporter:
             if node_data.sheet_name:
                 nested_id = await self._get_sheet_id_by_name(node_data.sheet_name)
                 final_data["sheetId"] = str(nested_id)
+
+            # Handle Attachment
+            if node_data.attachment:
+                # Search for attachment
+                search_paths = []
+                if base_path:
+                    search_paths.append(base_path)
+                search_paths.extend(self.resource_dirs)
+
+                source_file = None
+                for p in search_paths:
+                    candidate = p / node_data.attachment
+                    if candidate.exists():
+                        source_file = candidate
+                        break
+                
+                if source_file:
+                    target_name = f"{uuid.uuid4()}_{source_file.name}"
+                    shutil.copy(source_file, upload_dir / target_name)
+                    final_data["attachment"] = target_name
+                    
+                    # Append markdown if not already present
+                    desc = final_data.get("description", "")
+                    if f"![Attachment](/api/v1/attachments/{target_name})" not in desc:
+                        final_data["description"] = desc + f"\n\n![Attachment](/api/v1/attachments/{target_name})"
+                else:
+                    print(f"Warning: Attachment '{node_data.attachment}' not found for node '{yaml_id}'")
 
             inputs = []
             outputs = []
@@ -118,8 +154,6 @@ class SheetImporter:
             pos_y = col_y[target_col]
             
             # Estimate height based on port count to prevent overlaps
-            # Base height for a node is roughly 120-150px.
-            # Each port adds roughly 30-40px.
             port_count = max(len(inputs), len(outputs))
             # Multiples of grid_size (20)
             raw_height = 120 + max(0, port_count - 1) * 40
@@ -188,10 +222,10 @@ class SheetImporter:
         
         await self.session.flush()
 
-    async def import_sheet(self, yaml_data: Dict[str, Any], folder_id: Optional[uuid.UUID] = None, owner_name: str = "System") -> Sheet:
+    async def import_sheet(self, yaml_data: Dict[str, Any], folder_id: Optional[uuid.UUID] = None, owner_name: str = "System", base_path: Optional[Path] = None) -> Sheet:
         sheet = await self.create_sheet_record(yaml_data, folder_id, owner_name)
         await self.session.flush()
-        await self.import_nodes_and_connections(sheet, yaml_data)
+        await self.import_nodes_and_connections(sheet, yaml_data, base_path=base_path)
         return sheet
 
 async def parse_and_import_yaml(session: AsyncSession, content: str, **kwargs) -> Sheet:

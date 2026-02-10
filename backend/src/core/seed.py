@@ -11,15 +11,17 @@ from .import_export import SheetImporter, parse_and_import_yaml
 
 async def seed_database(session: AsyncSession):
     presets_dir = Path(__file__).resolve().parent.parent.parent / "resources" / "presets"
+    resource_dir = Path(__file__).resolve().parent.parent.parent / "resources"
+    
     if not presets_dir.exists():
         print(f"Presets directory not found at {presets_dir}. Skipping seed.")
         return
 
     print("Seeding database from YAML presets (two-pass)...")
-    importer = SheetImporter(session)
+    importer = SheetImporter(session, resource_dirs=[resource_dir])
     
     # Store parsed data for second pass
-    pending_sheets = [] # list of (Sheet object, yaml_data dict)
+    pending_sheets = [] # list of (Sheet object, yaml_data dict, base_path Path)
 
     # Recursive crawl
     for folder_path in presets_dir.iterdir():
@@ -54,20 +56,21 @@ async def seed_database(session: AsyncSession):
                 
                 print(f"Pass 1: Creating sheet record for {sheet_name}")
                 sheet = await importer.create_sheet_record(data, folder_id=folder.id)
-                pending_sheets.append((sheet, data))
+                pending_sheets.append((sheet, data, yaml_file.parent))
             except Exception as e:
                 print(f"Failed to parse {yaml_file} in Pass 1: {e}")
 
     await session.flush()
 
     # Pass 2: Import nodes and connections
-    for sheet, data in pending_sheets:
+    for sheet, data, base_path in pending_sheets:
         try:
             print(f"Pass 2: Importing nodes/connections for {sheet.name}")
-            await importer.import_nodes_and_connections(sheet, data)
+            await importer.import_nodes_and_connections(sheet, data, base_path=base_path)
         except Exception as e:
             print(f"Failed to import nodes for {sheet.name} in Pass 2: {e}")
 
     await session.commit()
     print("Database seeding completed.")
+
 
