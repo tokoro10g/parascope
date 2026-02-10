@@ -15,6 +15,7 @@ class YAMLNode(BaseModel):
     label: Optional[str] = None
     data: Dict[str, Any] = Field(default_factory=dict)
     inputs: Dict[str, str] = Field(default_factory=dict) # target_port: source_node_id.port
+    outputs: Optional[List[str]] = None # Explicit output ports
     # Shortcuts
     value: Optional[Any] = None
     code: Optional[str] = None
@@ -128,12 +129,17 @@ class SheetImporter:
             elif node_data.type == "function":
                 for port in node_data.inputs.keys():
                     inputs.append({"key": port})
-                if "outputs" in final_data:
+                
+                if node_data.outputs is not None:
+                    outputs = [{"key": k} for k in node_data.outputs]
+                elif "outputs" in final_data:
                     outputs = [{"key": k} for k in final_data["outputs"]]
                 elif node_data.code:
+                    # Filter out common intermediate variables
+                    ignored_vars = {"g0", "math", "np", "pi", "e", "angle_rad"}
                     assignments = re.findall(r"^([a-zA-Z_][a-zA-Z0-9_]*)\s*=", node_data.code, re.MULTILINE)
                     unique_outputs = list(dict.fromkeys(assignments))
-                    outputs = [{"key": k} for k in unique_outputs]
+                    outputs = [{"key": k} for k in unique_outputs if k not in ignored_vars]
                 target_col = 1
             elif node_data.type == "lut":
                 inputs = [{"key": "key"}]

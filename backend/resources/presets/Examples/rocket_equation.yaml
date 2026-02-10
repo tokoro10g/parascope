@@ -23,6 +23,7 @@ nodes:
     type: function
     label: "Calculate Delta-V"
     attachment: "Tsiolkovsky's_Theoretical_Rocket_Diagram.png"
+    outputs: ["DeltaV"]
     code: |
       g0 = 9.80665
       DeltaV = Isp * g0 * math.log(m0 / mf)
