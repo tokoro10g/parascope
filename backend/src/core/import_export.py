@@ -58,7 +58,12 @@ class SheetImporter:
         sheet_id = sheet.id
         
         node_id_map = {} # yaml_id -> db_id
-        current_y = 50
+        
+        # Column-based layout state
+        # Columns: 0 (Inputs/Constants), 1 (Processing), 2 (Outputs)
+        grid_size = 20
+        col_x = {0: 40, 1: 440, 2: 840}
+        col_y = {0: 40, 1: 40, 2: 40}
 
         # First pass: Create Nodes
         for yaml_id, node_data in yaml_sheet.nodes.items():
@@ -77,13 +82,13 @@ class SheetImporter:
             inputs = []
             outputs = []
 
-            # Infer ports
+            # Determine Column and Infer ports
             if node_data.type in ["input", "constant"]:
                 outputs = [{"key": "value"}]
-                pos_x = 100
+                target_col = 0
             elif node_data.type == "output":
                 inputs = [{"key": "value"}]
-                pos_x = 1000
+                target_col = 2
             elif node_data.type == "function":
                 for port in node_data.inputs.keys():
                     inputs.append({"key": port})
@@ -93,22 +98,33 @@ class SheetImporter:
                     assignments = re.findall(r"^([a-zA-Z_][a-zA-Z0-9_]*)\s*=", node_data.code, re.MULTILINE)
                     unique_outputs = list(dict.fromkeys(assignments))
                     outputs = [{"key": k} for k in unique_outputs]
-                pos_x = 500
+                target_col = 1
             elif node_data.type == "lut":
                 inputs = [{"key": "key"}]
                 if "lut" in final_data and "rows" in final_data["lut"] and len(final_data["lut"]["rows"]) > 0:
                     first_row_values = final_data["lut"]["rows"][0].get("values", {})
                     outputs = [{"key": k} for k in first_row_values.keys()]
-                pos_x = 400
+                target_col = 1
             elif node_data.type == "sheet":
-                # For sheets, we just take what's in inputs or infer from connections
                 for port in node_data.inputs.keys():
                     inputs.append({"key": port})
                 if "outputs" in final_data:
                     outputs = [{"key": k} for k in final_data["outputs"]]
-                pos_x = 500
+                target_col = 1
             else:
-                pos_x = 300
+                target_col = 1
+
+            pos_x = col_x.get(target_col, 440)
+            pos_y = col_y[target_col]
+            
+            # Estimate height based on port count to prevent overlaps
+            # Base height for a node is roughly 120-150px.
+            # Each port adds roughly 30-40px.
+            port_count = max(len(inputs), len(outputs))
+            # Multiples of grid_size (20)
+            raw_height = 120 + max(0, port_count - 1) * 40
+            estimated_height = ((raw_height + grid_size - 1) // grid_size) * grid_size
+            col_y[target_col] += estimated_height + 40 # adding 40px (2 grid cells) gap
 
             node = Node(
                 id=db_id,
@@ -119,9 +135,8 @@ class SheetImporter:
                 inputs=inputs,
                 outputs=outputs,
                 position_x=pos_x,
-                position_y=current_y
+                position_y=pos_y
             )
-            current_y += 150
             self.session.add(node)
 
         await self.session.flush()
