@@ -1,0 +1,50 @@
+name: "Aerodynamic Drag Force"
+description: "Calculates aerodynamic drag force: $F_d = C_d \cdot A \cdot q$"
+nodes:
+  cd:
+    type: constant
+    label: "Drag Coeff (Cd)"
+    value: 0.3
+    data:
+      description: "Drag coefficient (dimensionless)."
+      min: "0"
+  area:
+    type: constant
+    label: "Ref Area (A) [m2]"
+    value: 1.5
+    data:
+      description: "Reference area (usually frontal area) in m²."
+      min: "0"
+  rho:
+    type: input
+    label: "Density [kg/m3]"
+    data:
+      description: "Air density in kg/m³."
+      min: "0"
+  v:
+    type: input
+    label: "Velocity [m/s]"
+    data:
+      description: "Velocity in m/s."
+      min: "0"
+  q_nested:
+    type: sheet
+    sheet_name: "Dynamic Pressure (q)"
+    inputs:
+      "Density (rho) [kg/m3]": rho
+      "Velocity (v) [m/s]": v
+  calc:
+    type: function
+    label: "Calculate Drag"
+    code: "Drag = Cd * A * q"
+    inputs:
+      Cd: cd
+      A: area
+      q: q_nested."Dynamic Pressure (q) [Pa]"
+  drag:
+    type: output
+    label: "Drag Force [N]"
+    input: calc.Drag
+    data:
+      description: "Aerodynamic drag force in Newtons."
+      min: "0"

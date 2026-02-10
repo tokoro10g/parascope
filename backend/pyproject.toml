@@ -22,6 +22,7 @@ dependencies = [
     "boto3>=1.42.34",
     "restrictedpython>=8.1",
     "parascope-runtime",
+    "pyyaml>=6.0.3",
 ]
 
 [tool.uv.sources]

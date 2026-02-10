@@ -1,0 +1,61 @@
+name: "Material Selection Example"
+description: "Look up material properties and calculate mass/stress."
+nodes:
+  material:
+    type: constant
+    label: "Material"
+    data:
+      description: "Select the material for the component."
+      dataType: "option"
+      options: ["Steel", "Aluminum", "Titanium"]
+      value: "Steel"
+  volume:
+    type: constant
+    label: "Volume [m^3]"
+    value: 1.0
+    data:
+      min: "0"
+  strain:
+    type: constant
+    label: "Strain"
+    value: 0.001
+    data:
+      description: "Applied strain (dimensionless)."
+      min: "0"
+  mat_lut:
+    type: lut
+    label: "Material Properties LUT"
+    inputs:
+      key: material
+    data:
+      description: "Look up density and Young's modulus based on material name."
+      lut:
+        rows:
+          - key: "Steel"
+            values: { "Density [kg/m^3]": 7850, "Young's Modulus [GPa]": 210 }
+          - key: "Aluminum"
+            values: { "Density [kg/m^3]": 2700, "Young's Modulus [GPa]": 70 }
+          - key: "Titanium"
+            values: { "Density [kg/m^3]": 4500, "Young's Modulus [GPa]": 110 }
+  mass_calc:
+    type: function
+    label: "Calculate Mass"
+    code: "mass = density * volume"
+    inputs:
+      density: mat_lut."Density [kg/m^3]"
+      volume: volume
+  stress_calc:
+    type: function
+    label: "Calculate Stress"
+    code: "stress = E * epsilon"
+    inputs:
+      E: mat_lut."Young's Modulus [GPa]"
+      epsilon: strain
+  out_mass:
+    type: output
+    label: "Mass [kg]"
+    input: mass_calc.mass
+  out_stress:
+    type: output
+    label: "Stress [GPa]"
+    input: stress_calc.stress

@@ -1,0 +1,73 @@
+name: "SSTO Feasibility Check"
+description: "Evaluates if a Single-Stage-To-Orbit vehicle is feasible."
+nodes:
+  pay:
+    type: constant
+    label: "Payload Mass [kg]"
+    value: 2000
+    data: { min: 0 }
+  prop:
+    type: constant
+    label: "Propellant Mass [kg]"
+    value: 93000
+    data: { min: 0 }
+  struc:
+    type: constant
+    label: "Structure Mass [kg]"
+    value: 5000
+    data: { min: 0 }
+  isp:
+    type: constant
+    label: "Engine Isp [s]"
+    value: 380
+    data: { min: 0 }
+  target:
+    type: constant
+    label: "Target Delta-V [m/s]"
+    value: 9000
+    data: { min: 0 }
+  
+  mass_calc:
+    type: function
+    label: "Calculate Masses"
+    code: |
+      m0 = mp + mprop + ms
+      mf = mp + ms
+    inputs:
+      mp: pay
+      mprop: prop
+      ms: struc
+  
+  rocket_eq:
+    type: sheet
+    sheet_name: "Tsiolkovsky Rocket Equation"
+    inputs:
+      "Isp [s]": isp
+      "Initial Mass (m0) [kg]": mass_calc.m0
+      "Final Mass (mf) [kg]": mass_calc.mf
+  
+  margin_calc:
+    type: function
+    label: "Check Feasibility"
+    code: |
+      Margin = Achieved_DV - Target_DV
+      Is_Feasible = "YES" if Margin >= 0 else "NO"
+    inputs:
+      Achieved_DV: rocket_eq."Delta-V [m/s]"
+      Target_DV: target
+  
+  out_dv:
+    type: output
+    label: "Achieved Delta-V"
+    input: rocket_eq."Delta-V [m/s]"
+  out_margin:
+    type: output
+    label: "Margin [m/s]"
+    input: margin_calc.Margin
+  out_feas:
+    type: output
+    label: "Feasible?"
+    input: margin_calc.Is_Feasible
+    data:
+      dataType: "option"
+      options: ["YES", "NO"]

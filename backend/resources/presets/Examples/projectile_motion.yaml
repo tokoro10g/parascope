@@ -1,0 +1,44 @@
+name: "Projectile Motion (2D Sweep)"
+description: "Calculates Range, Max Height, and Flight Time for a projectile."
+nodes:
+  angle:
+    type: constant
+    label: "Launch Angle [deg]"
+    value: 45
+    data:
+      min: "0"
+      max: "90"
+  v0:
+    type: constant
+    label: "Initial Velocity (v0) [m/s]"
+    value: 100
+    data:
+      min: "0"
+  g:
+    type: constant
+    label: "Gravity (g) [m/s^2]"
+    value: 9.81
+  calc:
+    type: function
+    label: "Calculate Trajectory"
+    code: |
+      angle_rad = math.radians(angle_deg)
+      Range = (v0**2 * math.sin(2 * angle_rad)) / g
+      MaxHeight = (v0**2 * math.sin(angle_rad)**2) / (2 * g)
+      FlightTime = (2 * v0 * math.sin(angle_rad)) / g
+    inputs:
+      angle_deg: angle
+      v0: v0
+      g: g
+  out_range:
+    type: output
+    label: "Range [m]"
+    input: calc.Range
+  out_height:
+    type: output
+    label: "Max Height [m]"
+    input: calc.MaxHeight
+  out_time:
+    type: output
+    label: "Flight Time [s]"
+    input: calc.FlightTime
