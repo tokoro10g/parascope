@@ -1,26 +1,29 @@
 import asyncio
+import json
 import os
 import sys
-import json
 
 # Add the parent directory to sys.path to allow imports from src
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
-from sqlalchemy import text, select
-from sqlalchemy.ext.asyncio import create_async_engine, AsyncSession
+from sqlalchemy import text
+from sqlalchemy.ext.asyncio import AsyncSession, create_async_engine
 from sqlalchemy.orm import sessionmaker
 
 from src.core.config import settings
+
 
 def clean_port(port):
     if not isinstance(port, dict):
         return port
     return {"key": port.get("key")}
 
+
 def clean_ports(ports):
     if not isinstance(ports, list):
         return ports
     return [clean_port(p) for p in ports]
+
 
 async def cleanup_redundant_fields():
     print(f"Connecting to database at {settings.DATABASE_URL}...")
@@ -45,7 +48,7 @@ async def cleanup_redundant_fields():
             new_outputs = clean_ports(outputs)
             await session.execute(
                 text("UPDATE nodes SET inputs = :inputs, outputs = :outputs WHERE id = :id"),
-                {"inputs": json.dumps(new_inputs), "outputs": json.dumps(new_outputs), "id": node_id}
+                {"inputs": json.dumps(new_inputs), "outputs": json.dumps(new_outputs), "id": node_id},
             )
         print(f"Cleaned {len(rows)} nodes.")
 
@@ -55,22 +58,22 @@ async def cleanup_redundant_fields():
         for version_id, data in rows:
             if not isinstance(data, dict):
                 continue
-            
+
             # Clean nodes in version data
             if "nodes" in data:
                 for node in data["nodes"]:
                     node["inputs"] = clean_ports(node.get("inputs", []))
                     node["outputs"] = clean_ports(node.get("outputs", []))
-            
+
             # Clean connections in version data
             if "connections" in data:
                 for conn in data["connections"]:
                     conn.pop("source_handle", None)
                     conn.pop("target_handle", None)
-            
+
             await session.execute(
                 text("UPDATE sheet_versions SET data = :data WHERE id = :id"),
-                {"data": json.dumps(data), "id": version_id}
+                {"data": json.dumps(data), "id": version_id},
             )
         print(f"Cleaned {len(rows)} versions.")
 
@@ -78,6 +81,7 @@ async def cleanup_redundant_fields():
 
     print("Migration complete.")
     await engine.dispose()
+
 
 if __name__ == "__main__":
     asyncio.run(cleanup_redundant_fields())

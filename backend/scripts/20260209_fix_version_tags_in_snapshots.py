@@ -1,18 +1,19 @@
 import asyncio
+import json
 import os
 import sys
-import json
 from uuid import UUID
 
 # Add the parent directory to sys.path to allow imports from src
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
-from sqlalchemy import text, select
-from sqlalchemy.ext.asyncio import create_async_engine, AsyncSession
+from sqlalchemy import select
+from sqlalchemy.ext.asyncio import AsyncSession, create_async_engine
 from sqlalchemy.orm import sessionmaker
 
 from src.core.config import settings
-from src.models.sheet import SheetVersion, Node
+from src.models.sheet import Node, SheetVersion
+
 
 async def fix_version_tags():
     print(f"Connecting to database at {settings.DATABASE_URL}...")
@@ -25,13 +26,13 @@ async def fix_version_tags():
         stmt = select(Node).where(Node.type == "sheet")
         result = await session.execute(stmt)
         nodes = result.scalars().all()
-        
+
         version_ids = set()
         for n in nodes:
             vid = n.data.get("versionId")
             if vid:
                 version_ids.add(str(vid))
-        
+
         print(f"Found {len(nodes)} sheet nodes, {len(version_ids)} unique version IDs.")
 
         # 2. Check sheet_versions table
@@ -60,7 +61,7 @@ async def fix_version_tags():
         tag_result = await session.execute(tag_stmt)
         for row in tag_result.all():
             tag_map[str(row.id)] = row.version_tag
-        
+
         # 4. Update nodes
         node_updates = 0
         for n in nodes:
@@ -71,13 +72,13 @@ async def fix_version_tags():
                     if n.data.get("versionTag") != tag_map[vid_str]:
                         n.data = {**n.data, "versionTag": tag_map[vid_str]}
                         node_updates += 1
-        
+
         # 5. Update versions
         version_updates = 0
         for v in versions:
             if not isinstance(v.data, dict):
                 continue
-            
+
             changed = False
             new_data = json.loads(json.dumps(v.data))
             for vn in new_data.get("nodes", []):
@@ -101,6 +102,7 @@ async def fix_version_tags():
             print("No updates needed.")
 
     await engine.dispose()
+
 
 if __name__ == "__main__":
     asyncio.run(fix_version_tags())
