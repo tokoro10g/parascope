@@ -757,6 +757,8 @@ async def create_version(
     if not sheet:
         raise HTTPException(status_code=404, detail="Sheet not found")
 
+    await _enrich_nodes_with_external_data(sheet, db)
+
     # Serialize current state
     # We use a similar format to what the frontend expects
     data = {
