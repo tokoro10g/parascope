@@ -26,15 +26,21 @@ class YAMLSheet(BaseModel):
 class SheetImporter:
     def __init__(self, session: AsyncSession):
         self.session = session
+        self.sheet_id_cache = {} # name -> id
 
     async def _get_sheet_id_by_name(self, name: str) -> uuid.UUID:
+        if name in self.sheet_id_cache:
+            return self.sheet_id_cache[name]
+            
         result = await self.session.execute(select(Sheet).where(Sheet.name == name))
         sheet = result.scalar_one_or_none()
         if not sheet:
             raise ValueError(f"Sheet with name '{name}' not found")
+        
+        self.sheet_id_cache[name] = sheet.id
         return sheet.id
 
-    async def import_sheet(self, yaml_data: Dict[str, Any], folder_id: Optional[uuid.UUID] = None, owner_name: str = "System") -> Sheet:
+    async def create_sheet_record(self, yaml_data: Dict[str, Any], folder_id: Optional[uuid.UUID] = None, owner_name: str = "System") -> Sheet:
         yaml_sheet = YAMLSheet(**yaml_data)
         sheet_id = uuid.uuid4()
         sheet = Sheet(
@@ -44,7 +50,13 @@ class SheetImporter:
             folder_id=folder_id
         )
         self.session.add(sheet)
+        self.sheet_id_cache[yaml_sheet.name] = sheet_id
+        return sheet
 
+    async def import_nodes_and_connections(self, sheet: Sheet, yaml_data: Dict[str, Any]):
+        yaml_sheet = YAMLSheet(**yaml_data)
+        sheet_id = sheet.id
+        
         node_id_map = {} # yaml_id -> db_id
         current_y = 50
 
@@ -118,23 +130,34 @@ class SheetImporter:
         for yaml_id, node_data in yaml_sheet.nodes.items():
             target_node_id = node_id_map[yaml_id]
             
-            conns = node_data.inputs.copy()
+            conns_to_make = node_data.inputs.copy()
             if node_data.input:
-                conns["value"] = node_data.input
+                conns_to_make["value"] = node_data.input
 
-            for target_port, source_ref in conns.items():
+            for target_port, source_ref in conns_to_make.items():
+                source_yaml_id = None
+                source_port = "value"
+
+                # If reference is found directly in node_id_map, it's a node ID
                 if source_ref in node_id_map:
                     source_yaml_id = source_ref
                     source_port = "value"
                 elif "." in source_ref:
-                    parts = source_ref.rsplit(".", 1)
-                    if parts[0] in node_id_map:
-                        source_yaml_id, source_port = parts
-                    else:
-                        source_yaml_id = source_ref
+                    # Attempt to split node ID and port name
+                    # We iterate from right to left to find the longest matching node ID
+                    parts = source_ref.split(".")
+                    for i in range(len(parts) - 1, 0, -1):
+                        possible_id = ".".join(parts[:i]).strip("\"'")
+                        if possible_id in node_id_map:
+                            source_yaml_id = possible_id
+                            source_port = ".".join(parts[i:]).strip("\"'")
+                            break
+                    
+                    if not source_yaml_id:
+                        source_yaml_id = source_ref.strip("\"'")
                         source_port = "value"
                 else:
-                    source_yaml_id = source_ref
+                    source_yaml_id = source_ref.strip("\"'")
                     source_port = "value"
 
                 source_node_id = node_id_map.get(source_yaml_id)
@@ -149,6 +172,11 @@ class SheetImporter:
                     self.session.add(conn)
         
         await self.session.flush()
+
+    async def import_sheet(self, yaml_data: Dict[str, Any], folder_id: Optional[uuid.UUID] = None, owner_name: str = "System") -> Sheet:
+        sheet = await self.create_sheet_record(yaml_data, folder_id, owner_name)
+        await self.session.flush()
+        await self.import_nodes_and_connections(sheet, yaml_data)
         return sheet
 
 async def parse_and_import_yaml(session: AsyncSession, content: str, **kwargs) -> Sheet:

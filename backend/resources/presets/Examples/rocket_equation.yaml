@@ -26,10 +26,11 @@ nodes:
       g0 = 9.80665
       DeltaV = Isp * g0 * math.log(m0 / mf)
     data:
-      description: "Calculates the Delta-V using the Tsiolkovsky rocket equation: 
-$$
-\Delta V = I_{sp} g_0 \ln(\frac{m_0}{m_f})
-$$"
+      description: |
+        Calculates the Delta-V using the Tsiolkovsky rocket equation: 
+        $$
+        \Delta V = I_{sp} g_0 \ln(\frac{m_0}{m_f})
+        $$
     inputs:
       Isp: isp
       m0: m0

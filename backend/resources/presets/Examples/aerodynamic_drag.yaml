@@ -1,5 +1,5 @@
 name: "Aerodynamic Drag Force"
-description: "Calculates aerodynamic drag force: $F_d = C_d \cdot A \cdot q$"
+description: 'Calculates aerodynamic drag force: $F_d = C_d \cdot A \cdot q$'
 nodes:
   cd:
     type: constant

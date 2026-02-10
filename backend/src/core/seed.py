@@ -6,7 +6,7 @@ from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from ..models.sheet import Folder, Sheet
-from .import_export import parse_and_import_yaml
+from .import_export import SheetImporter, parse_and_import_yaml
 
 
 async def seed_database(session: AsyncSession):
@@ -15,7 +15,11 @@ async def seed_database(session: AsyncSession):
         print(f"Presets directory not found at {presets_dir}. Skipping seed.")
         return
 
-    print("Seeding database from YAML presets...")
+    print("Seeding database from YAML presets (two-pass)...")
+    importer = SheetImporter(session)
+    
+    # Store parsed data for second pass
+    pending_sheets = [] # list of (Sheet object, yaml_data dict)
 
     # Recursive crawl
     for folder_path in presets_dir.iterdir():
@@ -35,17 +39,10 @@ async def seed_database(session: AsyncSession):
         else:
             print(f"Folder '{folder_name}' already exists.")
 
-        # Import YAML files in this folder
+        # Pass 1: Create all Sheet records
         for yaml_file in folder_path.glob("*.yaml"):
-            # Check if sheet already exists (by name in this folder)
-            result = await session.execute(
-                select(Sheet).where(Sheet.name == yaml_file.stem.replace("_", " ").title(), Sheet.folder_id == folder.id)
-            )
-            # Actually, the YAML has a 'name' field, so we should parse it first or just use filename as heuristic
-            # Let's just parse it.
             try:
                 content = yaml_file.read_text()
-                # Simple check if already imported by name
                 import yaml as pyyaml
                 data = pyyaml.safe_load(content)
                 sheet_name = data.get("name")
@@ -55,10 +52,22 @@ async def seed_database(session: AsyncSession):
                     print(f"Sheet '{sheet_name}' already exists in '{folder_name}'. Skipping.")
                     continue
                 
-                print(f"Importing sheet: {sheet_name}")
-                await parse_and_import_yaml(session, content, folder_id=folder.id)
+                print(f"Pass 1: Creating sheet record for {sheet_name}")
+                sheet = await importer.create_sheet_record(data, folder_id=folder.id)
+                pending_sheets.append((sheet, data))
             except Exception as e:
-                print(f"Failed to import {yaml_file}: {e}")
+                print(f"Failed to parse {yaml_file} in Pass 1: {e}")
+
+    await session.flush()
+
+    # Pass 2: Import nodes and connections
+    for sheet, data in pending_sheets:
+        try:
+            print(f"Pass 2: Importing nodes/connections for {sheet.name}")
+            await importer.import_nodes_and_connections(sheet, data)
+        except Exception as e:
+            print(f"Failed to import nodes for {sheet.name} in Pass 2: {e}")
 
     await session.commit()
     print("Database seeding completed.")
+
