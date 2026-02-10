@@ -36,5 +36,6 @@ e2e/test-results/
 
 # Backend
 backend/uploads
+*.sql
 
 .env
