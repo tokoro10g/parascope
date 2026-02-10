@@ -64,6 +64,13 @@ export function customSelectableNodes(
         : false;
       const isSelected = selector.isSelected({ id: pickedId, label: 'node' });
 
+      if (isSelected && accumulate) {
+        // Toggle off if already selected and modifier is pressed
+        await selector.remove({ id: pickedId, label: 'node' });
+        twitch = null;
+        return;
+      }
+
       selector.pick({ id: pickedId, label: 'node' });
       twitch = null;
 
