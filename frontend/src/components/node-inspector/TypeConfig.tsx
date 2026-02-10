@@ -237,6 +237,22 @@ export const TypeConfig: React.FC<TypeConfigProps> = ({
           )}
         </div>
       )}
+
+      {(nodeType === 'constant' || nodeType === 'output') && (
+        <div
+          className="form-group checkbox-group"
+          style={{ marginTop: '10px' }}
+        >
+          <label>
+            <input
+              type="checkbox"
+              checked={!!data.hidden}
+              onChange={(e) => setData({ ...data, hidden: e.target.checked })}
+            />
+            <span>Hidden from table and nested sheets</span>
+          </label>
+        </div>
+      )}
     </>
   );
 };

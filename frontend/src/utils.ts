@@ -249,12 +249,14 @@ export const resolveNestedSheetParams = (
 
 export const resolveSheetPorts = (nodes: any[]) => {
   const inputs = nodes
-    .filter((n) => n.type === 'input')
+    .filter((n) => n.type === 'input' && !n.data?.hidden)
     .map((n) => createSocket(n.label))
     .sort((a, b) => a.key.localeCompare(b.key));
 
   const outputs = nodes
-    .filter((n) => n.type === 'output' || n.type === 'constant')
+    .filter(
+      (n) => (n.type === 'output' || n.type === 'constant') && !n.data?.hidden,
+    )
     .map((n) => ({
       key: n.label,
       socket_type: n.type,

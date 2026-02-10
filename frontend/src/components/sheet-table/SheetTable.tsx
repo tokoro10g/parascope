@@ -71,9 +71,10 @@ export const SheetTable: React.FC<SheetTableProps> = ({
   const tableNodes = nodes
     .filter(
       (node) =>
-        node.type === 'constant' ||
-        node.type === 'output' ||
-        node.type === 'input',
+        (node.type === 'constant' ||
+          node.type === 'output' ||
+          node.type === 'input') &&
+        !node.data?.hidden,
     )
     .sort((a, b) => {
       const typeOrder: Record<string, number> = {
@@ -91,16 +92,17 @@ export const SheetTable: React.FC<SheetTableProps> = ({
 
   // Filter for Descriptions (Constants, Inputs, Functions, Outputs, Sheets, LUTs, Comments)
   const descriptionNodes = nodes
-    .filter((node) =>
-      [
-        'constant',
-        'input',
-        'function',
-        'output',
-        'sheet',
-        'lut',
-        'comment',
-      ].includes(node.type),
+    .filter(
+      (node) =>
+        [
+          'constant',
+          'input',
+          'function',
+          'output',
+          'sheet',
+          'lut',
+          'comment',
+        ].includes(node.type) && !node.data?.hidden,
     )
     .sort((a, b) => {
       const typeOrder: Record<string, number> = {

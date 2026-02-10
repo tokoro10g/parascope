@@ -19,6 +19,7 @@ class ParameterNodeData(BaseModel):
     dataType: Optional[str] = None  # "number", "option", etc.
     options: Optional[List[str]] = None
     description: Optional[str] = None
+    hidden: bool = False
 
 
 class FunctionNodeData(BaseModel):
@@ -52,6 +53,7 @@ class OutputNodeData(BaseModel):
     min: Optional[float] = None
     max: Optional[float] = None
     description: Optional[str] = None
+    hidden: bool = False
 
 
 # --- Discriminated Union for Nodes ---

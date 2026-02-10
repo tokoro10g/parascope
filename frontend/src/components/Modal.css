@@ -78,6 +78,20 @@
   color: var(--text-color);
 }
 
+.form-group input[type="checkbox"] {
+  width: auto;
+  margin: 0;
+  padding: 0;
+}
+
+.form-group.checkbox-group label {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+  font-weight: normal;
+}
+
 .io-section {
   display: flex;
   gap: 20px;
