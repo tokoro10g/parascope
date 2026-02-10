@@ -144,6 +144,9 @@ export async function createEditor(container: HTMLElement) {
   });
 
   area.addPipe((context) => {
+    if (context.type === 'translate' && selectableNodes.isMarqueeActive()) {
+      return;
+    }
     if (context.type === 'nodetranslated') {
       const { previous, position } = context.data;
       if (previous.x !== position.x || previous.y !== position.y) {
