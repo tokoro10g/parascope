@@ -1,5 +1,6 @@
 import ast
 import asyncio
+import keyword
 import re
 import textwrap
 import uuid
@@ -310,6 +311,10 @@ except Exception as e:
             clean = f"v_{clean}"
         # Cleanup underscores
         clean = re.sub(r"_+", "_", clean)
+
+        if keyword.iskeyword(clean):
+            clean = f"{clean}_"
+
         return clean
 
     def _generate_sheet_class(self, sheet: Sheet, version_id: Optional[str] = None) -> str:
