@@ -14,11 +14,6 @@ export function useNodeOperations(
   nodes: ParascopeNode[],
   setIsDirty: (isDirty: boolean) => void,
   currentSheet: Sheet | null,
-  handleCalculationInputChange: (id: string, value: string) => void,
-  addHistoryAction?: (action: {
-    redo: () => Promise<void> | void;
-    undo: () => Promise<void> | void;
-  }) => void,
 ) {
   const editor = wrapper?.instance;
 
@@ -84,45 +79,6 @@ export function useNodeOperations(
 
       const node = new ParascopeNode(type, uniqueLabel, inputs, outputs, data);
 
-      node.onChange = (_val) => {
-        // No-op on change to prevent heavy auto-calc on every keystroke
-      };
-
-      node.onCommit = (oldVal, newVal) => {
-        if (oldVal === newVal) return;
-
-        // Trigger calculation and state updates only when value is committed (blur/Enter)
-        if (node.type === 'input') {
-          handleCalculationInputChange(id, String(newVal));
-        } else {
-          setIsDirty(true);
-          wrapper?.triggerGraphChange();
-        }
-
-        if (node.type !== 'input' && addHistoryAction) {
-          addHistoryAction({
-            redo: () => {
-              const n = editor.getNode(id);
-              const control = n?.controls.value as any; // InputControl
-              if (control) {
-                control.setValue(newVal);
-                wrapper?.triggerGraphChange();
-              }
-            },
-            undo: () => {
-              const n = editor.getNode(id);
-              const control = n?.controls.value as any; // InputControl
-              if (control) {
-                control.setValue(oldVal);
-                wrapper?.triggerGraphChange();
-              }
-            },
-          });
-        }
-      };
-
-      node.setupControl();
-
       node.id = id;
       node.dbId = id;
 
@@ -137,15 +93,7 @@ export function useNodeOperations(
       setIsDirty(true);
       return node;
     },
-    [
-      editor,
-      area,
-      handleCalculationInputChange,
-      setIsDirty,
-      wrapper,
-      getUniqueLabel,
-      addHistoryAction,
-    ],
+    [editor, area, setIsDirty, getUniqueLabel],
   );
 
   const handleDuplicateNode = useCallback(
@@ -352,6 +300,7 @@ export function useNodeOperations(
       setIsDirty(true);
       wrapper?.triggerGraphChange(); // Notify listeners
 
+      const addHistoryAction = wrapper?.addHistoryAction;
       if (addHistoryAction) {
         addHistoryAction({
           undo: async () => {
@@ -369,7 +318,7 @@ export function useNodeOperations(
         });
       }
     },
-    [editor, area, setIsDirty, addHistoryAction, wrapper, getUniqueLabel],
+    [editor, area, setIsDirty, wrapper, getUniqueLabel],
   );
 
   return {

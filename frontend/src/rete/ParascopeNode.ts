@@ -17,6 +17,8 @@ export class ParascopeNode extends Classic.Node {
   public calculatedValues: Record<string, any> = {};
   public onChange?: (value: any) => void;
   public onCommit?: (oldValue: any, newValue: any) => void;
+  public notifyGraphChange?: () => void;
+  public onInputValueChange?: (value: string) => void;
   public error?: string;
 
   constructor(

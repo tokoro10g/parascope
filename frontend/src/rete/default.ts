@@ -125,9 +125,67 @@ export async function createEditor(container: HTMLElement) {
     }),
   );
 
+  const createOnCommit = (node: ParascopeNode) => {
+    return (oldVal: any, newVal: any) => {
+      const normalizedOld = oldVal ?? '';
+      const normalizedNew = newVal ?? '';
+      if (normalizedOld === normalizedNew) return;
+
+      // Trigger calculation and state updates only when value is committed (blur/Enter)
+      if (node.type === 'input') {
+        if (onInputValueChange && node.id)
+          onInputValueChange(node.id, String(normalizedNew));
+      }
+
+      // ALWAYS notify graph change to trigger dirty flag
+      notifyGraphChange();
+
+      if (node.id) {
+        history.add({
+          redo: () => {
+            const n = instance.getNode(node.id) as ParascopeNode;
+            const control = n?.controls.value as InputControl;
+            if (control) {
+              control.setValue(normalizedNew);
+              if (n?.type === 'input') {
+                if (onInputValueChange)
+                  onInputValueChange(node.id, String(normalizedNew));
+              }
+              notifyGraphChange();
+            }
+          },
+          undo: () => {
+            const n = instance.getNode(node.id) as ParascopeNode;
+            const control = n?.controls.value as InputControl;
+            if (control) {
+              control.setValue(normalizedOld);
+              if (n?.type === 'input') {
+                if (onInputValueChange)
+                  onInputValueChange(node.id, String(normalizedOld));
+              }
+              notifyGraphChange();
+            }
+          },
+        });
+      }
+    };
+  };
+
+  const setupNodeListeners = (node: ParascopeNode) => {
+    node.notifyGraphChange = notifyGraphChange;
+    node.onInputValueChange = (val: string) => {
+      if (onInputValueChange && node.id) onInputValueChange(node.id, val);
+    };
+    node.onCommit = createOnCommit(node);
+    node.setupControl();
+  };
+
   // Listen for changes
   instance.addPipe((context) => {
-    if (context.type === 'connectioncreated') {
+    if (context.type === 'nodecreated') {
+      setupNodeListeners(context.data as ParascopeNode);
+      notifyGraphChange();
+    } else if (context.type === 'connectioncreated') {
       if (onConnectionCreated && !suppressGraphChange)
         onConnectionCreated(
           context.data as Connection<ParascopeNode, ParascopeNode>,
@@ -135,7 +193,6 @@ export async function createEditor(container: HTMLElement) {
       notifyGraphChange();
     } else if (
       context.type === 'connectionremoved' ||
-      context.type === 'nodecreated' ||
       context.type === 'noderemoved'
     ) {
       notifyGraphChange();
@@ -290,47 +347,6 @@ export async function createEditor(container: HTMLElement) {
             n.data || {},
           );
 
-          node.onChange = (_val) => {
-            // No-op on change to prevent heavy auto-calc on every keystroke
-          };
-
-          node.onCommit = (oldVal, newVal) => {
-            const normalizedOld = oldVal ?? '';
-            const normalizedNew = newVal ?? '';
-            if (normalizedOld === normalizedNew) return;
-
-            // Trigger calculation and state updates only when value is committed (blur/Enter)
-            if (node.type === 'input') {
-              if (onInputValueChange && node.id)
-                onInputValueChange(node.id, String(normalizedNew));
-            }
-
-            // ALWAYS notify graph change to trigger dirty flag
-            notifyGraphChange();
-
-            if (node.type !== 'input' && node.id) {
-              history.add({
-                redo: () => {
-                  const n = instance.getNode(node.id);
-                  const control = n?.controls.value as InputControl;
-                  if (control) {
-                    control.setValue(normalizedNew);
-                    notifyGraphChange();
-                  }
-                },
-                undo: () => {
-                  const n = instance.getNode(node.id);
-                  const control = n?.controls.value as InputControl;
-                  if (control) {
-                    control.setValue(normalizedOld);
-                    notifyGraphChange();
-                  }
-                },
-              });
-            }
-          };
-
-          node.setupControl();
           node.id = n.id; // Use the DB ID as the Rete ID
           node.dbId = n.id;
 
