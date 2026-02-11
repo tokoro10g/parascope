@@ -1,5 +1,4 @@
 import { useCallback } from 'react';
-import { ClassicPreset as Classic } from 'rete';
 import type { AreaPlugin } from 'rete-area-plugin';
 import { v4 as uuidv4 } from 'uuid';
 import type { Sheet } from '../api';
@@ -129,42 +128,18 @@ export function useNodeOperations(
 
   const removeNode = useCallback(
     async (nodeId: string) => {
-      if (!editor) return;
-      const node = editor.getNode(nodeId);
-      if (!node) return;
-
-      const connections = editor.getConnections().filter((c) => {
-        return c.source === nodeId || c.target === nodeId;
-      });
-      for (const c of connections) {
-        await editor.removeConnection(c.id);
-      }
-
-      await editor.removeNode(nodeId);
-      setIsDirty(true);
+      if (!wrapper) return;
+      await wrapper.removeNode(nodeId);
     },
-    [editor, setIsDirty],
+    [wrapper],
   );
 
   const handleNodeUpdate = useCallback(
     async (nodeId: string, updates: NodeUpdates) => {
-      if (!editor || !area) return;
+      if (!editor || !area || !wrapper) return;
 
       const node = editor.getNode(nodeId);
       if (!node) return;
-
-      // Capture old state for Undo
-      const oldState: NodeUpdates = {
-        label: node.label,
-        type: node.type,
-        data: JSON.parse(JSON.stringify(node.data)),
-        inputs: Object.keys(node.inputs).map((key) => ({
-          key,
-        })),
-        outputs: Object.keys(node.outputs).map((key) => ({
-          key,
-        })),
-      };
 
       if (updates.label && updates.label !== node.label) {
         updates.label = getUniqueLabel(
@@ -209,116 +184,9 @@ export function useNodeOperations(
         }
       }
 
-      const applyUpdates = async (
-        n: ParascopeNode,
-        u: NodeUpdates,
-        replaceData = false,
-      ) => {
-        if (u.label !== undefined) n.label = u.label;
-        if (u.type !== undefined) {
-          n.type = u.type;
-          n.setupControl();
-        }
-        if (u.data) {
-          if (replaceData) {
-            n.data = { ...u.data };
-          } else {
-            n.data = { ...n.data, ...u.data };
-          }
-          n.setupControl();
-        }
-
-        const syncSockets = async (
-          socketUpdates: { key: string }[],
-          isInput: boolean,
-        ) => {
-          const currentSockets = isInput ? n.inputs : n.outputs;
-          const newKeys = new Set(socketUpdates.map((i) => i.key));
-          const keysToRemove = Object.keys(currentSockets).filter(
-            (key) => !newKeys.has(key),
-          );
-
-          for (const key of keysToRemove) {
-            const connections = editor
-              .getConnections()
-              .filter((c) =>
-                isInput
-                  ? c.target === n.id && c.targetInput === key
-                  : c.source === n.id && c.sourceOutput === key,
-              );
-            for (const c of connections) {
-              await editor.removeConnection(c.id);
-            }
-            if (isInput) n.removeInput(key);
-            else n.removeOutput(key);
-          }
-
-          socketUpdates.forEach((item) => {
-            const sockets = isInput ? n.inputs : n.outputs;
-            if (!sockets[item.key]) {
-              let socketName = 'socket';
-              if (!isInput && n.type === 'sheet') {
-                socketName =
-                  (item as any).socket_type === 'constant'
-                    ? 'socket-constant'
-                    : 'socket-output';
-              }
-              const s = new Classic.Socket(socketName);
-              (s as any).portKey = item.key;
-              (s as any).isOutput = !isInput;
-
-              if (isInput) n.addInput(item.key, new Classic.Input(s, item.key));
-              else n.addOutput(item.key, new Classic.Output(s, item.key));
-            }
-          });
-
-          const orderedSockets: Record<string, any> = {};
-          socketUpdates.forEach((item) => {
-            const sockets = isInput ? n.inputs : n.outputs;
-            if (sockets[item.key]) {
-              orderedSockets[item.key] = sockets[item.key];
-            }
-          });
-
-          if (isInput) n.inputs = orderedSockets;
-          else n.outputs = orderedSockets;
-        };
-
-        if (u.inputs) {
-          await syncSockets(u.inputs, true);
-        }
-
-        if (u.outputs) {
-          await syncSockets(u.outputs, false);
-        }
-
-        await area.update('node', n.id);
-      };
-
-      await applyUpdates(node, updates);
-
-      setIsDirty(true);
-      wrapper?.triggerGraphChange(); // Notify listeners
-
-      const addHistoryAction = wrapper?.addHistoryAction;
-      if (addHistoryAction) {
-        addHistoryAction({
-          undo: async () => {
-            const n = editor.getNode(nodeId);
-            if (!n) return;
-            await applyUpdates(n, oldState, true);
-            wrapper?.triggerGraphChange();
-          },
-          redo: async () => {
-            const n = editor.getNode(nodeId);
-            if (!n) return;
-            await applyUpdates(n, updates, false);
-            wrapper?.triggerGraphChange();
-          },
-        });
-      }
+      await wrapper.updateNode(nodeId, updates);
     },
-    [editor, area, setIsDirty, wrapper, getUniqueLabel],
+    [editor, area, wrapper, getUniqueLabel],
   );
 
   return {
