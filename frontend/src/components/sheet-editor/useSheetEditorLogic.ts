@@ -614,7 +614,11 @@ export function useSheetEditorLogic(): SheetEditorLogic {
     try {
       const fullSheet = await api.getSheet(sheet.id);
       let sheetNodes = fullSheet.nodes;
-      const data: any = { sheetId: sheet.id };
+      const data: any = {
+        sheetId: sheet.id,
+        defaultVersionId: fullSheet.default_version_id,
+        ownerName: fullSheet.owner_name,
+      };
 
       if (fullSheet.default_version_id) {
         data.versionId = fullSheet.default_version_id;
