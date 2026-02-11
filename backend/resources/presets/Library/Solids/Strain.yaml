@@ -1,7 +1,7 @@
 name: "Mechanical Strain"
 nodes:
-  dl: { type: input, label: "Delta L [m]" }
-  l0: { type: input, label: "Original L [m]" }
+  dl: { type: input, label: "Delta L [m]", value: 0.001 }
+  l0: { type: input, label: "Original L [m]", value: 1.0 }
   calc:
     type: function
     code: "Strain = dl / l0"

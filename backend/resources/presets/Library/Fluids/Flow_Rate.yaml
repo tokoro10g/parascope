@@ -1,7 +1,7 @@
 name: "Volumetric Flow Rate (Q)"
 nodes:
-  v: { type: input, label: "Velocity [m/s]" }
-  a: { type: input, label: "Area [m2]" }
+  v: { type: input, label: "Velocity [m/s]", value: 2 }
+  a: { type: input, label: "Area [m2]", value: 0.5 }
   calc:
     type: function
     code: "FlowRate = v * a"

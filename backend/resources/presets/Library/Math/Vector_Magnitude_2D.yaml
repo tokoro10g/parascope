@@ -1,7 +1,7 @@
 name: "Vector Magnitude 2D"
 nodes:
-  x: { type: input, label: "X" }
-  y: { type: input, label: "Y" }
+  x: { type: input, label: "X", value: 3 }
+  y: { type: input, label: "Y", value: 4 }
   calc:
     type: function
     code: "magnitude = math.sqrt(x**2 + y**2)"

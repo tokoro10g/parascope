@@ -1,9 +1,9 @@
 name: "Reynolds Number (Re)"
 nodes:
-  rho: { type: input, label: "Density [kg/m3]" }
-  v: { type: input, label: "Velocity [m/s]" }
-  l: { type: input, label: "Length [m]" }
-  mu: { type: input, label: "Dynamic Viscosity [Pa·s]" }
+  rho: { type: input, label: "Density [kg/m3]", value: 1.225 }
+  v: { type: input, label: "Velocity [m/s]", value: 10 }
+  l: { type: input, label: "Length [m]", value: 1 }
+  mu: { type: input, label: "Dynamic Viscosity [Pa·s]", value: 1.81e-5 }
   calc:
     type: function
     code: "Re = (rho * v * l) / mu"

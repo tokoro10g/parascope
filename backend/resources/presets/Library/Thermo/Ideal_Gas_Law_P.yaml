@@ -1,8 +1,8 @@
 name: "Ideal Gas Law (Pressure)"
 nodes:
-  n: { type: input, label: "Amount (n) [mol]" }
-  t: { type: input, label: "Temperature (T) [K]" }
-  v: { type: input, label: "Volume (V) [m3]" }
+  n: { type: input, label: "Amount (n) [mol]", value: 1 }
+  t: { type: input, label: "Temperature (T) [K]", value: 300 }
+  v: { type: input, label: "Volume (V) [m3]", value: 0.024 }
   calc:
     type: function
     code: |

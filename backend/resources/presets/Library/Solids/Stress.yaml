@@ -1,7 +1,7 @@
 name: "Mechanical Stress"
 nodes:
-  f: { type: input, label: "Force [N]" }
-  a: { type: input, label: "Area [m2]" }
+  f: { type: input, label: "Force [N]", value: 1000 }
+  a: { type: input, label: "Area [m2]", value: 0.01 }
   calc:
     type: function
     code: "Stress = f / a"

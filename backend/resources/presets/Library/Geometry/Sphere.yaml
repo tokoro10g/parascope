@@ -1,6 +1,6 @@
 name: "Sphere Volume & Surface Area"
 nodes:
-  r: { type: input, label: "Radius [m]" }
+  r: { type: input, label: "Radius [m]", value: 1 }
   calc:
     type: function
     code: |

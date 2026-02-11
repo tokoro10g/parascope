@@ -1,7 +1,7 @@
 name: "Cylinder Volume & Surface Area"
 nodes:
-  r: { type: input, label: "Radius [m]" }
-  h: { type: input, label: "Height [m]" }
+  r: { type: input, label: "Radius [m]", value: 0.5 }
+  h: { type: input, label: "Height [m]", value: 2 }
   calc:
     type: function
     code: |

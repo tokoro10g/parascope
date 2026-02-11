@@ -1,7 +1,7 @@
 name: "Moment of Inertia (Rectangle)"
 nodes:
-  b: { type: input, label: "Width (b) [m]" }
-  h: { type: input, label: "Height (h) [m]" }
+  b: { type: input, label: "Width (b) [m]", value: 0.1 }
+  h: { type: input, label: "Height (h) [m]", value: 0.2 }
   calc:
     type: function
     code: "I_x = (b * h**3) / 12"
