@@ -93,6 +93,8 @@ def constant_node(
         # Standard Implementation
         def wrapper(self, *args, **kwargs):
             val = self.get_input_value(node_id, label, default=value)
+            if val is None or val == "":
+                raise ValueValidationError(f"Constant '{label}' required")
 
             if options:
                 val = self.validate_option(val, options)
@@ -131,7 +133,7 @@ def input_node(
 
         def wrapper(self, *args, **kwargs):
             val = self.get_input_value(node_id, label, default=value)
-            if val is None:
+            if val is None or val == "":
                 raise ValueValidationError(f"Input '{label}' required")
 
             if options:
