@@ -237,7 +237,7 @@ export const resolveNestedSheetParams = (
       }
     }
 
-    if (value !== undefined) {
+    if (value !== undefined && value !== null) {
       const stringValue =
         typeof value === 'object' ? JSON.stringify(value) : String(value);
       queryParams.set(inputKey, stringValue);
