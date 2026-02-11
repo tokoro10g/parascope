@@ -11,6 +11,9 @@ from sqlalchemy import select
 from ..models.sheet import Sheet, Node, Connection, SheetVersion
 from .config import settings
 
+# Stable namespace for deterministic UUIDs
+PARASCOPE_NAMESPACE = uuid.UUID("71ba2025-4a8a-494f-9a8f-fcbae66d2542")
+
 class YAMLNode(BaseModel):
     type: str
     label: Optional[str] = None
@@ -53,7 +56,8 @@ class SheetImporter:
 
     async def create_sheet_record(self, yaml_data: Dict[str, Any], folder_id: Optional[uuid.UUID] = None, owner_name: str = "System") -> Sheet:
         yaml_sheet = YAMLSheet(**yaml_data)
-        sheet_id = uuid.uuid4()
+        # Deterministic ID based on name
+        sheet_id = uuid.uuid5(PARASCOPE_NAMESPACE, yaml_sheet.name)
         sheet = Sheet(
             id=sheet_id,
             name=yaml_sheet.name,
@@ -82,7 +86,8 @@ class SheetImporter:
 
         # First pass: Create Nodes
         for yaml_id, node_data in yaml_sheet.nodes.items():
-            db_id = uuid.uuid4()
+            # Deterministic ID based on sheet and yaml_id
+            db_id = uuid.uuid5(sheet_id, yaml_id)
             node_id_map[yaml_id] = db_id
 
             final_data = node_data.data.copy()
@@ -222,7 +227,12 @@ class SheetImporter:
 
                 source_node_id = node_id_map.get(source_yaml_id)
                 if source_node_id:
+                    # Deterministic ID for connection
+                    conn_name = f"{source_node_id}_{source_port}_{target_node_id}_{target_port}"
+                    conn_id = uuid.uuid5(sheet_id, conn_name)
+                    
                     conn = Connection(
+                        id=conn_id,
                         sheet_id=sheet_id,
                         source_id=source_node_id,
                         source_port=source_port,
