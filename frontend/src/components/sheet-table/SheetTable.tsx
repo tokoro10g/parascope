@@ -283,10 +283,22 @@ export const SheetTable: React.FC<SheetTableProps> = ({
                           ) : isEditable ? (
                             <input
                               size={9}
-                              value={value}
-                              onChange={(e) =>
-                                onUpdateValue(node.id, e.target.value)
-                              }
+                              defaultValue={value}
+                              key={`${node.id}-${value}`} // Ensure it updates if external value changes
+                              onBlur={(e) => {
+                                if (e.target.value !== String(value)) {
+                                  onUpdateValue(node.id, e.target.value);
+                                }
+                              }}
+                              onKeyDown={(e) => {
+                                if (e.key === 'Enter') {
+                                  const target = e.target as HTMLInputElement;
+                                  if (target.value !== String(value)) {
+                                    onUpdateValue(node.id, target.value);
+                                  }
+                                  target.blur();
+                                }
+                              }}
                               onClick={(e) => e.stopPropagation()} // Prevent row selection when editing
                               className="sheet-table-input"
                             />
