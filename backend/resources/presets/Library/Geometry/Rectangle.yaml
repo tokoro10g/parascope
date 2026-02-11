@@ -1,7 +1,7 @@
 name: "Rectangle Area & Perimeter"
 nodes:
-  w: { type: input, label: "Width [m]" }
-  h: { type: input, label: "Height [m]" }
+  w: { type: input, label: "Width [m]", value: 10 }
+  h: { type: input, label: "Height [m]", value: 5 }
   calc:
     type: function
     code: |

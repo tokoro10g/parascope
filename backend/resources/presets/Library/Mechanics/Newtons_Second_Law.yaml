@@ -1,7 +1,7 @@
 name: "Newton's Second Law (F=ma)"
 nodes:
-  m: { type: input, label: "Mass [kg]" }
-  a: { type: input, label: "Acceleration [m/s2]" }
+  m: { type: input, label: "Mass [kg]", value: 10 }
+  a: { type: input, label: "Acceleration [m/s2]", value: 9.81 }
   calc:
     type: function
     code: "Force = m * a"

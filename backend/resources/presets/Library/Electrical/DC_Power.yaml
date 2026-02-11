@@ -1,7 +1,7 @@
 name: "DC Power"
 nodes:
-  v: { type: input, label: "Voltage [V]" }
-  i: { type: input, label: "Current [A]" }
+  v: { type: input, label: "Voltage [V]", value: 12 }
+  i: { type: input, label: "Current [A]", value: 2 }
   calc:
     type: function
     code: "Power = v * i"

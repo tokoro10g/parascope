@@ -4,18 +4,21 @@ nodes:
   isp:
     type: input
     label: "Isp [s]"
+    value: 300
     data:
       description: "Specific Impulse of the engine in seconds."
       min: "0"
   m0:
     type: input
     label: "Initial Mass (m0) [kg]"
+    value: 1000
     data:
       description: "Initial total mass of the rocket (wet mass) in kg."
       min: "0"
   mf:
     type: input
     label: "Final Mass (mf) [kg]"
+    value: 500
     data:
       description: "Final mass of the rocket (dry mass) in kg."
       min: "0"

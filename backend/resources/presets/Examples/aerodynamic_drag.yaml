@@ -18,12 +18,14 @@ nodes:
   rho:
     type: input
     label: "Density [kg/m3]"
+    value: 1.225
     data:
       description: "Air density in kg/m³."
       min: "0"
   v:
     type: input
     label: "Velocity [m/s]"
+    value: 50
     data:
       description: "Velocity in m/s."
       min: "0"

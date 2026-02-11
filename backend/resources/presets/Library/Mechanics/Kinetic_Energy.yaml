@@ -1,7 +1,7 @@
 name: "Kinetic Energy"
 nodes:
-  m: { type: input, label: "Mass [kg]" }
-  v: { type: input, label: "Velocity [m/s]" }
+  m: { type: input, label: "Mass [kg]", value: 2 }
+  v: { type: input, label: "Velocity [m/s]", value: 10 }
   calc:
     type: function
     code: "Energy = 0.5 * m * v**2"

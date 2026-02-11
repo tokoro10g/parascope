@@ -1,7 +1,7 @@
 name: "Ohm's Law (Voltage)"
 nodes:
-  i: { type: input, label: "Current (I) [A]" }
-  r: { type: input, label: "Resistance (R) [Ω]" }
+  i: { type: input, label: "Current (I) [A]", value: 1 }
+  r: { type: input, label: "Resistance (R) [Ω]", value: 10 }
   calc:
     type: function
     code: "Voltage = i * r"
