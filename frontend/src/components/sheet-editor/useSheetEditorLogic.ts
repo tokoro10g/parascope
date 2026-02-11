@@ -24,6 +24,7 @@ import {
   getNestedSheetUrl,
   resolveNestedSheetParams,
   resolveSheetPorts,
+  syncNestedSheets,
 } from '../../utils';
 import type { SheetEditorContextType } from './SheetEditorContext';
 import type { CalculationInputDefinition } from './types';
@@ -346,6 +347,9 @@ export function useSheetEditorLogic(): SheetEditorLogic {
           name: currentSheet?.name,
         };
 
+        const { updatedNodes } = await syncNestedSheets(tempSheet as any);
+        tempSheet.nodes = updatedNodes;
+
         await editor.loadSheet(tempSheet as any);
         const nodes = [...editor.instance.getNodes()];
         nodes.forEach((n) => {
@@ -412,7 +416,7 @@ export function useSheetEditorLogic(): SheetEditorLogic {
       if (versionId) {
         setIsLoading(true);
         Promise.all([api.getVersion(sheetId, versionId), api.getSheet(sheetId)])
-          .then(([v, draftSheet]) => {
+          .then(async ([v, draftSheet]) => {
             if (editor && v.data) {
               const tempSheet = {
                 ...v.data,
@@ -421,6 +425,10 @@ export function useSheetEditorLogic(): SheetEditorLogic {
                 version_tag: v.version_tag,
                 default_version_id: draftSheet.default_version_id,
               };
+
+              const { updatedNodes } = await syncNestedSheets(tempSheet as any);
+              tempSheet.nodes = updatedNodes;
+
               setCurrentSheet(tempSheet);
               setCurrentVersionCreatedAt(v.created_at);
               document.title = `${tempSheet.name} - Parascope`;

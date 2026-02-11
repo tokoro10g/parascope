@@ -254,6 +254,33 @@ class SheetImporter:
         nodes_result = await self.session.execute(select(Node).where(Node.sheet_id == sheet_id))
         all_nodes = nodes_result.scalars().all()
 
+        # Ensure all ports used in connections are present in node IO definitions
+        # This is especially important for nested sheets where ports are not in YAML.
+        conns_result = await self.session.execute(select(Connection).where(Connection.sheet_id == sheet_id))
+        all_connections = conns_result.scalars().all()
+
+        node_lookup = {n.id: n for n in all_nodes}
+        for conn in all_connections:
+            # Source Node Outputs
+            src_node = node_lookup.get(conn.source_id)
+            if src_node:
+                existing_outputs = {o["key"] for o in src_node.outputs}
+                if conn.source_port not in existing_outputs:
+                    new_outputs = list(src_node.outputs)
+                    new_outputs.append({"key": conn.source_port})
+                    src_node.outputs = new_outputs
+
+            # Target Node Inputs
+            tgt_node = node_lookup.get(conn.target_id)
+            if tgt_node:
+                existing_inputs = {i["key"] for i in tgt_node.inputs}
+                if conn.target_port not in existing_inputs:
+                    new_inputs = list(tgt_node.inputs)
+                    new_inputs.append({"key": conn.target_port})
+                    tgt_node.inputs = new_inputs
+
+        await self.session.flush()
+
         snapshot = {
             "nodes": [
                 {
