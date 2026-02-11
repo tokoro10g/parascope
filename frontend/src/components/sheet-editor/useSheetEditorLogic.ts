@@ -271,7 +271,7 @@ export function useSheetEditorLogic(): SheetEditorLogic {
     handleNodeUpdate: originalHandleNodeUpdate,
     calcCenterPosition,
     calcCursorPosition,
-  } = useNodeOperations(editor, editor?.area, nodes, setIsDirty, currentSheet);
+  } = useNodeOperations(editor);
 
   const handleNodeUpdate = useCallback(
     async (nodeId: string, updates: any) => {

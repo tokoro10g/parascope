@@ -8,6 +8,7 @@ import {
 } from 'rete-connection-plugin';
 import { HistoryPlugin, Presets as HistoryPresets } from 'rete-history-plugin';
 import { ReactPlugin, Presets as ReactPresets } from 'rete-react-plugin';
+import { v4 as uuidv4 } from 'uuid';
 import type { Sheet } from '../api';
 import { createSocket } from '../utils';
 
@@ -80,50 +81,103 @@ export async function createEditor(container: HTMLElement) {
     }
   };
 
-  const selectableNodes = customSelectableNodes(instance, area, selector, {
-    accumulating: {
-      active: (e) => e.ctrlKey || e.metaKey || e.shiftKey,
-    },
-  });
-  const pathPlugin = new ConnectionPathPlugin<Schemes, Area2D<Schemes>>({
-    arrow: () => true,
-  });
-  reactRender.use(pathPlugin);
+  const getUniqueLabel = (
+    label: string,
+    type: NodeType,
+    excludeNodeId?: string,
+  ) => {
+    const isReservedType =
+      type === 'input' || type === 'constant' || type === 'output';
+    if (!isReservedType) return label;
 
-  connection.addPreset(ConnectionPresets.classic.setup());
-  reactRender.addPreset(
-    ReactPresets.classic.setup({
-      customize: {
-        node: () => {
-          return CustomNode;
-        },
-        socket: () => CustomSocket,
-        control: (data) => {
-          if (data.payload instanceof DropdownControl) {
-            return DropdownControlComponent as any;
-          }
-          if (data.payload instanceof InputControl) {
-            return InputControlComponent as any;
-          }
-          if (data.payload instanceof MarkdownControl) {
-            return MarkdownControlComponent as any;
-          }
-          return ReactPresets.classic.Control;
-        },
-      },
-    }),
-  );
-  reactRender.addPreset(
-    ReactPresets.contextMenu.setup({
-      customize: {
-        main: () => CustomMenu,
-        item: () => CustomItem,
-        search: () => CustomSearch,
-        common: () => Common,
-        subitems: () => Subitems,
-      },
-    }),
-  );
+    let newLabel = label;
+    let counter = 1;
+    const nodes = instance.getNodes();
+
+    const exists = (l: string) =>
+      nodes.some(
+        (n) => n.type === type && n.label === l && n.id !== excludeNodeId,
+      );
+
+    while (exists(newLabel)) {
+      newLabel = `${label} (${counter})`;
+      counter++;
+    }
+
+    return newLabel;
+  };
+
+  const calcCenterPosition = () => {
+    const bounds = area.container.getBoundingClientRect();
+    const zoom = area.area.transform.k;
+    const x = (bounds.width / 2 - area.area.transform.x) / zoom;
+    const y = (bounds.height / 2 - area.area.transform.y) / zoom;
+    return { x, y };
+  };
+
+  const calcCursorPosition = () => {
+    const { x, y } = area.area.pointer;
+    if (Number.isNaN(x) || Number.isNaN(y) || (x === 0 && y === 0)) {
+      return calcCenterPosition();
+    }
+    return { x, y };
+  };
+
+  const addNode = async (
+    type: NodeType,
+    label: string,
+    inputs: { key: string; socket_type?: string }[],
+    outputs: { key: string; socket_type?: string }[],
+    data: Record<string, any>,
+    position?: { x: number; y: number },
+  ): Promise<ParascopeNode> => {
+    const id = uuidv4();
+    const uniqueLabel = getUniqueLabel(label, type);
+
+    const node = new ParascopeNode(type, uniqueLabel, inputs, outputs, data);
+    node.id = id;
+    node.dbId = id;
+
+    await instance.addNode(node);
+    const pos = position || calcCenterPosition();
+    await area.translate(node.id, pos);
+
+    notifyGraphChange();
+    return node;
+  };
+
+  const duplicateNode = async (nodeId: string) => {
+    const originalNode = instance.getNode(nodeId) as ParascopeNode;
+    if (!originalNode) return;
+
+    const type = originalNode.type;
+    const label = originalNode.label;
+    const inputs = Object.keys(originalNode.inputs).map((key) => ({ key }));
+    const outputs = Object.keys(originalNode.outputs).map((key) => ({ key }));
+    const data = JSON.parse(JSON.stringify(originalNode.data));
+
+    const originalView = area.nodeViews.get(nodeId);
+    const pos = originalView
+      ? { x: originalView.position.x + 50, y: originalView.position.y + 50 }
+      : calcCenterPosition();
+
+    return await addNode(type, label, inputs, outputs, data, pos);
+  };
+
+  const removeNode = async (nodeId: string) => {
+    const node = instance.getNode(nodeId);
+    if (!node) return;
+
+    const connections = instance.getConnections().filter((c) => {
+      return c.source === nodeId || c.target === nodeId;
+    });
+    for (const c of connections) {
+      await instance.removeConnection(c.id);
+    }
+
+    await instance.removeNode(nodeId);
+    notifyGraphChange();
+  };
 
   const createOnCommit = (node: ParascopeNode) => {
     return (oldVal: any, newVal: any) => {
@@ -179,6 +233,51 @@ export async function createEditor(container: HTMLElement) {
     node.onCommit = createOnCommit(node);
     node.setupControl();
   };
+
+  const selectableNodes = customSelectableNodes(instance, area, selector, {
+    accumulating: {
+      active: (e) => e.ctrlKey || e.metaKey || e.shiftKey,
+    },
+  });
+  const pathPlugin = new ConnectionPathPlugin<Schemes, Area2D<Schemes>>({
+    arrow: () => true,
+  });
+  reactRender.use(pathPlugin);
+
+  connection.addPreset(ConnectionPresets.classic.setup());
+  reactRender.addPreset(
+    ReactPresets.classic.setup({
+      customize: {
+        node: () => {
+          return CustomNode;
+        },
+        socket: () => CustomSocket,
+        control: (data) => {
+          if (data.payload instanceof DropdownControl) {
+            return DropdownControlComponent as any;
+          }
+          if (data.payload instanceof InputControl) {
+            return InputControlComponent as any;
+          }
+          if (data.payload instanceof MarkdownControl) {
+            return MarkdownControlComponent as any;
+          }
+          return ReactPresets.classic.Control;
+        },
+      },
+    }),
+  );
+  reactRender.addPreset(
+    ReactPresets.contextMenu.setup({
+      customize: {
+        main: () => CustomMenu,
+        item: () => CustomItem,
+        search: () => CustomSearch,
+        common: () => Common,
+        subitems: () => Subitems,
+      },
+    }),
+  );
 
   // Listen for changes
   instance.addPipe((context) => {
@@ -269,6 +368,112 @@ export async function createEditor(container: HTMLElement) {
     return context;
   });
 
+  const updateNode = async (nodeId: string, updates: any) => {
+    const node = instance.getNode(nodeId);
+    if (!node) return;
+
+    const oldState = {
+      label: node.label,
+      type: node.type,
+      data: JSON.parse(JSON.stringify(node.data)),
+      inputs: Object.keys(node.inputs).map((key) => ({ key })),
+      outputs: Object.keys(node.outputs).map((key) => ({ key })),
+    };
+
+    const apply = async (n: ParascopeNode, u: any, replaceData = false) => {
+      if (u.label !== undefined) n.label = u.label;
+      if (u.type !== undefined) {
+        n.type = u.type;
+      }
+      if (u.data) {
+        if (replaceData) n.data = { ...u.data };
+        else n.data = { ...n.data, ...u.data };
+      }
+
+      const syncSockets = async (
+        socketUpdates: { key: string }[],
+        isInput: boolean,
+      ) => {
+        const currentSockets = isInput ? n.inputs : n.outputs;
+        const newKeys = new Set(socketUpdates.map((i) => i.key));
+        const keysToRemove = Object.keys(currentSockets).filter(
+          (key) => !newKeys.has(key),
+        );
+
+        for (const key of keysToRemove) {
+          const connections = instance
+            .getConnections()
+            .filter((c) =>
+              isInput
+                ? c.target === n.id && c.targetInput === key
+                : c.source === n.id && c.sourceOutput === key,
+            );
+          for (const c of connections) {
+            await instance.removeConnection(c.id);
+          }
+          if (isInput) n.removeInput(key);
+          else n.removeOutput(key);
+        }
+
+        socketUpdates.forEach((item) => {
+          const sockets = isInput ? n.inputs : n.outputs;
+          if (!sockets[item.key]) {
+            let socketName = 'socket';
+            if (!isInput && n.type === 'sheet') {
+              socketName =
+                (item as any).socket_type === 'constant'
+                  ? 'socket-constant'
+                  : 'socket-output';
+            }
+            const s = new Classic.Socket(socketName);
+            (s as any).portKey = item.key;
+            (s as any).isOutput = !isInput;
+
+            if (isInput) n.addInput(item.key, new Classic.Input(s, item.key));
+            else n.addOutput(item.key, new Classic.Output(s, item.key));
+          }
+        });
+
+        const orderedSockets: Record<string, any> = {};
+        socketUpdates.forEach((item) => {
+          const sockets = isInput ? n.inputs : n.outputs;
+          if (sockets[item.key]) {
+            orderedSockets[item.key] = sockets[item.key];
+          }
+        });
+
+        if (isInput) n.inputs = orderedSockets;
+        else n.outputs = orderedSockets;
+      };
+
+      if (u.inputs) await syncSockets(u.inputs, true);
+      if (u.outputs) await syncSockets(u.outputs, false);
+
+      n.setupControl();
+      await area.update('node', n.id);
+    };
+
+    await apply(node as ParascopeNode, updates);
+    notifyGraphChange();
+
+    history.add({
+      undo: async () => {
+        const n = instance.getNode(nodeId);
+        if (n) {
+          await apply(n as ParascopeNode, oldState, true);
+          notifyGraphChange();
+        }
+      },
+      redo: async () => {
+        const n = instance.getNode(nodeId);
+        if (n) {
+          await apply(n as ParascopeNode, updates, false);
+          notifyGraphChange();
+        }
+      },
+    });
+  };
+
   return {
     instance,
     area,
@@ -288,125 +493,13 @@ export async function createEditor(container: HTMLElement) {
     triggerGraphChange: () => {
       notifyGraphChange();
     },
-    updateNode: async (nodeId: string, updates: any) => {
-      const node = instance.getNode(nodeId);
-      if (!node) return;
-
-      const oldState = {
-        label: node.label,
-        type: node.type,
-        data: JSON.parse(JSON.stringify(node.data)),
-        inputs: Object.keys(node.inputs).map((key) => ({ key })),
-        outputs: Object.keys(node.outputs).map((key) => ({ key })),
-      };
-
-      const apply = async (n: ParascopeNode, u: any, replaceData = false) => {
-        if (u.label !== undefined) n.label = u.label;
-        if (u.type !== undefined) {
-          n.type = u.type;
-        }
-        if (u.data) {
-          if (replaceData) n.data = { ...u.data };
-          else n.data = { ...n.data, ...u.data };
-        }
-
-        const syncSockets = async (
-          socketUpdates: { key: string }[],
-          isInput: boolean,
-        ) => {
-          const currentSockets = isInput ? n.inputs : n.outputs;
-          const newKeys = new Set(socketUpdates.map((i) => i.key));
-          const keysToRemove = Object.keys(currentSockets).filter(
-            (key) => !newKeys.has(key),
-          );
-
-          for (const key of keysToRemove) {
-            const connections = instance
-              .getConnections()
-              .filter((c) =>
-                isInput
-                  ? c.target === n.id && c.targetInput === key
-                  : c.source === n.id && c.sourceOutput === key,
-              );
-            for (const c of connections) {
-              await instance.removeConnection(c.id);
-            }
-            if (isInput) n.removeInput(key);
-            else n.removeOutput(key);
-          }
-
-          socketUpdates.forEach((item) => {
-            const sockets = isInput ? n.inputs : n.outputs;
-            if (!sockets[item.key]) {
-              let socketName = 'socket';
-              if (!isInput && n.type === 'sheet') {
-                socketName =
-                  (item as any).socket_type === 'constant'
-                    ? 'socket-constant'
-                    : 'socket-output';
-              }
-              const s = new Classic.Socket(socketName);
-              (s as any).portKey = item.key;
-              (s as any).isOutput = !isInput;
-
-              if (isInput) n.addInput(item.key, new Classic.Input(s, item.key));
-              else n.addOutput(item.key, new Classic.Output(s, item.key));
-            }
-          });
-
-          const orderedSockets: Record<string, any> = {};
-          socketUpdates.forEach((item) => {
-            const sockets = isInput ? n.inputs : n.outputs;
-            if (sockets[item.key]) {
-              orderedSockets[item.key] = sockets[item.key];
-            }
-          });
-
-          if (isInput) n.inputs = orderedSockets;
-          else n.outputs = orderedSockets;
-        };
-
-        if (u.inputs) await syncSockets(u.inputs, true);
-        if (u.outputs) await syncSockets(u.outputs, false);
-
-        n.setupControl();
-        await area.update('node', n.id);
-      };
-
-      await apply(node, updates);
-      notifyGraphChange();
-
-      history.add({
-        undo: async () => {
-          const n = instance.getNode(nodeId);
-          if (n) {
-            await apply(n, oldState, true);
-            notifyGraphChange();
-          }
-        },
-        redo: async () => {
-          const n = instance.getNode(nodeId);
-          if (n) {
-            await apply(n, updates, false);
-            notifyGraphChange();
-          }
-        },
-      });
-    },
-    removeNode: async (nodeId: string) => {
-      const node = instance.getNode(nodeId);
-      if (!node) return;
-
-      const connections = instance.getConnections().filter((c) => {
-        return c.source === nodeId || c.target === nodeId;
-      });
-      for (const c of connections) {
-        await instance.removeConnection(c.id);
-      }
-
-      await instance.removeNode(nodeId);
-      notifyGraphChange();
-    },
+    getUniqueLabel,
+    calcCenterPosition,
+    calcCursorPosition,
+    addNode,
+    duplicateNode,
+    removeNode,
+    updateNode,
     setLayoutChangeListener: (cb: () => void) => {
       onLayoutChange = cb;
     },
