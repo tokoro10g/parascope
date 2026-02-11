@@ -86,6 +86,12 @@ export const NodeInspector: React.FC<NodeInspectorProps> = ({
         }
       }
 
+      // Migration: attachment (string) -> attachments (array)
+      if (currentData.attachment && !currentData.attachments) {
+        currentData.attachments = [currentData.attachment];
+      }
+      currentData.attachments = currentData.attachments || [];
+
       setData(currentData);
       // We need to extract inputs/outputs from the node structure
       // Rete nodes store inputs/outputs as objects, but we want arrays for editing
@@ -132,7 +138,10 @@ export const NodeInspector: React.FC<NodeInspectorProps> = ({
     if (e.target.files?.[0]) {
       try {
         const result = await api.uploadAttachment(e.target.files[0]);
-        setData({ ...data, attachment: result.filename });
+        setData({
+          ...data,
+          attachments: [...(data.attachments || []), result.filename],
+        });
       } catch (error) {
         console.error('Upload failed:', error);
         alert('Failed to upload attachment');
@@ -140,23 +149,22 @@ export const NodeInspector: React.FC<NodeInspectorProps> = ({
     }
   };
 
-  const handleRemoveAttachment = async () => {
-    if (data.attachment) {
-      try {
-        await api.deleteAttachment(data.attachment);
-      } catch (error) {
-        console.error('Delete failed:', error);
-        // We continue anyway to clear the UI state if the file is already gone or there's a minor error
-      }
+  const handleRemoveAttachment = async (filename: string) => {
+    try {
+      await api.deleteAttachment(filename);
+    } catch (error) {
+      console.error('Delete failed:', error);
     }
-    const newData = { ...data };
-    delete newData.attachment;
-    setData(newData);
+    setData({
+      ...data,
+      attachments: (data.attachments || []).filter(
+        (f: string) => f !== filename,
+      ),
+    });
   };
 
-  const handleInsertToDescription = () => {
-    if (!data.attachment) return;
-    const url = getAttachmentUrl(data.attachment);
+  const handleInsertToDescription = (filename: string) => {
+    const url = getAttachmentUrl(filename);
     const markdownImage = `![Attachment](${url})`;
 
     setData((prev) => ({

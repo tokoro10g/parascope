@@ -19,12 +19,14 @@ class ParameterNodeData(BaseModel):
     dataType: Optional[str] = None  # "number", "option", etc.
     options: Optional[List[str]] = None
     description: Optional[str] = None
+    attachments: List[str] = Field(default_factory=list)
     hidden: bool = False
 
 
 class FunctionNodeData(BaseModel):
     code: str = ""
     description: Optional[str] = None
+    attachments: List[str] = Field(default_factory=list)
 
 
 class SheetNodeData(BaseModel):
@@ -47,12 +49,14 @@ class LUTData(BaseModel):
 class LUTNodeData(BaseModel):
     lut: LUTData = Field(default_factory=LUTData)
     description: Optional[str] = None
+    attachments: List[str] = Field(default_factory=list)
 
 
 class OutputNodeData(BaseModel):
     min: Optional[float] = None
     max: Optional[float] = None
     description: Optional[str] = None
+    attachments: List[str] = Field(default_factory=list)
     hidden: bool = False
 
 
@@ -99,6 +103,7 @@ class OutputNode(NodeShared):
 
 class CommentNodeData(BaseModel):
     description: Optional[str] = ""
+    attachments: List[str] = Field(default_factory=list)
 
 
 class CommentNode(NodeShared):
