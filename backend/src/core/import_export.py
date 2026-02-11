@@ -2,12 +2,13 @@ import re
 import uuid
 import yaml
 import shutil
+import sqlalchemy
 from pathlib import Path
 from typing import Any, Dict, List, Optional
 from pydantic import BaseModel, Field
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select
-from ..models.sheet import Sheet, Node, Connection
+from ..models.sheet import Sheet, Node, Connection, SheetVersion
 from .config import settings
 
 class YAMLNode(BaseModel):
@@ -26,7 +27,11 @@ class YAMLNode(BaseModel):
 class YAMLSheet(BaseModel):
     name: str
     description: Optional[str] = None
+    version_tag: Optional[str] = Field(default="1.0", alias="version")
     nodes: Dict[str, YAMLNode]
+    
+    class Config:
+        populate_by_name = True
 
 class SheetImporter:
     def __init__(self, session: AsyncSession, resource_dirs: List[Path] = None):
@@ -225,6 +230,55 @@ class SheetImporter:
                         target_port=target_port
                     )
                     self.session.add(conn)
+        
+        await self.session.flush()
+
+        # Create Version Snapshot and set as default
+        version_id = uuid.uuid4()
+        
+        nodes_result = await self.session.execute(select(Node).where(Node.sheet_id == sheet_id))
+        all_nodes = nodes_result.scalars().all()
+
+        snapshot = {
+            "nodes": [
+                {
+                    "id": str(n.id),
+                    "type": n.type,
+                    "label": n.label,
+                    "position_x": n.position_x,
+                    "position_y": n.position_y,
+                    "data": n.data,
+                    "inputs": n.inputs,
+                    "outputs": n.outputs
+                } for n in all_nodes
+            ],
+            "connections": [
+                {
+                    "id": str(c.id),
+                    "source_id": str(c.source_id),
+                    "target_id": str(c.target_id),
+                    "source_port": c.source_port,
+                    "target_port": c.target_port
+                } for c in (await self.session.execute(select(Connection).where(Connection.sheet_id == sheet_id))).scalars().all()
+            ]
+        }
+        
+        version = SheetVersion(
+            id=version_id,
+            sheet_id=sheet_id,
+            version_tag=yaml_sheet.version_tag,
+            description=f"Auto-imported from YAML (v{yaml_sheet.version_tag})",
+            data=snapshot,
+            created_by="System"
+        )
+        self.session.add(version)
+        
+        # Explicitly update the sheet record to ensure default_version_id is saved
+        await self.session.execute(
+            sqlalchemy.update(Sheet)
+            .where(Sheet.id == sheet_id)
+            .values(default_version_id=version_id)
+        )
         
         await self.session.flush()
 

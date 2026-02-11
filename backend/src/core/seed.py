@@ -1,12 +1,13 @@
 import shutil
 import uuid
+import sqlalchemy
 from pathlib import Path
 from typing import Optional
 
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from ..models.sheet import Folder, Sheet
+from ..models.sheet import Folder, Sheet, SheetVersion
 from .import_export import SheetImporter, parse_and_import_yaml
 
 
@@ -62,18 +63,33 @@ async def seed_database(session: AsyncSession):
             import yaml as pyyaml
             data = pyyaml.safe_load(content)
             sheet_name = data.get("name")
+            version_tag = str(data.get("version", "1.0"))
             
             # Check if sheet already exists in this specific folder
             result = await session.execute(
                 select(Sheet).where(Sheet.name == sheet_name, Sheet.folder_id == folder_id)
             )
-            if result.scalar_one_or_none():
-                # print(f"Sheet '{sheet_name}' already exists. Skipping Pass 1.")
-                continue
+            sheet = result.scalar_one_or_none()
             
-            print(f"Pass 1: Creating sheet record for {sheet_name}")
-            sheet = await importer.create_sheet_record(data, folder_id=folder_id)
-            pending_sheets.append((sheet, data, yaml_file.parent))
+            if sheet:
+                # Check version
+                if sheet.default_version_id:
+                    v_result = await session.execute(select(SheetVersion).where(SheetVersion.id == sheet.default_version_id))
+                    current_v = v_result.scalar_one_or_none()
+                    if current_v and current_v.version_tag == version_tag:
+                        # print(f"Sheet '{sheet_name}' is up to date (v{version_tag}).")
+                        continue
+                
+                print(f"Pass 1: Updating sheet record for {sheet_name} (to v{version_tag})")
+                # Clear existing nodes/conns for re-import
+                from ..models.sheet import Node, Connection
+                await session.execute(sqlalchemy.delete(Connection).where(Connection.sheet_id == sheet.id))
+                await session.execute(sqlalchemy.delete(Node).where(Node.sheet_id == sheet.id))
+                pending_sheets.append((sheet, data, yaml_file.parent))
+            else:
+                print(f"Pass 1: Creating sheet record for {sheet_name} (v{version_tag})")
+                sheet = await importer.create_sheet_record(data, folder_id=folder_id)
+                pending_sheets.append((sheet, data, yaml_file.parent))
         except Exception as e:
             print(f"Failed to parse {yaml_file} in Pass 1: {e}")
 
@@ -86,9 +102,17 @@ async def seed_database(session: AsyncSession):
             await importer.import_nodes_and_connections(sheet, data, base_path=base_path)
         except Exception as e:
             print(f"Failed to import nodes for {sheet.name} in Pass 2: {e}")
+            import traceback
+            traceback.print_exc()
 
-    await session.commit()
-    print("Database seeding completed.")
+    try:
+        await session.commit()
+        print("Database seeding completed.")
+    except Exception as e:
+        print(f"Failed to commit database seed: {e}")
+        import traceback
+        traceback.print_exc()
+        await session.rollback()
 
 
 
