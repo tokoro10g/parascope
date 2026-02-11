@@ -314,7 +314,7 @@ export const copyToClipboard = (text: string) => {
 export const validateGraphConnectivity = (graph: {
   nodes: { id?: string; type: string; label: string; inputs: any[] }[];
   connections: { target_id: string; target_port: string }[];
-}): { valid: boolean; errors: { nodeId: string; error: string }[] } => {
+}): { is_computable: boolean; errors: { nodeId: string; error: string }[] } => {
   const connectionMap = new Set<string>();
   graph.connections.forEach((c) => {
     connectionMap.add(`${c.target_id}:${c.target_port}`);
@@ -340,5 +340,5 @@ export const validateGraphConnectivity = (graph: {
       }
     }
   }
-  return { valid: errors.length === 0, errors };
+  return { is_computable: errors.length === 0, errors };
 };

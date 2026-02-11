@@ -67,17 +67,17 @@ async def enrich_results(sheet: Sheet, raw_results: Dict[str, Any], db: AsyncSes
             "label": node.label,
             "inputs": {},
             "outputs": {},
-            "valid": True,
+            "is_computable": True,
         }
 
         res_data = raw_results.get(node_id, {})
 
-        # Check for error and validity
+        # Check for error and computability
         if "error" in res_data and res_data["error"]:
             node_resp["error"] = res_data["error"]
 
-        if "valid" in res_data:
-            node_resp["valid"] = res_data["valid"]
+        if "is_computable" in res_data:
+            node_resp["is_computable"] = res_data["is_computable"]
 
         val = res_data.get("value")
 

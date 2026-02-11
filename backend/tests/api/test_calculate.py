@@ -177,13 +177,13 @@ async def test_option_validation(client: AsyncClient):
 
     # Valid
     res = await client.post(f"/api/v1/sheets/{sheet_id}/calculate")
-    assert res.json()["results"][node_id]["valid"] is True
+    assert res.json()["results"][node_id]["is_computable"] is True
 
     # Invalid
     nodes[0]["data"]["value"] = "C"
     await client.put(f"/api/v1/sheets/{sheet_id}", json={"nodes": nodes})
     res = await client.post(f"/api/v1/sheets/{sheet_id}/calculate")
-    assert res.json()["results"][node_id]["valid"] is True  # Soft fail
+    assert res.json()["results"][node_id]["is_computable"] is True  # Soft fail
     assert "is not in allowed options" in res.json()["results"][node_id]["error"]
 
 
@@ -293,7 +293,7 @@ async def test_nested_error_propagation(client: AsyncClient):
     results = response.json()["results"]
 
     # Nested sheet node should be invalid
-    assert results[p_node_id]["valid"] is False
+    assert results[p_node_id]["is_computable"] is False
     assert "division by zero" in results[p_node_id]["error"]
 
 
@@ -320,7 +320,7 @@ async def test_function_node_errors(client: AsyncClient):
     response = await client.post(f"/api/v1/sheets/{sheet_id}/calculate")
     assert response.status_code == 200
     res = response.json()
-    assert res["results"][n1]["valid"] is False
+    assert res["results"][n1]["is_computable"] is False
     assert "division by zero" in res["results"][n1]["error"]
 
     # 2. Test Syntax Error
@@ -330,7 +330,7 @@ async def test_function_node_errors(client: AsyncClient):
     response = await client.post(f"/api/v1/sheets/{sheet_id}/calculate")
     assert response.status_code == 200
     res = response.json()
-    assert res["results"][n1]["valid"] is False
+    assert res["results"][n1]["is_computable"] is False
     assert "SyntaxError" in res["results"][n1]["error"]
 
 
@@ -428,4 +428,5 @@ async def test_nested_input_strictness(client: AsyncClient):
     results = calc_res.json()["results"]
     assert sheet_node_id in results
     nested_res = results[sheet_node_id]
+    assert nested_res["is_computable"] is False
     assert "Input 'X' required" in nested_res["nodes"][in_id]["error"]

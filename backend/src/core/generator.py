@@ -129,7 +129,7 @@ try:
                     
                     if 'value' in node_res:
                          final_val = node_res['value']
-                    elif 'valid' in node_res and not node_res['valid']:
+                    elif 'is_computable' in node_res and not node_res['is_computable']:
                          final_val = None 
                     else:
                         for v in node_res.values():

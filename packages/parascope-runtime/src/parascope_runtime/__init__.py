@@ -207,8 +207,8 @@ def lut_node(node_id: str, inputs: Dict[str, str] = None, label: str = None, **k
 
 
 class ValidationResult:
-    def __init__(self, valid: bool, error: Optional[str] = None, value: Any = None):
-        self.valid = valid
+    def __init__(self, is_computable: bool, error: Optional[str] = None, value: Any = None):
+        self.is_computable = is_computable
         self.error = error
         self.value = value
 
@@ -228,7 +228,7 @@ class SheetBase:
 
     def register_result(self, node_id: str, value: Any, metadata: Dict[str, Any] = None):
         """Register a successful result"""
-        res = {"value": value, "valid": True}
+        res = {"value": value, "is_computable": True}
         if metadata:
             res.update(metadata)
         self.results[node_id] = res
@@ -245,7 +245,7 @@ class SheetBase:
         """
         self.results[node_id] = {
             "value": None,
-            "valid": False,
+            "is_computable": False,
             "error": error,
             "internal_error": internal_error or error,
         }
@@ -256,7 +256,7 @@ class SheetBase:
             raise NodeError(node_id, "Node has not been executed yet")
 
         res = self.results[node_id]
-        if not res.get("valid", False):
+        if not res.get("is_computable", False):
             cause = res.get("internal_error") or res.get("error")
             raise DependencyError(cause)
 

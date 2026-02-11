@@ -32,7 +32,7 @@ export const useSheetCalculation = (editor: Editor | null | undefined) => {
       if (editor) {
         editor.instance.getNodes().forEach((node) => {
           const nodeRes = result[node.id];
-          if (nodeRes && (nodeRes.valid === false || nodeRes.error)) {
+          if (nodeRes && (nodeRes.is_computable === false || nodeRes.error)) {
             node.error = nodeRes.error || 'Invalid';
           } else {
             node.error = undefined;
@@ -51,7 +51,7 @@ export const useSheetCalculation = (editor: Editor | null | undefined) => {
 
       let firstErrorNodeId: string | null = null;
       for (const [nodeId, nodeRes] of Object.entries(result)) {
-        if (nodeRes.valid === false || nodeRes.error) {
+        if (nodeRes.is_computable === false || nodeRes.error) {
           if (!firstErrorNodeId) {
             firstErrorNodeId = nodeId;
           }
@@ -93,7 +93,7 @@ export const useSheetCalculation = (editor: Editor | null | undefined) => {
       force = false,
     ) => {
       const validation = validateGraphConnectivity(graph);
-      if (!validation.valid) {
+      if (!validation.is_computable) {
         if (!force) {
           console.warn('Calculation skipped due to incomplete graph');
           setLastResult(null); // Clear stale results
