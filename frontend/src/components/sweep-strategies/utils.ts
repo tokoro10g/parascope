@@ -126,10 +126,10 @@ export function createBaseXAxis(
     axisLabel: {
       color: ctx.theme.text,
       show: ctx.showXLabel,
-      formatter:
-        type === 'value'
-          ? (value: number) => formatHumanReadableValue(value.toString())
-          : undefined,
+      formatter: (value: any) =>
+        value !== undefined && value !== null
+          ? formatHumanReadableValue(value.toString())
+          : value,
     },
     splitLine: { show: type === 'value', lineStyle: { color: ctx.theme.grid } },
   };
@@ -173,10 +173,10 @@ export function createBaseYAxis(
       backgroundColor: ctx.theme.background,
       hideOverlap: true,
       inside: true,
-      formatter:
-        type === 'value'
-          ? (value: number) => formatHumanReadableValue(value.toString())
-          : undefined,
+      formatter: (value: any) =>
+        value !== undefined && value !== null
+          ? formatHumanReadableValue(value.toString())
+          : value,
     },
     splitLine: { show: true, lineStyle: { color: ctx.theme.grid } },
     z: 10,

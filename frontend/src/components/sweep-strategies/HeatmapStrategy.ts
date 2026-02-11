@@ -1,3 +1,4 @@
+import { formatHumanReadableValue } from '../../utils';
 import type { StrategyContext, VisualizationStrategy } from './types';
 import { createBaseGrid, getColor } from './utils';
 
@@ -81,7 +82,8 @@ export class HeatmapStrategy implements VisualizationStrategy {
       label: {
         show: true,
         formatter: (params: any) => {
-          if (isOutputNumeric) return params.value[2];
+          if (isOutputNumeric)
+            return formatHumanReadableValue(params.value[2].toString());
           return uniqueZ[params.value[2]];
         },
       },
@@ -132,6 +134,8 @@ export class HeatmapStrategy implements VisualizationStrategy {
             textStyle: { color: ctx.theme.text, fontSize: 10 },
             seriesIndex: seriesIndex,
             dimension: 2,
+            formatter: (value: any) =>
+              formatHumanReadableValue(value.toString()),
             inRange: {
               color: [
                 '#00008F',

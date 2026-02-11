@@ -1,3 +1,4 @@
+import { formatHumanReadableValue } from '../../utils';
 import type { StrategyContext, VisualizationStrategy } from './types';
 
 export class Surface3DStrategy implements VisualizationStrategy {
@@ -18,7 +19,13 @@ export class Surface3DStrategy implements VisualizationStrategy {
         name: headers[0].label,
         type: 'value',
         nameTextStyle: { color: theme.text },
-        axisLabel: { textStyle: { color: theme.text } },
+        axisLabel: {
+          textStyle: { color: theme.text },
+          formatter: (value: any) =>
+            value !== undefined && value !== null
+              ? formatHumanReadableValue(value.toString())
+              : value,
+        },
         axisLine: { lineStyle: { color: theme.text } },
       },
       yAxis3D: {
@@ -26,7 +33,13 @@ export class Surface3DStrategy implements VisualizationStrategy {
         name: headers[1].label,
         type: 'value',
         nameTextStyle: { color: theme.text },
-        axisLabel: { textStyle: { color: theme.text } },
+        axisLabel: {
+          textStyle: { color: theme.text },
+          formatter: (value: any) =>
+            value !== undefined && value !== null
+              ? formatHumanReadableValue(value.toString())
+              : value,
+        },
         axisLine: { lineStyle: { color: theme.text } },
       },
       zAxis3D: {
@@ -34,7 +47,13 @@ export class Surface3DStrategy implements VisualizationStrategy {
         name: label,
         type: 'value',
         nameTextStyle: { color: theme.text },
-        axisLabel: { textStyle: { color: theme.text } },
+        axisLabel: {
+          textStyle: { color: theme.text },
+          formatter: (value: any) =>
+            value !== undefined && value !== null
+              ? formatHumanReadableValue(value.toString())
+              : value,
+        },
         axisLine: { lineStyle: { color: theme.text } },
       },
     };
@@ -165,6 +184,10 @@ export class Surface3DStrategy implements VisualizationStrategy {
           top: `${top}%`,
           height: `${gridHeight}%`,
           textStyle: { color: theme.text, fontSize: 10 },
+          formatter: (value: any) =>
+            value !== undefined && value !== null
+              ? formatHumanReadableValue(value.toString())
+              : value,
           inRange: {
             color: [
               '#00008F',
@@ -190,6 +213,15 @@ export class Surface3DStrategy implements VisualizationStrategy {
           lineStyle: { color: theme.text },
           label: {
             textStyle: { color: theme.text },
+            formatter: (params: any) => {
+              const val =
+                params && typeof params === 'object' && 'value' in params
+                  ? params.value
+                  : params;
+              return val !== undefined && val !== null
+                ? formatHumanReadableValue(val.toString())
+                : val;
+            },
           },
         },
         viewControl: {

@@ -66,5 +66,5 @@
 }
 
 div:hover > .attachment-overlay {
-  opacity: 1 !important;
+  opacity: 1;
 }

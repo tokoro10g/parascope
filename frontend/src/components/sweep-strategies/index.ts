@@ -205,6 +205,9 @@ export const getSweepChartOption = (
       label: {
         backgroundColor: '#777',
         textStyle: { color: theme.text },
+        formatter: (params: any) => {
+          return formatHumanReadableValue(params.value.toString());
+        },
       },
     },
     tooltip: {
