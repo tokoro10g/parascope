@@ -1,5 +1,5 @@
 import { createRoot } from 'react-dom/client';
-import { ClassicPreset as Classic, NodeEditor } from 'rete';
+import { type ClassicPreset as Classic, NodeEditor } from 'rete';
 import { type Area2D, AreaExtensions, AreaPlugin } from 'rete-area-plugin';
 import { ConnectionPathPlugin } from 'rete-connection-path-plugin';
 import {
@@ -8,9 +8,6 @@ import {
 } from 'rete-connection-plugin';
 import { HistoryPlugin, Presets as HistoryPresets } from 'rete-history-plugin';
 import { ReactPlugin, Presets as ReactPresets } from 'rete-react-plugin';
-import { v4 as uuidv4 } from 'uuid';
-import type { Sheet } from '../api';
-import { createSocket } from '../utils';
 
 import { CustomItem, CustomMenu, CustomSearch } from './ContextMenuStyles';
 import { CustomNode } from './CustomNode';
@@ -20,16 +17,15 @@ import {
   createContextMenuPlugin,
 } from './contextMenu';
 import { DropdownControl, DropdownControlComponent } from './DropdownControl';
+import { createFactory } from './factory';
 import { InputControl, InputControlComponent } from './InputControl';
+import { createLoader } from './loader';
 import { MarkdownControl, MarkdownControlComponent } from './MarkdownControl';
-import { ParascopeNode } from './ParascopeNode';
+import { createOperations } from './operations';
+import type { ParascopeNode } from './ParascopeNode';
 import { customSelectableNodes } from './selectable';
-import {
-  type AreaExtra,
-  Connection,
-  type NodeType,
-  type Schemes,
-} from './types';
+import type { AreaExtra, Connection, Schemes } from './types';
+import { createViewport } from './viewport';
 import { ZoomHandler } from './ZoomHandler';
 
 // --- Types ---
@@ -59,8 +55,6 @@ export async function createEditor(container: HTMLElement) {
         .filter((n) => selector.isSelected({ id: n.id, label: 'node' })),
   );
 
-  // We need to expose a way to set the callback later, or pass it in.
-  // Since useRete calls this, we can attach it to the returned object.
   let onNodeDoubleClick: ((nodeId: string) => void) | undefined;
   const graphChangeListeners = new Set<() => void>();
   let onLayoutChange: (() => void) | undefined;
@@ -70,7 +64,6 @@ export async function createEditor(container: HTMLElement) {
     | ((connection: Connection<ParascopeNode, ParascopeNode>) => void)
     | undefined;
 
-  // Flag to suppress graph change events (e.g. during loading)
   let suppressGraphChange = false;
 
   const notifyGraphChange = () => {
@@ -81,103 +74,37 @@ export async function createEditor(container: HTMLElement) {
     }
   };
 
-  const getUniqueLabel = (
-    label: string,
-    type: NodeType,
-    excludeNodeId?: string,
-  ) => {
-    const isReservedType =
-      type === 'input' || type === 'constant' || type === 'output';
-    if (!isReservedType) return label;
+  const selectableNodes = customSelectableNodes(instance, area, selector, {
+    accumulating: {
+      active: (e) => e.ctrlKey || e.metaKey || e.shiftKey,
+    },
+  });
 
-    let newLabel = label;
-    let counter = 1;
-    const nodes = instance.getNodes();
-
-    const exists = (l: string) =>
-      nodes.some(
-        (n) => n.type === type && n.label === l && n.id !== excludeNodeId,
-      );
-
-    while (exists(newLabel)) {
-      newLabel = `${label} (${counter})`;
-      counter++;
-    }
-
-    return newLabel;
-  };
-
-  const calcCenterPosition = () => {
-    const bounds = area.container.getBoundingClientRect();
-    const zoom = area.area.transform.k;
-    const x = (bounds.width / 2 - area.area.transform.x) / zoom;
-    const y = (bounds.height / 2 - area.area.transform.y) / zoom;
-    return { x, y };
-  };
-
-  const calcCursorPosition = () => {
-    const { x, y } = area.area.pointer;
-    if (Number.isNaN(x) || Number.isNaN(y) || (x === 0 && y === 0)) {
-      return calcCenterPosition();
-    }
-    return { x, y };
-  };
-
-  const addNode = async (
-    type: NodeType,
-    label: string,
-    inputs: { key: string; socket_type?: string }[],
-    outputs: { key: string; socket_type?: string }[],
-    data: Record<string, any>,
-    position?: { x: number; y: number },
-  ): Promise<ParascopeNode> => {
-    const id = uuidv4();
-    const uniqueLabel = getUniqueLabel(label, type);
-
-    const node = new ParascopeNode(type, uniqueLabel, inputs, outputs, data);
-    node.id = id;
-    node.dbId = id;
-
-    await instance.addNode(node);
-    const pos = position || calcCenterPosition();
-    await area.translate(node.id, pos);
-
-    notifyGraphChange();
-    return node;
-  };
-
-  const duplicateNode = async (nodeId: string) => {
-    const originalNode = instance.getNode(nodeId) as ParascopeNode;
-    if (!originalNode) return;
-
-    const type = originalNode.type;
-    const label = originalNode.label;
-    const inputs = Object.keys(originalNode.inputs).map((key) => ({ key }));
-    const outputs = Object.keys(originalNode.outputs).map((key) => ({ key }));
-    const data = JSON.parse(JSON.stringify(originalNode.data));
-
-    const originalView = area.nodeViews.get(nodeId);
-    const pos = originalView
-      ? { x: originalView.position.x + 50, y: originalView.position.y + 50 }
-      : calcCenterPosition();
-
-    return await addNode(type, label, inputs, outputs, data, pos);
-  };
-
-  const removeNode = async (nodeId: string) => {
-    const node = instance.getNode(nodeId);
-    if (!node) return;
-
-    const connections = instance.getConnections().filter((c) => {
-      return c.source === nodeId || c.target === nodeId;
-    });
-    for (const c of connections) {
-      await instance.removeConnection(c.id);
-    }
-
-    await instance.removeNode(nodeId);
-    notifyGraphChange();
-  };
+  // Compose Modules
+  const viewport = createViewport(instance, area, selectableNodes, selector);
+  const operations = createOperations(
+    instance,
+    area,
+    history,
+    notifyGraphChange,
+  );
+  const factory = createFactory(
+    instance,
+    area,
+    viewport.calcCenterPosition,
+    notifyGraphChange,
+  );
+  const loader = createLoader(
+    instance,
+    area,
+    history,
+    viewport.zoomToNode,
+    viewport.zoomToFit,
+    viewport.selectNode,
+    (suppress) => {
+      suppressGraphChange = suppress;
+    },
+  );
 
   const createOnCommit = (node: ParascopeNode) => {
     return (oldVal: any, newVal: any) => {
@@ -185,13 +112,11 @@ export async function createEditor(container: HTMLElement) {
       const normalizedNew = newVal ?? '';
       if (normalizedOld === normalizedNew) return;
 
-      // Trigger calculation and state updates only when value is committed (blur/Enter)
       if (node.type === 'input') {
         if (onInputValueChange && node.id)
           onInputValueChange(node.id, String(normalizedNew));
       }
 
-      // ALWAYS notify graph change to trigger dirty flag
       notifyGraphChange();
 
       if (node.id) {
@@ -234,11 +159,6 @@ export async function createEditor(container: HTMLElement) {
     node.setupControl();
   };
 
-  const selectableNodes = customSelectableNodes(instance, area, selector, {
-    accumulating: {
-      active: (e) => e.ctrlKey || e.metaKey || e.shiftKey,
-    },
-  });
   const pathPlugin = new ConnectionPathPlugin<Schemes, Area2D<Schemes>>({
     arrow: () => true,
   });
@@ -248,9 +168,7 @@ export async function createEditor(container: HTMLElement) {
   reactRender.addPreset(
     ReactPresets.classic.setup({
       customize: {
-        node: () => {
-          return CustomNode;
-        },
+        node: () => CustomNode,
         socket: () => CustomSocket,
         control: (data) => {
           if (data.payload instanceof DropdownControl) {
@@ -279,7 +197,6 @@ export async function createEditor(container: HTMLElement) {
     }),
   );
 
-  // Listen for changes
   instance.addPipe((context) => {
     if (context.type === 'nodecreated') {
       setupNodeListeners(context.data as ParascopeNode);
@@ -341,7 +258,6 @@ export async function createEditor(container: HTMLElement) {
       const nodeId = context.data.id;
       const now = Date.now();
       if (lastNodePicked === nodeId && now - lastNodePickedTime < 300) {
-        // Check if we clicked on an editable title
         const isEditableTitle =
           lastPointerDownTarget instanceof Element &&
           (lastPointerDownTarget.classList.contains('node-title-editable') ||
@@ -350,7 +266,6 @@ export async function createEditor(container: HTMLElement) {
 
         if (onNodeDoubleClick && !isEditableTitle) {
           const callback = onNodeDoubleClick;
-          // Wait for mouse release to avoid sticky drag state
           window.addEventListener(
             'pointerup',
             () => {
@@ -368,112 +283,6 @@ export async function createEditor(container: HTMLElement) {
     return context;
   });
 
-  const updateNode = async (nodeId: string, updates: any) => {
-    const node = instance.getNode(nodeId);
-    if (!node) return;
-
-    const oldState = {
-      label: node.label,
-      type: node.type,
-      data: JSON.parse(JSON.stringify(node.data)),
-      inputs: Object.keys(node.inputs).map((key) => ({ key })),
-      outputs: Object.keys(node.outputs).map((key) => ({ key })),
-    };
-
-    const apply = async (n: ParascopeNode, u: any, replaceData = false) => {
-      if (u.label !== undefined) n.label = u.label;
-      if (u.type !== undefined) {
-        n.type = u.type;
-      }
-      if (u.data) {
-        if (replaceData) n.data = { ...u.data };
-        else n.data = { ...n.data, ...u.data };
-      }
-
-      const syncSockets = async (
-        socketUpdates: { key: string }[],
-        isInput: boolean,
-      ) => {
-        const currentSockets = isInput ? n.inputs : n.outputs;
-        const newKeys = new Set(socketUpdates.map((i) => i.key));
-        const keysToRemove = Object.keys(currentSockets).filter(
-          (key) => !newKeys.has(key),
-        );
-
-        for (const key of keysToRemove) {
-          const connections = instance
-            .getConnections()
-            .filter((c) =>
-              isInput
-                ? c.target === n.id && c.targetInput === key
-                : c.source === n.id && c.sourceOutput === key,
-            );
-          for (const c of connections) {
-            await instance.removeConnection(c.id);
-          }
-          if (isInput) n.removeInput(key);
-          else n.removeOutput(key);
-        }
-
-        socketUpdates.forEach((item) => {
-          const sockets = isInput ? n.inputs : n.outputs;
-          if (!sockets[item.key]) {
-            let socketName = 'socket';
-            if (!isInput && n.type === 'sheet') {
-              socketName =
-                (item as any).socket_type === 'constant'
-                  ? 'socket-constant'
-                  : 'socket-output';
-            }
-            const s = new Classic.Socket(socketName);
-            (s as any).portKey = item.key;
-            (s as any).isOutput = !isInput;
-
-            if (isInput) n.addInput(item.key, new Classic.Input(s, item.key));
-            else n.addOutput(item.key, new Classic.Output(s, item.key));
-          }
-        });
-
-        const orderedSockets: Record<string, any> = {};
-        socketUpdates.forEach((item) => {
-          const sockets = isInput ? n.inputs : n.outputs;
-          if (sockets[item.key]) {
-            orderedSockets[item.key] = sockets[item.key];
-          }
-        });
-
-        if (isInput) n.inputs = orderedSockets;
-        else n.outputs = orderedSockets;
-      };
-
-      if (u.inputs) await syncSockets(u.inputs, true);
-      if (u.outputs) await syncSockets(u.outputs, false);
-
-      n.setupControl();
-      await area.update('node', n.id);
-    };
-
-    await apply(node as ParascopeNode, updates);
-    notifyGraphChange();
-
-    history.add({
-      undo: async () => {
-        const n = instance.getNode(nodeId);
-        if (n) {
-          await apply(n as ParascopeNode, oldState, true);
-          notifyGraphChange();
-        }
-      },
-      redo: async () => {
-        const n = instance.getNode(nodeId);
-        if (n) {
-          await apply(n as ParascopeNode, updates, false);
-          notifyGraphChange();
-        }
-      },
-    });
-  };
-
   return {
     instance,
     area,
@@ -490,16 +299,7 @@ export async function createEditor(container: HTMLElement) {
         graphChangeListeners.delete(cb);
       };
     },
-    triggerGraphChange: () => {
-      notifyGraphChange();
-    },
-    getUniqueLabel,
-    calcCenterPosition,
-    calcCursorPosition,
-    addNode,
-    duplicateNode,
-    removeNode,
-    updateNode,
+    triggerGraphChange: notifyGraphChange,
     setLayoutChangeListener: (cb: () => void) => {
       onLayoutChange = cb;
     },
@@ -536,137 +336,17 @@ export async function createEditor(container: HTMLElement) {
       history.add(action);
     },
 
-    // Helper to load a sheet from the API
-    loadSheet: async (sheet: Sheet, focusNodeId?: string) => {
-      suppressGraphChange = true;
-      try {
-        await instance.clear();
+    // Viewport Math
+    ...viewport,
 
-        const nodeMap = new Map<string, ParascopeNode>();
+    // Node Factory
+    ...factory,
 
-        // Create Nodes
-        for (const n of sheet.nodes) {
-          if (!n.id) continue;
-          // Parse inputs/outputs if they are JSON strings, or use them directly if objects
-          const inputs = Array.isArray(n.inputs) ? n.inputs : [];
-          const outputs = Array.isArray(n.outputs) ? n.outputs : [];
+    // Graph Surgery
+    ...operations,
 
-          const node = new ParascopeNode(
-            n.type as NodeType,
-            n.label || n.type,
-            inputs,
-            outputs,
-            n.data || {},
-          );
-
-          node.id = n.id; // Use the DB ID as the Rete ID
-          node.dbId = n.id;
-
-          await instance.addNode(node);
-
-          // Translate position
-          await area.translate(node.id, { x: n.position_x, y: n.position_y });
-
-          nodeMap.set(n.id, node);
-        }
-
-        // Create Connections
-        for (const c of sheet.connections) {
-          if (!c.id) continue;
-          const source = nodeMap.get(c.source_id);
-          const target = nodeMap.get(c.target_id);
-
-          if (source && target) {
-            try {
-              const conn = new Connection(
-                source,
-                c.source_port,
-                target,
-                c.target_port,
-              );
-              conn.id = c.id;
-              conn.dbId = c.id;
-              await instance.addConnection(conn);
-            } catch (e) {
-              console.error('Failed to create connection', c, e);
-            }
-          }
-        }
-        // Clear history to prevent undoing sheet loading
-        history.clear();
-
-        return new Promise<void>((resolve) => {
-          setTimeout(async () => {
-            // Force update nodes to recalculate socket positions after auto-sizing
-            for (const node of instance.getNodes()) {
-              await area.update('node', node.id);
-            }
-
-            if (focusNodeId) {
-              const node = instance.getNode(focusNodeId);
-              if (node) {
-                await AreaExtensions.zoomAt(area, [node]);
-                selectableNodes.select(node.id, false);
-              } else {
-                await AreaExtensions.zoomAt(area, instance.getNodes());
-              }
-            } else {
-              await AreaExtensions.zoomAt(area, instance.getNodes());
-            }
-            resolve();
-          }, 200);
-        });
-      } finally {
-        suppressGraphChange = false;
-      }
-    },
-
-    // Helper to get current graph state
-    getGraphData: () => {
-      const isUuid = (id: string) =>
-        /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(
-          id,
-        );
-
-      const allNodes = instance.getNodes();
-
-      const nodes = allNodes.map((n) => {
-        const data: Record<string, any> = {};
-
-        // Capture control values
-        for (const [key, control] of Object.entries(n.controls)) {
-          if (
-            control instanceof Classic.InputControl ||
-            control instanceof DropdownControl ||
-            control instanceof InputControl
-          ) {
-            data[key] = control.value ?? '';
-          }
-        }
-
-        // Preserve original data if not overwritten by controls
-        return {
-          id: isUuid(n.id) ? n.id : undefined,
-          type: n.type,
-          label: n.label,
-          position_x: area.nodeViews.get(n.id)?.position.x || 0,
-          position_y: area.nodeViews.get(n.id)?.position.y || 0,
-          inputs: Object.keys(n.inputs).map(createSocket),
-          outputs: Object.keys(n.outputs).map(createSocket),
-          data: { ...n.data, ...data },
-        };
-      });
-
-      const connections = instance.getConnections().map((c) => ({
-        id: isUuid(c.id) ? c.id : undefined,
-        source_id: c.source,
-        target_id: c.target,
-        source_port: c.sourceOutput,
-        target_port: c.targetInput,
-      }));
-
-      return { nodes, connections };
-    },
+    // Database Loader
+    ...loader,
 
     updateNodeValues: (
       inputs: Record<string, any>,
@@ -674,13 +354,10 @@ export async function createEditor(container: HTMLElement) {
       fullResult?: Record<string, any>,
     ) => {
       instance.getNodes().forEach((node) => {
-        // Update calculated values for displaying at sockets
         if (fullResult?.[node.id]) {
           const nodeRes = fullResult[node.id];
           if (nodeRes.outputs) {
             (node as ParascopeNode).calculatedValues = { ...nodeRes.outputs };
-
-            // Update output sockets
             Object.entries(nodeRes.outputs).forEach(([key, val]) => {
               const output = node.outputs[key];
               if (output?.socket) {
@@ -690,7 +367,6 @@ export async function createEditor(container: HTMLElement) {
           }
 
           if (nodeRes.inputs) {
-            // Update input sockets
             Object.entries(nodeRes.inputs).forEach(([key, val]) => {
               const input = node.inputs[key];
               if (input?.socket) {
@@ -700,7 +376,6 @@ export async function createEditor(container: HTMLElement) {
           }
           area.update('node', node.id);
         } else {
-          // Clear calculated values if no result for this node
           (node as ParascopeNode).calculatedValues = {};
           for (const key in node.inputs) {
             const input = node.inputs[key];
@@ -737,22 +412,10 @@ export async function createEditor(container: HTMLElement) {
       });
     },
 
-    zoomToNode: (nodeId: string) => {
-      const node = instance.getNode(nodeId);
-      if (node) {
-        AreaExtensions.zoomAt(area, [node]);
-      }
-    },
-    zoomToFit: async () => {
-      await AreaExtensions.zoomAt(area, instance.getNodes());
-    },
     getSelectedNodes: () => {
       return instance
         .getNodes()
         .filter((n) => selector.isSelected({ id: n.id, label: 'node' }));
-    },
-    selectNode: (nodeId: string, accumulate: boolean) => {
-      selectableNodes.select(nodeId, accumulate);
     },
     clearSelection: () => {
       selector.unselectAll();
