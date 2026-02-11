@@ -399,7 +399,7 @@ except Exception as e:
                 node_arg_mapping[nid][arg_name] = target_port
 
         # 3. Generate Methods
-        result_code = [f"@sheet('{sheet.id}')", f"class {class_name}(SheetBase):"]
+        result_code = [f"@sheet('{sheet.id}')", f"class {class_name}(SheetBase):", "    pass"]
 
         for node in sheet.nodes:
             # Skip comment nodes - they're for documentation only
@@ -526,7 +526,6 @@ def {method_name}(self): pass
 """
 
         elif node.type == "input":
-            default_val = node.data.get("value", None)
             is_option = node.data.get("dataType") == "option"
 
             params = []
@@ -541,7 +540,6 @@ def {method_name}(self): pass
                 if d_max is not None:
                     params.append(f"max={d_max}")
 
-            params.append(f"value={repr(default_val)}")
             params_str = ", ".join(params)
 
             return f"""

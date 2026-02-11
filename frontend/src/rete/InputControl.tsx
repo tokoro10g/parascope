@@ -50,15 +50,15 @@ export class InputControl extends ClassicPreset.Control {
 export const InputControlComponent: React.FC<{ data: InputControl }> = ({
   data,
 }) => {
-  const [value, setValue] = useState(data.value);
+  const [value, setValue] = useState(data.value ?? '');
   const [error, setError] = useState<string | null>(data.error);
-  const initialValue = useRef(data.value);
+  const initialValue = useRef(data.value ?? '');
 
   useEffect(() => {
-    setValue(data.value);
+    setValue(data.value ?? '');
     setError(data.error);
     return data.subscribe(() => {
-      setValue(data.value);
+      setValue(data.value ?? '');
       setError(data.error);
     });
   }, [data]);
@@ -75,19 +75,21 @@ export const InputControlComponent: React.FC<{ data: InputControl }> = ({
   };
 
   const handleFocus = () => {
-    initialValue.current = data.value;
+    initialValue.current = data.value ?? '';
   };
 
   const handleBlur = () => {
-    if (initialValue.current !== data.value) {
-      data.onCommit?.(initialValue.current, data.value);
-      initialValue.current = data.value;
+    const currentVal = data.value ?? '';
+    const startVal = initialValue.current ?? '';
+    if (startVal !== currentVal) {
+      data.onCommit?.(startVal, currentVal);
+      initialValue.current = currentVal;
     }
   };
 
   return (
     <input
-      value={value}
+      value={value ?? ''}
       onChange={handleChange}
       onFocus={handleFocus}
       onBlur={handleBlur}

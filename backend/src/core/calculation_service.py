@@ -121,6 +121,15 @@ async def enrich_results(sheet: Sheet, raw_results: Dict[str, Any], db: AsyncSes
 async def run_calculation(sheet: Sheet, inputs: Dict[str, Dict[str, Any]], db: AsyncSession):
     input_overrides = get_input_overrides(sheet, inputs)
 
+    # Fill in missing inputs from 'example' values in the DB (Standalone defaults)
+    # ONLY if the user provided NO inputs at all.
+    if not input_overrides:
+        for node in sheet.nodes:
+            if node.type == "input":
+                val = node.data.get("value")
+                if val is not None and val != "":
+                    input_overrides[str(node.id)] = val
+
     # Generate script
     generator = CodeGenerator(db)
     script = await generator.generate_full_script(sheet, input_overrides)

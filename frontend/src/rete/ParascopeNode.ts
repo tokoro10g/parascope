@@ -96,16 +96,12 @@ export class ParascopeNode extends Classic.Node {
     if (isInputOrParam && isOption && data.options) {
       this.addControl(
         'value',
-        new DropdownControl(
-          data.options,
-          String(data.value ?? data.options[0] ?? ''),
-          (val) => {
-            const oldVal = data.value;
-            data.value = val;
-            onChange?.(val);
-            onCommit?.(oldVal, val);
-          },
-        ),
+        new DropdownControl(data.options, String(data.value ?? ''), (val) => {
+          const oldVal = data.value;
+          data.value = val;
+          onChange?.(val);
+          onCommit?.(oldVal, val);
+        }),
       );
       return;
     }
@@ -113,7 +109,7 @@ export class ParascopeNode extends Classic.Node {
     if (this.type === 'output' && isOption) {
       this.addControl(
         'value',
-        new InputControl(data.value, {
+        new InputControl(data.value ?? '', {
           readonly: true,
         }),
       );

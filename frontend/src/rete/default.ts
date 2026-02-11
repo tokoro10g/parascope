@@ -295,15 +295,18 @@ export async function createEditor(container: HTMLElement) {
           };
 
           node.onCommit = (oldVal, newVal) => {
-            if (oldVal === newVal) return;
+            const normalizedOld = oldVal ?? '';
+            const normalizedNew = newVal ?? '';
+            if (normalizedOld === normalizedNew) return;
 
             // Trigger calculation and state updates only when value is committed (blur/Enter)
             if (node.type === 'input') {
               if (onInputValueChange && node.id)
-                onInputValueChange(node.id, String(newVal));
-            } else {
-              notifyGraphChange();
+                onInputValueChange(node.id, String(normalizedNew));
             }
+
+            // ALWAYS notify graph change to trigger dirty flag
+            notifyGraphChange();
 
             if (node.type !== 'input' && node.id) {
               history.add({
@@ -311,7 +314,7 @@ export async function createEditor(container: HTMLElement) {
                   const n = instance.getNode(node.id);
                   const control = n?.controls.value as InputControl;
                   if (control) {
-                    control.setValue(newVal);
+                    control.setValue(normalizedNew);
                     notifyGraphChange();
                   }
                 },
@@ -319,7 +322,7 @@ export async function createEditor(container: HTMLElement) {
                   const n = instance.getNode(node.id);
                   const control = n?.controls.value as InputControl;
                   if (control) {
-                    control.setValue(oldVal);
+                    control.setValue(normalizedOld);
                     notifyGraphChange();
                   }
                 },
@@ -398,7 +401,6 @@ export async function createEditor(container: HTMLElement) {
         );
 
       const allNodes = instance.getNodes();
-      const hasInputs = allNodes.some((n) => n.type === 'input');
 
       const nodes = allNodes.map((n) => {
         const data: Record<string, any> = {};
@@ -410,15 +412,7 @@ export async function createEditor(container: HTMLElement) {
             control instanceof DropdownControl ||
             control instanceof InputControl
           ) {
-            // Persistence Logic:
-            // 1. Inputs are always transient.
-            // 2. Outputs are persistent ONLY IF the sheet has no input nodes.
-            const isTransient =
-              n.type === 'input' || (n.type === 'output' && hasInputs);
-
-            if (!isTransient) {
-              data[key] = control.value;
-            }
+            data[key] = control.value ?? '';
           }
         }
 

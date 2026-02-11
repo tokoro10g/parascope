@@ -173,6 +173,17 @@ export function useSheetEditorLogic(): SheetEditorLogic {
           ? window.location.hash.substring(1)
           : undefined;
         await editor.loadSheet(sheet, focusNodeId);
+
+        // Extract saved input values (for example/default inputs)
+        const initialInputs: Record<string, string> = {};
+        for (const n of sheet.nodes) {
+          if (n.type === 'input' && n.id) {
+            initialInputs[n.id] =
+              n.data?.value != null ? String(n.data.value) : '';
+          }
+        }
+        setCalculationInputs(initialInputs);
+
         const nodes = [...editor.instance.getNodes()];
         nodes.forEach((n) => {
           const pos = editor.area.nodeViews.get(n.id)?.position;

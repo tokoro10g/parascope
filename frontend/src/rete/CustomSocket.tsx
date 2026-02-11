@@ -17,7 +17,7 @@ export function CustomSocket(props: { data: ClassicPreset.Socket }) {
       }}
     >
       <div className={`custom-socket custom-socket-${name}`} title={name} />
-      {value !== undefined && (
+      {value !== undefined && value !== null && (
         <div
           className="socket-value"
           style={{

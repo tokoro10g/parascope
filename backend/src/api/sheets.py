@@ -2,7 +2,7 @@ from datetime import datetime, timedelta
 from typing import Any, Dict
 from uuid import UUID, uuid4
 
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Body, Depends, HTTPException
 from fastapi.concurrency import run_in_threadpool
 from fastapi.responses import PlainTextResponse
 from sqlalchemy import or_, select, text, update
@@ -411,7 +411,7 @@ async def update_sheet(
             # Handle data serialization for Pydantic models in Union
             node_data = node_in.data.model_dump(mode="json") if hasattr(node_in.data, "model_dump") else node_in.data
 
-            if node_in.type in ("input", "function", "sheet"):
+            if node_in.type in ("function", "sheet"):
                 if "value" in node_data:
                     node_data.pop("value")
 
@@ -548,7 +548,7 @@ async def generate_script_sheet(
 async def calculate_sheet(
     sheet_id: UUID,
     version_id: UUID | None = None,
-    inputs: Dict[str, Dict[str, Any]] = None,
+    inputs: Dict[str, Dict[str, Any]] = Body(None),
     db: AsyncSession = Depends(get_db),
 ):
     if inputs is None:

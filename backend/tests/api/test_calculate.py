@@ -332,3 +332,100 @@ async def test_function_node_errors(client: AsyncClient):
     res = response.json()
     assert res["results"][n1]["valid"] is False
     assert "SyntaxError" in res["results"][n1]["error"]
+
+
+@pytest.mark.asyncio
+async def test_input_persistence_and_standalone_default(client: AsyncClient):
+    """
+    Verifies that 'input' node values are saved to the database and
+    used as example/default values when running as a standalone sheet.
+    """
+    sheet_res = await client.post("/api/v1/sheets/", json={"name": "Input Persistence"})
+    sheet_id = sheet_res.json()["id"]
+
+    input_id = str(uuid4())
+    nodes = [
+        {
+            "id": input_id,
+            "type": "input",
+            "label": "X",
+            "position_x": 0,
+            "position_y": 0,
+            "data": {"value": "42"},  # Saved 'example' value
+            "outputs": [{"key": "value"}],
+        }
+    ]
+    await client.put(f"/api/v1/sheets/{sheet_id}", json={"nodes": nodes})
+
+    # 1. Verify it's actually saved in the DB
+    read_res = await client.get(f"/api/v1/sheets/{sheet_id}")
+    saved_node = next(n for n in read_res.json()["nodes"] if n["id"] == input_id)
+    assert saved_node["data"]["value"] == "42"
+
+    # 2. Calculate WITHOUT providing inputs - should use the saved '42'
+    calc_res = await client.post(f"/api/v1/sheets/{sheet_id}/calculate", json={})
+    assert calc_res.status_code == 200
+    assert calc_res.json()["results"][input_id]["outputs"]["value"] == "42"
+
+    # 3. Calculate WITH explicit input override - should use the provided '100'
+    calc_res_override = await client.post(f"/api/v1/sheets/{sheet_id}/calculate", json={"X": {"value": 100}})
+    assert calc_res_override.json()["results"][input_id]["outputs"]["value"] == "100"
+
+
+@pytest.mark.asyncio
+async def test_nested_input_strictness(client: AsyncClient):
+    """
+    Verifies that saved values in 'input' nodes are IGNORED when the sheet
+    is used as a nested sheet (function). Nested sheets MUST get inputs
+    from their parent.
+    """
+    # 1. Create CHILD Sheet with a saved input value
+    child_res = await client.post("/api/v1/sheets/", json={"name": "Child with Default"})
+    child_id = child_res.json()["id"]
+
+    in_id = str(uuid4())
+    out_id = str(uuid4())
+    child_nodes = [
+        {
+            "id": in_id,
+            "type": "input",
+            "label": "X",
+            "data": {"value": "999"},  # This should be ignored in nested mode
+            "position_x": 0,
+            "position_y": 0,
+            "outputs": [{"key": "value"}],
+        },
+        {"id": out_id, "type": "output", "label": "Y", "position_x": 0, "position_y": 0, "inputs": [{"key": "value"}]},
+    ]
+    child_conns = [{"source_id": in_id, "target_id": out_id, "source_port": "value", "target_port": "value"}]
+    await client.put(f"/api/v1/sheets/{child_id}", json={"nodes": child_nodes, "connections": child_conns})
+
+    # 2. Create PARENT Sheet using the child but NOT connecting the input
+    parent_res = await client.post("/api/v1/sheets/", json={"name": "Parent"})
+    parent_id = parent_res.json()["id"]
+
+    sheet_node_id = str(uuid4())
+    parent_nodes = [
+        {
+            "id": sheet_node_id,
+            "type": "sheet",
+            "label": "Nested",
+            "data": {"sheetId": child_id},
+            "position_x": 0,
+            "position_y": 0,
+            "inputs": [{"key": "X"}],
+            "outputs": [{"key": "Y"}],
+        }
+    ]
+    await client.put(f"/api/v1/sheets/{parent_id}", json={"nodes": parent_nodes})
+
+    # 3. Calculate Parent - The nested sheet should report missing input
+    # because it should NOT fall back to '999'.
+    calc_res = await client.post(f"/api/v1/sheets/{parent_id}/calculate", json={})
+    assert calc_res.status_code == 200
+
+    # Check result of the nested node
+    results = calc_res.json()["results"]
+    assert sheet_node_id in results
+    nested_res = results[sheet_node_id]
+    assert "Input 'X' required" in nested_res["nodes"][in_id]["error"]
