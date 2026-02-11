@@ -32,7 +32,11 @@ export const useSheetCalculation = (editor: Editor | null | undefined) => {
       if (editor) {
         editor.instance.getNodes().forEach((node) => {
           const nodeRes = result[node.id];
-          if (nodeRes && (nodeRes.is_computable === false || nodeRes.error)) {
+          if (
+            nodeRes &&
+            !nodeRes.is_dependency_error &&
+            (nodeRes.is_computable === false || nodeRes.error)
+          ) {
             node.error = nodeRes.error || 'Invalid';
           } else {
             node.error = undefined;

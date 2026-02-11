@@ -26,7 +26,7 @@ class NodeError(ParascopeError):
     def __init__(self, node_id: str, message: str):
         self.node_id = node_id
         self.message = message
-        super().__init__(f"Error in node {node_id}: {message}")
+        super().__init__(message)
 
 
 class ValueValidationError(ParascopeError):
@@ -94,7 +94,7 @@ def constant_node(
         def wrapper(self, *args, **kwargs):
             val = self.get_input_value(node_id, label, default=value)
             if val is None or val == "":
-                raise ValueValidationError(f"Constant '{label}' required")
+                raise NodeError(node_id, f"Constant '{label}' required")
 
             if options:
                 val = self.validate_option(val, options)
@@ -134,7 +134,7 @@ def input_node(
         def wrapper(self, *args, **kwargs):
             val = self.get_input_value(node_id, label, default=value)
             if val is None or val == "":
-                raise ValueValidationError(f"Input '{label}' required")
+                raise NodeError(node_id, f"Input '{label}' required")
 
             if options:
                 val = self.validate_option(val, options)
@@ -257,8 +257,10 @@ class SheetBase:
 
         res = self.results[node_id]
         if not res.get("is_computable", False):
-            cause = res.get("internal_error") or res.get("error")
-            raise DependencyError(cause)
+            # Try to get the label of the node that failed
+            lbl = self.node_map.get(node_id, {}).get("label") or node_id
+            cause = res.get("internal_error") or res.get("error") or "Unknown error"
+            raise DependencyError(f"Dependency '{lbl}' failed: {cause}")
 
         val = res.get("value")
         # If port is specified and value is a dict (multi-output), get it
@@ -331,7 +333,7 @@ class SheetBase:
 
                     res = self.results.get(nid, {})
 
-                    if raise_on_error and not res.get("valid", False):
+                    if raise_on_error and not res.get("is_computable", False):
                         if "internal_error" in res:
                             # Use internal_error to get the root cause even if the output node was silenced
                             err = res.get("internal_error") or res.get("error")
@@ -424,35 +426,33 @@ class SheetBase:
             except (DependencyError, ValueValidationError) as e:
                 # Upstream failure or Validation failure
                 is_validation = isinstance(e, ValueValidationError)
-
-                # If this is an output node, we MUST show the error to escape the sheet boundary
-                # Otherwise, stay silent to reduce clutter
-                show_error = cfg.get("type") == "output" or is_validation
+                is_dependency = isinstance(e, DependencyError)
 
                 # For validation errors, we always want to show the message on the node itself
                 msg = str(e) if is_validation else e.message
 
                 # Special Case: Validation errors (e.g. out of range) should 'soft fail'
-                # They return the invalid value but attach the error message, keeping valid=True for downstream.
+                # They return the invalid value but attach the error message, keeping is_computable=True for downstream.
                 # Creates a "warning" state effectively.
                 if is_validation:
                     meta = self.node_metadata.get(node_id)
                     res_obj = {
                         "value": e.value,
-                        "valid": True,  # Keep valid so it doesn't break logic expecting success
+                        "is_computable": True,  # Keep computable so it doesn't break logic expecting success
                         "error": msg,
                     }
                     if meta:
                         res_obj.update(meta)
                     self.results[node_id] = res_obj
+                elif is_dependency:
+                    self.register_error(node_id, error=msg, internal_error="Dependency failed")
                 else:
-                    self.register_error(node_id, error=msg if show_error else None, internal_error=msg)
+                    self.register_error(node_id, error=msg, internal_error=msg)
 
             except ParascopeError as e:
-                # Hard fail but no traceback (for system-raised errors like LUT missing key)
+                # Register error and continue loop to allow independent branches to execute
                 msg = str(e)
                 self.register_error(node_id, msg)
-                raise NodeExecutionError(msg) from e
 
             except Exception as e:
                 # Capture method-level errors (these are always visible)
@@ -505,7 +505,7 @@ class SheetBase:
                     error_msg = f"{str(e)}\n\n{traceback.format_exc()}"
 
                 self.register_error(node_id, error_msg)
-                # For unexpected errors, stop execution
+                # Re-raise to signal that this node (and thus potentially the whole sheet) failed
                 raise NodeExecutionError(error_msg) from e
 
         # 5. Collect Public Outputs

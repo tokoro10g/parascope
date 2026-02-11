@@ -553,6 +553,7 @@ export interface NodeResult {
   inputs: Record<string, any>;
   outputs: Record<string, any>;
   is_computable?: boolean;
+  is_dependency_error?: boolean;
   error?: string;
   nodes?: Record<string, NodeResult>;
 }
