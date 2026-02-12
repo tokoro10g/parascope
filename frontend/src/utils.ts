@@ -1,6 +1,6 @@
 import { toast } from 'react-hot-toast';
 import type { NodeEditor } from 'rete';
-import { api, type NodeResult, type Sheet } from './api';
+import { api, type Sheet } from './api';
 import type { Schemes } from './rete/types';
 
 export const formatHumanReadableValue = (value: string): string => {
@@ -19,18 +19,6 @@ export const formatHumanReadableValue = (value: string): string => {
     useGrouping: false,
   });
   return numberFormat.format(valueAsNumber).toLowerCase();
-};
-
-export const extractValuesFromResult = (
-  result: Record<string, NodeResult>,
-): Record<string, any> => {
-  const values: Record<string, any> = {};
-  Object.entries(result).forEach(([id, nodeRes]) => {
-    if (nodeRes.outputs?.value !== undefined) {
-      values[id] = nodeRes.outputs.value;
-    }
-  });
-  return values;
 };
 
 export const createSocket = (key: string) => ({ key });

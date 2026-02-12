@@ -350,7 +350,6 @@ export async function createEditor(container: HTMLElement) {
 
     updateNodeValues: (
       inputs: Record<string, any>,
-      outputs: Record<string, any>,
       fullResult?: Record<string, any>,
     ) => {
       instance.getNodes().forEach((node) => {
@@ -402,7 +401,7 @@ export async function createEditor(container: HTMLElement) {
             }
           }
         } else if (node.type === 'output') {
-          const val = outputs[node.id];
+          const val = fullResult?.[node.id]?.outputs?.value;
           const newVal = String(val !== undefined && val !== null ? val : '');
           if (valueControl.value !== newVal) {
             valueControl.setValue(newVal);

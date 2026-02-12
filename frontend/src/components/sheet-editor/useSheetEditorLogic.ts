@@ -20,7 +20,6 @@ import type { NodeType } from '../../rete/types';
 import { Connection } from '../../rete/types';
 import {
   createSocket,
-  extractValuesFromResult,
   getNestedSheetUrl,
   resolveNestedSheetParams,
   resolveSheetPorts,
@@ -249,7 +248,7 @@ export function useSheetEditorLogic(): SheetEditorLogic {
 
       const result = await calculatePreview(apiInputs, fullGraph);
       if (editor && result) {
-        editor.updateNodeValues({}, extractValuesFromResult(result), result);
+        editor.updateNodeValues({}, result);
         setNodes([...editor.instance.getNodes()]);
       }
     }, 50);
@@ -330,7 +329,6 @@ export function useSheetEditorLogic(): SheetEditorLogic {
     if (editor) {
       editor.updateNodeValues(
         calculationInputsRef.current,
-        extractValuesFromResult(lastResult || {}),
         lastResult || {},
       );
     }
@@ -478,7 +476,6 @@ export function useSheetEditorLogic(): SheetEditorLogic {
     if (editor) {
       editor.updateNodeValues(
         calculationInputs,
-        extractValuesFromResult(lastResult || {}),
         lastResult || {},
       );
       const nodes = [...editor.instance.getNodes()];
@@ -689,7 +686,6 @@ export function useSheetEditorLogic(): SheetEditorLogic {
       });
       editor.updateNodeValues(
         inputValues,
-        lastResult ? extractValuesFromResult(lastResult) : {},
         lastResult || {},
       );
     }
@@ -712,7 +708,7 @@ export function useSheetEditorLogic(): SheetEditorLogic {
       const result = await calculatePreview(apiInputs, graph, true);
 
       if (editor && result) {
-        editor.updateNodeValues({}, extractValuesFromResult(result), result);
+        editor.updateNodeValues({}, result);
         setNodes([...editor.instance.getNodes()]);
       }
     } catch (e: any) {
