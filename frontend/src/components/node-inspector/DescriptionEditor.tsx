@@ -5,6 +5,7 @@ import ReactMarkdown from 'react-markdown';
 import rehypeKatex from 'rehype-katex';
 import remarkMath from 'remark-math';
 import { API_BASE, api } from '../../api';
+import './DescriptionEditor.css';
 
 interface DescriptionEditorProps {
   data: Record<string, any>;
@@ -192,6 +193,7 @@ export const DescriptionEditor: React.FC<DescriptionEditorProps> = ({
             {data.attachments.map((filename: string) => (
               <div
                 key={filename}
+                className="attachment-container"
                 style={{
                   position: 'relative',
                   borderRadius: '4px',

@@ -1,0 +1,9 @@
+/* Attachment styles used in DescriptionEditor */
+.attachment-overlay {
+  opacity: 0;
+  transition: opacity 0.2s;
+}
+
+.attachment-container:hover .attachment-overlay {
+  opacity: 1 !important;
+}

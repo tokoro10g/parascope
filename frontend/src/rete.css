@@ -58,13 +58,3 @@
   stroke-width: 4px;
   transition: stroke-width 0.2s ease;
 }
-
-/* Attachment styles */
-.attachment-overlay {
-  opacity: 0;
-  transition: opacity 0.2s;
-}
-
-div:hover > .attachment-overlay {
-  opacity: 1;
-}
