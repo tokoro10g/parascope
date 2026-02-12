@@ -15,6 +15,7 @@ class Settings(BaseSettings):
     WORKER_COUNT: int = 5
     BACKEND_CORS_ORIGINS: str = "http://localhost:5173,http://localhost:3000"
     USERNAME_REGEX: str = r"^[a-zA-Z0-9_ ]+$"
+    USERNAME_DESCRIPTION: str = "Use alphanumeric characters, underscores, and spaces."
 
     @field_validator("USERNAME_REGEX", mode="before")
     @classmethod

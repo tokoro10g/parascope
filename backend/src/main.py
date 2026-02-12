@@ -7,7 +7,7 @@ from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 
-from .api import attachments, calculate, genai, locks, sheets, sweep
+from .api import attachments, auth, calculate, genai, locks, sheets, sweep
 from .core.config import settings
 from .core.database import AsyncSessionLocal, Base, engine
 from .core.seed import seed_database
@@ -41,6 +41,7 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+app.include_router(auth.router, prefix="/api/v1")
 app.include_router(sheets.router, prefix="/api/v1")
 app.include_router(locks.router, prefix="/api/v1")
 app.include_router(sweep.router, prefix="/api/v1")

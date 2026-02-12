@@ -1,6 +1,7 @@
 import type React from 'react';
 import { useEffect, useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
+import { api } from '../api';
 import { useAuth } from '../contexts/AuthContext';
 import { ParascopeLogo } from './ParascopeLogo';
 import './Login.css';
@@ -10,27 +11,26 @@ export const Login: React.FC = () => {
   const { login } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
-
-  const usernameRegex =
-    import.meta.env.VITE_USERNAME_REGEX || '^[a-zA-Z0-9_ ]+$';
-  const usernameDescription = import.meta.env.VITE_USERNAME_DESCRIPTION;
+  const [authConfig, setAuthConfig] = useState<{
+    username_regex: string;
+    username_description: string;
+  } | null>(null);
 
   useEffect(() => {
     document.title = 'Login - Parascope';
+    api.getAuthConfig().then(setAuthConfig).catch(console.error);
   }, []);
 
   const isValid = (input: string) => {
     if (!input.trim()) return false;
-    if (usernameRegex) {
-      try {
-        const regex = new RegExp(usernameRegex);
-        return regex.test(input);
-      } catch (e) {
-        console.error('Invalid regex in env:', e);
-        return true;
-      }
+    const regexStr = authConfig?.username_regex || '^[a-zA-Z0-9_ ]+$';
+    try {
+      const regex = new RegExp(regexStr);
+      return regex.test(input);
+    } catch (e) {
+      console.error('Invalid regex:', e);
+      return true;
     }
-    return true;
   };
 
   const from = location.state?.from || '/';
@@ -63,9 +63,15 @@ export const Login: React.FC = () => {
         </p>
 
         <form onSubmit={handleSubmit}>
-          {usernameDescription && (
-            <p style={{ color: 'var(--text-muted)', fontSize: '0.9em' }}>
-              {usernameDescription}
+          {authConfig?.username_description && (
+            <p
+              style={{
+                color: 'var(--text-muted)',
+                fontSize: '0.9em',
+                marginBottom: '10px',
+              }}
+            >
+              {authConfig.username_description}
             </p>
           )}
           <input

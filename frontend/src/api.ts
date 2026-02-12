@@ -180,6 +180,16 @@ export interface FunctionNodeContext {
 }
 
 export const api = {
+  // AUTH
+  async getAuthConfig(): Promise<{
+    username_regex: string;
+    username_description: string;
+  }> {
+    return request(`${API_BASE}/api/v1/auth/config`, {
+      headers: getHeaders(),
+    });
+  },
+
   // GENAI
   async getGenAIConfig(): Promise<{
     enabled: boolean;
