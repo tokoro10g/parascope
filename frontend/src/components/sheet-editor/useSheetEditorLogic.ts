@@ -248,7 +248,7 @@ export function useSheetEditorLogic(): SheetEditorLogic {
 
       const result = await calculatePreview(apiInputs, fullGraph);
       if (editor && result) {
-        editor.updateNodeValues({}, result);
+        editor.updateNodeValues(result);
         setNodes([...editor.instance.getNodes()]);
       }
     }, 50);
@@ -327,10 +327,7 @@ export function useSheetEditorLogic(): SheetEditorLogic {
 
   const onSave = useCallback(() => {
     if (editor) {
-      editor.updateNodeValues(
-        calculationInputsRef.current,
-        lastResult || {},
-      );
+      editor.updateNodeValues(lastResult || {}, calculationInputsRef.current);
     }
     handleSaveSheet(getExportData());
   }, [handleSaveSheet, getExportData, editor, lastResult]);
@@ -474,10 +471,7 @@ export function useSheetEditorLogic(): SheetEditorLogic {
 
   useEffect(() => {
     if (editor) {
-      editor.updateNodeValues(
-        calculationInputs,
-        lastResult || {},
-      );
+      editor.updateNodeValues(lastResult || {}, calculationInputs);
       const nodes = [...editor.instance.getNodes()];
       nodes.forEach((n) => {
         const pos = editor.area.nodeViews.get(n.id)?.position;
@@ -684,10 +678,7 @@ export function useSheetEditorLogic(): SheetEditorLogic {
       inputProps.inputs.forEach((i) => {
         inputValues[i.id] = i.value;
       });
-      editor.updateNodeValues(
-        inputValues,
-        lastResult || {},
-      );
+      editor.updateNodeValues(lastResult || {}, inputValues);
     }
   }, [editor, inputProps, lastResult]);
 
@@ -708,7 +699,7 @@ export function useSheetEditorLogic(): SheetEditorLogic {
       const result = await calculatePreview(apiInputs, graph, true);
 
       if (editor && result) {
-        editor.updateNodeValues({}, result);
+        editor.updateNodeValues(result);
         setNodes([...editor.instance.getNodes()]);
       }
     } catch (e: any) {

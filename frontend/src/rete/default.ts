@@ -349,8 +349,8 @@ export async function createEditor(container: HTMLElement) {
     ...loader,
 
     updateNodeValues: (
-      inputs: Record<string, any>,
       fullResult?: Record<string, any>,
+      inputOverrides: Record<string, any> = {},
     ) => {
       instance.getNodes().forEach((node) => {
         if (fullResult?.[node.id]) {
@@ -392,8 +392,8 @@ export async function createEditor(container: HTMLElement) {
         if (!valueControl) return;
 
         if (node.type === 'input') {
-          if (Object.hasOwn(inputs, node.id)) {
-            const val = inputs[node.id];
+          if (Object.hasOwn(inputOverrides, node.id)) {
+            const val = inputOverrides[node.id];
             const newVal = String(val !== undefined && val !== null ? val : '');
             if (valueControl.value !== newVal) {
               valueControl.setValue(newVal);
