@@ -59,11 +59,16 @@ export const VersionListModal: React.FC<VersionListModalProps> = ({
 
     setIsCreating(true);
     try {
-      await api.createSheetVersion(sheetId, newTag, newDescription);
+      const newVersion = await api.createSheetVersion(
+        sheetId,
+        newTag,
+        newDescription,
+      );
       toast.success(`Version ${newTag} created successfully`);
       setNewTag('');
       setNewDescription('');
       loadVersions(); // Refresh list
+      onSetDefault(newVersion.id); // Automatically update local default version state
     } catch (e: any) {
       console.error(e);
       toast.error(`Failed to create version: ${e.message}`);

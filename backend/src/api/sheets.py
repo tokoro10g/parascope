@@ -804,6 +804,11 @@ async def create_version(
         created_by=user_id or "Anonymous",
     )
     db.add(db_version)
+    await db.flush()  # Get version ID
+
+    # Automatically set as default
+    sheet.default_version_id = db_version.id
+
     await db.commit()
     await db.refresh(db_version)
     return db_version
