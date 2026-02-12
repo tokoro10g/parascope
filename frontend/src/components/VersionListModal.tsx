@@ -333,7 +333,8 @@ export const VersionListModal: React.FC<VersionListModalProps> = ({
                   <span
                     style={{ fontSize: '0.8em', color: 'var(--text-muted)' }}
                   >
-                    {new Date(v.created_at).toLocaleDateString()}
+                    {new Date(v.created_at).toLocaleDateString()} by{' '}
+                    <strong>{v.created_by}</strong>
                   </span>
                 </div>
                 {v.description && (
