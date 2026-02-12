@@ -4,9 +4,19 @@ import logging
 from abc import ABC, abstractmethod
 from typing import List, Optional
 
+from pydantic import BaseModel, Field
+
 from .config import settings
 
 logger = logging.getLogger(__name__)
+
+
+class FunctionNodeContext(BaseModel):
+    title: Optional[str] = ""
+    code: Optional[str] = ""
+    description: Optional[str] = ""
+    inputs: List[str] = Field(default_factory=list)
+    outputs: List[str] = Field(default_factory=list)
 
 
 class AIProvider(ABC):
@@ -15,8 +25,7 @@ class AIProvider(ABC):
         self,
         prompt: str,
         system_instruction: str,
-        existing_code: Optional[str] = "",
-        existing_description: Optional[str] = "",
+        node_context: Optional[FunctionNodeContext] = None,
         urls: List[str] = None,
         image: Optional[str] = None,
     ) -> dict:
@@ -30,24 +39,32 @@ class AIProvider(ABC):
         self,
         prompt: str,
         urls: List[str] = None,
-        existing_code: Optional[str] = "",
-        existing_description: Optional[str] = "",
+        node_context: Optional[FunctionNodeContext] = None,
     ) -> str:
         """Centralized helper to build the standard user prompt across providers."""
         user_prompt = f"Prompt: {prompt}\n"
         if urls:
             user_prompt += "\nReference URLs:\n" + "\n".join(urls) + "\n"
-        if existing_code:
-            user_prompt += (
-                f"Existing Code:\n{existing_code}\n"
-                "Update the existing code based on the prompt, or rewrite it if requested.\n"
-            )
-        if existing_description:
-            user_prompt += (
-                f"\nExisting Description:\n{existing_description}\n"
-                "Ensure the new description remains consistent with existing background info "
-                "unless otherwise instructed.\n"
-            )
+
+        if node_context:
+            if node_context.title:
+                user_prompt += f"\nExisting Title: {node_context.title}\n"
+            if node_context.code:
+                user_prompt += (
+                    f"\nExisting Code:\n{node_context.code}\n"
+                    "Update the existing code based on the prompt, or rewrite it if requested.\n"
+                )
+            if node_context.description:
+                user_prompt += (
+                    f"\nExisting Description:\n{node_context.description}\n"
+                    "Ensure the new description remains consistent with existing background info "
+                    "unless otherwise instructed.\n"
+                )
+            if node_context.inputs:
+                user_prompt += f"\nExisting Inputs: {', '.join(node_context.inputs)}\n"
+            if node_context.outputs:
+                user_prompt += f"\nExisting Outputs: {', '.join(node_context.outputs)}\n"
+
         return user_prompt
 
 
@@ -75,8 +92,7 @@ class GeminiProvider(AIProvider):
         self,
         prompt: str,
         system_instruction: str,
-        existing_code: Optional[str] = "",
-        existing_description: Optional[str] = "",
+        node_context: Optional[FunctionNodeContext] = None,
         urls: List[str] = None,
         image: Optional[str] = None,
     ) -> dict:
@@ -85,7 +101,7 @@ class GeminiProvider(AIProvider):
         if not self.client:
             raise Exception("Gemini API key not configured")
 
-        user_prompt = self._build_user_prompt(prompt, urls, existing_code, existing_description)
+        user_prompt = self._build_user_prompt(prompt, urls, node_context)
         parts = [genai.types.Part.from_text(text=user_prompt)]
 
         if image:
@@ -135,15 +151,14 @@ class OpenAIProvider(AIProvider):
         self,
         prompt: str,
         system_instruction: str,
-        existing_code: Optional[str] = "",
-        existing_description: Optional[str] = "",
+        node_context: Optional[FunctionNodeContext] = None,
         urls: List[str] = None,
         image: Optional[str] = None,
     ) -> dict:
         if not self.client:
             raise Exception("OpenAI API key not configured")
 
-        user_prompt = self._build_user_prompt(prompt, urls, existing_code, existing_description)
+        user_prompt = self._build_user_prompt(prompt, urls, node_context)
         user_content = [{"type": "text", "text": user_prompt}]
 
         if image:
@@ -188,8 +203,7 @@ class BedrockProvider(AIProvider):
         self,
         prompt: str,
         system_instruction: str,
-        existing_code: Optional[str] = "",
-        existing_description: Optional[str] = "",
+        node_context: Optional[FunctionNodeContext] = None,
         urls: List[str] = None,
         image: Optional[str] = None,
     ) -> dict:
@@ -198,7 +212,7 @@ class BedrockProvider(AIProvider):
         if not self.client:
             raise Exception("AWS/Bedrock not configured")
 
-        user_prompt = self._build_user_prompt(prompt, urls, existing_code, existing_description)
+        user_prompt = self._build_user_prompt(prompt, urls, node_context)
         content = [{"type": "text", "text": user_prompt}]
 
         if image:
@@ -240,6 +254,8 @@ class BedrockProvider(AIProvider):
             result_text = result_text.split("```")[1].split("```")[0].strip()
 
         return json.loads(result_text)
+
+
 
 
 def get_provider(provider_name: Optional[str] = None) -> AIProvider:

@@ -171,6 +171,14 @@ export interface SheetUsage {
   can_import: boolean;
 }
 
+export interface FunctionNodeContext {
+  title?: string;
+  code?: string;
+  description?: string;
+  inputs?: string[];
+  outputs?: string[];
+}
+
 export const api = {
   // GENAI
   async getGenAIConfig(): Promise<{
@@ -197,10 +205,9 @@ export const api = {
 
   async generateFunction(
     prompt: string,
-    existingCode: string = '',
+    nodeContext: FunctionNodeContext = {},
     urls: string[] = [],
     image?: string,
-    existingDescription: string = '',
     provider?: string,
   ): Promise<GenerateFunctionResponse> {
     return request(`${API_BASE}/api/v1/genai/generate_function`, {
@@ -208,10 +215,9 @@ export const api = {
       headers: getHeaders({ 'Content-Type': 'application/json' }),
       body: JSON.stringify({
         prompt,
-        existing_code: existingCode,
+        node_context: nodeContext,
         urls,
         image,
-        existing_description: existingDescription,
         provider,
       }),
     });

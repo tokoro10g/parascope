@@ -1,9 +1,9 @@
 import logging
 
 from fastapi import APIRouter, HTTPException
-from pydantic import BaseModel
+from pydantic import BaseModel, field_validator
 
-from ..core.ai_providers import get_available_providers, get_provider
+from ..core.ai_providers import FunctionNodeContext, get_available_providers, get_provider
 from ..core.config import settings
 
 router = APIRouter()
@@ -13,11 +13,17 @@ logger = logging.getLogger(__name__)
 
 class GenerateFunctionRequest(BaseModel):
     prompt: str
-    existing_code: str | None = ""
-    existing_description: str | None = ""
+    node_context: FunctionNodeContext | None = None
     urls: list[str] = []
     image: str | None = None
     provider: str | None = None
+
+    @field_validator("node_context", mode="before")
+    @classmethod
+    def handle_null_config(cls, v):
+        if v is None:
+            return FunctionNodeContext()
+        return v
 
 
 class GenerateFunctionResponse(BaseModel):
@@ -82,9 +88,9 @@ async def generate_function(request: GenerateFunctionRequest):
         Response:
         {
             "title": "Hoop Stress",
-            "code": "\\\"\\\"\\\"\\nInputs:\\npressure_Pa: Internal pressure\\ndiameter_m: Internal diameter\\nthickness_m: Wall thickness\\n\\nOutputs:\\nstress_hoop_Pa: Circumferential stress\\n\\\"\\\"\\\"\\n\\nstress_hoop_Pa = (pressure_Pa * diameter_m) / (2 * thickness_m)",
-            "inputs": ["pressure_Pa", "diameter_m", "thickness_m"],
-            "outputs": ["stress_hoop_Pa"],
+            "code": "\\\"\\\"\\\"\\nInputs:\\npressure_pa: Internal pressure\\ndiameter_m: Internal diameter\\nthickness_m: Wall thickness\\n\\nOutputs:\\nstress_hoop_pa: Circumferential stress\\n\\\"\\\"\\\"\\n\\nstress_hoop_pa = (pressure_pa * diameter_m) / (2 * thickness_m)",
+            "inputs": ["pressure_pa", "diameter_m", "thickness_m"],
+            "outputs": ["stress_hoop_pa"],
             "description": "Calculates the circumferential (hoop) stress in a cylinder assuming thin-wall approximation ($t < D/20$).\\n\\n$$\\n\\n\\\\sigma_\\\\theta = \\\\frac{P d}{2t}\\n\\n$$"
         }
         """  # noqa: E501
@@ -92,8 +98,7 @@ async def generate_function(request: GenerateFunctionRequest):
         parsed = await provider.generate_function(
             prompt=request.prompt,
             system_instruction=system_instruction,
-            existing_code=request.existing_code,
-            existing_description=request.existing_description,
+            node_context=request.node_context,
             urls=request.urls,
             image=request.image,
         )
