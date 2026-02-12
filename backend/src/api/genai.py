@@ -13,8 +13,8 @@ logger = logging.getLogger(__name__)
 
 class GenerateFunctionRequest(BaseModel):
     prompt: str
-    existing_code: str = ""
-    existing_description: str = ""
+    existing_code: str | None = ""
+    existing_description: str | None = ""
     urls: list[str] = []
     image: str | None = None
     provider: str | None = None

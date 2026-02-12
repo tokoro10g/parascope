@@ -15,8 +15,8 @@ class AIProvider(ABC):
         self,
         prompt: str,
         system_instruction: str,
-        existing_code: str = "",
-        existing_description: str = "",
+        existing_code: Optional[str] = "",
+        existing_description: Optional[str] = "",
         urls: List[str] = None,
         image: Optional[str] = None,
     ) -> dict:
@@ -30,8 +30,8 @@ class AIProvider(ABC):
         self,
         prompt: str,
         urls: List[str] = None,
-        existing_code: str = "",
-        existing_description: str = "",
+        existing_code: Optional[str] = "",
+        existing_description: Optional[str] = "",
     ) -> str:
         """Centralized helper to build the standard user prompt across providers."""
         user_prompt = f"Prompt: {prompt}\n"
@@ -75,8 +75,8 @@ class GeminiProvider(AIProvider):
         self,
         prompt: str,
         system_instruction: str,
-        existing_code: str = "",
-        existing_description: str = "",
+        existing_code: Optional[str] = "",
+        existing_description: Optional[str] = "",
         urls: List[str] = None,
         image: Optional[str] = None,
     ) -> dict:
@@ -135,8 +135,8 @@ class OpenAIProvider(AIProvider):
         self,
         prompt: str,
         system_instruction: str,
-        existing_code: str = "",
-        existing_description: str = "",
+        existing_code: Optional[str] = "",
+        existing_description: Optional[str] = "",
         urls: List[str] = None,
         image: Optional[str] = None,
     ) -> dict:
@@ -188,8 +188,8 @@ class BedrockProvider(AIProvider):
         self,
         prompt: str,
         system_instruction: str,
-        existing_code: str = "",
-        existing_description: str = "",
+        existing_code: Optional[str] = "",
+        existing_description: Optional[str] = "",
         urls: List[str] = None,
         image: Optional[str] = None,
     ) -> dict:
