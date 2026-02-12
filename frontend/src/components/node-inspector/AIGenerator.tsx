@@ -1,4 +1,4 @@
-import { Image, X } from 'lucide-react';
+import { Image, Loader2, X } from 'lucide-react';
 import type React from 'react';
 
 interface AIGeneratorProps {
@@ -121,8 +121,16 @@ export const AIGenerator: React.FC<AIGeneratorProps> = ({
             </select>
           )}
           {isGenerating && (
-            <span style={{ fontSize: '0.8em', color: '#9c27b0' }}>
-              Generating...
+            <span
+              style={{
+                fontSize: '0.8em',
+                color: '#9c27b0',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '4px',
+              }}
+            >
+              <Loader2 size={14} className="spin" /> Generating...
             </span>
           )}
         </div>
@@ -221,7 +229,15 @@ export const AIGenerator: React.FC<AIGeneratorProps> = ({
           className="btn btn-primary"
           style={{ width: '100%', marginTop: '4px', minWidth: 'unset' }}
         >
-          {hasExistingContent ? 'Edit with AI' : 'Generate'}
+          {isGenerating ? (
+            <>
+              <Loader2 size={16} className="spin" /> Generating...
+            </>
+          ) : hasExistingContent ? (
+            'Edit with AI'
+          ) : (
+            'Generate'
+          )}
         </button>
       </div>
     </div>

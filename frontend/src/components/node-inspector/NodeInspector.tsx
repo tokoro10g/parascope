@@ -186,10 +186,10 @@ export const NodeInspector: React.FC<NodeInspectorProps> = ({
 
       const result = await api.generateFunction(
         aiPrompt,
-        data.code,
+        data.code || '',
         urls,
         aiImage || undefined,
-        data.description,
+        data.description || '',
         aiSelectedProvider,
       );
       setData((prev) => ({
