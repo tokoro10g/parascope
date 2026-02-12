@@ -124,7 +124,7 @@ export const NodeInspector: React.FC<NodeInspectorProps> = ({
     return `/api/v1/attachments/${filename}`;
   };
 
-  const handleSave = () => {
+  const handleApply = () => {
     onSave(node.id, {
       label,
       data,
@@ -218,8 +218,8 @@ export const NodeInspector: React.FC<NodeInspectorProps> = ({
       <button type="button" onClick={onClose} className="btn">
         Cancel
       </button>
-      <button type="button" onClick={handleSave} className="btn primary">
-        Save
+      <button type="button" onClick={handleApply} className="btn primary">
+        Apply
       </button>
     </>
   );
