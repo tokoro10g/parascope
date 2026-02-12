@@ -211,7 +211,7 @@ export const TypeConfig: React.FC<TypeConfigProps> = ({
         </div>
       )}
 
-      {nodeType === 'constant' && (
+      {(nodeType === 'constant' || nodeType === 'input') && (
         <div className="form-group">
           <label htmlFor="node-value">Value:</label>
           {data.dataType === 'option' ? (
