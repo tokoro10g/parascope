@@ -57,18 +57,8 @@ export const MarkdownControlComponent: React.FC<{ data: MarkdownControl }> = ({
 
   return (
     <div
-      className="node-markdown-content overflow-anywhere"
+      className="markdown-control overflow-anywhere markdown-preview"
       role="presentation"
-      style={{
-        padding: '10px',
-        color: '#424242',
-        fontSize: '0.9em',
-        background: 'rgba(255, 255, 255, 0.3)',
-        borderRadius: '4px',
-        marginTop: '5px',
-        maxWidth: '600px',
-        overflowY: 'auto',
-      }}
     >
       <ReactMarkdown
         remarkPlugins={[remarkMath]}
