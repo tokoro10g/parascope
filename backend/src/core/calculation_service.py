@@ -99,12 +99,10 @@ async def enrich_results(sheet: Sheet, raw_results: Dict[str, Any], db: AsyncSes
                 node_resp["inputs"][port] = actual_val
 
         # Populate outputs
-        if node.type == "function":
+        if node.type in ("function", "sheet", "lut"):
             node_resp["outputs"] = val if val is not None else {}
-        elif node.type == "sheet":
-            node_resp["outputs"] = val if val is not None else {}
-            # Recursively enrich nested nodes if available
-            if "nodes" in res_data:
+            # Recursively enrich nested nodes if available (for sheets)
+            if node.type == "sheet" and "nodes" in res_data:
                 sub_id = node.data.get("sheetId")
                 sub_sheet = nested_sheets_map.get(str(sub_id)) if sub_id else None
                 if sub_sheet:
