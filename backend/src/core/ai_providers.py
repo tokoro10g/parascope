@@ -256,8 +256,6 @@ class BedrockProvider(AIProvider):
         return json.loads(result_text)
 
 
-
-
 def get_provider(provider_name: Optional[str] = None) -> AIProvider:
     if not provider_name:
         provider_name = settings.DEFAULT_AI_PROVIDER
