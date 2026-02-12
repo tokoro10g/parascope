@@ -238,24 +238,30 @@ export const resolveNestedSheetParams = (
 export const resolveSheetPorts = (nodes: any[]) => {
   const inputs = nodes
     .filter((n) => n.type === 'input' && !n.data?.hidden)
-    .map((n) => createSocket(n.label))
-    .sort((a, b) => a.key.localeCompare(b.key));
+    .sort((a, b) => {
+      if (a.position_x !== b.position_x) return a.position_x - b.position_x;
+      return a.position_y - b.position_y;
+    })
+    .map((n) => createSocket(n.label));
 
   const outputs = nodes
     .filter(
       (n) => (n.type === 'output' || n.type === 'constant') && !n.data?.hidden,
     )
+    .sort((a, b) => {
+      // Group by type: 'constant' before 'output'
+      if (a.type !== b.type) {
+        if (a.type === 'constant') return -1;
+        if (b.type === 'constant') return 1;
+      }
+      // Sort within group by position
+      if (a.position_x !== b.position_x) return a.position_x - b.position_x;
+      return a.position_y - b.position_y;
+    })
     .map((n) => ({
       key: n.label,
       socket_type: n.type,
-    }))
-    .sort((a, b) => {
-      // 'constant' comes before 'output'
-      if (a.socket_type === 'constant' && b.socket_type === 'output') return -1;
-      if (a.socket_type === 'output' && b.socket_type === 'constant') return 1;
-      // Otherwise sort alphabetically by key
-      return a.key.localeCompare(b.key);
-    });
+    }));
 
   return { inputs, outputs };
 };
