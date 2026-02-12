@@ -36,7 +36,7 @@ test.describe('Material Selection', () => {
     await page.locator('div.form-group li input').nth(1).fill('Aluminum');
 
     await page.selectOption('#node-value', 'Steel');
-    await page.click('button:has-text("Save")');
+    await page.click('button:has-text("Apply")');
     await moveNode(page, 'material', -250, 0);
 
     // 2. Create Density Function
@@ -60,7 +60,7 @@ test.describe('Material Selection', () => {
     await page.locator('.io-column:has-text("Outputs") li input').last().fill('rho');
 
     await page.locator('#node-code').fill('rho = 7850 if mat == "Steel" else 2700');
-    await page.click('button:has-text("Save")');
+    await page.click('button:has-text("Apply")');
     await moveNode(page, 'GetDensity', 0, 0);
 
     // 3. Create Output

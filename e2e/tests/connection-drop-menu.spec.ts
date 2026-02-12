@@ -69,7 +69,7 @@ test.describe('Connection Drop Context Menu', () => {
     await page.locator('.io-column:has-text("Inputs") li input').last().fill('y');
 
     await page.locator('#node-code').fill('result = x + y');
-    await page.click('button:has-text("Save")');
+    await page.click('button:has-text("Apply")');
 
     // 2. Drag from "x" socket to create Constant
     const node = page.locator('[data-testid="node"]').filter({ has: page.locator(`[data-testid="title"]:has-text("MyFunc")`) });

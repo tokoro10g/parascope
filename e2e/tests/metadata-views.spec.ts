@@ -37,7 +37,7 @@ test.describe('Metadata & Views', () => {
     await page.click('.add-menu-item:has-text("Constant")');
     await page.locator('#node-label').fill('MyConstant');
     await page.locator('#node-description').fill('This is a constant description');
-    await page.click('button:has-text("Save")');
+    await page.click('button:has-text("Apply")');
     await moveNode(page, 'MyConstant', -100, 100);
 
     // Add Function with Description
@@ -46,7 +46,7 @@ test.describe('Metadata & Views', () => {
     await page.locator('#node-label').fill('MyFunction');
     await page.locator('#node-description').fill('This is a function description');
     await page.locator('#node-code').fill('result = x');
-    await page.click('button:has-text("Save")');
+    await page.click('button:has-text("Apply")');
     await moveNode(page, 'MyFunction', 100, 100);
 
     // Add Comment
@@ -55,7 +55,7 @@ test.describe('Metadata & Views', () => {
     await page
       .locator('#node-description')
       .fill('This is markdown comment content');
-    await page.click('button:has-text("Save")');
+    await page.click('button:has-text("Apply")');
     await moveNode(page, 'Comment', 0, 200);
 
     // Save Child Sheet
@@ -80,7 +80,7 @@ test.describe('Metadata & Views', () => {
     const versionValue = await versionOption.getAttribute('value');
     await page.locator('#sheet-version').selectOption(versionValue!);
 
-    await page.click('button:has-text("Save")');
+    await page.click('button:has-text("Apply")');
 
     // Verify Version Tag on Node
     await moveNode(page, childName, 0, 100);

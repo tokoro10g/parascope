@@ -38,7 +38,7 @@ test.describe('Safety & Limits', () => {
     await page.locator('.io-column:has-text("Outputs") li input').last().fill('out_val');
 
     await page.locator('#node-code').fill('while True: pass\nout_val = 1');
-    await page.click('button:has-text("Save")');
+    await page.click('button:has-text("Apply")');
     await moveNode(page, 'InfiniteLoop', 0, 0);
 
     await expect(page.locator('button:has-text("Run")')).toBeEnabled({

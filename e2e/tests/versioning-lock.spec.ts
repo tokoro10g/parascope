@@ -21,7 +21,7 @@ test.describe('Versioning & Locking', () => {
     await pageA.click('button:has-text("Add Node")');
     await pageA.click('.add-menu-item:has-text("Input")');
     await pageA.locator('#node-label').fill('Input A');
-    await pageA.click('button:has-text("Save")'); // Modal save
+    await pageA.click('button:has-text("Apply")'); // Modal save
 
     // Save Sheet before creating version
     await saveSheet(pageA);

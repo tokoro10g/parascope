@@ -39,7 +39,7 @@ test.describe('Mobile Layout', () => {
 
     // Verify Node Edit Modal fits mobile
     await page.locator('#node-label').fill('MobileConst');
-    await page.click('button:has-text("Save")');
+    await page.click('button:has-text("Apply")');
 
     // 5. Switch to Variables Tab
     await page.getByRole('button', { name: 'Variables' }).click();

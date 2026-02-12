@@ -29,13 +29,13 @@ test.describe('Versioning & Port Synchronization', () => {
     await page.click('button:has-text("Add Node")');
     await page.click('.add-menu-item:has-text("Input")');
     await page.locator('#node-label').fill('x');
-    await page.click('button:has-text("Save")');
+    await page.click('button:has-text("Apply")');
     await moveNode(page, 'x', -200, 0);
 
     await page.click('button:has-text("Add Node")');
     await page.click('.add-menu-item:has-text("Output")');
     await page.locator('#node-label').fill('y');
-    await page.click('button:has-text("Save")');
+    await page.click('button:has-text("Apply")');
     await moveNode(page, 'y', 200, 0);
 
     // Save Sheet before creating version
@@ -49,13 +49,13 @@ test.describe('Versioning & Port Synchronization', () => {
     await page.click('button:has-text("Add Node")');
     await page.click('.add-menu-item:has-text("Input")');
     await page.locator('#node-label').fill('z');
-    await page.click('button:has-text("Save")');
+    await page.click('button:has-text("Apply")');
     await moveNode(page, 'z', -200, 100);
 
     await page.click('button:has-text("Add Node")');
     await page.click('.add-menu-item:has-text("Output")');
     await page.locator('#node-label').fill('w');
-    await page.click('button:has-text("Save")');
+    await page.click('button:has-text("Apply")');
     await moveNode(page, 'w', 200, 100);
 
     // Save Sheet before creating version
@@ -82,7 +82,7 @@ test.describe('Versioning & Port Synchronization', () => {
       .filter({ hasText: 'v1.0' });
     const v1Value = await v1Option.getAttribute('value');
     await page.locator('#sheet-version').selectOption(v1Value!);
-    await page.click('button:has-text("Save")');
+    await page.click('button:has-text("Apply")');
 
     // Save Parent Sheet before reload
     await saveSheet(page);
@@ -114,7 +114,7 @@ test.describe('Versioning & Port Synchronization', () => {
       .filter({ hasText: 'v2.0' });
     const v2Value = await v2Option.getAttribute('value');
     await page.locator('#sheet-version').selectOption(v2Value!);
-    await page.click('button:has-text("Save")');
+    await page.click('button:has-text("Apply")');
 
     // Verify v2 Ports: Should have x, y, z, w
     await expect(getPortLocator(page, childName, 'x', 'input')).toBeVisible();
@@ -125,7 +125,7 @@ test.describe('Versioning & Port Synchronization', () => {
     // 5. Revert to v1.0
     await openNodeInspector(page, childName);
     await page.locator('#sheet-version').selectOption(v1Value!);
-    await page.click('button:has-text("Save")');
+    await page.click('button:has-text("Apply")');
 
     // Verify v1 Ports again
     await expect(getPortLocator(page, childName, 'x', 'input')).toBeVisible();

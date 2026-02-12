@@ -39,7 +39,7 @@ test.describe('Error Handling', () => {
     await page.click('button:has-text("+ Add Output")');
     await page.locator('.io-column:has-text("Outputs") li input').last().fill('out_val');
     await page.locator('#node-code').fill('out_val = 1 / 0');
-    await page.click('button:has-text("Save")');
+    await page.click('button:has-text("Apply")');
     await moveNode(page, 'ZeroDivNode', -150, 0);
 
     // Add Output node

@@ -62,7 +62,7 @@ test.describe('Force Calculator', () => {
 
     await page.locator('#node-code').fill('force_n = mass_kg * accel_ms2');
     await humanDelay(page, 500);
-    await page.click('button:has-text("Save")');
+    await page.click('button:has-text("Apply")');
     await moveNode(page, 'Force Calculation', 0, 0);
     await humanDelay(page);
 

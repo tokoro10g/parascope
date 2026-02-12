@@ -44,7 +44,7 @@ test.describe('Table Productivity', () => {
     await page.click('.add-menu-item:has-text("Function")');
     await page.locator('#node-label').fill('doubler');
     await page.locator('#node-code').fill('result = x * 2');
-    await page.click('button:has-text("Save")');
+    await page.click('button:has-text("Apply")');
     await moveNode(page, 'doubler', 0, 0);
 
     await addNode(page, 'Output', 'total');

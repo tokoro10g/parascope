@@ -125,7 +125,7 @@ export async function renamePort(
     await expect(portInput).toBeVisible();
     await portInput.fill(newPortName);
     
-    await page.click('button:has-text("Save")');
+    await page.click('button:has-text("Apply")');
     await expect(page.locator('.modal-overlay')).not.toBeVisible();
     
     // Verify renaming on the node itself
@@ -222,7 +222,7 @@ export async function addNode(page: Page, type: string, label: string, value?: s
       await page.locator('#node-value').fill(value);
     }
     
-    await page.click('button:has-text("Save")');
+    await page.click('button:has-text("Apply")');
     await expect(page.locator('.modal-overlay')).not.toBeVisible();
   });
 }
