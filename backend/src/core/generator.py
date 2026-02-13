@@ -595,7 +595,9 @@ def {method_name}(self, key):
     for row in rows:
         if str(row.get('key')) == key_str:
             # Found match, return values from the nested 'values' object
-            return row.get('values', {{}})
+            # Ensure all values are parsed as numbers if possible
+            raw_values = row.get('values', {{}})
+            return {{k: self.parse_number(v) for k, v in raw_values.items()}}
     raise ParascopeError(f"Key '{{key}}' not found in LUT '{label_safe}'")
 """
 
