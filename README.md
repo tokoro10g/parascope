@@ -23,6 +23,7 @@
 *   **Nested Sheets**: Create reusable calculation modules (sheets) and import them into other sheets as single nodes, enabling modular system design.
 *   **Advanced Trade Studies**: Perform parameter sweeps and visualize results with interactive Line, Bar, Scatter, and Timeline charts.
 *   **AI Assistance**: Generate function logic from natural language using Google Gemini, OpenAI, or AWS Bedrock.
+*   **Version Control**: Create immutable snapshots of calculation sheets and manage default versions for reliable sharing and design stabilization.
 *   **Offline Execution**: Export sheets as standalone Python scripts that can be run offline using the `parascope-runtime` package.
 *   **Secure Runtime**: Sandboxed execution environment using `RestrictedPython` with configurable module allow-lists.
 *   **High Performance**: Optimized worker pool with module preloading and non-blocking architecture for responsive UI interactions.
@@ -136,11 +137,6 @@ parascope/
 
 The application is configured via environment variables defined in a `.env` file. You can copy `.env.example` to `.env` to get started.
 
-Key variables:
-*   `SERVER_HOSTNAME`: Hostname for the server (default: `localhost`).
-*   `FRONTEND_PORT`: Port for the frontend application (default: `3000`).
-*   `BACKEND_PORT`: Port for the backend API (default: `8000`).
-
 ## ✨ Linting & Formatting
 
 Parascope uses strict linting and formatting to maintain code quality.
@@ -205,10 +201,8 @@ This will run the tests in a completely isolated Docker project, allowing you to
 
 ## 🧪 Database Seeding
 
-On the first run, the database is automatically seeded with example engineering sheets:
-1.  **Tsiolkovsky Rocket Equation**: Basic delta-v calculation.
-2.  **Dynamic Pressure**: Aerodynamic pressure calculation.
-3.  **Aerodynamic Drag**: Nested sheet importing Dynamic Pressure.
-4.  **SSTO Feasibility Check**: Complex system importing the Rocket Equation.
+On the first run, the database is automatically seeded with:
+*   **Engineering Examples**: Material Selection (LUT usage), Aerodynamic Drag (nested logic), and SSTO Feasibility.
+*   **Modular Library**: Reusable components for Aerospace, Fluids, Mechanics, and more, ready to be imported into new sheets.
 
-To reset the database to these defaults, you can clear the `sheets` table or restart the backend with a fresh volume.
+To reset the database to these defaults, clear the `sheets` table or restart the backend with a fresh volume.
