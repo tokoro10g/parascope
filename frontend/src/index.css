@@ -16,7 +16,6 @@
   --text-color: #213547;
   --text-secondary: #666;
   --text-muted: #999;
-  --text-super-muted: #ccc;
 
   --primary-color: #646cff;
   --primary-color-rgb: 100, 108, 255;
@@ -51,7 +50,6 @@
     --text-color: rgba(255, 255, 255, 0.87);
     --text-secondary: #ccc;
     --text-muted: #aaa;
-    --text-super-muted: #666;
 
     --primary-color-rgb: 100, 108, 255;
 
