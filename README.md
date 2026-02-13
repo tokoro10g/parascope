@@ -122,8 +122,12 @@ parascope/
 │   └── tests/          # Pytest suite
 ├── frontend/           # React application
 │   ├── src/
-│   │   ├── components/ # React UI components
-│   │   └── rete/       # Rete.js customization
+│   │   ├── core/       # API clients, Rete logic, and contexts
+│   │   ├── features/   # Domain-specific components and hooks
+│   │   ├── pages/      # Route-level page components
+│   │   ├── components/ # Shared UI primitives
+│   │   └── styles/     # Global CSS and themes
+│   └── vite.config.ts  # Configured with `@/` path aliases
 ├── e2e/                # Playwright end-to-end tests
 ├── packages/
 │   └── parascope-runtime/ # Standalone package for offline execution
