@@ -229,7 +229,9 @@ export const Dashboard: React.FC = () => {
     setSheetToMove(null);
   };
 
-  const getSheetUrl = (sheet: SheetSummary | { id: string; default_version_id?: string | null }) => {
+  const getSheetUrl = (
+    sheet: SheetSummary | { id: string; default_version_id?: string | null },
+  ) => {
     if (sheet.default_version_id) {
       return `/sheet/${sheet.id}?versionId=${sheet.default_version_id}`;
     }
