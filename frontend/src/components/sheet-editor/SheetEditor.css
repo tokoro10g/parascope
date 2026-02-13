@@ -136,3 +136,18 @@
     border-bottom-color: #554820;
   }
 }
+
+.readonly-watermark {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%) rotate(-45deg);
+  font-size: 10vw;
+  font-weight: 900;
+  color: var(--text-color);
+  opacity: 0.05;
+  pointer-events: none;
+  user-select: none;
+  z-index: 1;
+  white-space: nowrap;
+}

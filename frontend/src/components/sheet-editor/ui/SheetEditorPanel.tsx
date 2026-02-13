@@ -43,6 +43,9 @@ export const SheetEditorPanel: React.FC = () => {
         style={{ width: '100%', height: '100%', position: 'relative' }}
       >
         {isLoading && <div className="loading-overlay">Loading...</div>}
+        {isReadOnly && !isLoading && (
+          <div className="readonly-watermark">READ-ONLY</div>
+        )}
         <EditorBar
           sheetName={currentSheet?.name}
           isDirty={isDirty}
