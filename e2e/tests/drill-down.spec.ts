@@ -80,6 +80,6 @@ test.describe('Drill-down & Overrides', () => {
     const tableInput = popup.locator(
       'tr:has-text("sub_input") input.sheet-table-input',
     );
-    await expect(tableInput).toHaveValue('999', { timeout: 10000 });
+    await expect(tableInput).toHaveValue('( 999 )', { timeout: 10000 });
   });
 });

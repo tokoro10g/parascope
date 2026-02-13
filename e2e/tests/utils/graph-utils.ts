@@ -228,6 +228,26 @@ export async function addNode(page: Page, type: string, label: string, value?: s
 }
 
 /**
+ * Formats a value as an example value (wrapped in parentheses).
+ */
+export function formatExampleValue(value: string) {
+  return `( ${value} )`;
+}
+
+/**
+ * Verify an input value in the Rete editor or table.
+ * Handles the "( value )" wrapping for input nodes.
+ */
+export async function verifyInputValue(page: Page, nodeTitle: string, expectedValue: string, isExample = true) {
+  await test.step(`Verify input value for "${nodeTitle}" is "${expectedValue}"`, async () => {
+    const node = page.locator('[data-testid="node"]').filter({ has: page.locator(`[data-testid="title"]:has-text("${nodeTitle}")`) });
+    const input = node.locator('input.control-input');
+    const displayValue = isExample ? formatExampleValue(expectedValue) : expectedValue;
+    await expect(input).toHaveValue(displayValue);
+  });
+}
+
+/**
  * Verify a result in the Variables table.
  */
 export async function verifyResult(page: Page, value: string) {
@@ -246,6 +266,8 @@ export async function changeTableInput(page: Page, name: string, value: string) 
       .locator('tr')
       .filter({ has: page.locator('td').filter({ hasText: name }) });
     await expect(row).toBeVisible();
+    
+    // We target the input or select specifically
     const input = row.locator('input.sheet-table-input, select.sheet-table-input');
     await expect(input).toBeVisible();
 
@@ -254,6 +276,8 @@ export async function changeTableInput(page: Page, name: string, value: string) 
     if (tagName === 'select') {
       await input.selectOption(value);
     } else {
+      // Focus to remove parentheses before filling
+      await input.focus();
       await input.fill(value);
       await input.press('Enter');
     }

@@ -44,6 +44,7 @@ export const SheetTable: React.FC<SheetTableProps> = ({
     'variables' | 'descriptions'
   >('variables');
   const [focusedNodeId, setFocusedNodeId] = useState<string | null>(null);
+  const [editingValue, setEditingValue] = useState<string>('');
 
   const activeTab = externalActiveTab || localActiveTab;
 
@@ -293,13 +294,14 @@ export const SheetTable: React.FC<SheetTableProps> = ({
                           ) : isEditable ? (
                             <input
                               size={9}
-                              value={tableDisplayValue ?? ''}
+                              value={isFocused ? editingValue : (tableDisplayValue ?? '')}
                               key={node.id}
-                              onChange={() => {}}
-                              onFocus={(e) => {
+                              onChange={(e) => {
+                                setEditingValue(e.target.value);
+                              }}
+                              onFocus={() => {
                                 setFocusedNodeId(node.id);
-                                // Set raw value for editing
-                                e.target.value = value ?? '';
+                                setEditingValue(String(value ?? ''));
                               }}
                               onBlur={(e) => {
                                 setFocusedNodeId(null);

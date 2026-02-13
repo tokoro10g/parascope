@@ -5,6 +5,7 @@ import {
   addNode,
   zoomOut,
   runCalculation,
+  changeTableInput,
 } from './utils/graph-utils';
 
 test.describe('Connection Drop Context Menu', () => {
@@ -103,17 +104,8 @@ test.describe('Connection Drop Context Menu', () => {
     await expect(yNode).toBeVisible();
 
     // 4. Change "x" and "y" values in the table
-    const xRow = page.locator('tr').filter({ has: page.locator('td').filter({ hasText: 'x' }) });
-    const xInput = xRow.locator('input.sheet-table-input');
-    await expect(xInput).toBeVisible();
-    await xInput.fill('50');
-    await xInput.press('Enter');
-
-    const yRow = page.locator('tr').filter({ has: page.locator('td').filter({ hasText: 'y' }) });
-    const yInput = yRow.locator('input.sheet-table-input');
-    await expect(yInput).toBeVisible();
-    await yInput.fill('10');
-    await yInput.press('Enter');
+    await changeTableInput(page, 'x', '50');
+    await changeTableInput(page, 'y', '10');
 
     // 5. Create Output node for "result"
     const resultSocket = node.locator('.output').filter({ hasText: 'result' }).locator('.custom-socket');

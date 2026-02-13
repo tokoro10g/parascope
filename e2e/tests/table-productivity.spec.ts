@@ -66,7 +66,7 @@ test.describe('Table Productivity', () => {
     );
     expect(clipboardText).toContain('factor');
     expect(clipboardText).toContain('total');
-    expect(clipboardText).toContain('50');
+    expect(clipboardText).toContain('( 50 )');
     expect(clipboardText).toContain('100');
   });
 });
