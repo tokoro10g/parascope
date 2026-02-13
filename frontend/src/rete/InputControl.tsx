@@ -8,12 +8,14 @@ export class InputControl extends ClassicPreset.Control {
   public onChange?: (value: any) => void;
   public onCommit?: (oldValue: any, newValue: any) => void;
   public readonly: boolean;
+  public isExample: boolean;
   public error: string | null = null;
 
   constructor(
     value: string | number,
     options: {
       readonly?: boolean;
+      isExample?: boolean;
       change?: (value: any) => void;
       commit?: (oldValue: any, newValue: any) => void;
     } = {},
@@ -23,6 +25,7 @@ export class InputControl extends ClassicPreset.Control {
     this.onChange = options.change;
     this.onCommit = options.commit;
     this.readonly = options.readonly || false;
+    this.isExample = options.isExample || false;
   }
 
   setValue(val: string | number) {
@@ -52,6 +55,7 @@ export const InputControlComponent: React.FC<{ data: InputControl }> = ({
 }) => {
   const [value, setValue] = useState(data.value ?? '');
   const [error, setError] = useState<string | null>(data.error);
+  const [isFocused, setIsFocused] = useState(false);
   const initialValue = useRef(data.value ?? '');
 
   useEffect(() => {
@@ -76,6 +80,7 @@ export const InputControlComponent: React.FC<{ data: InputControl }> = ({
 
   const handleFocus = () => {
     initialValue.current = data.value ?? '';
+    setIsFocused(true);
   };
 
   const handleBlur = () => {
@@ -85,11 +90,15 @@ export const InputControlComponent: React.FC<{ data: InputControl }> = ({
       data.onCommit?.(startVal, currentVal);
       initialValue.current = currentVal;
     }
+    setIsFocused(false);
   };
+
+  const displayValue =
+    data.isExample && !isFocused && value ? `( ${value} )` : value;
 
   return (
     <input
-      value={value ?? ''}
+      value={displayValue ?? ''}
       onChange={handleChange}
       onFocus={handleFocus}
       onBlur={handleBlur}

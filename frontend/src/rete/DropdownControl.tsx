@@ -8,18 +8,21 @@ export class DropdownControl extends ClassicPreset.Control {
   public value: string;
   public onChange: (value: string) => void;
   public readonly: boolean;
+  public isExample: boolean;
 
   constructor(
     options: string[],
     value: string,
     onChange: (value: string) => void,
     readonly: boolean = false,
+    isExample: boolean = false,
   ) {
     super();
     this.options = options;
     this.value = value;
     this.onChange = onChange;
     this.readonly = readonly;
+    this.isExample = isExample;
   }
 
   setValue(val: string) {
@@ -63,7 +66,7 @@ export const DropdownControlComponent: React.FC<{ data: DropdownControl }> = ({
       <option key="" value=""></option>
       {data.options.map((opt) => (
         <option key={opt} value={opt}>
-          {opt}
+          {data.isExample ? `( ${opt} )` : opt}
         </option>
       ))}
     </select>
