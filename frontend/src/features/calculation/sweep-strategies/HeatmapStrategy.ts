@@ -1,4 +1,4 @@
-import { formatHumanReadableValue } from '../../../core/utils';
+import { formatHumanReadableValue } from '@/core/utils';
 import type { StrategyContext, VisualizationStrategy } from './types';
 import { createBaseGrid, getColor } from './utils';
 

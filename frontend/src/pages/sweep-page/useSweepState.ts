@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import toast from 'react-hot-toast';
 import { useParams, useSearchParams } from 'react-router-dom';
-import { api, type Sheet, type SweepHeader } from '../../core/api';
+import { api, type Sheet, type SweepHeader } from '@/core/api';
 
 export interface SweepAxisState {
   nodeId: string;

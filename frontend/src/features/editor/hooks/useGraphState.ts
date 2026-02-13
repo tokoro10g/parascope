@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useState } from 'react';
-import type { NodeEditorWrapper } from '../../../core/rete';
+import type { NodeEditorWrapper } from '@/core/rete';
 
 export interface GraphState {
   nodes: any[];

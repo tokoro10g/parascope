@@ -6,7 +6,7 @@ import {
   Workflow,
 } from 'lucide-react';
 import React, { useMemo, useState } from 'react';
-import type { Folder, SheetSummary } from '../../core/api';
+import type { Folder, SheetSummary } from '@/core/api';
 import './ItemExplorer.css';
 
 interface ItemExplorerProps {

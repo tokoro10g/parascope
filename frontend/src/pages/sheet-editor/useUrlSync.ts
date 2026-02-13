@@ -1,5 +1,5 @@
 import { useEffect, useRef } from 'react';
-import type { ParascopeNode } from '../../core/rete';
+import type { ParascopeNode } from '@/core/rete';
 
 interface UseUrlSyncProps {
   nodes: ParascopeNode[];

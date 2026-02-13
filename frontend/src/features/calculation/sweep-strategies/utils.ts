@@ -1,4 +1,4 @@
-import { formatHumanReadableValue } from '../../../core/utils';
+import { formatHumanReadableValue } from '@/core/utils';
 import type { StrategyContext } from './types';
 
 // Helpers to generate consistent colors for strings

@@ -1,8 +1,8 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import toast from 'react-hot-toast';
 import { v4 as uuidv4 } from 'uuid';
-import { api, type Lock } from '../../../core/api';
-import { useAuth } from '../../../core/contexts/AuthContext';
+import { api, type Lock } from '@/core/api';
+import { useAuth } from '@/core/contexts/AuthContext';
 
 export function useSheetLock(sheetId: string | null, shouldLock = true) {
   const { user } = useAuth();

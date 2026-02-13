@@ -1,8 +1,8 @@
 import { useCallback, useState } from 'react';
 import toast from 'react-hot-toast';
-import { api, type NodeResult } from '../../../core/api';
-import { InputControl, type ParascopeNode } from '../../../core/rete';
-import { validateGraphConnectivity } from '../../../core/utils';
+import { api, type NodeResult } from '@/core/api';
+import { InputControl, type ParascopeNode } from '@/core/rete';
+import { validateGraphConnectivity } from '@/core/utils';
 
 interface Editor {
   instance: {

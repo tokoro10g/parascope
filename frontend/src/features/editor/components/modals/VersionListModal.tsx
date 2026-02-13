@@ -2,8 +2,8 @@ import { Milestone, RefreshCw, Star, Trash2 } from 'lucide-react';
 import type React from 'react';
 import { useCallback, useEffect, useState } from 'react';
 import toast from 'react-hot-toast';
-import { api, type SheetVersion, type SheetVersionSummary } from '../../../../core/api';
-import { Modal } from '../../../../components/ui/Modal';
+import { Modal } from '@/components/ui/Modal';
+import { api, type SheetVersion, type SheetVersionSummary } from '@/core/api';
 
 interface VersionListModalProps {
   isOpen: boolean;

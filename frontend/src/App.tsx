@@ -1,11 +1,11 @@
 import { Toaster } from 'react-hot-toast';
 import { createBrowserRouter, Outlet, RouterProvider } from 'react-router-dom';
+import { AuthProvider } from './core/contexts/AuthContext';
+import { RequireAuth } from './features/auth/RequireAuth';
 import { Dashboard } from './pages/dashboard';
 import { Login } from './pages/login/Login';
-import { RequireAuth } from './features/auth/RequireAuth';
 import { SheetEditor } from './pages/sheet-editor';
 import { SweepPage } from './pages/sweep-page';
-import { AuthProvider } from './core/contexts/AuthContext';
 import './styles/App.css';
 import './styles/rete.css';
 

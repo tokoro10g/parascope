@@ -1,6 +1,6 @@
 import { useCallback } from 'react';
-import type { NodeEditorWrapper, ParascopeNode } from '../../../core/rete';
-import type { NodeType, NodeUpdates } from '../../../core/rete/types';
+import type { NodeEditorWrapper, ParascopeNode } from '@/core/rete';
+import type { NodeType, NodeUpdates } from '@/core/rete/types';
 
 export function useNodeOperations(
   wrapper: NodeEditorWrapper | undefined | null,

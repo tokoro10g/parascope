@@ -9,18 +9,28 @@ import {
 import { HistoryPlugin, Presets as HistoryPresets } from 'rete-history-plugin';
 import { ReactPlugin, Presets as ReactPresets } from 'rete-react-plugin';
 
-import { CustomItem, CustomMenu, CustomSearch } from './components/ContextMenuStyles';
+import {
+  CustomItem,
+  CustomMenu,
+  CustomSearch,
+} from './components/ContextMenuStyles';
 import { CustomNode } from './components/CustomNode';
 import { CustomSocket } from './components/CustomSocket';
+import {
+  DropdownControl,
+  DropdownControlComponent,
+} from './components/DropdownControl';
+import { InputControl, InputControlComponent } from './components/InputControl';
+import {
+  MarkdownControl,
+  MarkdownControlComponent,
+} from './components/MarkdownControl';
 import {
   type ContextMenuCallbacks,
   createContextMenuPlugin,
 } from './contextMenu';
-import { DropdownControl, DropdownControlComponent } from './components/DropdownControl';
 import { createFactory } from './factory';
-import { InputControl, InputControlComponent } from './components/InputControl';
 import { createLoader } from './loader';
-import { MarkdownControl, MarkdownControlComponent } from './components/MarkdownControl';
 import { createOperations } from './operations';
 import type { ParascopeNode } from './ParascopeNode';
 import { customSelectableNodes } from './selectable';

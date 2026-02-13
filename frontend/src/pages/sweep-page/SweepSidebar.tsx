@@ -1,6 +1,6 @@
 import type React from 'react';
 import { useState } from 'react';
-import type { NodeData } from '../../core/api';
+import type { NodeData } from '@/core/api';
 import './SweepPage.css';
 
 import type { SweepAxisState } from './useSweepState';

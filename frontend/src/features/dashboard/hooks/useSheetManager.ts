@@ -1,8 +1,8 @@
 import pRetry from 'p-retry';
 import { useCallback, useRef, useState } from 'react';
 import toast from 'react-hot-toast';
-import { api, type Sheet } from '../../../core/api';
-import { syncNestedSheets } from '../../../core/utils';
+import { api, type Sheet } from '@/core/api';
+import { syncNestedSheets } from '@/core/utils';
 
 export function useSheetManager(
   onLoadSuccess: (sheet: Sheet) => Promise<void> | void,

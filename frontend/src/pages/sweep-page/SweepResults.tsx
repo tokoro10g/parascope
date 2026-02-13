@@ -5,10 +5,10 @@ import type React from 'react';
 import { useMemo, useRef, useState } from 'react';
 import toast from 'react-hot-toast';
 import { Link } from 'react-router-dom';
-import type { NodeData, SweepHeader } from '../../core/api';
-import { copyToClipboard } from '../../core/utils';
-import { Modal } from '../../components/ui/Modal';
-import { getSweepChartOption } from '../../features/calculation/sweep-strategies';
+import { Modal } from '@/components/ui/Modal';
+import type { NodeData, SweepHeader } from '@/core/api';
+import { copyToClipboard } from '@/core/utils';
+import { getSweepChartOption } from '@/features/calculation/sweep-strategies';
 import './SweepPage.css';
 
 interface SweepResultsProps {

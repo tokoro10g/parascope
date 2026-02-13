@@ -1,8 +1,8 @@
 import type React from 'react';
 import { useEffect, useState } from 'react';
-import { api, type Folder } from '../../../../core/api';
-import { ItemExplorer } from '../../../dashboard/ItemExplorer';
-import { Modal } from '../../../../components/ui/Modal';
+import { Modal } from '@/components/ui/Modal';
+import { api, type Folder } from '@/core/api';
+import { ItemExplorer } from '@/features/dashboard/ItemExplorer';
 
 interface FolderPickerModalProps {
   isOpen: boolean;

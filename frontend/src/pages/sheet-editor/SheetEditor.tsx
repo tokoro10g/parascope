@@ -1,7 +1,7 @@
 import type React from 'react';
 import { Group, Separator } from 'react-resizable-panels';
-import { useAuth } from '../../core/contexts/AuthContext';
-import { NavBar } from '../../components/ui/NavBar';
+import { NavBar } from '@/components/ui/NavBar';
+import { useAuth } from '@/core/contexts/AuthContext';
 import './SheetEditor.css';
 
 import { SheetEditorModals } from './modals/SheetEditorModals';

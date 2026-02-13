@@ -4,7 +4,7 @@ import ReactMarkdown from 'react-markdown';
 import rehypeKatex from 'rehype-katex';
 import remarkMath from 'remark-math';
 import { ClassicPreset } from 'rete';
-import { API_BASE } from '../../api';
+import { API_BASE } from '@/core/api';
 
 export class MarkdownControl extends ClassicPreset.Control {
   private listeners: (() => void)[] = [];

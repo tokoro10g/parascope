@@ -1,5 +1,5 @@
 import { useCallback } from 'react';
-import { Connection } from '../../core/rete/types';
+import { Connection } from '@/core/rete/types';
 
 export function useSheetClipboard(
   addNode: any,

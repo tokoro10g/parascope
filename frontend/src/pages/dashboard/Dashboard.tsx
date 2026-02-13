@@ -11,12 +11,12 @@ import {
 import React, { useCallback, useEffect, useState } from 'react';
 import toast from 'react-hot-toast';
 import { Link, useNavigate, useParams } from 'react-router-dom';
-import { api, type Folder, type Session, type SheetSummary } from '../../core/api';
-import { useAuth } from '../../core/contexts/AuthContext';
-import { DeleteConfirmationModal } from '../../components/ui/DeleteConfirmationModal';
-import { FolderPickerModal } from '../../features/editor/components/modals/FolderPickerModal';
-import { ItemExplorer } from '../../features/dashboard/ItemExplorer';
-import { ParascopeLogo } from '../../components/ui/ParascopeLogo';
+import { DeleteConfirmationModal } from '@/components/ui/DeleteConfirmationModal';
+import { ParascopeLogo } from '@/components/ui/ParascopeLogo';
+import { api, type Folder, type Session, type SheetSummary } from '@/core/api';
+import { useAuth } from '@/core/contexts/AuthContext';
+import { ItemExplorer } from '@/features/dashboard/ItemExplorer';
+import { FolderPickerModal } from '@/features/editor/components/modals/FolderPickerModal';
 import './Dashboard.css';
 
 export const formatTimeAgo = (dateStr: string) => {

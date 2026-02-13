@@ -1,6 +1,6 @@
 import type React from 'react';
 import { Panel } from 'react-resizable-panels';
-import { SheetTable } from '../../../features/calculation/sheet-table';
+import { SheetTable } from '@/features/calculation/sheet-table';
 import { useSheetEditor } from '../SheetEditorContext';
 
 export const SheetTablePanel: React.FC = () => {

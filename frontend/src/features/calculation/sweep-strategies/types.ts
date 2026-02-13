@@ -1,4 +1,4 @@
-import type { SweepHeader } from '../../../core/api';
+import type { SweepHeader } from '@/core/api';
 
 export interface ChartTheme {
   text: string;

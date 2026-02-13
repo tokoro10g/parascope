@@ -6,9 +6,8 @@ import {
   Separator,
 } from 'react-resizable-panels';
 import { useNavigate, useSearchParams } from 'react-router-dom';
-import { useAuth } from '../../core/contexts/AuthContext';
-
-import { NavBar } from '../../components/ui/NavBar';
+import { NavBar } from '@/components/ui/NavBar';
+import { useAuth } from '@/core/contexts/AuthContext';
 import './SweepPage.css';
 import { SweepResults } from './SweepResults';
 import { SweepSidebar } from './SweepSidebar';

@@ -1,7 +1,7 @@
 import type { EChartsOption } from 'echarts';
 import 'echarts-gl';
-import type { SweepHeader } from '../../../core/api';
-import { formatHumanReadableValue } from '../../../core/utils';
+import type { SweepHeader } from '@/core/api';
+import { formatHumanReadableValue } from '@/core/utils';
 import { CategoricalBarStrategy } from './CategoricalBarStrategy';
 import { HeatmapStrategy } from './HeatmapStrategy';
 import { MultiLineStrategy } from './MultiLineStrategy';

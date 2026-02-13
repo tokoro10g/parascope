@@ -1,6 +1,6 @@
 import type React from 'react';
 import { Navigate, useLocation } from 'react-router-dom';
-import { useAuth } from '../../core/contexts/AuthContext';
+import { useAuth } from '@/core/contexts/AuthContext';
 
 export const RequireAuth: React.FC<{ children: React.ReactNode }> = ({
   children,

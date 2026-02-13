@@ -1,9 +1,9 @@
 import type React from 'react';
 import { useEffect, useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
-import { api } from '../../core/api';
-import { useAuth } from '../../core/contexts/AuthContext';
-import { ParascopeLogo } from '../../components/ui/ParascopeLogo';
+import { ParascopeLogo } from '@/components/ui/ParascopeLogo';
+import { api } from '@/core/api';
+import { useAuth } from '@/core/contexts/AuthContext';
 import './Login.css';
 
 export const Login: React.FC = () => {

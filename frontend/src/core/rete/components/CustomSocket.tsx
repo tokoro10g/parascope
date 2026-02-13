@@ -1,5 +1,5 @@
 import type { ClassicPreset } from 'rete';
-import { formatHumanReadableValue } from '../../utils';
+import { formatHumanReadableValue } from '@/core/utils';
 import './CustomSocket.css';
 
 export function CustomSocket(props: { data: ClassicPreset.Socket }) {

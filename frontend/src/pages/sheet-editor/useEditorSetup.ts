@@ -1,6 +1,6 @@
 import { useEffect } from 'react';
-import type { NodeEditorWrapper, ParascopeNode } from '../../core/rete';
-import { createSocket } from '../../core/utils';
+import type { NodeEditorWrapper, ParascopeNode } from '@/core/rete';
+import { createSocket } from '@/core/utils';
 
 interface UseEditorSetupProps {
   editor: NodeEditorWrapper | null;

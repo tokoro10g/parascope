@@ -4,15 +4,15 @@ import { useState } from 'react';
 import ReactMarkdown from 'react-markdown';
 import rehypeKatex from 'rehype-katex';
 import remarkMath from 'remark-math';
-import { API_BASE, type NodeResult } from '../../../core/api';
-import type { ParascopeNode } from '../../../core/rete';
+import { API_BASE, type NodeResult } from '@/core/api';
+import type { ParascopeNode } from '@/core/rete';
 import './SheetTable.css';
+import { ScrollablePanel } from '@/components/ui/ScrollablePanel';
 import {
   copyToClipboard,
   formatHumanReadableValue,
   getNestedSheetUrl,
-} from '../../../core/utils';
-import { ScrollablePanel } from '../../../components/ui/ScrollablePanel';
+} from '@/core/utils';
 
 interface SheetTableProps {
   nodes: ParascopeNode[];

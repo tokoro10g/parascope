@@ -23,7 +23,7 @@ import {
 } from 'lucide-react';
 import type React from 'react';
 import { useEffect, useRef, useState } from 'react';
-import type { NodeType } from '../../../core/rete/types';
+import type { NodeType } from '@/core/rete/types';
 import './EditorBar.css';
 
 interface EditorBarProps {

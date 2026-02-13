@@ -8,23 +8,23 @@ import {
   useSearchParams,
 } from 'react-router-dom';
 import { useRete } from 'rete-react-plugin';
-import { api, type Sheet } from '../../core/api';
-import { useNodeOperations } from '../../features/editor/hooks/useNodeOperations';
-import { useReteEvents } from '../../features/editor/hooks/useReteEvents';
-import { useSheetCalculation } from '../../features/calculation/hooks/useSheetCalculation';
-import { useSheetLock } from '../../features/editor/hooks/useSheetLock';
-import { useSheetManager } from '../../features/dashboard/hooks/useSheetManager';
-import { useUnsavedChanges } from '../../features/editor/hooks/useUnsavedChanges';
-import { createEditor, type ParascopeNode } from '../../core/rete';
-import type { NodeType } from '../../core/rete/types';
-import { Connection } from '../../core/rete/types';
+import { api, type Sheet } from '@/core/api';
+import { createEditor, type ParascopeNode } from '@/core/rete';
+import type { NodeType } from '@/core/rete/types';
+import { Connection } from '@/core/rete/types';
 import {
   createSocket,
   getNestedSheetUrl,
   resolveNestedSheetParams,
   resolveSheetPorts,
   syncNestedSheets,
-} from '../../core/utils';
+} from '@/core/utils';
+import { useSheetCalculation } from '@/features/calculation/hooks/useSheetCalculation';
+import { useSheetManager } from '@/features/dashboard/hooks/useSheetManager';
+import { useNodeOperations } from '@/features/editor/hooks/useNodeOperations';
+import { useReteEvents } from '@/features/editor/hooks/useReteEvents';
+import { useSheetLock } from '@/features/editor/hooks/useSheetLock';
+import { useUnsavedChanges } from '@/features/editor/hooks/useUnsavedChanges';
 import type { SheetEditorContextType } from './SheetEditorContext';
 import type { CalculationInputDefinition } from './types';
 import { useEditorSetup } from './useEditorSetup';

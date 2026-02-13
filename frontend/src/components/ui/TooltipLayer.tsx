@@ -1,7 +1,7 @@
 import { AlertTriangle, X } from 'lucide-react';
 import type React from 'react';
 import { useEffect, useState } from 'react';
-import type { NodeEditorWrapper } from '../../core/rete';
+import type { NodeEditorWrapper } from '@/core/rete';
 
 interface TooltipLayerProps {
   editor: NodeEditorWrapper | null;
