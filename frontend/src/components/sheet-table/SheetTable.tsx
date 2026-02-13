@@ -43,6 +43,7 @@ export const SheetTable: React.FC<SheetTableProps> = ({
   const [localActiveTab, setLocalActiveTab] = useState<
     'variables' | 'descriptions'
   >('variables');
+  const [focusedNodeId, setFocusedNodeId] = useState<string | null>(null);
 
   const activeTab = externalActiveTab || localActiveTab;
 
@@ -129,7 +130,9 @@ export const SheetTable: React.FC<SheetTableProps> = ({
       const valueControl = node.controls.value as any;
 
       const name = nameControl?.value || node.label;
-      const value = valueControl?.value || '';
+      const rawValue = valueControl?.value || '';
+      const value =
+        node.type === 'input' && rawValue ? `( ${rawValue} )` : rawValue;
       const url = `${window.location.origin}${window.location.pathname}${window.location.search}#${node.id}`;
 
       return [name, node.type, value, url].join('\t');
@@ -221,6 +224,7 @@ export const SheetTable: React.FC<SheetTableProps> = ({
 
                 <tbody>
                   {tableNodes.map((node) => {
+                    const isFocused = focusedNodeId === node.id;
                     const isEditable =
                       node.type === 'constant' || node.type === 'input';
                     const isDropdown =
@@ -244,6 +248,10 @@ export const SheetTable: React.FC<SheetTableProps> = ({
                         displayValue = formatHumanReadableValue(value);
                       }
                     }
+
+                    const isExample = node.type === 'input';
+                    const tableDisplayValue =
+                      isExample && !isFocused && value ? `( ${value} )` : value;
 
                     const hasError = !!node.error;
                     const typeClass = `cell-type-${node.type}`;
@@ -270,22 +278,31 @@ export const SheetTable: React.FC<SheetTableProps> = ({
                               onChange={(e) => {
                                 onUpdateValue(node.id, e.target.value);
                               }}
+                              onFocus={() => setFocusedNodeId(node.id)}
+                              onBlur={() => setFocusedNodeId(null)}
                               onClick={(e) => e.stopPropagation()} // Prevent row selection when editing
                               className="sheet-table-input"
                             >
                               <option key="" value=""></option>
                               {node.data.options.map((opt: string) => (
                                 <option key={opt} value={opt}>
-                                  {opt}
+                                  {isExample && !isFocused ? `( ${opt} )` : opt}
                                 </option>
                               ))}
                             </select>
                           ) : isEditable ? (
                             <input
                               size={9}
-                              defaultValue={value}
-                              key={`${node.id}-${value}`} // Ensure it updates if external value changes
+                              value={tableDisplayValue ?? ''}
+                              key={node.id}
+                              onChange={() => {}}
+                              onFocus={(e) => {
+                                setFocusedNodeId(node.id);
+                                // Set raw value for editing
+                                e.target.value = value ?? '';
+                              }}
                               onBlur={(e) => {
+                                setFocusedNodeId(null);
                                 if (e.target.value !== String(value)) {
                                   onUpdateValue(node.id, e.target.value);
                                 }
