@@ -1,21 +1,20 @@
 import type React from 'react';
 import { useEffect, useState } from 'react';
-import { api, type Folder, type Sheet } from '../../core/api';
-import { ItemExplorer } from '../dashboard/ItemExplorer';
-import { Modal } from '../../components/ui/Modal';
+import { api, type Folder } from '../../../../core/api';
+import { ItemExplorer } from '../../../dashboard/ItemExplorer';
+import { Modal } from '../../../../components/ui/Modal';
 
-interface SheetPickerModalProps {
+interface FolderPickerModalProps {
   isOpen: boolean;
   onClose: () => void;
-  onSelect: (sheet: Sheet) => void;
+  onSelect: (folderId: string | undefined) => void;
 }
 
-export const SheetPickerModal: React.FC<SheetPickerModalProps> = ({
+export const FolderPickerModal: React.FC<FolderPickerModalProps> = ({
   isOpen,
   onClose,
   onSelect,
 }) => {
-  const [sheets, setSheets] = useState<Sheet[]>([]);
   const [folders, setFolders] = useState<Folder[]>([]);
   const [currentFolderId, setCurrentFolderId] = useState<string | undefined>(
     undefined,
@@ -26,16 +25,11 @@ export const SheetPickerModal: React.FC<SheetPickerModalProps> = ({
     const loadData = async () => {
       setLoading(true);
       try {
-        const [sheetsData, foldersData] = await Promise.all([
-          api.listSheets(),
-          api.listFolders(),
-        ]);
-        // @ts-expect-error
-        setSheets(sheetsData);
+        const foldersData = await api.listFolders();
         setFolders(foldersData);
       } catch (e) {
         console.error(e);
-        alert('Failed to load data');
+        alert('Failed to load folders');
       } finally {
         setLoading(false);
       }
@@ -54,16 +48,25 @@ export const SheetPickerModal: React.FC<SheetPickerModalProps> = ({
   };
 
   const footer = (
-    <button type="button" onClick={onClose} className="btn">
-      Cancel
-    </button>
+    <>
+      <button type="button" onClick={onClose} className="btn">
+        Cancel
+      </button>
+      <button
+        type="button"
+        onClick={() => onSelect(currentFolderId)}
+        className="btn primary"
+      >
+        Move Here
+      </button>
+    </>
   );
 
   return (
     <Modal
       isOpen={isOpen}
       onClose={onClose}
-      title="Import Sheet"
+      title="Select Destination Folder"
       footer={footer}
     >
       {loading ? (
@@ -71,13 +74,11 @@ export const SheetPickerModal: React.FC<SheetPickerModalProps> = ({
       ) : (
         <ItemExplorer
           folders={folders}
-          sheets={sheets}
           currentFolderId={currentFolderId}
           onFolderClick={(id) => setCurrentFolderId(id)}
           onGoHome={() => setCurrentFolderId(undefined)}
           onUpClick={currentFolderId ? handleUp : undefined}
-          onSheetClick={onSelect}
-          emptyMessage="No items in this folder."
+          emptyMessage="No subfolders."
         />
       )}
     </Modal>

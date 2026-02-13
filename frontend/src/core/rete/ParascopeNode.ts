@@ -1,7 +1,7 @@
 import { ClassicPreset as Classic } from 'rete';
-import { DropdownControl } from './DropdownControl';
-import { InputControl } from './InputControl';
-import { MarkdownControl } from './MarkdownControl';
+import { DropdownControl } from './components/DropdownControl';
+import { InputControl } from './components/InputControl';
+import { MarkdownControl } from './components/MarkdownControl';
 import type { NodeType } from './types';
 
 export const socket = new Classic.Socket('socket');
@@ -95,7 +95,7 @@ export class ParascopeNode extends Classic.Node {
         new DropdownControl(
           data.options,
           String(data.value ?? ''),
-          (val) => {
+          (val: string) => {
             const oldVal = data.value;
             data.value = val;
             onCommit?.(oldVal, val);

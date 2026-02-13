@@ -2,10 +2,10 @@ import { CheckCheck } from 'lucide-react';
 import type React from 'react';
 import { useCallback, useEffect, useState } from 'react';
 import toast from 'react-hot-toast';
-import { type AuditLog, api } from '../../core/api';
-import type { ParascopeNode } from '../../core/rete';
-import { Modal } from '../../components/ui/Modal';
-import { ScrollablePanel } from '../../components/ui/ScrollablePanel';
+import { type AuditLog, api } from '../../../../core/api';
+import type { ParascopeNode } from '../../../../core/rete';
+import { Modal } from '../../../../components/ui/Modal';
+import { ScrollablePanel } from '../../../../components/ui/ScrollablePanel';
 
 interface HistoryModalProps {
   isOpen: boolean;

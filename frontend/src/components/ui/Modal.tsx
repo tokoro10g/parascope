@@ -1,6 +1,6 @@
 import { X } from 'lucide-react';
 import type React from 'react';
-import { useModalKeyEvents } from '../../hooks/useModalKeyEvents';
+import { useModalKeyEvents } from './hooks/useModalKeyEvents';
 import './Modal.css';
 
 interface ModalProps {

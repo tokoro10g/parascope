@@ -45,7 +45,7 @@ export const useSheetCalculation = (editor: Editor | null | undefined) => {
           // Propagate error to InputControl
           Object.values(node.controls).forEach((control) => {
             if (control instanceof InputControl) {
-              control.setError(node.error || null);
+              (control as any).setError(node.error || null);
             }
           });
 

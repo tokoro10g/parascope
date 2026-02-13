@@ -1,4 +1,4 @@
-import type { NodeUpdates } from '../../../core/rete/types';
+import type { NodeUpdates } from '../../../../core/rete/types';
 export type { NodeUpdates };
 
 export interface NodeInspectorProps {

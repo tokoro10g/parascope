@@ -2,8 +2,8 @@ import { ExternalLink } from 'lucide-react';
 import type React from 'react';
 import { useEffect, useState } from 'react';
 import toast from 'react-hot-toast';
-import { api, type SheetUsage } from '../../core/api';
-import { Modal } from '../../components/ui/Modal';
+import { api, type SheetUsage } from '../../../../core/api';
+import { Modal } from '../../../../components/ui/Modal';
 
 interface SheetUsageModalProps {
   isOpen: boolean;

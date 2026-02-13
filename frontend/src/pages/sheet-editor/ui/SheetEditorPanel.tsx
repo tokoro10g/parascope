@@ -1,6 +1,6 @@
 import type React from 'react';
 import { Panel } from 'react-resizable-panels';
-import { EditorBar } from '../../../features/editor/EditorBar';
+import { EditorBar } from '../../../features/editor/components/EditorBar';
 import { TooltipLayer } from '../../../components/ui/TooltipLayer';
 import { useSheetEditor } from '../SheetEditorContext';
 

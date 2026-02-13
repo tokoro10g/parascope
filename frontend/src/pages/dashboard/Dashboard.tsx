@@ -14,7 +14,7 @@ import { Link, useNavigate, useParams } from 'react-router-dom';
 import { api, type Folder, type Session, type SheetSummary } from '../../core/api';
 import { useAuth } from '../../core/contexts/AuthContext';
 import { DeleteConfirmationModal } from '../../components/ui/DeleteConfirmationModal';
-import { FolderPickerModal } from '../../features/editor/FolderPickerModal';
+import { FolderPickerModal } from '../../features/editor/components/modals/FolderPickerModal';
 import { ItemExplorer } from '../../features/dashboard/ItemExplorer';
 import { ParascopeLogo } from '../../components/ui/ParascopeLogo';
 import './Dashboard.css';

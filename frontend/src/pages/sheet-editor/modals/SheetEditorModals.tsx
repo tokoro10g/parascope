@@ -1,10 +1,10 @@
 import type React from 'react';
-import { HistoryModal } from '../../../features/editor/HistoryModal';
+import { HistoryModal } from '../../../features/editor/components/modals/HistoryModal';
 import { Modal } from '../../../components/ui/Modal';
-import { NodeInspector } from '../../../features/editor/node-inspector/NodeInspector';
-import { SheetPickerModal } from '../../../features/editor/SheetPickerModal';
-import { SheetUsageModal } from '../../../features/editor/SheetUsageModal';
-import { VersionListModal } from '../../../features/editor/VersionListModal';
+import { NodeInspector } from '../../../features/editor/components/node-inspector/NodeInspector';
+import { SheetPickerModal } from '../../../features/editor/components/modals/SheetPickerModal';
+import { SheetUsageModal } from '../../../features/editor/components/modals/SheetUsageModal';
+import { VersionListModal } from '../../../features/editor/components/modals/VersionListModal';
 import { useSheetEditor } from '../SheetEditorContext';
 
 export const SheetEditorModals: React.FC = () => {

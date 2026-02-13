@@ -1,8 +1,8 @@
 import type React from 'react';
 import { useEffect, useState } from 'react';
-import { API_BASE, api, type SheetVersionSummary } from '../../../core/api';
-import { resolveSheetPorts } from '../../../core/utils';
-import { Modal } from '../../../components/ui/Modal';
+import { API_BASE, api, type SheetVersionSummary } from '../../../../core/api';
+import { resolveSheetPorts } from '../../../../core/utils';
+import { Modal } from '../../../../components/ui/Modal';
 import { AIGenerator } from './AIGenerator';
 import { DescriptionEditor } from './DescriptionEditor';
 import { FunctionEditor } from './FunctionEditor';

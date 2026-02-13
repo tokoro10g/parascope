@@ -3,7 +3,7 @@ import type { PanelImperativeHandle } from 'react-resizable-panels';
 import type { NodeResult, Sheet, SheetVersion } from '../../core/api';
 import type { ParascopeNode } from '../../core/rete';
 import type { NodeEditorWrapper } from '../../core/rete/default';
-import type { NodeUpdates } from '../../features/editor/node-inspector/types';
+import type { NodeUpdates } from '../../features/editor/components/node-inspector/types';
 
 export interface SheetEditorContextType {
   // State

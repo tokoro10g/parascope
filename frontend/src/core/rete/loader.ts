@@ -3,8 +3,8 @@ import type { AreaPlugin } from 'rete-area-plugin';
 import type { HistoryPlugin } from 'rete-history-plugin';
 import type { Sheet } from '../api';
 import { createSocket } from '../utils';
-import { DropdownControl } from './DropdownControl';
-import { InputControl } from './InputControl';
+import { DropdownControl } from './components/DropdownControl';
+import { InputControl } from './components/InputControl';
 import { ParascopeNode } from './ParascopeNode';
 import type { AreaExtra, NodeType, Schemes } from './types';
 
