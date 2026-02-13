@@ -345,6 +345,30 @@ export function useSheetEditorLogic(): SheetEditorLogic {
         const { updatedNodes } = await syncNestedSheets(tempSheet as any);
         tempSheet.nodes = updatedNodes;
 
+        // Extract input values from the restored version snapshot
+        const initialInputs: Record<string, string> = {};
+        for (const n of updatedNodes) {
+          if (n.type === 'input' && n.id) {
+            initialInputs[n.id] =
+              n.data?.value != null ? String(n.data.value) : '';
+          }
+        }
+        setCalculationInputs(initialInputs);
+
+        // Clear URL parameters related to inputs to prevent useUrlSync from reverting them
+        const currentParams = new URLSearchParams(window.location.search);
+        let paramsChanged = false;
+        for (const n of updatedNodes) {
+          if (n.type === 'input' && currentParams.has(n.label)) {
+            currentParams.delete(n.label);
+            paramsChanged = true;
+          }
+        }
+        if (paramsChanged) {
+          const newUrl = `${window.location.pathname}${currentParams.toString() ? `?${currentParams.toString()}` : ''}${window.location.hash}`;
+          window.history.replaceState(window.history.state, '', newUrl);
+        }
+
         await editor.loadSheet(tempSheet as any);
         const nodes = [...editor.instance.getNodes()];
         nodes.forEach((n) => {
@@ -426,6 +450,19 @@ export function useSheetEditorLogic(): SheetEditorLogic {
 
               setCurrentSheet(tempSheet);
               setCurrentVersionCreatedAt(v.created_at);
+
+              // Extract input values from the version snapshot
+              const initialInputs: Record<string, string> = {};
+              if (v.data && Array.isArray(v.data.nodes)) {
+                for (const n of v.data.nodes) {
+                  if (n.type === 'input' && n.id) {
+                    initialInputs[n.id] =
+                      n.data?.value != null ? String(n.data.value) : '';
+                  }
+                }
+              }
+              setCalculationInputs(initialInputs);
+
               document.title = `${tempSheet.name} - Parascope`;
               editor.loadSheet(tempSheet).then(() => {
                 setNodes([...editor.instance.getNodes()]);
