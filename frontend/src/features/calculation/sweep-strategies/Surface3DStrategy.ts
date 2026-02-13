@@ -176,6 +176,7 @@ export class Surface3DStrategy implements VisualizationStrategy {
       visualMap: [
         {
           show: true,
+          calculable: true,
           dimension: 2,
           min: minZ,
           max: maxZ,
