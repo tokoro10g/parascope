@@ -1,13 +1,13 @@
 import { Toaster } from 'react-hot-toast';
 import { createBrowserRouter, Outlet, RouterProvider } from 'react-router-dom';
-import { Dashboard } from './components/dashboard';
-import { Login } from './components/Login';
-import { RequireAuth } from './components/RequireAuth';
-import { SheetEditor } from './components/sheet-editor';
-import { SweepPage } from './components/sweep-page';
-import { AuthProvider } from './contexts/AuthContext';
-import './App.css';
-import './rete.css';
+import { Dashboard } from './pages/dashboard';
+import { Login } from './pages/login/Login';
+import { RequireAuth } from './features/auth/RequireAuth';
+import { SheetEditor } from './pages/sheet-editor';
+import { SweepPage } from './pages/sweep-page';
+import { AuthProvider } from './core/contexts/AuthContext';
+import './styles/App.css';
+import './styles/rete.css';
 
 const Layout = () => (
   <div className="App">
