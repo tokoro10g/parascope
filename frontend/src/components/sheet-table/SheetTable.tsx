@@ -294,7 +294,11 @@ export const SheetTable: React.FC<SheetTableProps> = ({
                           ) : isEditable ? (
                             <input
                               size={9}
-                              value={isFocused ? editingValue : (tableDisplayValue ?? '')}
+                              value={
+                                isFocused
+                                  ? editingValue
+                                  : (tableDisplayValue ?? '')
+                              }
                               key={node.id}
                               onChange={(e) => {
                                 setEditingValue(e.target.value);
