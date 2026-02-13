@@ -229,6 +229,13 @@ export const Dashboard: React.FC = () => {
     setSheetToMove(null);
   };
 
+  const getSheetUrl = (sheet: SheetSummary | { id: string; default_version_id?: string | null }) => {
+    if (sheet.default_version_id) {
+      return `/sheet/${sheet.id}?versionId=${sheet.default_version_id}`;
+    }
+    return `/sheet/${sheet.id}`;
+  };
+
   const handleUp = () => {
     const current = folders.find((f) => f.id === currentFolderId);
     if (current?.parent_id) {
@@ -275,7 +282,7 @@ export const Dashboard: React.FC = () => {
           sheets={sheets}
           currentFolderId={currentFolderId}
           onFolderClick={(id) => navigate(`/folder/${id}`)}
-          onSheetClick={(sheet) => navigate(`/sheet/${sheet.id}`)}
+          onSheetClick={(sheet) => navigate(getSheetUrl(sheet))}
           onUpClick={currentFolderId ? handleUp : undefined}
           onGoHome={() => navigate('/')}
           renderFolderActions={(folder) => (
