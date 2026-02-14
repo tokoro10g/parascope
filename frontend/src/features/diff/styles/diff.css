@@ -1,0 +1,141 @@
+.diff-delta {
+  display: inline-flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 4px;
+}
+
+.diff-delta.diff-code {
+  display: block;
+  white-space: pre-wrap;
+  font-size: 0.75rem;
+  width: 100%;
+  background-color: var(--panel-bg-secondary);
+  padding: 8px;
+  border-radius: 4px;
+  border: 1px solid var(--border-color);
+}
+
+.diff-old {
+  color: #cf222e;
+  background-color: #ffebe9;
+  text-decoration: line-through;
+  padding: 0 4px;
+  border-radius: 2px;
+}
+
+.diff-new {
+  color: #1a7f37;
+  background-color: #dafbe1;
+  padding: 0 4px;
+  border-radius: 2px;
+}
+
+.diff-arrow {
+  color: var(--text-secondary);
+  font-weight: bold;
+}
+
+.diff-object {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 4px 8px;
+  border-left: 2px solid var(--border-color);
+  background-color: rgba(0, 0, 0, 0.02);
+  width: 100%;
+}
+
+.diff-object-row {
+  display: flex;
+  gap: 8px;
+  align-items: flex-start;
+}
+
+.diff-key {
+  color: var(--text-secondary);
+  font-weight: bold;
+  min-width: 60px;
+}
+
+.diff-key.added {
+  color: #1a7f37;
+  background-color: #dafbe1;
+  padding: 0 4px;
+  border-radius: 2px;
+  min-width: unset;
+}
+
+.diff-key.removed {
+  color: #cf222e;
+  background-color: #ffebe9;
+  padding: 0 4px;
+  border-radius: 2px;
+  min-width: unset;
+}
+
+.diff-line-view {
+  background-color: var(--panel-bg-secondary);
+  border: 1px solid var(--border-color);
+  border-radius: 4px;
+  font-family: monospace;
+  font-size: 0.75rem;
+  overflow: hidden;
+  width: 100%;
+  margin-top: 4px;
+}
+
+.diff-line {
+  display: flex;
+  white-space: pre-wrap;
+  min-height: 1.2em;
+}
+
+.diff-line.added {
+  background-color: #dafbe1;
+  color: #1a7f37;
+}
+
+.diff-line.removed {
+  background-color: #ffebe9;
+  color: #cf222e;
+}
+
+.diff-line-marker {
+  width: 20px;
+  display: inline-block;
+  text-align: center;
+  user-select: none;
+  opacity: 0.6;
+}
+
+.diff-line-text {
+  flex: 1;
+  padding-left: 4px;
+}
+
+.diff-spoiler {
+  width: 100%;
+  margin-top: 4px;
+}
+
+.diff-spoiler-summary {
+  font-size: 0.75rem;
+  color: var(--primary-color);
+  cursor: pointer;
+  user-select: none;
+  padding: 2px 6px;
+  background-color: var(--panel-bg-secondary);
+  border-radius: 4px;
+  width: fit-content;
+  border: 1px solid var(--border-color);
+  transition: background-color 0.2s ease;
+}
+
+.diff-spoiler-summary:hover {
+  background-color: var(--item-hover);
+}
+
+.diff-spoiler[open] .diff-spoiler-summary {
+  margin-bottom: 8px;
+}
