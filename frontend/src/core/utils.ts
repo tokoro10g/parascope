@@ -21,6 +21,30 @@ export const formatHumanReadableValue = (value: string): string => {
   return numberFormat.format(valueAsNumber).toLowerCase();
 };
 
+/**
+ * Sorts nodes by their physical position (X coordinate first, then Y).
+ */
+export const sortNodesByPosition = <
+  T extends {
+    x?: number;
+    y?: number;
+    position_x?: number;
+    position_y?: number;
+  },
+>(
+  nodes: T[],
+): T[] => {
+  return [...nodes].sort((a, b) => {
+    const ax = a.position_x ?? a.x ?? 0;
+    const ay = a.position_y ?? a.y ?? 0;
+    const bx = b.position_x ?? b.x ?? 0;
+    const by = b.position_y ?? b.y ?? 0;
+
+    if (ax !== bx) return ax - bx;
+    return ay - by;
+  });
+};
+
 export const createSocket = (key: string) => ({ key });
 
 export const formatLocalTime = (
@@ -236,27 +260,22 @@ export const resolveNestedSheetParams = (
 };
 
 export const resolveSheetPorts = (nodes: any[]) => {
-  const inputs = nodes
-    .filter((n) => n.type === 'input' && !n.data?.hidden)
-    .sort((a, b) => {
-      if (a.position_x !== b.position_x) return a.position_x - b.position_x;
-      return a.position_y - b.position_y;
-    })
-    .map((n) => createSocket(n.label));
+  const inputs = sortNodesByPosition(
+    nodes.filter((n) => n.type === 'input' && !n.data?.hidden),
+  ).map((n) => createSocket(n.label));
 
-  const outputs = nodes
-    .filter(
+  const outputs = sortNodesByPosition(
+    nodes.filter(
       (n) => (n.type === 'output' || n.type === 'constant') && !n.data?.hidden,
-    )
+    ),
+  )
     .sort((a, b) => {
       // Group by type: 'constant' before 'output'
       if (a.type !== b.type) {
         if (a.type === 'constant') return -1;
         if (b.type === 'constant') return 1;
       }
-      // Sort within group by position
-      if (a.position_x !== b.position_x) return a.position_x - b.position_x;
-      return a.position_y - b.position_y;
+      return 0;
     })
     .map((n) => ({
       key: n.label,

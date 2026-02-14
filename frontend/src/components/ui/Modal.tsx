@@ -6,7 +6,7 @@ import './Modal.css';
 interface ModalProps {
   isOpen: boolean;
   onClose: () => void;
-  title: string;
+  title: React.ReactNode;
   children: React.ReactNode;
   footer?: React.ReactNode;
   width?: string;
@@ -36,7 +36,7 @@ export const Modal: React.FC<ModalProps> = ({
         style={{ width: width, maxWidth: maxWidth }}
       >
         <div className="modal-header">
-          <h2>{title}</h2>
+          <div className="modal-title">{title}</div>
           <button
             type="button"
             onClick={onClose}
