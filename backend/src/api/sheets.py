@@ -364,9 +364,15 @@ async def update_sheet(
                                 "new": new_data.get(field),
                             }
                         )
-            elif not nid_str:
-                # New node (no ID provided yet)
-                delta.append({"node_id": None, "label": node_in.label, "field": "node", "old": None, "new": "created"})
+            elif not nid_str or nid_str not in old_nodes_by_id:
+                # New node
+                delta.append({
+                    "node_id": nid_str,
+                    "label": node_in.label,
+                    "field": "node",
+                    "old": None,
+                    "new": "created"
+                })
 
         # 3. Deleted Nodes
         for old_id, old_node in old_nodes_by_id.items():
