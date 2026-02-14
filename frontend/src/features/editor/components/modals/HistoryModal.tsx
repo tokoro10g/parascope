@@ -126,6 +126,9 @@ export const HistoryModal: React.FC<HistoryModalProps> = ({
                     <div key={group.label} className="history-node-section">
                       <div className="history-node-header">
                         <strong>{group.label}</strong>
+                        {group.id && (
+                          <span className="history-node-id">{group.id}</span>
+                        )}
                       </div>
                       <div className="history-node-timeline">
                         {group.changes.map((change, i) => (

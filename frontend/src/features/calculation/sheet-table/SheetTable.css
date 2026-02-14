@@ -219,6 +219,16 @@
   border-bottom: 1px solid var(--border-color);
   font-size: 0.9rem;
   color: var(--text-color);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.history-node-id {
+  font-size: 0.7rem;
+  color: var(--text-secondary);
+  opacity: 0.6;
+  font-family: monospace;
 }
 
 .history-node-timeline {
