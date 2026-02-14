@@ -12,6 +12,7 @@ import {
   copyToClipboard,
   formatHumanReadableValue,
   getNestedSheetUrl,
+  sortNodesByPosition,
 } from '@/core/utils';
 
 interface SheetTableProps {
@@ -68,32 +69,25 @@ export const SheetTable: React.FC<SheetTableProps> = ({
     return url;
   };
 
-  // Filter for Constants, Inputs, and Outputs
-  const tableNodes = nodes
-    .filter(
+  const tableNodes = sortNodesByPosition(
+    nodes.filter(
       (node) =>
         (node.type === 'constant' ||
           node.type === 'output' ||
           node.type === 'input') &&
         !node.data?.hidden,
-    )
-    .sort((a, b) => {
-      const typeOrder: Record<string, number> = {
-        input: 0,
-        constant: 1,
-        output: 2,
-      };
-      const typeDiff = (typeOrder[a.type] ?? 99) - (typeOrder[b.type] ?? 99);
-      if (typeDiff !== 0) return typeDiff;
+    ),
+  ).sort((a, b) => {
+    const typeOrder: Record<string, number> = {
+      input: 0,
+      constant: 1,
+      output: 2,
+    };
+    return (typeOrder[a.type] ?? 99) - (typeOrder[b.type] ?? 99);
+  });
 
-      // Secondary sort by position (x then y)
-      if (a.x !== b.x) return (a.x || 0) - (b.x || 0);
-      return (a.y || 0) - (b.y || 0);
-    });
-
-  // Filter for Descriptions (Constants, Inputs, Functions, Outputs, Sheets, LUTs, Comments)
-  const descriptionNodes = nodes
-    .filter(
+  const descriptionNodes = sortNodesByPosition(
+    nodes.filter(
       (node) =>
         [
           'constant',
@@ -104,24 +98,19 @@ export const SheetTable: React.FC<SheetTableProps> = ({
           'lut',
           'comment',
         ].includes(node.type) && !node.data?.hidden,
-    )
-    .sort((a, b) => {
-      const typeOrder: Record<string, number> = {
-        comment: 0,
-        constant: 1,
-        input: 2,
-        function: 3,
-        sheet: 4,
-        lut: 5,
-        output: 6,
-      };
-      const typeDiff = (typeOrder[a.type] ?? 99) - (typeOrder[b.type] ?? 99);
-      if (typeDiff !== 0) return typeDiff;
-
-      // Secondary sort by position (x then y)
-      if (a.x !== b.x) return (a.x || 0) - (b.x || 0);
-      return (a.y || 0) - (b.y || 0);
-    });
+    ),
+  ).sort((a, b) => {
+    const typeOrder: Record<string, number> = {
+      comment: 0,
+      constant: 1,
+      input: 2,
+      function: 3,
+      sheet: 4,
+      lut: 5,
+      output: 6,
+    };
+    return (typeOrder[a.type] ?? 99) - (typeOrder[b.type] ?? 99);
+  });
 
   const handleCopyTable = () => {
     const headers = ['Name', 'Type', 'Value', 'URL'];

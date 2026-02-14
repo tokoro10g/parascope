@@ -17,6 +17,7 @@ import {
   getNestedSheetUrl,
   resolveNestedSheetParams,
   resolveSheetPorts,
+  sortNodesByPosition,
   syncNestedSheets,
 } from '@/core/utils';
 import { useSheetCalculation } from '@/features/calculation/hooks/useSheetCalculation';
@@ -690,10 +691,7 @@ export function useSheetEditorLogic(): SheetEditorLogic {
     if (!currentSheet) return { inputs: [], outputs: [] };
     const sourceNodes = nodes.length > 0 ? nodes : [];
 
-    const sortedNodes = [...sourceNodes].sort((a, b) => {
-      if (a.x !== b.x) return a.x - b.x;
-      return a.y - b.y;
-    });
+    const sortedNodes = sortNodesByPosition(sourceNodes);
 
     const inputs: CalculationInputDefinition[] = sortedNodes
       .filter((n) => n.type === 'input' && n.id)
