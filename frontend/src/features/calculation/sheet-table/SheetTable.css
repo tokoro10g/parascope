@@ -218,7 +218,7 @@
   background-color: var(--panel-bg-secondary);
   border-bottom: 1px solid var(--border-color);
   font-size: 0.9rem;
-  color: var(--primary-color);
+  color: var(--text-color);
 }
 
 .history-node-timeline {
@@ -241,40 +241,58 @@
   background-color: var(--panel-bg-translucent);
 }
 
-.history-timeline-meta {
+.history-timeline-row {
   display: flex;
   justify-content: space-between;
-  margin-bottom: 4px;
+  align-items: flex-start;
+  gap: 20px;
+}
+
+.history-timeline-meta {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
   font-size: 0.75rem;
+  text-align: right;
+  flex-shrink: 0;
+  min-width: 140px;
 }
 
 .history-user {
-  font-weight: 600;
-  color: var(--text-color);
+  font-weight: 500;
+  color: var(--text-secondary);
+  font-style: italic;
 }
 
 .history-time {
-  color: var(--text-secondary);
+  font-weight: 600;
+  color: var(--text-color);
 }
 
 .history-timeline-delta {
   font-size: 0.8rem;
   display: flex;
   gap: 8px;
-  align-items: baseline;
+  align-items: flex-start;
+  flex-direction: column;
+  flex: 1;
+  min-width: 0;
 }
 
 .delta-field {
-  color: var(--text-secondary);
-  font-style: italic;
-  font-size: 0.7rem;
-  min-width: 40px;
+  color: var(--text-color);
+  font-weight: 600;
+  font-size: 0.85rem;
+  padding: 0;
+  border-radius: 0;
+  background: none;
 }
 
 .delta-values {
   font-family: monospace;
   word-break: break-all;
   flex: 1;
+  width: 100%;
 }
 
 .history-empty {

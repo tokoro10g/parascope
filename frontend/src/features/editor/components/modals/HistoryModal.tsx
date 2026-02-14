@@ -6,6 +6,8 @@ import { Modal } from '@/components/ui/Modal';
 import { ScrollablePanel } from '@/components/ui/ScrollablePanel';
 import { type AuditLog, api } from '@/core/api';
 import type { ParascopeNode } from '@/core/rete';
+import { DiffValue } from '@/features/diff/components/DiffViewer';
+import { groupHistoryByNode } from '@/features/diff/utils/diff';
 
 interface HistoryModalProps {
   isOpen: boolean;
@@ -15,38 +17,6 @@ interface HistoryModalProps {
   before?: string;
   after?: string;
 }
-
-const formatValue = (val: any) => {
-  if (val === null || val === undefined) return 'null';
-  if (typeof val === 'object') return JSON.stringify(val);
-  return String(val);
-};
-
-const groupHistoryByNode = (history: AuditLog[], nodes: ParascopeNode[]) => {
-  const nodeGroups: Record<string, { label: string; changes: any[] }> = {};
-
-  history.forEach((log) => {
-    log.delta.forEach((d) => {
-      const nodeId = d.node_id || 'new-node';
-      const label = d.label || '(Unknown Node)';
-      if (!nodeGroups[nodeId]) {
-        nodeGroups[nodeId] = { label, changes: [] };
-      }
-      nodeGroups[nodeId].changes.push({
-        ...d,
-        user_name: log.user_name,
-        timestamp: log.timestamp,
-        is_unread: log.is_unread,
-      });
-    });
-  });
-  return Object.entries(nodeGroups)
-    .filter(([nodeId, _value]) => {
-      return nodes.some((n) => n.id === nodeId);
-    })
-    .map(([_key, value]) => value)
-    .sort((a, b) => a.label.localeCompare(b.label));
-};
 
 export const HistoryModal: React.FC<HistoryModalProps> = ({
   isOpen,
@@ -58,6 +28,7 @@ export const HistoryModal: React.FC<HistoryModalProps> = ({
 }) => {
   const [history, setHistory] = useState<AuditLog[]>([]);
   const [isLoading, setIsLoading] = useState(false);
+  const [groupingMode, setGroupingMode] = useState<'node' | 'time'>('node');
 
   const loadHistory = useCallback(async () => {
     if (!sheetId) return;
@@ -98,14 +69,14 @@ export const HistoryModal: React.FC<HistoryModalProps> = ({
     >
       <button
         type="button"
-        className="btn"
+        className="btn primary"
         onClick={handleMarkAsRead}
         disabled={history.length === 0}
       >
         <CheckCheck size={16} style={{ marginRight: 8 }} />
         Mark all seen
       </button>
-      <button type="button" className="btn primary" onClick={onClose}>
+      <button type="button" className="btn" onClick={onClose}>
         Close
       </button>
     </div>
@@ -114,12 +85,34 @@ export const HistoryModal: React.FC<HistoryModalProps> = ({
     <Modal
       isOpen={isOpen}
       onClose={onClose}
-      title="Edit History"
+      title={
+        <div style={{ display: 'flex', alignItems: 'center', gap: '20px' }}>
+          <span>Edit History</span>
+          <div className="btn-group" style={{ display: 'flex', gap: '2px' }}>
+            <button
+              type="button"
+              className={`btn btn-sm ${groupingMode === 'node' ? 'primary' : ''}`}
+              onClick={() => setGroupingMode('node')}
+              style={{ fontSize: '0.7rem' }}
+            >
+              By Node
+            </button>
+            <button
+              type="button"
+              className={`btn btn-sm ${groupingMode === 'time' ? 'primary' : ''}`}
+              onClick={() => setGroupingMode('time')}
+              style={{ fontSize: '0.7rem' }}
+            >
+              By Time
+            </button>
+          </div>
+        </div>
+      }
       footer={footer}
-      maxWidth="600px"
+      maxWidth="1000px"
     >
       <div style={{ height: '60vh', display: 'flex', flexDirection: 'column' }}>
-        <ScrollablePanel dependencies={[history, nodes]}>
+        <ScrollablePanel dependencies={[history, nodes, groupingMode]}>
           {isLoading ? (
             <div className="history-empty">Loading history...</div>
           ) : history.length === 0 ? (
@@ -128,37 +121,109 @@ export const HistoryModal: React.FC<HistoryModalProps> = ({
             <div
               style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}
             >
-              {groupHistoryByNode(history, nodes).map((group) => (
-                <div key={group.label} className="history-node-section">
-                  <div className="history-node-header">
-                    <strong>{group.label}</strong>
-                  </div>
-                  <div className="history-node-timeline">
-                    {group.changes.map((change, i) => (
-                      <div
-                        key={`${change.timestamp}-${i}`}
-                        className={`history-timeline-item ${change.is_unread ? 'unread' : ''}`}
-                      >
-                        <div className="history-timeline-meta overflow-anywhere">
-                          <span className="history-user">
-                            {change.user_name}
-                          </span>
-                          <span className="history-time">
-                            {new Date(change.timestamp).toLocaleString()}
-                          </span>
+              {groupingMode === 'node'
+                ? groupHistoryByNode(history, nodes).map((group) => (
+                    <div key={group.label} className="history-node-section">
+                      <div className="history-node-header">
+                        <strong>{group.label}</strong>
+                      </div>
+                      <div className="history-node-timeline">
+                        {group.changes.map((change, i) => (
+                          <div
+                            key={`${change.timestamp}-${i}`}
+                            className={`history-timeline-item ${change.is_unread ? 'unread' : ''}`}
+                          >
+                            <div className="history-timeline-row">
+                              <div className="history-timeline-delta overflow-anywhere">
+                                <span className="delta-field">
+                                  {change.field}
+                                </span>
+                                <div className="delta-values">
+                                  <DiffValue
+                                    oldVal={change.old}
+                                    newVal={change.new}
+                                  />
+                                </div>
+                              </div>
+                              <div className="history-timeline-meta overflow-anywhere">
+                                <span className="history-time">
+                                  {new Date(change.timestamp).toLocaleString()}
+                                </span>
+                                <span className="history-user">
+                                  {change.user_name}
+                                </span>
+                              </div>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  ))
+                : history.map((log) => {
+                    const visibleChanges = log.delta.filter(
+                      (d) =>
+                        !d.node_id || nodes.some((n) => n.id === d.node_id),
+                    );
+
+                    if (visibleChanges.length === 0) return null;
+
+                    return (
+                      <div key={log.id} className="history-node-section">
+                        <div className="history-node-header">
+                          <div
+                            style={{
+                              display: 'flex',
+                              justifyContent: 'space-between',
+                              width: '100%',
+                            }}
+                          >
+                            <strong>
+                              {new Date(log.timestamp).toLocaleString()}
+                            </strong>
+                            <span className="history-user">
+                              {log.user_name}
+                            </span>
+                          </div>
                         </div>
-                        <div className="history-timeline-delta overflow-anywhere">
-                          <span className="delta-field">{change.field}</span>
-                          <span className="delta-values">
-                            {formatValue(change.old)} →{' '}
-                            {formatValue(change.new)}
-                          </span>
+                        <div className="history-node-timeline">
+                          {visibleChanges.map((change, i) => (
+                            <div
+                              key={`${log.id}-${i}`}
+                              className={`history-timeline-item ${log.is_unread ? 'unread' : ''}`}
+                            >
+                              <div className="history-timeline-delta overflow-anywhere">
+                                <div
+                                  style={{
+                                    display: 'flex',
+                                    gap: '8px',
+                                    alignItems: 'baseline',
+                                  }}
+                                >
+                                  <span
+                                    style={{
+                                      fontWeight: 'bold',
+                                      fontSize: '0.85rem',
+                                    }}
+                                  >
+                                    {change.label || '(Unknown Node)'}
+                                  </span>
+                                  <span className="delta-field">
+                                    {change.field}
+                                  </span>
+                                </div>
+                                <div className="delta-values">
+                                  <DiffValue
+                                    oldVal={change.old}
+                                    newVal={change.new}
+                                  />
+                                </div>
+                              </div>
+                            </div>
+                          ))}
                         </div>
                       </div>
-                    ))}
-                  </div>
-                </div>
-              ))}
+                    );
+                  })}
             </div>
           )}
         </ScrollablePanel>
