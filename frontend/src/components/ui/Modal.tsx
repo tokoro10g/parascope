@@ -36,7 +36,7 @@ export const Modal: React.FC<ModalProps> = ({
         style={{ width: width, maxWidth: maxWidth }}
       >
         <div className="modal-header">
-          <div className="modal-title">{title}</div>
+          <h2 className="modal-title">{title}</h2>
           <button
             type="button"
             onClick={onClose}
