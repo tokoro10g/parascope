@@ -13,6 +13,7 @@ export const SheetEditorPanel: React.FC = () => {
     currentSheet,
     isDirty,
     isReadOnly,
+    isVersionView,
     handleRenameSheet,
     handleSave,
     setIsVersionListOpen,
@@ -45,6 +46,9 @@ export const SheetEditorPanel: React.FC = () => {
         {isLoading && <div className="loading-overlay">Loading...</div>}
         {isReadOnly && !isLoading && (
           <div className="readonly-watermark">READ-ONLY</div>
+        )}
+        {!isVersionView && !isLoading && (
+          <div className="draft-watermark">DRAFT</div>
         )}
         <EditorBar
           sheetName={currentSheet?.name}

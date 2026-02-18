@@ -137,7 +137,8 @@
   }
 }
 
-.readonly-watermark {
+.readonly-watermark,
+.draft-watermark {
   position: absolute;
   top: 50%;
   left: 50%;
@@ -150,4 +151,10 @@
   user-select: none;
   z-index: 1;
   white-space: nowrap;
+}
+
+.draft-watermark {
+  transform: translate(-50%, -50%) rotate(45deg);
+  color: var(--primary-color);
+  opacity: 0.03;
 }
