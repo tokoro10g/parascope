@@ -37,7 +37,7 @@ export const SheetStatusBanner: React.FC = () => {
           onClick={() => navigate(`/sheet/${sheetId}`)}
           className="btn"
           style={{
-            backgroundColor: '#1976d2',
+            backgroundColor: '#e65100',
             color: 'white',
             border: 'none',
             padding: '5px 10px',
@@ -109,7 +109,7 @@ export const SheetStatusBanner: React.FC = () => {
           }
           className="btn"
           style={{
-            backgroundColor: '#e65100',
+            backgroundColor: '#1976d2',
             color: 'white',
             border: 'none',
             padding: '5px 10px',
