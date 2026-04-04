@@ -444,6 +444,7 @@ export function useSheetEditorLogic(): SheetEditorLogic {
                 name: `${draftSheet.name} (${v.version_tag})`,
                 version_tag: v.version_tag,
                 default_version_id: draftSheet.default_version_id,
+                folder_id: draftSheet.folder_id,
               };
 
               const { updatedNodes } = await syncNestedSheets(tempSheet as any);
