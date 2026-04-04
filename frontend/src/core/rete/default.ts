@@ -70,6 +70,7 @@ export async function createEditor(container: HTMLElement) {
   let onLayoutChange: (() => void) | undefined;
   let onViewportChange: (() => void) | undefined;
   let onInputValueChange: ((nodeId: string, value: string) => void) | undefined;
+  let onControlValueChange: (() => void) | undefined;
   let onConnectionCreated:
     | ((connection: Connection<ParascopeNode, ParascopeNode>) => void)
     | undefined;
@@ -122,6 +123,8 @@ export async function createEditor(container: HTMLElement) {
       const normalizedNew = newVal ?? '';
       if (normalizedOld === normalizedNew) return;
 
+      onControlValueChange?.();
+
       if (node.type === 'input') {
         if (onInputValueChange && node.id)
           onInputValueChange(node.id, String(normalizedNew));
@@ -136,6 +139,7 @@ export async function createEditor(container: HTMLElement) {
             const control = n?.controls.value as InputControl;
             if (control) {
               control.setValue(normalizedNew);
+              onControlValueChange?.();
               if (n?.type === 'input') {
                 if (onInputValueChange)
                   onInputValueChange(node.id, String(normalizedNew));
@@ -148,6 +152,7 @@ export async function createEditor(container: HTMLElement) {
             const control = n?.controls.value as InputControl;
             if (control) {
               control.setValue(normalizedOld);
+              onControlValueChange?.();
               if (n?.type === 'input') {
                 if (onInputValueChange)
                   onInputValueChange(node.id, String(normalizedOld));
@@ -320,6 +325,9 @@ export async function createEditor(container: HTMLElement) {
       cb: (nodeId: string, value: string) => void,
     ) => {
       onInputValueChange = cb;
+    },
+    setControlValueChangeListener: (cb: () => void) => {
+      onControlValueChange = cb;
     },
     setConnectionCreatedListener: (
       cb: (connection: Connection<ParascopeNode, ParascopeNode>) => void,

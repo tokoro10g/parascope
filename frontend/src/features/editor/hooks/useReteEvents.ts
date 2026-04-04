@@ -43,6 +43,7 @@ export function useReteEvents(
 
   const { lastResultRef, calculationInputsRef } = refs;
   const warnedReadOnlyRef = useRef(false);
+  const isInputValueChangeRef = useRef(false);
 
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
@@ -302,7 +303,9 @@ export function useReteEvents(
       });
 
       const updateNodesState = () => {
-        if (readOnly && !warnedReadOnlyRef.current) {
+        const fromInputChange = isInputValueChangeRef.current;
+        isInputValueChangeRef.current = false;
+        if (readOnly && !warnedReadOnlyRef.current && !fromInputChange) {
           warnedReadOnlyRef.current = true;
           // Use setTimeout to ensure the alert doesn't block the UI thread during event processing
           setTimeout(() => {
@@ -422,6 +425,9 @@ export function useReteEvents(
       }
       editor.setInputValueChangeListener((nodeId: string, value: string) => {
         handleCalculationInputChange(nodeId, value);
+      });
+      editor.setControlValueChangeListener(() => {
+        isInputValueChangeRef.current = true;
       });
       // This second call seems redundant in original code, but keeping for safety if it attaches specifics
       editor.setContextMenuCallbacks({
