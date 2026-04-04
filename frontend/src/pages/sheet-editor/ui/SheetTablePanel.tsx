@@ -23,12 +23,9 @@ export const SheetTablePanel: React.FC = () => {
     <Panel
       id="table-panel"
       panelRef={tablePanelRef}
-      defaultSize={isMobile ? (activeTab !== 'editor' ? 100 : 0) : 30}
-      minSize={isMobile ? 0 : 10}
-      style={{
-        display: isMobile && activeTab === 'editor' ? 'none' : 'flex',
-        flexDirection: 'column',
-      }}
+      defaultSize={isMobile ? (activeTab !== 'editor' ? '100%' : '0%') : '30%'}
+      minSize={isMobile ? '0%' : '10%'}
+      maxSize={isMobile ? (activeTab === 'editor' ? '0%' : '100%') : undefined}
     >
       <SheetTable
         nodes={nodes}

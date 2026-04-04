@@ -32,12 +32,9 @@ export const SheetEditorPanel: React.FC = () => {
     <Panel
       id="editor-panel"
       panelRef={editorPanelRef}
-      defaultSize={isMobile ? (activeTab === 'editor' ? 100 : 0) : 70}
-      minSize={isMobile ? 0 : 20}
-      style={{
-        display: isMobile && activeTab !== 'editor' ? 'none' : 'flex',
-        flexDirection: 'column',
-      }}
+      defaultSize={isMobile ? (activeTab === 'editor' ? '100%' : '0%') : '70%'}
+      minSize={isMobile ? '0%' : '20%'}
+      maxSize={isMobile && activeTab !== 'editor' ? '0%' : undefined}
     >
       <div
         className="rete-container"
