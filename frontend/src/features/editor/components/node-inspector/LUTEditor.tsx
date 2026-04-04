@@ -312,7 +312,7 @@ export const LUTEditor: React.FC<LUTEditorProps> = ({
           </thead>
           <tbody>
             {rows.map((row: any, rowIndex: number) => (
-              <tr key={`${row.key}-${rowIndex}`}>
+              <tr key={row.key}>
                 <td>
                   <input
                     value={tempKeys[rowIndex] ?? row.key}

@@ -12,9 +12,9 @@ export const LineDiff: React.FC<LineDiffProps> = ({ oldStr, newStr }) => {
 
   return (
     <div className="diff-line-view">
-      {result.map((line, idx) => (
+      {result.map((line) => (
         <div
-          key={`${line.type}-${line.text}-${idx}`}
+          key={`${line.type}-${line.text}`}
           className={`diff-line ${line.type}`}
         >
           <span className="diff-line-marker">
@@ -71,18 +71,18 @@ export const DiffValue: React.FC<DiffValueProps> = ({ oldVal, newVal }) => {
             View array changes ({removed.length} removed, {added.length} added)
           </summary>
           <div className="diff-object">
-            {removed.map((item, i) => (
+            {removed.map((item) => (
               <div
-                key={`rem-${JSON.stringify(item)}-${i}`}
+                key={`rem-${JSON.stringify(item)}`}
                 className="diff-object-row"
               >
                 <span className="diff-key removed">-</span>
                 <span className="diff-old">{formatValue(item)}</span>
               </div>
             ))}
-            {added.map((item, i) => (
+            {added.map((item) => (
               <div
-                key={`add-${JSON.stringify(item)}-${i}`}
+                key={`add-${JSON.stringify(item)}`}
                 className="diff-object-row"
               >
                 <span className="diff-key added">+</span>

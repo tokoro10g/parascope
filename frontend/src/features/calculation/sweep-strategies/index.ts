@@ -16,9 +16,9 @@ import type {
 } from './types';
 import { addAlphaToRgb, checkIsNumeric } from './utils';
 
+export { getColor, strHash } from './utils';
 // Re-export shared types for consumers
 export type { ChartTheme, StrategyContext, VisualizationStrategy };
-export { getColor, strHash } from './utils';
 
 // Registry
 const strategies: VisualizationStrategy[] = [
