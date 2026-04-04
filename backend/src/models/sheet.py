@@ -2,7 +2,7 @@ import uuid
 from datetime import datetime, timezone
 from typing import Any, List, Optional
 
-from sqlalchemy import DateTime, Float, ForeignKey, String
+from sqlalchemy import DateTime, Float, ForeignKey, String, UniqueConstraint
 from sqlalchemy.dialects.postgresql import JSONB, UUID
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
@@ -39,7 +39,7 @@ class Sheet(Base):
     owner_name: Mapped[Optional[str]] = mapped_column(String, nullable=True)
     folder_id: Mapped[Optional[uuid.UUID]] = mapped_column(ForeignKey("folders.id"), nullable=True)
     default_version_id: Mapped[Optional[uuid.UUID]] = mapped_column(
-        ForeignKey("sheet_versions.id", use_alter=True, name="fk_sheet_default_version_id"), nullable=True
+        ForeignKey("sheet_versions.id", use_alter=True, name="fk_sheet_default_version_id", ondelete="SET NULL"), nullable=True
     )
 
     folder: Mapped[Optional["Folder"]] = relationship(back_populates="sheets")
@@ -58,7 +58,7 @@ class Node(Base):
     __tablename__ = "nodes"
 
     id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
-    sheet_id: Mapped[uuid.UUID] = mapped_column(ForeignKey("sheets.id"))
+    sheet_id: Mapped[uuid.UUID] = mapped_column(ForeignKey("sheets.id", ondelete="CASCADE"))
 
     type: Mapped[str] = mapped_column(String)  # parameter, function, input, output, option
     label: Mapped[str] = mapped_column(String)
@@ -81,11 +81,11 @@ class Connection(Base):
     __tablename__ = "connections"
 
     id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
-    sheet_id: Mapped[uuid.UUID] = mapped_column(ForeignKey("sheets.id"))
+    sheet_id: Mapped[uuid.UUID] = mapped_column(ForeignKey("sheets.id", ondelete="CASCADE"))
 
-    source_id: Mapped[uuid.UUID] = mapped_column(ForeignKey("nodes.id"))
+    source_id: Mapped[uuid.UUID] = mapped_column(ForeignKey("nodes.id", ondelete="CASCADE"))
     source_port: Mapped[str] = mapped_column(String)
-    target_id: Mapped[uuid.UUID] = mapped_column(ForeignKey("nodes.id"))
+    target_id: Mapped[uuid.UUID] = mapped_column(ForeignKey("nodes.id", ondelete="CASCADE"))
     target_port: Mapped[str] = mapped_column(String)
 
     sheet: Mapped["Sheet"] = relationship(back_populates="connections")
@@ -138,3 +138,5 @@ class SheetVersion(Base):
     created_by: Mapped[str] = mapped_column(String)
 
     sheet: Mapped["Sheet"] = relationship("Sheet", back_populates="versions", foreign_keys=[sheet_id])
+
+    __table_args__ = (UniqueConstraint("sheet_id", "version_tag", name="uq_sheet_versions_sheet_id_version_tag"),)
