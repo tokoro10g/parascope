@@ -39,7 +39,8 @@ class Sheet(Base):
     owner_name: Mapped[Optional[str]] = mapped_column(String, nullable=True)
     folder_id: Mapped[Optional[uuid.UUID]] = mapped_column(ForeignKey("folders.id"), nullable=True)
     default_version_id: Mapped[Optional[uuid.UUID]] = mapped_column(
-        ForeignKey("sheet_versions.id", use_alter=True, name="fk_sheet_default_version_id", ondelete="SET NULL"), nullable=True
+        ForeignKey("sheet_versions.id", use_alter=True, name="fk_sheet_default_version_id", ondelete="SET NULL"),
+        nullable=True,
     )
 
     folder: Mapped[Optional["Folder"]] = relationship(back_populates="sheets")

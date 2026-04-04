@@ -33,8 +33,10 @@ async def migrate():
         print("\n[1/5] Updating nodes.sheet_id FK to ON DELETE CASCADE...")
         await conn.execute(text("ALTER TABLE nodes DROP CONSTRAINT IF EXISTS nodes_sheet_id_fkey;"))
         await conn.execute(
-            text("ALTER TABLE nodes ADD CONSTRAINT nodes_sheet_id_fkey "
-                 "FOREIGN KEY (sheet_id) REFERENCES sheets(id) ON DELETE CASCADE;")
+            text(
+                "ALTER TABLE nodes ADD CONSTRAINT nodes_sheet_id_fkey "
+                "FOREIGN KEY (sheet_id) REFERENCES sheets(id) ON DELETE CASCADE;"
+            )
         )
 
         # ----------------------------------------------------------------
@@ -43,8 +45,10 @@ async def migrate():
         print("\n[2/5] Updating connections.sheet_id FK to ON DELETE CASCADE...")
         await conn.execute(text("ALTER TABLE connections DROP CONSTRAINT IF EXISTS connections_sheet_id_fkey;"))
         await conn.execute(
-            text("ALTER TABLE connections ADD CONSTRAINT connections_sheet_id_fkey "
-                 "FOREIGN KEY (sheet_id) REFERENCES sheets(id) ON DELETE CASCADE;")
+            text(
+                "ALTER TABLE connections ADD CONSTRAINT connections_sheet_id_fkey "
+                "FOREIGN KEY (sheet_id) REFERENCES sheets(id) ON DELETE CASCADE;"
+            )
         )
 
         # ----------------------------------------------------------------
@@ -53,8 +57,10 @@ async def migrate():
         print("\n[3/5] Updating connections.source_id FK to ON DELETE CASCADE...")
         await conn.execute(text("ALTER TABLE connections DROP CONSTRAINT IF EXISTS connections_source_id_fkey;"))
         await conn.execute(
-            text("ALTER TABLE connections ADD CONSTRAINT connections_source_id_fkey "
-                 "FOREIGN KEY (source_id) REFERENCES nodes(id) ON DELETE CASCADE;")
+            text(
+                "ALTER TABLE connections ADD CONSTRAINT connections_source_id_fkey "
+                "FOREIGN KEY (source_id) REFERENCES nodes(id) ON DELETE CASCADE;"
+            )
         )
 
         # ----------------------------------------------------------------
@@ -63,8 +69,10 @@ async def migrate():
         print("\n[4/5] Updating connections.target_id FK to ON DELETE CASCADE...")
         await conn.execute(text("ALTER TABLE connections DROP CONSTRAINT IF EXISTS connections_target_id_fkey;"))
         await conn.execute(
-            text("ALTER TABLE connections ADD CONSTRAINT connections_target_id_fkey "
-                 "FOREIGN KEY (target_id) REFERENCES nodes(id) ON DELETE CASCADE;")
+            text(
+                "ALTER TABLE connections ADD CONSTRAINT connections_target_id_fkey "
+                "FOREIGN KEY (target_id) REFERENCES nodes(id) ON DELETE CASCADE;"
+            )
         )
 
         # ----------------------------------------------------------------
@@ -72,13 +80,14 @@ async def migrate():
         # ----------------------------------------------------------------
         print("\n[5/5] Adding UNIQUE(sheet_id, version_tag) on sheet_versions...")
         await conn.execute(
-            text("ALTER TABLE sheet_versions DROP CONSTRAINT IF EXISTS "
-                 "uq_sheet_versions_sheet_id_version_tag;")
+            text("ALTER TABLE sheet_versions DROP CONSTRAINT IF EXISTS uq_sheet_versions_sheet_id_version_tag;")
         )
         await conn.execute(
-            text("ALTER TABLE sheet_versions ADD CONSTRAINT "
-                 "uq_sheet_versions_sheet_id_version_tag "
-                 "UNIQUE (sheet_id, version_tag);")
+            text(
+                "ALTER TABLE sheet_versions ADD CONSTRAINT "
+                "uq_sheet_versions_sheet_id_version_tag "
+                "UNIQUE (sheet_id, version_tag);"
+            )
         )
 
     print("\nMigration completed successfully.")
