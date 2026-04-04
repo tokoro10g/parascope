@@ -43,6 +43,7 @@ export function useReteEvents(
 
   const { lastResultRef, calculationInputsRef } = refs;
   const warnedReadOnlyRef = useRef(false);
+  const isInputValueChangeRef = useRef(false);
 
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
@@ -232,12 +233,14 @@ export function useReteEvents(
 
               // 1. Sync Target Node (Sheet Node) Ports if stale
               const expectedInputs = nestedSheet.nodes
-                .filter((n: any) => n.type === 'input')
+                .filter((n: any) => n.type === 'input' && !n.data?.hidden)
                 .map((n: any) => ({ key: n.label, socket_type: 'any' }));
 
               const expectedOutputs = nestedSheet.nodes
                 .filter(
-                  (n: any) => n.type === 'output' || n.type === 'constant',
+                  (n: any) =>
+                    (n.type === 'output' || n.type === 'constant') &&
+                    !n.data?.hidden,
                 )
                 .map((n: any) => ({ key: n.label, socket_type: 'any' }));
 
@@ -300,7 +303,9 @@ export function useReteEvents(
       });
 
       const updateNodesState = () => {
-        if (readOnly && !warnedReadOnlyRef.current) {
+        const fromInputChange = isInputValueChangeRef.current;
+        isInputValueChangeRef.current = false;
+        if (readOnly && !warnedReadOnlyRef.current && !fromInputChange) {
           warnedReadOnlyRef.current = true;
           // Use setTimeout to ensure the alert doesn't block the UI thread during event processing
           setTimeout(() => {
@@ -420,6 +425,9 @@ export function useReteEvents(
       }
       editor.setInputValueChangeListener((nodeId: string, value: string) => {
         handleCalculationInputChange(nodeId, value);
+      });
+      editor.setControlValueChangeListener(() => {
+        isInputValueChangeRef.current = true;
       });
       // This second call seems redundant in original code, but keeping for safety if it attaches specifics
       editor.setContextMenuCallbacks({

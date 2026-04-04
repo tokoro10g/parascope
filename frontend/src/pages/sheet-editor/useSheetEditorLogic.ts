@@ -277,9 +277,21 @@ export function useSheetEditorLogic(): SheetEditorLogic {
   const handleNodeUpdate = useCallback(
     async (nodeId: string, updates: any) => {
       await originalHandleNodeUpdate(nodeId, updates);
+      // Sync calculationInputs when an input node's value is changed via the inspector
+      if (updates.data?.value !== undefined && editor) {
+        const node = editor.instance.getNode(nodeId);
+        if (node?.type === 'input') {
+          handleCalculationInputChange(nodeId, String(updates.data.value));
+        }
+      }
       triggerAutoCalculation();
     },
-    [originalHandleNodeUpdate, triggerAutoCalculation],
+    [
+      originalHandleNodeUpdate,
+      handleCalculationInputChange,
+      triggerAutoCalculation,
+      editor,
+    ],
   );
 
   // biome-ignore lint/correctness/useExhaustiveDependencies: calculationInputs dependency is intentional to trigger calc on change
@@ -444,6 +456,7 @@ export function useSheetEditorLogic(): SheetEditorLogic {
                 name: `${draftSheet.name} (${v.version_tag})`,
                 version_tag: v.version_tag,
                 default_version_id: draftSheet.default_version_id,
+                folder_id: draftSheet.folder_id,
               };
 
               const { updatedNodes } = await syncNestedSheets(tempSheet as any);

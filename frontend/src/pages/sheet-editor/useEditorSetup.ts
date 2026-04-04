@@ -61,7 +61,8 @@ export function useEditorSetup({
             data.expression = node.data.expression || 'a + b';
           } else if (type === 'input') {
             outputs = [createSocket('value')];
-            // For input nodes, we need to update the calculationInputs state
+            data.value = currentValue;
+            // For input nodes, we also need to update the calculationInputs state
             handleCalculationInputChange(nodeId, String(currentValue));
           } else if (type === 'output') {
             inputs = [createSocket('value')];
