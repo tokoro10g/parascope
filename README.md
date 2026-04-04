@@ -57,7 +57,7 @@ The easiest way to run Parascope is using Docker Compose.
 
 1.  **Clone the repository**:
     ```bash
-    git clone https://github.com/yourusername/parascope.git
+    git clone https://github.com/tokoro10g/parascope.git
     cd parascope
     ```
 
