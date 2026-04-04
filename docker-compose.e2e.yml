@@ -41,7 +41,7 @@ services:
       retries: 5
 
   e2e-runner:
-    image: mcr.microsoft.com/playwright:v1.58.0-noble
+    image: mcr.microsoft.com/playwright:v1.59.1-noble
     volumes:
       - ./e2e:/work
       - /work/node_modules
