@@ -892,7 +892,24 @@ async def delete_version(sheet_id: UUID, version_id: UUID, db: AsyncSession = De
             status_code=400, detail="Cannot delete the default version. Set another version as default first."
         )
 
-    # 3. Delete
+    # 3. Check if any sheet node references this version
+    usage_query = select(Node.id, Node.sheet_id).where(
+        Node.type == "sheet",
+        Node.data["versionId"].astext == str(version_id),
+    )
+    usage_result = await db.execute(usage_query)
+    usages = usage_result.all()
+    if usages:
+        referencing_sheet_ids = list({str(row.sheet_id) for row in usages})
+        raise HTTPException(
+            status_code=400,
+            detail=(
+                f"Version is still referenced by {len(usages)} node(s) in sheet(s): "
+                f"{', '.join(referencing_sheet_ids)}. Remove those references before deleting."
+            ),
+        )
+
+    # 4. Delete
     await db.delete(version)
     await db.commit()
     return {"message": "Version deleted successfully"}
