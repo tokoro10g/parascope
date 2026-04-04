@@ -277,9 +277,21 @@ export function useSheetEditorLogic(): SheetEditorLogic {
   const handleNodeUpdate = useCallback(
     async (nodeId: string, updates: any) => {
       await originalHandleNodeUpdate(nodeId, updates);
+      // Sync calculationInputs when an input node's value is changed via the inspector
+      if (updates.data?.value !== undefined && editor) {
+        const node = editor.instance.getNode(nodeId);
+        if (node?.type === 'input') {
+          handleCalculationInputChange(nodeId, String(updates.data.value));
+        }
+      }
       triggerAutoCalculation();
     },
-    [originalHandleNodeUpdate, triggerAutoCalculation],
+    [
+      originalHandleNodeUpdate,
+      handleCalculationInputChange,
+      triggerAutoCalculation,
+      editor,
+    ],
   );
 
   // biome-ignore lint/correctness/useExhaustiveDependencies: calculationInputs dependency is intentional to trigger calc on change
