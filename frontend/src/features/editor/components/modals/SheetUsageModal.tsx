@@ -78,7 +78,7 @@ export const SheetUsageModal: React.FC<SheetUsageModalProps> = ({
 
       for (const node of usage.node_path) {
         const nodeId = node.id;
-        if (!currentContext || !currentContext[nodeId]) {
+        if (!currentContext?.[nodeId]) {
           validPath = false;
           break;
         }
@@ -97,7 +97,7 @@ export const SheetUsageModal: React.FC<SheetUsageModalProps> = ({
         }
       }
 
-      if (!validPath || !targetResult || !targetResult.inputs) {
+      if (!validPath || !targetResult?.inputs) {
         toast('Could not trace values for this instance.', { icon: '❌' });
         return;
       }

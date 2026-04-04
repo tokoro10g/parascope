@@ -131,9 +131,9 @@ export const HistoryModal: React.FC<HistoryModalProps> = ({
                         )}
                       </div>
                       <div className="history-node-timeline">
-                        {group.changes.map((change, i) => (
+                        {group.changes.map((change) => (
                           <div
-                            key={`${change.timestamp}-${i}`}
+                            key={`${change.timestamp}-${change.field}`}
                             className={`history-timeline-item ${change.is_unread ? 'unread' : ''}`}
                           >
                             <div className="history-timeline-row">
@@ -189,9 +189,9 @@ export const HistoryModal: React.FC<HistoryModalProps> = ({
                           </div>
                         </div>
                         <div className="history-node-timeline">
-                          {visibleChanges.map((change, i) => (
+                          {visibleChanges.map((change) => (
                             <div
-                              key={`${log.id}-${i}`}
+                              key={`${log.id}-${change.timestamp}-${change.field}`}
                               className={`history-timeline-item ${log.is_unread ? 'unread' : ''}`}
                             >
                               <div className="history-timeline-delta overflow-anywhere">
