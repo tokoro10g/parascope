@@ -63,10 +63,12 @@ export const useSweepState = () => {
 
   // Derived state
   const nodes = sheet?.nodes || [];
-  const inputOptions = nodes.filter((n) =>
-    ['constant', 'input'].includes(n.type),
+  const inputOptions = nodes.filter(
+    (n) => ['constant', 'input'].includes(n.type) && !n.data?.hidden,
   );
-  const outputOptions = nodes.filter((n) => n.type === 'output');
+  const outputOptions = nodes.filter(
+    (n) => n.type === 'output' && !n.data?.hidden,
+  );
 
   // Track the last input node to prevent overwriting URL state on load
   const lastPrimaryId = useRef(primaryInput.nodeId);

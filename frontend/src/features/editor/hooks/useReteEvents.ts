@@ -232,12 +232,14 @@ export function useReteEvents(
 
               // 1. Sync Target Node (Sheet Node) Ports if stale
               const expectedInputs = nestedSheet.nodes
-                .filter((n: any) => n.type === 'input')
+                .filter((n: any) => n.type === 'input' && !n.data?.hidden)
                 .map((n: any) => ({ key: n.label, socket_type: 'any' }));
 
               const expectedOutputs = nestedSheet.nodes
                 .filter(
-                  (n: any) => n.type === 'output' || n.type === 'constant',
+                  (n: any) =>
+                    (n.type === 'output' || n.type === 'constant') &&
+                    !n.data?.hidden,
                 )
                 .map((n: any) => ({ key: n.label, socket_type: 'any' }));
 
