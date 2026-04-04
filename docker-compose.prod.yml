@@ -33,7 +33,7 @@ services:
       - POSTGRES_PASSWORD=password
       - POSTGRES_DB=parascope
     volumes:
-      - postgres_data:/var/lib/postgresql/data
+      - postgres_data:/var/lib/postgresql
 
 volumes:
   postgres_data:
