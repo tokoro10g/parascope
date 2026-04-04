@@ -27,7 +27,7 @@ services:
         condition: service_healthy
 
   db-e2e:
-    image: postgres:15
+    image: postgres:18
     environment:
       - POSTGRES_USER=user
       - POSTGRES_PASSWORD=password

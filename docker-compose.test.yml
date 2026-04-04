@@ -20,7 +20,7 @@ services:
       bash -c "uv pip install .[test] --system && pytest -v"
 
   db-test:
-    image: postgres:15
+    image: postgres:18
     environment:
       - POSTGRES_USER=user
       - POSTGRES_PASSWORD=password
