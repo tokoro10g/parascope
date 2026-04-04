@@ -20,14 +20,14 @@ services:
       bash -c "uv pip install .[test] --system && pytest -v"
 
   db-test:
-    image: postgres:15
+    image: postgres:18
     environment:
       - POSTGRES_USER=user
       - POSTGRES_PASSWORD=password
       - POSTGRES_DB=parascope_test
     # Use tmpfs for faster tests and automatic cleanup
     tmpfs:
-      - /var/lib/postgresql/data
+      - /var/lib/postgresql
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U user -d parascope_test"]
       interval: 2s

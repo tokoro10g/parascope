@@ -27,13 +27,13 @@ services:
         condition: service_healthy
 
   db-e2e:
-    image: postgres:15
+    image: postgres:18
     environment:
       - POSTGRES_USER=user
       - POSTGRES_PASSWORD=password
       - POSTGRES_DB=parascope_e2e
     tmpfs:
-      - /var/lib/postgresql/data
+      - /var/lib/postgresql
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U user -d parascope_e2e"]
       interval: 2s

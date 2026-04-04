@@ -33,7 +33,7 @@ services:
       - db
 
   db:
-    image: postgres:15
+    image: postgres:18
     # Do not expose Postgres port to the host machine by default
     # ports:
     #   - "5432:5432"
@@ -42,7 +42,7 @@ services:
       - POSTGRES_PASSWORD=password
       - POSTGRES_DB=parascope
     volumes:
-      - postgres_data:/var/lib/postgresql/data
+      - postgres_data:/var/lib/postgresql
 
 volumes:
   postgres_data:
