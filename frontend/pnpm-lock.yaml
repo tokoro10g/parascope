@@ -10,7 +10,7 @@ importers:
     dependencies:
       '@uiw/react-textarea-code-editor':
         specifier: ^3.1.1
-        version: 3.1.1(@babel/runtime@7.29.2)(react-dom@19.2.4(react@19.2.4))(react@19.2.4)
+        version: 3.1.1(@babel/runtime@7.29.2)(react-dom@19.2.6(react@19.2.6))(react@19.2.6)
       d3-shape:
         specifier: ^3.2.0
         version: 3.2.0
@@ -19,7 +19,7 @@ importers:
         version: 6.0.0
       echarts-for-react:
         specifier: ^3.0.6
-        version: 3.0.6(echarts@6.0.0)(react@19.2.4)
+        version: 3.0.6(echarts@6.0.0)(react@19.2.6)
       echarts-gl:
         specifier: ^2.0.9
         version: 2.0.9(echarts@6.0.0)
@@ -34,7 +34,7 @@ importers:
         version: 0.16.44
       lucide-react:
         specifier: ^1.7.0
-        version: 1.7.0(react@19.2.4)
+        version: 1.7.0(react@19.2.6)
       normalize-wheel:
         specifier: ^1.0.1
         version: 1.0.1
@@ -43,22 +43,22 @@ importers:
         version: 8.0.0
       react:
         specifier: ^19.2.4
-        version: 19.2.4
+        version: 19.2.6
       react-dom:
         specifier: ^19.2.4
-        version: 19.2.4(react@19.2.4)
+        version: 19.2.6(react@19.2.6)
       react-hot-toast:
         specifier: ^2.6.0
-        version: 2.6.0(react-dom@19.2.4(react@19.2.4))(react@19.2.4)
+        version: 2.6.0(react-dom@19.2.6(react@19.2.6))(react@19.2.6)
       react-markdown:
         specifier: ^10.1.0
-        version: 10.1.0(@types/react@19.2.14)(react@19.2.4)
+        version: 10.1.0(@types/react@19.2.15)(react@19.2.6)
       react-resizable-panels:
         specifier: ^4.9.0
-        version: 4.9.0(react-dom@19.2.4(react@19.2.4))(react@19.2.4)
+        version: 4.9.0(react-dom@19.2.6(react@19.2.6))(react@19.2.6)
       react-router-dom:
         specifier: ^7.14.0
-        version: 7.14.0(react-dom@19.2.4(react@19.2.4))(react@19.2.4)
+        version: 7.14.0(react-dom@19.2.6(react@19.2.6))(react@19.2.6)
       rehype-katex:
         specifier: ^7.0.1
         version: 7.0.1
@@ -97,7 +97,7 @@ importers:
         version: 2.0.3(rete-area-plugin@2.1.5(rete@2.0.6))(rete@2.0.6)
       rete-react-plugin:
         specifier: ^2.1.0
-        version: 2.1.0(react-dom@19.2.4(react@19.2.4))(react@19.2.4)(rete-area-plugin@2.1.5(rete@2.0.6))(rete-render-utils@2.0.3(rete-area-plugin@2.1.5(rete@2.0.6))(rete@2.0.6))(rete@2.0.6)(styled-components@5.3.11(@babel/core@7.29.0)(react-dom@19.2.4(react@19.2.4))(react-is@16.13.1)(react@19.2.4))
+        version: 2.1.0(react-dom@19.2.6(react@19.2.6))(react@19.2.6)(rete-area-plugin@2.1.5(rete@2.0.6))(rete-render-utils@2.0.3(rete-area-plugin@2.1.5(rete@2.0.6))(rete@2.0.6))(rete@2.0.6)(styled-components@5.3.11(@babel/core@7.29.0)(react-dom@19.2.6(react@19.2.6))(react-is@16.13.1)(react@19.2.6))
       rete-render-utils:
         specifier: ^2.0.3
         version: 2.0.3(rete-area-plugin@2.1.5(rete@2.0.6))(rete@2.0.6)
@@ -106,7 +106,7 @@ importers:
         version: 2.1.1(rete-area-plugin@2.1.5(rete@2.0.6))(rete@2.0.6)
       styled-components:
         specifier: ^5.3.11
-        version: 5.3.11(@babel/core@7.29.0)(react-dom@19.2.4(react@19.2.4))(react-is@16.13.1)(react@19.2.4)
+        version: 5.3.11(@babel/core@7.29.0)(react-dom@19.2.6(react@19.2.6))(react-is@16.13.1)(react@19.2.6)
       three:
         specifier: ^0.156.1
         version: 0.156.1
@@ -134,10 +134,10 @@ importers:
         version: 1.0.4
       '@types/react':
         specifier: ^19.2.14
-        version: 19.2.14
+        version: 19.2.15
       '@types/react-dom':
         specifier: ^19.2.3
-        version: 19.2.3(@types/react@19.2.14)
+        version: 19.2.3(@types/react@19.2.15)
       '@types/styled-components':
         specifier: ^5.1.36
         version: 5.1.36
@@ -524,8 +524,8 @@ packages:
     peerDependencies:
       '@types/react': ^19.2.0
 
-  '@types/react@19.2.14':
-    resolution: {integrity: sha512-ilcTH/UniCkMdtexkoCN0bI7pMcJDvmQFPvuPvmEaYA/NSfFTAgdUSLAoVjaRJm7+6PvcM+q1zYOwS4wTYMF9w==}
+  '@types/react@19.2.15':
+    resolution: {integrity: sha512-eRwcGNHve+E8qtEQSSRl6urh+rFop4v8gm6O8rGv25CodbvFdLjA1vVQ1KkiFE0w0UPOnb8tDiFKL5lp0rtY5Q==}
 
   '@types/stats.js@0.17.4':
     resolution: {integrity: sha512-jIBvWWShCvlBqBNIZt0KAshWpvSjhkwkEu4ZUcASoAvhmrgAUI2t1dXrjSL4xXVLB4FznPrIsX3nKXFl/Dt4vA==}
@@ -1059,10 +1059,10 @@ packages:
   property-information@7.1.0:
     resolution: {integrity: sha512-TwEZ+X+yCJmYfL7TPUOcvBZ4QfoT5YenQiJuX//0th53DE6w0xxLEtfK3iyryQFddXuvkIk51EEgrJQ0WJkOmQ==}
 
-  react-dom@19.2.4:
-    resolution: {integrity: sha512-AXJdLo8kgMbimY95O2aKQqsz2iWi9jMgKJhRBAxECE4IFxfcazB2LmzloIoibJI3C12IlY20+KFaLv+71bUJeQ==}
+  react-dom@19.2.6:
+    resolution: {integrity: sha512-0prMI+hvBbPjsWnxDLxlCGyM8PN6UuWjEUCYmZhO67xIV9Xasa/r/vDnq+Xyq4Lo27g8QSbO5YzARu0D1Sps3g==}
     peerDependencies:
-      react: ^19.2.4
+      react: ^19.2.6
 
   react-hot-toast@2.6.0:
     resolution: {integrity: sha512-bH+2EBMZ4sdyou/DPrfgIouFpcRLCJ+HoCA32UoAYHn6T3Ur5yfcDCeSr5mwldl6pFOsiocmrXMuoCJ1vV8bWg==}
@@ -1107,8 +1107,8 @@ packages:
       react-dom:
         optional: true
 
-  react@19.2.4:
-    resolution: {integrity: sha512-9nfp2hYpCwOjAN+8TZFGhtWEwgvWHXqESH8qT89AT/lWklpLON22Lc8pEtnpsZz7VmawabSU0gCjnj8aC0euHQ==}
+  react@19.2.6:
+    resolution: {integrity: sha512-sfWGGfavi0xr8Pg0sVsyHMAOziVYKgPLNrS7ig+ivMNb3wbCBw3KxtflsGBAwD3gYQlE/AEZsTLgToRrSCjb0Q==}
     engines: {node: '>=0.10.0'}
 
   refractor@4.9.0:
@@ -1727,9 +1727,9 @@ snapshots:
     dependencies:
       '@types/unist': 3.0.3
 
-  '@types/hoist-non-react-statics@3.3.7(@types/react@19.2.14)':
+  '@types/hoist-non-react-statics@3.3.7(@types/react@19.2.15)':
     dependencies:
-      '@types/react': 19.2.14
+      '@types/react': 19.2.15
       hoist-non-react-statics: 3.3.2
 
   '@types/js-cookie@3.0.6': {}
@@ -1750,11 +1750,11 @@ snapshots:
 
   '@types/prismjs@1.26.6': {}
 
-  '@types/react-dom@19.2.3(@types/react@19.2.14)':
+  '@types/react-dom@19.2.3(@types/react@19.2.15)':
     dependencies:
-      '@types/react': 19.2.14
+      '@types/react': 19.2.15
 
-  '@types/react@19.2.14':
+  '@types/react@19.2.15':
     dependencies:
       csstype: 3.2.3
 
@@ -1762,8 +1762,8 @@ snapshots:
 
   '@types/styled-components@5.1.36':
     dependencies:
-      '@types/hoist-non-react-statics': 3.3.7(@types/react@19.2.14)
-      '@types/react': 19.2.14
+      '@types/hoist-non-react-statics': 3.3.7(@types/react@19.2.15)
+      '@types/react': 19.2.15
       csstype: 3.2.3
 
   '@types/three@0.156.0':
@@ -1779,11 +1779,11 @@ snapshots:
 
   '@types/webxr@0.5.24': {}
 
-  '@uiw/react-textarea-code-editor@3.1.1(@babel/runtime@7.29.2)(react-dom@19.2.4(react@19.2.4))(react@19.2.4)':
+  '@uiw/react-textarea-code-editor@3.1.1(@babel/runtime@7.29.2)(react-dom@19.2.6(react@19.2.6))(react@19.2.6)':
     dependencies:
       '@babel/runtime': 7.29.2
-      react: 19.2.4
-      react-dom: 19.2.4(react@19.2.4)
+      react: 19.2.6
+      react-dom: 19.2.6(react@19.2.6)
       rehype: 13.0.2
       rehype-prism-plus: 2.0.0
 
@@ -1801,14 +1801,14 @@ snapshots:
     transitivePeerDependencies:
       - supports-color
 
-  babel-plugin-styled-components@2.1.4(@babel/core@7.29.0)(styled-components@5.3.11(@babel/core@7.29.0)(react-dom@19.2.4(react@19.2.4))(react-is@16.13.1)(react@19.2.4))(supports-color@5.5.0):
+  babel-plugin-styled-components@2.1.4(@babel/core@7.29.0)(styled-components@5.3.11(@babel/core@7.29.0)(react-dom@19.2.6(react@19.2.6))(react-is@16.13.1)(react@19.2.6))(supports-color@5.5.0):
     dependencies:
       '@babel/helper-annotate-as-pure': 7.27.3
       '@babel/helper-module-imports': 7.28.6(supports-color@5.5.0)
       '@babel/plugin-syntax-jsx': 7.28.6(@babel/core@7.29.0)
       lodash: 4.18.1
       picomatch: 2.3.2
-      styled-components: 5.3.11(@babel/core@7.29.0)(react-dom@19.2.4(react@19.2.4))(react-is@16.13.1)(react@19.2.4)
+      styled-components: 5.3.11(@babel/core@7.29.0)(react-dom@19.2.6(react@19.2.6))(react-is@16.13.1)(react@19.2.6)
     transitivePeerDependencies:
       - '@babel/core'
       - supports-color
@@ -1883,11 +1883,11 @@ snapshots:
     dependencies:
       dequal: 2.0.3
 
-  echarts-for-react@3.0.6(echarts@6.0.0)(react@19.2.4):
+  echarts-for-react@3.0.6(echarts@6.0.0)(react@19.2.6):
     dependencies:
       echarts: 6.0.0
       fast-deep-equal: 3.1.3
-      react: 19.2.4
+      react: 19.2.6
       size-sensor: 1.0.3
 
   echarts-gl@2.0.9(echarts@6.0.0):
@@ -2138,9 +2138,9 @@ snapshots:
     dependencies:
       yallist: 3.1.1
 
-  lucide-react@1.7.0(react@19.2.4):
+  lucide-react@1.7.0(react@19.2.6):
     dependencies:
-      react: 19.2.4
+      react: 19.2.6
 
   mdast-util-from-markdown@2.0.3:
     dependencies:
@@ -2434,30 +2434,30 @@ snapshots:
 
   property-information@7.1.0: {}
 
-  react-dom@19.2.4(react@19.2.4):
+  react-dom@19.2.6(react@19.2.6):
     dependencies:
-      react: 19.2.4
+      react: 19.2.6
       scheduler: 0.27.0
 
-  react-hot-toast@2.6.0(react-dom@19.2.4(react@19.2.4))(react@19.2.4):
+  react-hot-toast@2.6.0(react-dom@19.2.6(react@19.2.6))(react@19.2.6):
     dependencies:
       csstype: 3.2.3
       goober: 2.1.18(csstype@3.2.3)
-      react: 19.2.4
-      react-dom: 19.2.4(react@19.2.4)
+      react: 19.2.6
+      react-dom: 19.2.6(react@19.2.6)
 
   react-is@16.13.1: {}
 
-  react-markdown@10.1.0(@types/react@19.2.14)(react@19.2.4):
+  react-markdown@10.1.0(@types/react@19.2.15)(react@19.2.6):
     dependencies:
       '@types/hast': 3.0.4
       '@types/mdast': 4.0.4
-      '@types/react': 19.2.14
+      '@types/react': 19.2.15
       devlop: 1.1.0
       hast-util-to-jsx-runtime: 2.3.6
       html-url-attributes: 3.0.1
       mdast-util-to-hast: 13.2.1
-      react: 19.2.4
+      react: 19.2.6
       remark-parse: 11.0.0
       remark-rehype: 11.1.2
       unified: 11.0.5
@@ -2468,26 +2468,26 @@ snapshots:
 
   react-refresh@0.18.0: {}
 
-  react-resizable-panels@4.9.0(react-dom@19.2.4(react@19.2.4))(react@19.2.4):
+  react-resizable-panels@4.9.0(react-dom@19.2.6(react@19.2.6))(react@19.2.6):
     dependencies:
-      react: 19.2.4
-      react-dom: 19.2.4(react@19.2.4)
+      react: 19.2.6
+      react-dom: 19.2.6(react@19.2.6)
 
-  react-router-dom@7.14.0(react-dom@19.2.4(react@19.2.4))(react@19.2.4):
+  react-router-dom@7.14.0(react-dom@19.2.6(react@19.2.6))(react@19.2.6):
     dependencies:
-      react: 19.2.4
-      react-dom: 19.2.4(react@19.2.4)
-      react-router: 7.14.0(react-dom@19.2.4(react@19.2.4))(react@19.2.4)
+      react: 19.2.6
+      react-dom: 19.2.6(react@19.2.6)
+      react-router: 7.14.0(react-dom@19.2.6(react@19.2.6))(react@19.2.6)
 
-  react-router@7.14.0(react-dom@19.2.4(react@19.2.4))(react@19.2.4):
+  react-router@7.14.0(react-dom@19.2.6(react@19.2.6))(react@19.2.6):
     dependencies:
       cookie: 1.1.1
-      react: 19.2.4
+      react: 19.2.6
       set-cookie-parser: 2.7.2
     optionalDependencies:
-      react-dom: 19.2.4(react@19.2.4)
+      react-dom: 19.2.6(react@19.2.6)
 
-  react@19.2.4: {}
+  react@19.2.6: {}
 
   refractor@4.9.0:
     dependencies:
@@ -2618,16 +2618,16 @@ snapshots:
       rete: 2.0.6
       rete-area-plugin: 2.1.5(rete@2.0.6)
 
-  rete-react-plugin@2.1.0(react-dom@19.2.4(react@19.2.4))(react@19.2.4)(rete-area-plugin@2.1.5(rete@2.0.6))(rete-render-utils@2.0.3(rete-area-plugin@2.1.5(rete@2.0.6))(rete@2.0.6))(rete@2.0.6)(styled-components@5.3.11(@babel/core@7.29.0)(react-dom@19.2.4(react@19.2.4))(react-is@16.13.1)(react@19.2.4)):
+  rete-react-plugin@2.1.0(react-dom@19.2.6(react@19.2.6))(react@19.2.6)(rete-area-plugin@2.1.5(rete@2.0.6))(rete-render-utils@2.0.3(rete-area-plugin@2.1.5(rete@2.0.6))(rete@2.0.6))(rete@2.0.6)(styled-components@5.3.11(@babel/core@7.29.0)(react-dom@19.2.6(react@19.2.6))(react-is@16.13.1)(react@19.2.6)):
     dependencies:
       '@babel/runtime': 7.29.2
-      react: 19.2.4
-      react-dom: 19.2.4(react@19.2.4)
+      react: 19.2.6
+      react-dom: 19.2.6(react@19.2.6)
       rete: 2.0.6
       rete-area-plugin: 2.1.5(rete@2.0.6)
       rete-render-utils: 2.0.3(rete-area-plugin@2.1.5(rete@2.0.6))(rete@2.0.6)
-      styled-components: 5.3.11(@babel/core@7.29.0)(react-dom@19.2.4(react@19.2.4))(react-is@16.13.1)(react@19.2.4)
-      usehooks-ts: 3.1.1(react@19.2.4)
+      styled-components: 5.3.11(@babel/core@7.29.0)(react-dom@19.2.6(react@19.2.6))(react-is@16.13.1)(react@19.2.6)
+      usehooks-ts: 3.1.1(react@19.2.6)
 
   rete-render-utils@2.0.3(rete-area-plugin@2.1.5(rete@2.0.6))(rete@2.0.6):
     dependencies:
@@ -2693,18 +2693,18 @@ snapshots:
     dependencies:
       inline-style-parser: 0.2.7
 
-  styled-components@5.3.11(@babel/core@7.29.0)(react-dom@19.2.4(react@19.2.4))(react-is@16.13.1)(react@19.2.4):
+  styled-components@5.3.11(@babel/core@7.29.0)(react-dom@19.2.6(react@19.2.6))(react-is@16.13.1)(react@19.2.6):
     dependencies:
       '@babel/helper-module-imports': 7.28.6(supports-color@5.5.0)
       '@babel/traverse': 7.29.0(supports-color@5.5.0)
       '@emotion/is-prop-valid': 1.4.0
       '@emotion/stylis': 0.8.5
       '@emotion/unitless': 0.7.5
-      babel-plugin-styled-components: 2.1.4(@babel/core@7.29.0)(styled-components@5.3.11(@babel/core@7.29.0)(react-dom@19.2.4(react@19.2.4))(react-is@16.13.1)(react@19.2.4))(supports-color@5.5.0)
+      babel-plugin-styled-components: 2.1.4(@babel/core@7.29.0)(styled-components@5.3.11(@babel/core@7.29.0)(react-dom@19.2.6(react@19.2.6))(react-is@16.13.1)(react@19.2.6))(supports-color@5.5.0)
       css-to-react-native: 3.2.0
       hoist-non-react-statics: 3.3.2
-      react: 19.2.4
-      react-dom: 19.2.4(react@19.2.4)
+      react: 19.2.6
+      react-dom: 19.2.6(react@19.2.6)
       react-is: 16.13.1
       shallowequal: 1.1.0
       supports-color: 5.5.0
@@ -2790,10 +2790,10 @@ snapshots:
       escalade: 3.2.0
       picocolors: 1.1.1
 
-  usehooks-ts@3.1.1(react@19.2.4):
+  usehooks-ts@3.1.1(react@19.2.6):
     dependencies:
       lodash.debounce: 4.0.8
-      react: 19.2.4
+      react: 19.2.6
 
   uuid@13.0.2: {}
 
