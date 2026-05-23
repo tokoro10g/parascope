@@ -77,14 +77,14 @@ jobs:
           docker save parascope-frontend:ci | gzip > frontend-image.tar.gz
 
       - name: Upload backend image
-        uses: actions/upload-artifact@v7.0.0
+        uses: actions/upload-artifact@v7.0.1
         with:
           name: backend-image
           path: backend-image.tar.gz
           retention-days: 1
 
       - name: Upload frontend image
-        uses: actions/upload-artifact@v7.0.0
+        uses: actions/upload-artifact@v7.0.1
         with:
           name: frontend-image
           path: frontend-image.tar.gz
@@ -139,7 +139,7 @@ jobs:
 
       - name: Upload E2E Artifacts
         if: always()
-        uses: actions/upload-artifact@v7.0.0
+        uses: actions/upload-artifact@v7.0.1
         with:
           name: playwright-report
           path: |
