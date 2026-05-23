@@ -21,7 +21,7 @@
     "echarts-gl": "^2.0.9",
     "elkjs": "^0.8.2",
     "js-cookie": "^3.0.7",
-    "katex": "^0.16.44",
+    "katex": "^0.17.0",
     "lucide-react": "^1.7.0",
     "normalize-wheel": "^1.0.1",
     "p-retry": "^8.0.0",
