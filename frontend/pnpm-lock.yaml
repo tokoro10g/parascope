@@ -30,8 +30,8 @@ importers:
         specifier: ^3.0.7
         version: 3.0.7
       katex:
-        specifier: ^0.16.44
-        version: 0.16.44
+        specifier: ^0.17.0
+        version: 0.17.0
       lucide-react:
         specifier: ^1.7.0
         version: 1.7.0(react@19.2.6)
@@ -819,6 +819,10 @@ packages:
 
   katex@0.16.44:
     resolution: {integrity: sha512-EkxoDTk8ufHqHlf9QxGwcxeLkWRR3iOuYfRpfORgYfqc8s13bgb+YtRY59NK5ZpRaCwq1kqA6a5lpX8C/eLphQ==}
+    hasBin: true
+
+  katex@0.17.0:
+    resolution: {integrity: sha512-Vdw0ATsQ9V+LuegM/BTwQqV/6cTl5lbGcIrU+BCgLxyf6bo38ybOr372tuSIxir3CN720flu1meYR6XzNMwQnw==}
     hasBin: true
 
   lightningcss-android-arm64@1.32.0:
@@ -2076,6 +2080,10 @@ snapshots:
   json5@2.2.3: {}
 
   katex@0.16.44:
+    dependencies:
+      commander: 8.3.0
+
+  katex@0.17.0:
     dependencies:
       commander: 8.3.0
 
