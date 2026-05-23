@@ -16,13 +16,13 @@ importers:
         version: 3.2.0
       echarts:
         specifier: ^6.0.0
-        version: 6.0.0
+        version: 6.1.0
       echarts-for-react:
         specifier: ^3.0.6
-        version: 3.0.6(echarts@6.0.0)(react@19.2.6)
+        version: 3.0.6(echarts@6.1.0)(react@19.2.6)
       echarts-gl:
         specifier: ^2.0.9
-        version: 2.0.9(echarts@6.0.0)
+        version: 2.0.9(echarts@6.1.0)
       elkjs:
         specifier: ^0.8.2
         version: 0.8.2
@@ -670,8 +670,8 @@ packages:
     peerDependencies:
       echarts: ^5.1.2
 
-  echarts@6.0.0:
-    resolution: {integrity: sha512-Tte/grDQRiETQP4xz3iZWSvoHrkCQtwqd6hs+mifXcjrCuo2iKWbajFObuLJVBlDIJlOzgQPd1hsaKt/3+OMkQ==}
+  echarts@6.1.0:
+    resolution: {integrity: sha512-q0yaFPggC9FUdsWH4blavRWFmxdrIodbkoKNAjJudAI6CA9gNPxHtV2RcZNEepZVlk4yvBYkOkbk6HIVpIyHZA==}
 
   electron-to-chromium@1.5.331:
     resolution: {integrity: sha512-IbxXrsTlD3hRodkLnbxAPP4OuJYdWCeM3IOdT+CpcMoIwIoDfCmRpEtSPfwBXxVkg9xmBeY7Lz2Eo2TDn/HC3Q==}
@@ -1404,8 +1404,8 @@ packages:
   zrender@5.6.1:
     resolution: {integrity: sha512-OFXkDJKcrlx5su2XbzJvj/34Q3m6PvyCZkVPHGYpcCJ52ek4U/ymZyfuV1nKE23AyBJ51E/6Yr0mhZ7xGTO4ag==}
 
-  zrender@6.0.0:
-    resolution: {integrity: sha512-41dFXEEXuJpNecuUQq6JlbybmnHaqqpGlbH1yxnA5V9MMP4SbohSVZsJIwz+zdjQXSSlR1Vc34EgH1zxyTDvhg==}
+  zrender@6.1.0:
+    resolution: {integrity: sha512-oEGMDB6pOP2S6OwRR4PdVv610zrjnA3Bh+JnSG12fYJlBKjtNAoEb5fSUoCOOINlH96I2fU38/A2UpRKs67xYQ==}
 
   zwitch@2.0.4:
     resolution: {integrity: sha512-bXE4cR/kVZhKZX/RjPEflHaKVhUVl85noU3v6b8apfQEc1x4A+zBxjZ4lN8LqGd6WZ3dl98pY4o717VFmoPp+A==}
@@ -1883,23 +1883,23 @@ snapshots:
     dependencies:
       dequal: 2.0.3
 
-  echarts-for-react@3.0.6(echarts@6.0.0)(react@19.2.6):
+  echarts-for-react@3.0.6(echarts@6.1.0)(react@19.2.6):
     dependencies:
-      echarts: 6.0.0
+      echarts: 6.1.0
       fast-deep-equal: 3.1.3
       react: 19.2.6
       size-sensor: 1.0.3
 
-  echarts-gl@2.0.9(echarts@6.0.0):
+  echarts-gl@2.0.9(echarts@6.1.0):
     dependencies:
       claygl: 1.3.0
-      echarts: 6.0.0
+      echarts: 6.1.0
       zrender: 5.6.1
 
-  echarts@6.0.0:
+  echarts@6.1.0:
     dependencies:
       tslib: 2.3.0
-      zrender: 6.0.0
+      zrender: 6.1.0
 
   electron-to-chromium@1.5.331: {}
 
@@ -2833,7 +2833,7 @@ snapshots:
     dependencies:
       tslib: 2.3.0
 
-  zrender@6.0.0:
+  zrender@6.1.0:
     dependencies:
       tslib: 2.3.0
 
