@@ -25,11 +25,11 @@ jobs:
 
       - uses: pnpm/action-setup@v3
         with:
-          version: 10
+          version: 11
 
       - name: Install Dependencies
         working-directory: docs
-        run: pnpm install --frozen-lockfile
+        run: pnpm ci
 
       - name: Build Website
         working-directory: docs

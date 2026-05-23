@@ -35,15 +35,15 @@ jobs:
       - name: Setup Node
         uses: actions/setup-node@v6.3.0
         with:
-          node-version: 22
+          node-version: 24
 
       - name: Install pnpm
         uses: pnpm/action-setup@v5.0.0
         with:
-          version: 9
+          version: 11
 
       - name: Install frontend dependencies
-        run: pnpm install
+        run: pnpm ci
         working-directory: frontend
 
       - name: Frontend Format Check

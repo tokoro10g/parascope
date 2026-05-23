@@ -3,8 +3,8 @@ FROM node:24-alpine as builder
 
 WORKDIR /app
 
-COPY package.json pnpm-lock.yaml ./
-RUN npm install -g pnpm && pnpm install --frozen-lockfile
+COPY package.json pnpm-lock.yaml pnpm-workspace.yaml ./
+RUN npm install -g pnpm && pnpm ci
 
 COPY . .
 
