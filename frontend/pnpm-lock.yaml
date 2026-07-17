@@ -24,8 +24,8 @@ importers:
         specifier: ^2.0.9
         version: 2.0.9(echarts@6.1.0)
       elkjs:
-        specifier: ^0.8.2
-        version: 0.8.2
+        specifier: ^0.12.0
+        version: 0.12.0
       js-cookie:
         specifier: ^3.0.7
         version: 3.0.7
@@ -76,7 +76,7 @@ importers:
         version: 2.1.5(rete@2.0.6)
       rete-auto-arrange-plugin:
         specifier: ^2.0.2
-        version: 2.0.2(elkjs@0.8.2)(rete-area-plugin@2.1.5(rete@2.0.6))(rete@2.0.6)(web-worker@1.5.0)
+        version: 2.0.2(elkjs@0.12.0)(rete-area-plugin@2.1.5(rete@2.0.6))(rete@2.0.6)(web-worker@1.5.0)
       rete-connection-path-plugin:
         specifier: ^2.0.4
         version: 2.0.4(d3-shape@3.2.0)(rete-area-plugin@2.1.5(rete@2.0.6))(rete-render-utils@2.0.3(rete-area-plugin@2.1.5(rete@2.0.6))(rete@2.0.6))(rete@2.0.6)
@@ -676,8 +676,8 @@ packages:
   electron-to-chromium@1.5.331:
     resolution: {integrity: sha512-IbxXrsTlD3hRodkLnbxAPP4OuJYdWCeM3IOdT+CpcMoIwIoDfCmRpEtSPfwBXxVkg9xmBeY7Lz2Eo2TDn/HC3Q==}
 
-  elkjs@0.8.2:
-    resolution: {integrity: sha512-L6uRgvZTH+4OF5NE/MBbzQx/WYpru1xCBE9respNj6qznEewGUIfhzmm7horWWxbNO2M0WckQypGctR8lH79xQ==}
+  elkjs@0.12.0:
+    resolution: {integrity: sha512-YZcKynxVxYoKIOEpywEPwCFdg+BTbxQRNf3pbwdDCvc8O3kQD8bmIwSxKU1eOTVc4Xo+VG9Te+575mlfvOrhEQ==}
 
   entities@6.0.1:
     resolution: {integrity: sha512-aN97NXWF6AWBTahfVOIrB/NShkzi5H7F9r1s9mD3cDj4Ko5f2qhhVoYMibXF7GlLveb/D2ioWay8lxI97Ven3g==}
@@ -1907,7 +1907,7 @@ snapshots:
 
   electron-to-chromium@1.5.331: {}
 
-  elkjs@0.8.2: {}
+  elkjs@0.12.0: {}
 
   entities@6.0.1: {}
 
@@ -2581,10 +2581,10 @@ snapshots:
       '@babel/runtime': 7.29.2
       rete: 2.0.6
 
-  rete-auto-arrange-plugin@2.0.2(elkjs@0.8.2)(rete-area-plugin@2.1.5(rete@2.0.6))(rete@2.0.6)(web-worker@1.5.0):
+  rete-auto-arrange-plugin@2.0.2(elkjs@0.12.0)(rete-area-plugin@2.1.5(rete@2.0.6))(rete@2.0.6)(web-worker@1.5.0):
     dependencies:
       '@babel/runtime': 7.29.2
-      elkjs: 0.8.2
+      elkjs: 0.12.0
       rete: 2.0.6
       rete-area-plugin: 2.1.5(rete@2.0.6)
       web-worker: 1.5.0
