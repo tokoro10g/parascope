@@ -15,9 +15,9 @@ services:
     depends_on:
       db-test:
         condition: service_healthy
-    # Install test dependencies and run pytest
+    # Install only the locked test extra; keep production installs free of test tools.
     command: >
-      bash -c "uv pip install .[test] --system && pytest -v"
+      bash -c "uv sync --locked --no-dev --extra test --no-install-project && pytest -v"
 
   db-test:
     image: postgres:18

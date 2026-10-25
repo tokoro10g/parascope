@@ -6,6 +6,13 @@ on:
   pull_request:
     branches: [ main ]
 
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
   lint:
     runs-on: ubuntu-latest
@@ -15,21 +22,28 @@ jobs:
 
       - name: Install uv
         uses: astral-sh/setup-uv@v8.1.0
+        with:
+          version: "0.13.1"
+          python-version: "3.12"
+          enable-cache: true
+          cache-dependency-glob: |
+            backend/uv.lock
+            packages/parascope-runtime/uv.lock
 
       - name: Ruff Check (Backend)
-        run: uv run ruff check .
+        run: uv run --locked ruff check .
         working-directory: backend
 
       - name: Ruff Format Check (Backend)
-        run: uv run ruff format --check .
+        run: uv run --locked ruff format --check .
         working-directory: backend
 
       - name: Ruff Check (Runtime)
-        run: uv run ruff check .
+        run: uv run --locked ruff check .
         working-directory: packages/parascope-runtime
 
       - name: Ruff Format Check (Runtime)
-        run: uv run ruff format --check .
+        run: uv run --locked ruff format --check .
         working-directory: packages/parascope-runtime
 
       - name: Setup Node
@@ -40,14 +54,10 @@ jobs:
       - name: Install pnpm
         uses: pnpm/action-setup@v5.0.0
         with:
-          version: 11
+          package_json_file: frontend/package.json
 
       - name: Install frontend dependencies
-        run: pnpm ci
-        working-directory: frontend
-
-      - name: Frontend Format Check
-        run: pnpm format
+        run: pnpm install --frozen-lockfile
         working-directory: frontend
 
       - name: Frontend Lint
@@ -57,6 +67,27 @@ jobs:
       - name: Frontend Build
         run: pnpm build
         working-directory: frontend
+
+  docs:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6.0.2
+
+      - uses: actions/setup-node@v6.4.0
+        with:
+          node-version: 24
+
+      - uses: pnpm/action-setup@v5.0.0
+        with:
+          package_json_file: docs/package.json
+
+      - name: Install documentation dependencies
+        run: pnpm install --frozen-lockfile
+        working-directory: docs
+
+      - name: Build documentation
+        run: pnpm build
+        working-directory: docs
 
   build:
     needs: lint

@@ -59,7 +59,13 @@ docker compose -f docker-compose.e2e.yml run -e VIDEO=on e2e-runner
 
 ## Continuous Integration
 
-Every pull request triggers a CI pipeline (defined in `.github/workflows/ci.yml`) that executes:
-1.  Frontend Linting and Build.
-2.  Backend Linting (Ruff) and Unit Tests.
-3.  Full E2E Test Suite.
+Every pull request triggers the [CI pipeline](https://github.com/tokoro10g/parascope/blob/main/.github/workflows/ci.yml):
+1.  Frontend linting (including formatting checks) and build, without rewriting source files.
+2.  Backend and runtime linting with `uv run --locked`.
+3.  Production image builds using locked dependencies.
+4.  Backend unit tests with the locked test extra and the full E2E suite using a frozen pnpm install.
+5.  Documentation frozen install and production build.
+
+Stale Python or JavaScript lockfiles fail CI; dependency resolution belongs in
+an explicit dependency-update change, not in a test or production build.
+Superseded CI runs on the same branch are cancelled automatically.

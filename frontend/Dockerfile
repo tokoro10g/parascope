@@ -4,7 +4,7 @@ WORKDIR /app
 
 COPY package.json pnpm-lock.yaml pnpm-workspace.yaml ./
 
-RUN npm install -g pnpm && pnpm ci
+RUN npm install -g pnpm@12.14.0 && pnpm install --frozen-lockfile
 
 COPY . .
 
