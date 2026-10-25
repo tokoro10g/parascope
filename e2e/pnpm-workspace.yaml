@@ -1,0 +1,7 @@
+allowBuilds: {}
+minimumReleaseAge: 10080 # 7 days
+minimumReleaseAgeStrict: true
+minimumReleaseAgeIgnoreMissingTime: false
+trustPolicy: no-downgrade
+blockExoticSubdeps: true
+strictDepBuilds: true

@@ -1,0 +1,81 @@
+name: Security dependency updates
+
+on:
+  schedule:
+    - cron: '23 7 * * *'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: security-dependency-updates
+  cancel-in-progress: false
+
+jobs:
+  update:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        project: [frontend, docs, e2e]
+    steps:
+      - name: Require bot credentials
+        env:
+          SECURITY_UPDATES_TOKEN: ${{ secrets.SECURITY_UPDATES_TOKEN }}
+        run: |
+          if [ -z "$SECURITY_UPDATES_TOKEN" ]; then
+            echo "::error::Set SECURITY_UPDATES_TOKEN to a bot token with contents and pull requests write access so security PRs trigger CI."
+            exit 1
+          fi
+
+      - uses: actions/checkout@v6.0.2
+        with:
+          persist-credentials: false
+
+      - uses: actions/setup-node@v6.4.0
+        with:
+          node-version: 24
+
+      - uses: pnpm/action-setup@v5.0.0
+        with:
+          package_json_file: ${{ matrix.project }}/package.json
+
+      - name: Generate known vulnerability fixes
+        id: audit
+        working-directory: ${{ matrix.project }}
+        run: |
+          pnpm audit --fix=override
+          if git diff --quiet -- pnpm-workspace.yaml; then
+            echo "changed=false" >> "$GITHUB_OUTPUT"
+          else
+            echo "changed=true" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Resolve fixes without executing package scripts
+        if: steps.audit.outputs.changed == 'true'
+        working-directory: ${{ matrix.project }}
+        run: pnpm install --lockfile-only --no-frozen-lockfile --ignore-scripts
+
+      - name: Open security update PR
+        uses: peter-evans/create-pull-request@v8
+        with:
+          token: ${{ secrets.SECURITY_UPDATES_TOKEN }}
+          branch: security/pnpm-${{ matrix.project }}
+          delete-branch: true
+          add-paths: |
+            ${{ matrix.project }}/pnpm-workspace.yaml
+            ${{ matrix.project }}/pnpm-lock.yaml
+          commit-message: 'fix(deps): patch known vulnerabilities in ${{ matrix.project }}'
+          title: 'fix(deps): patch known vulnerabilities in ${{ matrix.project }}'
+          body: |
+            Generated with pnpm audit --fix=override.
+
+            Known vulnerability fixes may bypass the seven-day cooldown using
+            exact versions recorded in minimumReleaseAgeExclude. Normal updates
+            remain subject to the cooldown. Provenance and build-script policies
+            are not bypassed. Review the overrides and exceptions before merging.
+
+      - name: Report remaining vulnerabilities
+        working-directory: ${{ matrix.project }}
+        run: pnpm audit

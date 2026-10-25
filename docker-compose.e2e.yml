@@ -54,4 +54,4 @@ services:
       frontend:
         condition: service_healthy
     command: >
-      bash -c "npm install && npx playwright test $$PLAYWRIGHT_ARGS"
+      bash -c "npm install -g pnpm@12.14.0 && pnpm install --frozen-lockfile && pnpm exec playwright test $$PLAYWRIGHT_ARGS"

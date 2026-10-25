@@ -1,9 +1,12 @@
 allowBuilds:
   esbuild: true
   rete: false
-minimumReleaseAgeExclude:
-  - vite@8.0.5
-  - postcss@8.5.10
-  - uuid@13.0.1
-  - js-cookie@3.0.6
-strictDepBuild: false
+minimumReleaseAge: 10080 # 7 days
+minimumReleaseAgeStrict: true
+minimumReleaseAgeIgnoreMissingTime: false
+trustPolicy: no-downgrade
+trustPolicyExclude:
+  # Legacy Babel dependency published without provenance after semver 7.x.
+  - semver@6.3.1
+blockExoticSubdeps: true
+strictDepBuilds: true

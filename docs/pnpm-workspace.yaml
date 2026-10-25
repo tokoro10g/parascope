@@ -1,0 +1,14 @@
+allowBuilds:
+  core-js: false
+  core-js-pure: false
+minimumReleaseAge: 10080 # 7 days
+minimumReleaseAgeStrict: true
+minimumReleaseAgeIgnoreMissingTime: false
+trustPolicy: no-downgrade
+trustPolicyExclude:
+  # Legacy Babel dependency published without provenance after semver 7.x.
+  - semver@6.3.1
+  # Docusaurus dependency; 1.6.1 lacks the provenance present in 1.6.0.
+  - detect-port@1.6.1
+blockExoticSubdeps: true
+strictDepBuilds: true
