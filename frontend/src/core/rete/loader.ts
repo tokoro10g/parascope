@@ -6,7 +6,12 @@ import { createSocket } from '../utils';
 import { DropdownControl } from './components/DropdownControl';
 import { InputControl } from './components/InputControl';
 import { ParascopeNode } from './ParascopeNode';
-import type { AreaExtra, NodeType, Schemes } from './types';
+import {
+  type AreaExtra,
+  Connection,
+  type NodeType,
+  type Schemes,
+} from './types';
 
 export function createLoader(
   instance: NodeEditor<Schemes>,
@@ -54,10 +59,6 @@ export function createLoader(
 
         if (source && target) {
           try {
-            // Need access to the Connection class from types.ts
-            // But we can use the instance.addConnection directly if we have the nodes
-            // The Connection constructor is exported from types.ts
-            const { Connection } = await import('./types');
             const conn = new Connection(
               source,
               c.source_port,
