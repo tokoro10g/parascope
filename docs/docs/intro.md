@@ -3,9 +3,25 @@ sidebar_position: 1
 slug: /intro
 ---
 
+import useBaseUrl from '@docusaurus/useBaseUrl';
+
 # Introduction
 
 **Parascope** is a node-based engineering calculation platform designed for agile teams and hobbyists to define, visualize, and solve complex system models.
+
+## See Parascope in Action
+
+<div className="video-container">
+  <iframe
+    src="https://www.youtube-nocookie.com/embed/3QkopphiyHo"
+    title="Parascope product demo"
+    loading="lazy"
+    style={{ width: '100%', aspectRatio: '16 / 9', border: 0 }}
+    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+    referrerPolicy="strict-origin-when-cross-origin"
+    allowFullScreen
+  />
+</div>
 
 ## What is Parascope?
 
@@ -15,6 +31,8 @@ The platform is particularly suited for:
 *   **System Engineering**: Modeling complex dependencies between subsystems.
 *   **Trade Studies**: Performing parameter sweeps to understand design spaces.
 *   **Rapid Prototyping**: Quickly building and testing calculation logic without writing boilerplate code.
+
+<img src={useBaseUrl('/img/node_editor.png')} alt="Parascope's visual node editor showing an aerodynamic drag calculation graph and results" />
 
 ## Key Features
 
