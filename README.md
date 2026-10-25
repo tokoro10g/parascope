@@ -16,6 +16,8 @@
 
 **Parascope** allows users to define complex engineering models using a visual graph interface, where nodes represent parameters, mathematical functions, or entire nested calculation sheets.
 
+[![Watch the Parascope demo on YouTube](docs/static/img/node_editor.png)](https://youtu.be/3QkopphiyHo)
+
 ## 🚀 Features
 
 *   **Visual Graph Editor**: Intuitive node-based interface built with [Rete.js](https://retejs.org/) for defining complex engineering logic.
