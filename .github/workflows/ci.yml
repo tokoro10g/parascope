@@ -129,7 +129,7 @@ jobs:
         uses: actions/checkout@v6.0.2
 
       - name: Download backend image
-        uses: actions/download-artifact@v8.0.1
+        uses: actions/download-artifact@v8.0.2
         with:
           name: backend-image
 
@@ -152,7 +152,7 @@ jobs:
         uses: actions/checkout@v6.0.2
 
       - name: Download images
-        uses: actions/download-artifact@v8.0.1
+        uses: actions/download-artifact@v8.0.2
         with:
           pattern: '*-image'
           merge-multiple: true
