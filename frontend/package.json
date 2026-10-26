@@ -61,7 +61,7 @@
     "@types/react-dom": "^19.2.3",
     "@types/styled-components": "^5.1.36",
     "@types/three": "^0.156.0",
-    "@vitejs/plugin-react": "^5.2.0",
+    "@vitejs/plugin-react": "^6.0.0",
     "typescript": "^6.0.2",
     "vite": "^8.0.14"
   },
