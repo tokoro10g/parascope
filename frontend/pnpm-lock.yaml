@@ -268,7 +268,7 @@ importers:
         version: 2.0.3(rete-area-plugin@2.1.5(rete@2.0.6))(rete@2.0.6)
       rete-react-plugin:
         specifier: ^2.1.0
-        version: 2.1.0(react-dom@19.2.6(react@19.2.6))(react@19.2.6)(rete-area-plugin@2.1.5(rete@2.0.6))(rete-render-utils@2.0.3(rete-area-plugin@2.1.5(rete@2.0.6))(rete@2.0.6))(rete@2.0.6)(styled-components@5.3.11(@babel/core@7.29.7(supports-color@5.5.0))(react-dom@19.2.6(react@19.2.6))(react-is@16.13.1)(react@19.2.6))
+        version: 2.1.2(react-dom@19.2.6(react@19.2.6))(react@19.2.6)(rete-area-plugin@2.1.5(rete@2.0.6))(rete-render-utils@2.0.3(rete-area-plugin@2.1.5(rete@2.0.6))(rete@2.0.6))(rete@2.0.6)(styled-components@5.3.11(@babel/core@7.29.7(supports-color@5.5.0))(react-dom@19.2.6(react@19.2.6))(react-is@16.13.1)(react@19.2.6))
       rete-render-utils:
         specifier: ^2.0.3
         version: 2.0.3(rete-area-plugin@2.1.5(rete@2.0.6))(rete@2.0.6)
@@ -1412,8 +1412,8 @@ packages:
       rete: ^2.0.1
       rete-area-plugin: ^2.0.0
 
-  rete-react-plugin@2.1.0:
-    resolution: {integrity: sha512-FXYhdb4FFL7S7Iie398nfyLTRRan+OT6Gdo5nZnF/3nq8R1xan6zKuWmpovUXjxEgm6pkVhY9BjCEV8XlAXWAg==}
+  rete-react-plugin@2.1.2:
+    resolution: {integrity: sha512-1vXZTmmTDq+YxlN+y2OwYAFj1Ip0JARTYNLtH1QU/l4UOhJP/wETkf7Wu8tIl85fyp23/4UE88bSJJEqXYH2Bg==}
     peerDependencies:
       react: '^16.8.6 || ^17 || ^18 || ^19 '
       react-dom: ^16.8.6 || ^17 || ^18 || ^19
@@ -2866,7 +2866,7 @@ snapshots:
       rete: 2.0.6
       rete-area-plugin: 2.1.5(rete@2.0.6)
 
-  rete-react-plugin@2.1.0(react-dom@19.2.6(react@19.2.6))(react@19.2.6)(rete-area-plugin@2.1.5(rete@2.0.6))(rete-render-utils@2.0.3(rete-area-plugin@2.1.5(rete@2.0.6))(rete@2.0.6))(rete@2.0.6)(styled-components@5.3.11(@babel/core@7.29.7(supports-color@5.5.0))(react-dom@19.2.6(react@19.2.6))(react-is@16.13.1)(react@19.2.6)):
+  rete-react-plugin@2.1.2(react-dom@19.2.6(react@19.2.6))(react@19.2.6)(rete-area-plugin@2.1.5(rete@2.0.6))(rete-render-utils@2.0.3(rete-area-plugin@2.1.5(rete@2.0.6))(rete@2.0.6))(rete@2.0.6)(styled-components@5.3.11(@babel/core@7.29.7(supports-color@5.5.0))(react-dom@19.2.6(react@19.2.6))(react-is@16.13.1)(react@19.2.6)):
     dependencies:
       '@babel/runtime': 7.29.2
       react: 19.2.6
